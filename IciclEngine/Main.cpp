@@ -84,7 +84,7 @@ int main(void)
 	ForwardRenderer* forwardRenderer = new ForwardRenderer();
 	forwardRenderer->AddRenderPass(*triangleShader);
 	forwardRenderer->AddRenderPass(*otherShader);
-	EngineContext* context = new EngineContext((Renderer*)forwardRenderer, scene);
+	EngineContext* context = new EngineContext((Renderer*)forwardRenderer, scene); // very simple tests gives 5% faster to sort
 	//EngineContext* context = new EngineContext(renderer, scene);
 	auto start = std::chrono::high_resolution_clock::now();
 
@@ -117,13 +117,13 @@ int main(void)
 	Renderable* renderable8 = new Renderable(mesh, otherShader);
 	scene->AddRenderable(renderable);
 	scene->AddRenderable(renderable2);
-	scene->AddRenderable(renderable);
-	scene->AddRenderable(renderable);
-	scene->AddRenderable(renderable);
-	scene->AddRenderable(renderable);
-	scene->AddRenderable(renderable2);
+	scene->AddRenderable(renderable3);
+	scene->AddRenderable(renderable4);
+	scene->AddRenderable(renderable5);
+	scene->AddRenderable(renderable6);
+	scene->AddRenderable(renderable7);
 	//scene->RemoveRenderable(renderable);
-	scene->AddRenderable(renderable2);
+	scene->AddRenderable(renderable8);
 	renderer->Init();
 
 	/* Loop until the user closes the window */
@@ -131,21 +131,32 @@ int main(void)
 	glfwSwapInterval(0);
 	while (!glfwWindowShouldClose(window))
 	{
-		start = std::chrono::high_resolution_clock::now();
+		
 		/* Render here */
 		//glClear(GL_COLOR_BUFFER_BIT);
 		//glClearColor(0.1f, 0.3f, 0.2f, 1.0f);
 
 		//Enginecontext
-
+		if (itters == 0) start = std::chrono::high_resolution_clock::now();
 #pragma region Render
 		//Render stuff here
+		
 		context->DrawScene();
 		//triangleShader->Use();
 		//mesh->Render();
 		//triangleShader->Stop();
 		//Render stuff end here
 #pragma endregion
+
+		itters++;
+		if (itters >= 2500)
+		{
+			stop = std::chrono::high_resolution_clock::now();
+			auto duration2 = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+			//std::cout << "average render time: " << (duration2.count()/ ((long double)itters)) << "millseconds" << std::endl;
+			std::println("average render time : {:.6f}ms", (duration2.count() / ((long double)itters * 1000.0f)));
+			itters = 0;
+		}
 
 #pragma region ImGui
 		// ImGUI draw
@@ -188,14 +199,7 @@ int main(void)
 
 		/* Poll for and process events */
 		glfwPollEvents();
-		itters++;
-		if (itters == 1000)
-		{
-			stop = std::chrono::high_resolution_clock::now();
-			duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
-			std::cout << "render time: " << duration.count() << std::endl;
-			itters = 0;
-		}
+
 
 	}
 
