@@ -118,7 +118,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opengl32.lib;GLFW\glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;GLFW\glfw3.lib;assimp\assimp-vc143-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -138,7 +138,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opengl32.lib;GLFW\glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;GLFW\glfw3.lib;assimp\assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -151,8 +151,15 @@
     <ClCompile Include="..\vendor\imgui-docking\imgui_impl_opengl3.cpp" />
     <ClCompile Include="..\vendor\imgui-docking\imgui_tables.cpp" />
     <ClCompile Include="..\vendor\imgui-docking\imgui_widgets.cpp" />
+    <ClCompile Include="EngineContext.cpp" />
+    <ClCompile Include="ForwardRenderer.cpp" />
+    <ClCompile Include="ForwardRenderPass.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="Renderable.cpp" />
+    <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="RenderPass.cpp" />
+    <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Triangle.cpp" />
   </ItemGroup>
@@ -168,14 +175,21 @@
     <ClInclude Include="..\vendor\imgui-docking\imstb_textedit.h" />
     <ClInclude Include="..\vendor\imgui-docking\imstb_truetype.h" />
     <ClInclude Include="..\vendor\KHR\khrplatform.h" />
+    <ClInclude Include="EngineContext.h" />
+    <ClInclude Include="ForwardRenderer.h" />
+    <ClInclude Include="ForwardRenderPass.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Renderable.h" />
+    <ClInclude Include="Renderer.h" />
+    <ClInclude Include="RenderPass.h" />
+    <ClInclude Include="Scene.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Triangle.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\assets\shaders\fragment\frag.glsl" />
     <None Include="..\assets\shaders\vertex\vert.glsl" />
+    <None Include="..\assets\shaders\vertex\vert2.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

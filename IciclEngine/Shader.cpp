@@ -1,12 +1,18 @@
 #pragma once
 #include "Shader.h"
 #include <glad/glad.h>
+#include <fstream>
+#include <sstream>
+#include <iostream>
 //#include <filesystem>
+//
+//Shader::Shader() {
+//
+//}
 
-Shader::Shader() {
+Shader::~Shader() {
 
 }
-
 Shader::Shader(const char* vertPath, const char* fragPath) {
 	
 	unsigned int VertexShader = LoadVertexShader(vertPath);

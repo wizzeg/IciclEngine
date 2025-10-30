@@ -1,9 +1,8 @@
 #pragma once
 
-#include "Renderable.h"
 #include <vector>
 
-class Mesh : public Renderable
+class Mesh
 {
 	unsigned int VBO = 0;
 	unsigned int VAO = 0;
@@ -15,8 +14,9 @@ class Mesh : public Renderable
 	std::vector<float> vertices;
 	std::vector<unsigned int> offsets;
 public:
-	void Render() override;
+	void Render();
 	void InitializeBuffers();
+
 	Mesh();
 	Mesh(std::vector<unsigned int>&& indicies, std::vector<float>&& verticies, std::vector<unsigned int>&& offsets);
 	Mesh(const std::vector<unsigned int>& indicies, const std::vector<float>& verticies, const std::vector<unsigned int>& offsets);
