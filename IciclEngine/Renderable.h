@@ -2,6 +2,7 @@
 
 #include "Mesh.h"
 #include "Shader.h"
+#include "Material.h"
 
 class Renderable
 {
@@ -21,6 +22,7 @@ public:
 	
 	Mesh* mesh = nullptr;
 	Shader* shader = nullptr;
+	Material* material = nullptr; //TODO: make renderable use a material instead
 	unsigned int shaderProgram = 0;
 
 	bool operator<(const Renderable& other) const

@@ -29,7 +29,6 @@ Shader::Shader(const char* vertPath, const char* fragPath) {
 
 	int result;
 	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &result);
-
 	if (!result)
 	{
 		char log[512];
@@ -110,4 +109,55 @@ unsigned int Shader::LoadVertexShader(const char* aPath) {
 
 unsigned int Shader::LoadFragmentShader(const char* aPath) {
 	return LoadShader(aPath, GL_FRAGMENT_SHADER);
+}
+
+void Shader::SetVec1f(float value, const char* location)
+{
+	glUniform1f(glGetUniformLocation(shaderProgram, location), value);
+}
+void Shader::SetVec2f(float value[2], const char* location)
+{
+	glUniform2f(glGetUniformLocation(shaderProgram, location), value[0], value[1]);
+}
+void Shader::SetVec3f(float value[3], const char* location)
+{
+	glUniform3f(glGetUniformLocation(shaderProgram, location), value[0], value[1], value[2]);
+}
+void Shader::SetVec4f(float value[4], const char* location)
+{
+	glUniform4f(glGetUniformLocation(shaderProgram, location), value[0], value[1], value[2], value[3]);
+}
+
+void Shader::SetVec1i(int value, const char* location)
+{
+	glUniform1i(glGetUniformLocation(shaderProgram, location), value);
+}
+void Shader::SetVec2i(int value[2], const char* location)
+{
+	glUniform2i(glGetUniformLocation(shaderProgram, location), value[0], value[1]);
+}
+void Shader::SetVec3i(int value[3], const char* location)
+{
+	glUniform3i(glGetUniformLocation(shaderProgram, location), value[0], value[1], value[2]);
+}
+void Shader::SetVec4i(int value[4], const char* location)
+{
+	glUniform4i(glGetUniformLocation(shaderProgram, location), value[0], value[1], value[2], value[3]);
+}
+
+void Shader::SetVec1ui(unsigned int value, const char* location)
+{
+	glUniform1ui(glGetUniformLocation(shaderProgram, location), value);
+}
+void Shader::SetVec2ui(unsigned int value[2], const char* location)
+{
+	glUniform2ui(glGetUniformLocation(shaderProgram, location), value[0], value[1]);
+}
+void Shader::SetVec3ui(unsigned int value[3], const char* location)
+{
+	glUniform3ui(glGetUniformLocation(shaderProgram, location), value[0], value[1], value[2]);
+}
+void Shader::SetVec4ui(unsigned int value[4], const char* location)
+{
+	glUniform4ui(glGetUniformLocation(shaderProgram, location), value[0], value[1], value[2], value[3]);
 }

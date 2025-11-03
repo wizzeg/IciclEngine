@@ -22,6 +22,8 @@
 #include "Mesh.h"
 #include "EngineContext.h"
 #include "ForwardRenderer.h"
+#include "Texture.h"
+#include "Material.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -81,6 +83,9 @@ int main(void)
 	Shader* triangleShader = new Shader("./assets/shaders/vertex/vert.glsl", "./assets/shaders/fragment/frag.glsl");
 	Shader* otherShader = new Shader("./assets/shaders/vertex/vert2.glsl", "./assets/shaders/fragment/frag.glsl");
 	Mesh* mesh;
+	Texture* texture = new Texture("./assets/textures/wall.jpg");
+	Material* material = new Material(triangleShader, std::vector<Texture*>{ texture });
+
 	ForwardRenderer* forwardRenderer = new ForwardRenderer();
 	forwardRenderer->AddRenderPass(*triangleShader);
 	forwardRenderer->AddRenderPass(*otherShader);
@@ -90,9 +95,9 @@ int main(void)
 
 	{
 		std::vector<float> vertices = {
-		-0.5f, -0.5f, 0.0f, 1.0, 0.0, 0.0, 0.0,
-		0.5f, -0.5f, 0.0f, 0.0, 1.0, 0.0, 0.0,
-		0.0f, 0.5f, 0.0f, 0.0, 0.0, 1.0, 0.0
+		-0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+		0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.5f, 1.0f
 		};
 		std::vector<unsigned int> indices = { 0, 1, 2 };
 		std::vector<unsigned int> offsets = { 3, 3, 1 };
@@ -108,22 +113,6 @@ int main(void)
 	std::println("C++23 println test... Time to move: {}", duration.count());
 
 	Renderable* renderable = new Renderable(mesh, triangleShader);
-	Renderable* renderable2 = new Renderable(mesh, otherShader);
-	Renderable* renderable3 = new Renderable(mesh, triangleShader);
-	Renderable* renderable4 = new Renderable(mesh, otherShader);
-	Renderable* renderable5 = new Renderable(mesh, triangleShader);
-	Renderable* renderable6 = new Renderable(mesh, otherShader);
-	Renderable* renderable7 = new Renderable(mesh, triangleShader);
-	Renderable* renderable8 = new Renderable(mesh, otherShader);
-	scene->AddRenderable(renderable);
-	scene->AddRenderable(renderable2);
-	scene->AddRenderable(renderable3);
-	scene->AddRenderable(renderable4);
-	scene->AddRenderable(renderable5);
-	scene->AddRenderable(renderable6);
-	scene->AddRenderable(renderable7);
-	//scene->RemoveRenderable(renderable);
-	scene->AddRenderable(renderable8);
 	renderer->Init();
 
 	/* Loop until the user closes the window */
