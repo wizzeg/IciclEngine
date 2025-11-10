@@ -24,7 +24,7 @@ Triangle::Triangle() {
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0); // just enables the attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float))); // which attribute location, how many floats, that it is floats, stride, and offset
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float))); // wkmffhich attribute location, how many floats, that it is floats, stride, and offset
 	glEnableVertexAttribArray(1);
 
 	glBindVertexArray(0);

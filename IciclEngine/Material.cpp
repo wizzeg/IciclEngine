@@ -42,7 +42,10 @@ void Material::SetUpdateUniforms(std::function<void()> function)
 
 bool Material::changeTexture(int index, Texture* texture)
 {
-	textures.at(index) = texture;
+	if (textures.size() > index)
+		textures.at(index) = texture;
+	else return false;
+	return true;
 }
 
 void Material::UseShader()

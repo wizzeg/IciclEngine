@@ -154,14 +154,21 @@
     <ClCompile Include="EngineContext.cpp" />
     <ClCompile Include="ForwardRenderer.cpp" />
     <ClCompile Include="ForwardRenderPass.cpp" />
+    <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Material.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Renderable.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="RenderPass.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="stb_image.cpp" />
+    <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Triangle.cpp" />
+    <ClCompile Include="Uniform.cpp" />
+    <ClCompile Include="Vertex.cpp" />
+    <ClCompile Include="VertexAttributeIndex.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\glad\glad.h" />
@@ -175,16 +182,23 @@
     <ClInclude Include="..\vendor\imgui-docking\imstb_textedit.h" />
     <ClInclude Include="..\vendor\imgui-docking\imstb_truetype.h" />
     <ClInclude Include="..\vendor\KHR\khrplatform.h" />
+    <ClInclude Include="..\vendor\stb_image\stb_image.h" />
     <ClInclude Include="EngineContext.h" />
     <ClInclude Include="ForwardRenderer.h" />
     <ClInclude Include="ForwardRenderPass.h" />
+    <ClInclude Include="GameObject.h" />
+    <ClInclude Include="Material.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Renderable.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="RenderPass.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="Texture.h" />
     <ClInclude Include="Triangle.h" />
+    <ClInclude Include="Uniform.h" />
+    <ClInclude Include="Vertex.h" />
+    <ClInclude Include="VertexAttributeIndex.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\assets\shaders\fragment\frag.glsl" />

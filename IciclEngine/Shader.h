@@ -3,6 +3,9 @@
 #include <string>
 #include <functional>
 #include <unordered_map>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 class Shader {
 public:
@@ -20,8 +23,6 @@ public:
 	unsigned int LoadFragmentShader(const char* aPath);
 	unsigned int LoadShader(const char* aPath, GLenum shaderType);
 	const unsigned int GetShaderProgram() { return shaderProgram; };
-
-
 	
 	void SetVec1f(float value, const char* location);
 	void SetVec2f(float value[2], const char* location);
@@ -37,6 +38,8 @@ public:
 	void SetVec2ui(unsigned int value[2], const char* location);
 	void SetVec3ui(unsigned int value[3], const char* location);
 	void SetVec4ui(unsigned int value[4], const char* location);
+
+	void SetMat4fv(glm::mat4 value, const char* location);
 
 	//Uniforms setters
 

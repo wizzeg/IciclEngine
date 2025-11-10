@@ -161,3 +161,7 @@ void Shader::SetVec4ui(unsigned int value[4], const char* location)
 {
 	glUniform4ui(glGetUniformLocation(shaderProgram, location), value[0], value[1], value[2], value[3]);
 }
+void Shader::SetMat4fv(glm::mat4 value, const char* location)
+{
+	glUniformMatrix4fv(glGetUniformLocation(shaderProgram, location), 1, GL_FALSE, glm::value_ptr(value));
+}

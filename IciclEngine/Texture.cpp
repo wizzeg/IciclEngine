@@ -1,7 +1,6 @@
 #include "Texture.h"
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image/stb_image.h"
 #include <print>
+#include "stb_image/stb_image.h"
 
 bool Texture::Load()
 {
@@ -55,11 +54,9 @@ void Texture::Activate()
     }
     else if (index > 15)
     {
-        std::println("Texture has no index");
+        std::println("Texture has too high index, {}", index);
         return;
     }
     glActiveTexture(GL_TEXTURE0 + index);
     glBindTexture(GL_TEXTURE_2D, TextureID);
-
-
 }

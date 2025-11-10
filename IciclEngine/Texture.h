@@ -11,17 +11,17 @@ public:
 
 	Texture(const GLenum WrapX, const GLenum WrapY, const char* Path, GLenum ColorFormat) : WrapX(WrapX), WrapY(WrapY), Path(Path), ColorFormat(ColorFormat) {};
 
-	Texture(const GLenum FilteringMin, const GLenum FilteringMag, const char* Path, GLenum ColorFormat)
-		: FilteringMin(FilteringMin), FilteringMag(FilteringMag), Path(Path), ColorFormat(ColorFormat) {};
+	//Texture(const GLenum FilteringMin, const GLenum FilteringMag, const char* Path, GLenum ColorFormat)
+	//	: FilteringMin(FilteringMin), FilteringMag(FilteringMag), Path(Path), ColorFormat(ColorFormat) {};
 
-	Texture(const GLenum WrapX, const GLenum WrapY, const GLenum MipMapFiltering, const char* Path, GLenum ColorFormat)
-		: WrapX(WrapX), WrapY(WrapY), MipMapFiltering(MipMapFiltering),Path(Path), ColorFormat(ColorFormat) {};
+	//Texture(const GLenum WrapX, const GLenum WrapY, const GLenum MipMapFiltering, const char* Path, GLenum ColorFormat)
+	//	: WrapX(WrapX), WrapY(WrapY), MipMapFiltering(MipMapFiltering),Path(Path), ColorFormat(ColorFormat) {};
 
-	Texture(const GLenum WrapX, const GLenum WrapY, const GLenum FilteringMin, const GLenum FilteringMag, const char* Path, GLenum ColorFormat)
-		: WrapX(WrapX), WrapY(WrapY), FilteringMin(FilteringMin), FilteringMag(FilteringMag), Path(Path), ColorFormat(ColorFormat) {};
+	//Texture(const GLenum WrapX, const GLenum WrapY, const GLenum FilteringMin, const GLenum FilteringMag, const char* Path, GLenum ColorFormat)
+	//	: WrapX(WrapX), WrapY(WrapY), FilteringMin(FilteringMin), FilteringMag(FilteringMag), Path(Path), ColorFormat(ColorFormat) {};
 
-	Texture(const GLenum FilteringMin, const GLenum FilteringMag, const GLenum MipMapFiltering, const char* Path, GLenum ColorFormat)
-		: FilteringMin(FilteringMin), FilteringMag(FilteringMag), MipMapFiltering(MipMapFiltering), Path(Path), ColorFormat(ColorFormat) {};
+	//Texture(const GLenum FilteringMin, const GLenum FilteringMag, const GLenum MipMapFiltering, const char* Path, GLenum ColorFormat)
+	//	: FilteringMin(FilteringMin), FilteringMag(FilteringMag), MipMapFiltering(MipMapFiltering), Path(Path), ColorFormat(ColorFormat) {};
 
 	Texture(const GLenum WrapX, const GLenum WrapY, const GLenum FilteringMin, const GLenum FilteringMag, const GLenum MipMapFiltering, const char* Path, GLenum ColorFormat)
 		: WrapX(WrapX), WrapY(WrapY), FilteringMin(FilteringMin), FilteringMag(FilteringMag), MipMapFiltering(MipMapFiltering), Path(Path), ColorFormat(ColorFormat) {};
