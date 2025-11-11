@@ -43,6 +43,12 @@
     <Filter Include="Source Files\stb_image">
       <UniqueIdentifier>{c48857d6-7054-4b9b-a71a-1df1c9e6ff02}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\fragment\standard">
+      <UniqueIdentifier>{a73bf683-66e6-4479-a2e1-e8fbf73a132d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\vertex\standard">
+      <UniqueIdentifier>{93945e27-ef24-4d53-a316-9d871c2ad4da}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -121,6 +127,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GameObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -209,6 +221,12 @@
     <ClInclude Include="GameObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ModelLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\assets\shaders\fragment\frag.glsl">
@@ -219,6 +237,12 @@
     </None>
     <None Include="..\assets\shaders\vertex\vert2.glsl">
       <Filter>Shaders\vertex</Filter>
+    </None>
+    <None Include="..\assets\shaders\fragment\standard\standardunlit.glsl">
+      <Filter>Shaders\fragment\standard</Filter>
+    </None>
+    <None Include="..\assets\shaders\vertex\standard\standardunlit.glsl">
+      <Filter>Shaders\vertex\standard</Filter>
     </None>
   </ItemGroup>
 </Project>

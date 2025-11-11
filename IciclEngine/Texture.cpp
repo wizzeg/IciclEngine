@@ -2,6 +2,23 @@
 #include <print>
 #include "stb_image/stb_image.h"
 
+Texture::Texture(const GLenum WrapX, const GLenum WrapY, const GLenum FilteringMin, const GLenum FilteringMag, const GLenum MipMapFiltering, const char* Path, GLenum ColorFormat)
+    : WrapX(WrapX), WrapY(WrapY), FilteringMin(FilteringMin), FilteringMag(FilteringMag), MipMapFiltering(MipMapFiltering), Path(Path), ColorFormat(ColorFormat)
+{
+    Load();
+}
+
+Texture::Texture(const GLenum WrapX, const GLenum WrapY, const char* Path, GLenum ColorFormat) : WrapX(WrapX), WrapY(WrapY), Path(Path), ColorFormat(ColorFormat)
+{
+    Load();
+}
+
+Texture::Texture(const char* Path) :Path(Path)
+{
+    Load();
+}
+
+
 bool Texture::Load()
 {
     if (Path == nullptr)
@@ -9,7 +26,6 @@ bool Texture::Load()
         std::println("No path assigned");
         return false;
     }
-
     glGenTextures(1, &TextureID);
     glBindTexture(GL_TEXTURE_2D, TextureID);
     // set the texture wrapping/filtering options (on the currently bound texture object)
@@ -35,8 +51,9 @@ bool Texture::Load()
     {
         std::println("Failed to load texture");
     }
+    std::println("loaded texture at {}", TextureID);
     stbi_image_free(data);
-    loaded = (result);
+    loaded = result;
     return result;
 }
 

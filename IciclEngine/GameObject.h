@@ -10,8 +10,15 @@ class GameObject
 {
 public:
 	 glm::vec3 worldPosition;
+	 glm::vec3 rotation;
+	 glm::vec3 scale;
 	 Renderable* renderable;
+	 GameObject(std::string aLabel, glm::vec3 aPosition, glm::vec3 aRotation, glm::vec3 aScale);
+	 GameObject(std::string aLabel, glm::vec3 aPosition, glm::vec3 aRotation, glm::vec3 aScale, Renderable* aRenderable);
+	 ~GameObject(){};
 
-	 GameObject(glm::vec3 position, Renderable* renderable) : worldPosition(position), renderable(renderable) {  };
+	 virtual void Update(float dt);
+	 void AddRenderable(Renderable* aRenderable);
+	 std::string label;
 };
 

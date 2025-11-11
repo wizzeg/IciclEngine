@@ -7,9 +7,9 @@ class Texture
 {
 
 public:
-	Texture(const char* Path) : Path(Path) {};
+	Texture(const char* Path);
 
-	Texture(const GLenum WrapX, const GLenum WrapY, const char* Path, GLenum ColorFormat) : WrapX(WrapX), WrapY(WrapY), Path(Path), ColorFormat(ColorFormat) {};
+	Texture(const GLenum WrapX, const GLenum WrapY, const char* Path, GLenum ColorFormat);
 
 	//Texture(const GLenum FilteringMin, const GLenum FilteringMag, const char* Path, GLenum ColorFormat)
 	//	: FilteringMin(FilteringMin), FilteringMag(FilteringMag), Path(Path), ColorFormat(ColorFormat) {};
@@ -23,8 +23,7 @@ public:
 	//Texture(const GLenum FilteringMin, const GLenum FilteringMag, const GLenum MipMapFiltering, const char* Path, GLenum ColorFormat)
 	//	: FilteringMin(FilteringMin), FilteringMag(FilteringMag), MipMapFiltering(MipMapFiltering), Path(Path), ColorFormat(ColorFormat) {};
 
-	Texture(const GLenum WrapX, const GLenum WrapY, const GLenum FilteringMin, const GLenum FilteringMag, const GLenum MipMapFiltering, const char* Path, GLenum ColorFormat)
-		: WrapX(WrapX), WrapY(WrapY), FilteringMin(FilteringMin), FilteringMag(FilteringMag), MipMapFiltering(MipMapFiltering), Path(Path), ColorFormat(ColorFormat) {};
+	Texture(const GLenum WrapX, const GLenum WrapY, const GLenum FilteringMin, const GLenum FilteringMag, const GLenum MipMapFiltering, const char* Path, GLenum ColorFormat);
 
 	void SetIndex(unsigned int index) { this->index = index; }
 
@@ -40,14 +39,13 @@ public:
 	bool generateMipMap = true;
 	GLenum MipMapFiltering = GL_LINEAR_MIPMAP_LINEAR;
 	float BorderColor[4] = {0.0f, 0.0f, 0.0f, 0.0f };
-	GLenum ColorFormat = GL_RGBA;
+	GLenum ColorFormat = GL_RGB;
 
 	bool loaded = false;
 	unsigned int TextureID = 0;
 
 	const char* Path;
-	unsigned int index = -1;
-protected:
+	unsigned int index = 0;
 
 
 };

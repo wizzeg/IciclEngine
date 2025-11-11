@@ -37,22 +37,6 @@ public:
 	std::vector<std::vector<glm::vec3>> UVs;
 	std::vector<float> buffer;
 	std::vector<unsigned int> indices;
-	//std::vector<glm::vec3> Colors0;
-	//std::vector<glm::vec3> Colors1;
-	//std::vector<glm::vec3> Colors2;
-	//std::vector<glm::vec3> Colors3;
-	//std::vector<glm::vec3> Colors4;
-	//std::vector<glm::vec3> Colors5;
-	//std::vector<glm::vec3> Colors6;
-	//std::vector<glm::vec3> Colors7;
-	//std::vector<glm::vec2> UV0;
-	//std::vector<glm::vec2> UV1;
-	//std::vector<glm::vec2> UV2;
-	//std::vector<glm::vec2> UV3;
-	//std::vector<glm::vec2> UV4;
-	//std::vector<glm::vec2> UV5;
-	//std::vector<glm::vec2> UV6;
-	//std::vector<glm::vec2> UV7;
 	VertexAttributes()
 	{
 	}

@@ -184,6 +184,95 @@ Mesh::Mesh(const char* path)
 
 			}
 		}
+		auto props = pScene->mMaterials[0]->mProperties;
+		for (size_t j = 0; j < pScene->mMaterials[0]->mNumProperties; j++)
+		{
+			std::print("property: {}, number of values {}, with type ", props[j]->mKey.C_Str(), props[j]->mDataLength);
+			if (props[j]->mType == aiPTI_Float)
+			{
+				std::println("float");
+
+				float* vals = (float*)props[j]->mData;
+				for (size_t k = 0; k < props[j]->mDataLength/sizeof(float); k++)
+				{
+					std::print(" {}", vals[k]);
+				}
+
+			}
+			if (props[j]->mType == aiPTI_Double)
+			{
+				std::println("double");
+				double* vals = (double*)props[j]->mData;
+				for (size_t k = 0; k < props[j]->mDataLength / sizeof(double); k++)
+				{
+					std::print(" {}", vals[k]);
+				}
+
+			}
+			if (props[j]->mType == aiPTI_Integer)
+			{
+				std::println("integer");
+				int* vals = (int*)props[j]->mData;
+				for (size_t k = 0; k < props[j]->mDataLength / sizeof(int); k++)
+				{
+					std::print(" {}", vals[k]);
+				}
+				
+			}
+			if (props[j]->mType == aiPTI_Buffer)
+			{
+				std::println("buffer(integer -> enum)");
+				int val = (int)*props[j]->mData;
+				aiShadingMode mode = (aiShadingMode)val;
+
+				std::string name = "";
+				switch (mode) {
+				case aiShadingMode_Flat:
+					name = "Flat";
+					break;
+				case aiShadingMode_Gouraud:
+					name = "Gouraud";
+					break;
+				case aiShadingMode_Phong:
+					name = "Phong";
+					break;
+				case aiShadingMode_Blinn:
+					name = "Blinn";
+					break;
+				case aiShadingMode_Toon:
+					name = "Toon";
+					break;
+				case aiShadingMode_OrenNayar:
+					name = "Oren-Nayar";
+					break;
+				case aiShadingMode_Minnaert:
+					name = "Minnaert";
+					break;
+				case aiShadingMode_CookTorrance:
+					name = "Cook-Torrance";
+					break;
+				case aiShadingMode_NoShading:
+					name = "Unlit";
+					break;
+				case aiShadingMode_PBR_BRDF:
+					name = "PBR";
+					break;
+				default: name = "Unknown";
+				}
+
+				std::print("{}", name);
+			}
+			if (props[j]->mType == aiPTI_String)
+			{
+				std::println("String");
+				const aiString* aiStr = reinterpret_cast<const aiString*>(props[j]->mData);
+				std::string str = aiStr->C_Str();
+				std::print("{}", str);
+				
+			}
+
+			std::println(" ");
+		}
 		BufferMesh();
 		std::println("Mesh has submeshes {}, and total number of vertices {}", pScene->mNumMeshes, numberVerts);
 	}

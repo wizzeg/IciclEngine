@@ -4,6 +4,8 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <print>
+
 //#include <filesystem>
 //
 //Shader::Shader() {
@@ -35,6 +37,18 @@ Shader::Shader(const char* vertPath, const char* fragPath) {
 		glGetProgramInfoLog(shaderProgram, 512, NULL, log);
 		std::cout << " Failed to load shader program - \n" << log << std::endl;
 	}
+
+	glUseProgram(shaderProgram);
+	glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+	glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+	glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
+	glm::mat4 view;
+	view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+	glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)640 / (float)480, 0.1f, 100.0f);
+	SetMat4fv(view, "view");
+	SetMat4fv(proj, "projection");
+	glUseProgram(0);
 }
 
 void Shader::Use() {
@@ -96,9 +110,6 @@ unsigned int Shader::LoadShader(const char* aPath, GLenum shaderType)
 		glGetShaderInfoLog(shaderObject, 512, NULL, log);
 		std::cout << "Failed to compile " << type << " - \n" << log << std::endl;
 	}
-
-
-
 	return shaderObject;
 
 }
@@ -163,5 +174,9 @@ void Shader::SetVec4ui(unsigned int value[4], const char* location)
 }
 void Shader::SetMat4fv(glm::mat4 value, const char* location)
 {
+	//std::println("Called to change {}", location);
+	//for (int row = 0; row < 4; ++row) {
+	//	std::println("{} {} {} {}", value[0][row], value[1][row], value[2][row], value[3][row]);
+	//}
 	glUniformMatrix4fv(glGetUniformLocation(shaderProgram, location), 1, GL_FALSE, glm::value_ptr(value));
 }
