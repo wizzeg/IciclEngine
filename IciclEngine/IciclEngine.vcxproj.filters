@@ -13,21 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Source Files\imgui-docking">
-      <UniqueIdentifier>{dbdc3859-5557-433c-bae1-8785e252c2d6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\imgui-docking">
-      <UniqueIdentifier>{bed76244-fef3-4f98-ac9b-4ac98b9cc454}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\KHR">
-      <UniqueIdentifier>{ba74b917-0300-4ef0-ba63-9f27399161af}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\glad">
-      <UniqueIdentifier>{bdc772b7-f10d-4058-b524-60ebfc9ba60f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\glad">
-      <UniqueIdentifier>{9c17a55e-07f2-47cf-93bc-50aedf7d49f5}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Shaders">
       <UniqueIdentifier>{77d1c156-0991-438f-b11f-988f6b3d1200}</UniqueIdentifier>
     </Filter>
@@ -37,17 +22,41 @@
     <Filter Include="Shaders\vertex">
       <UniqueIdentifier>{cfc8d54d-68ab-4db4-a58e-d6d7df828cc9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\stb_image">
-      <UniqueIdentifier>{e9a0077b-6186-461a-aa15-f99a7daef35a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\stb_image">
-      <UniqueIdentifier>{c48857d6-7054-4b9b-a71a-1df1c9e6ff02}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Shaders\fragment\standard">
       <UniqueIdentifier>{a73bf683-66e6-4479-a2e1-e8fbf73a132d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Shaders\vertex\standard">
       <UniqueIdentifier>{93945e27-ef24-4d53-a316-9d871c2ad4da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\vendor">
+      <UniqueIdentifier>{9f032aba-09f6-4417-90ca-b41071e3e926}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\vendor\stb_image">
+      <UniqueIdentifier>{e9a0077b-6186-461a-aa15-f99a7daef35a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\vendor\entt">
+      <UniqueIdentifier>{2c889bcc-5c40-4ec7-b429-adaa3bd122e4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\vendor\KHR">
+      <UniqueIdentifier>{ba74b917-0300-4ef0-ba63-9f27399161af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\vendor\imgui-docking">
+      <UniqueIdentifier>{bed76244-fef3-4f98-ac9b-4ac98b9cc454}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\vendor\glad">
+      <UniqueIdentifier>{bdc772b7-f10d-4058-b524-60ebfc9ba60f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\vendor">
+      <UniqueIdentifier>{eb8c9034-724a-4173-aa36-20e0806f8d71}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\vendor\stb_image">
+      <UniqueIdentifier>{c48857d6-7054-4b9b-a71a-1df1c9e6ff02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\vendor\imgui-docking">
+      <UniqueIdentifier>{dbdc3859-5557-433c-bae1-8785e252c2d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\vendor\glad">
+      <UniqueIdentifier>{9c17a55e-07f2-47cf-93bc-50aedf7d49f5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -55,176 +64,101 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\vendor\imgui-docking\imgui.cpp">
-      <Filter>Source Files\imgui-docking</Filter>
+      <Filter>Source Files\vendor\imgui-docking</Filter>
     </ClCompile>
     <ClCompile Include="..\vendor\imgui-docking\imgui_demo.cpp">
-      <Filter>Source Files\imgui-docking</Filter>
+      <Filter>Source Files\vendor\imgui-docking</Filter>
     </ClCompile>
     <ClCompile Include="..\vendor\imgui-docking\imgui_draw.cpp">
-      <Filter>Source Files\imgui-docking</Filter>
+      <Filter>Source Files\vendor\imgui-docking</Filter>
     </ClCompile>
     <ClCompile Include="..\vendor\imgui-docking\imgui_impl_glfw.cpp">
-      <Filter>Source Files\imgui-docking</Filter>
+      <Filter>Source Files\vendor\imgui-docking</Filter>
     </ClCompile>
     <ClCompile Include="..\vendor\imgui-docking\imgui_impl_opengl3.cpp">
-      <Filter>Source Files\imgui-docking</Filter>
+      <Filter>Source Files\vendor\imgui-docking</Filter>
     </ClCompile>
     <ClCompile Include="..\vendor\imgui-docking\imgui_tables.cpp">
-      <Filter>Source Files\imgui-docking</Filter>
+      <Filter>Source Files\vendor\imgui-docking</Filter>
     </ClCompile>
     <ClCompile Include="..\vendor\imgui-docking\imgui_widgets.cpp">
-      <Filter>Source Files\imgui-docking</Filter>
+      <Filter>Source Files\vendor\imgui-docking</Filter>
     </ClCompile>
     <ClCompile Include="..\vendor\glad\glad.c">
-      <Filter>Source Files\glad</Filter>
-    </ClCompile>
-    <ClCompile Include="Triangle.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Shader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Mesh.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EngineContext.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ForwardRenderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Renderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderPass.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Scene.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Renderable.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ForwardRenderPass.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Texture.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Material.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\vendor\glad</Filter>
     </ClCompile>
     <ClCompile Include="stb_image.cpp">
-      <Filter>Source Files\stb_image</Filter>
+      <Filter>Source Files\vendor\stb_image</Filter>
     </ClCompile>
-    <ClCompile Include="Uniform.cpp">
+    <ClCompile Include="entity.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Vertex.cpp">
+    <ClCompile Include="scene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VertexAttributeIndex.cpp">
+    <ClCompile Include="scene_object.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GameObject.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ModelLoader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ResourceManager.cpp">
+    <ClCompile Include="component_data.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\imgui-docking\imconfig.h">
-      <Filter>Header Files\imgui-docking</Filter>
+      <Filter>Header Files\vendor\imgui-docking</Filter>
     </ClInclude>
     <ClInclude Include="..\vendor\imgui-docking\imgui.h">
-      <Filter>Header Files\imgui-docking</Filter>
+      <Filter>Header Files\vendor\imgui-docking</Filter>
     </ClInclude>
     <ClInclude Include="..\vendor\imgui-docking\imgui_impl_glfw.h">
-      <Filter>Header Files\imgui-docking</Filter>
+      <Filter>Header Files\vendor\imgui-docking</Filter>
     </ClInclude>
     <ClInclude Include="..\vendor\imgui-docking\imgui_impl_opengl3.h">
-      <Filter>Header Files\imgui-docking</Filter>
+      <Filter>Header Files\vendor\imgui-docking</Filter>
     </ClInclude>
     <ClInclude Include="..\vendor\imgui-docking\imgui_impl_opengl3_loader.h">
-      <Filter>Header Files\imgui-docking</Filter>
+      <Filter>Header Files\vendor\imgui-docking</Filter>
     </ClInclude>
     <ClInclude Include="..\vendor\imgui-docking\imgui_internal.h">
-      <Filter>Header Files\imgui-docking</Filter>
+      <Filter>Header Files\vendor\imgui-docking</Filter>
     </ClInclude>
     <ClInclude Include="..\vendor\imgui-docking\imstb_rectpack.h">
-      <Filter>Header Files\imgui-docking</Filter>
+      <Filter>Header Files\vendor\imgui-docking</Filter>
     </ClInclude>
     <ClInclude Include="..\vendor\imgui-docking\imstb_textedit.h">
-      <Filter>Header Files\imgui-docking</Filter>
+      <Filter>Header Files\vendor\imgui-docking</Filter>
     </ClInclude>
     <ClInclude Include="..\vendor\imgui-docking\imstb_truetype.h">
-      <Filter>Header Files\imgui-docking</Filter>
+      <Filter>Header Files\vendor\imgui-docking</Filter>
     </ClInclude>
     <ClInclude Include="..\vendor\glad\glad.h">
-      <Filter>Header Files\glad</Filter>
+      <Filter>Header Files\vendor\glad</Filter>
     </ClInclude>
     <ClInclude Include="..\vendor\KHR\khrplatform.h">
-      <Filter>Header Files\KHR</Filter>
-    </ClInclude>
-    <ClInclude Include="Triangle.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Shader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Mesh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="EngineContext.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ForwardRenderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Renderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderPass.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Renderable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ForwardRenderPass.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Texture.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\vendor\KHR</Filter>
     </ClInclude>
     <ClInclude Include="..\vendor\stb_image\stb_image.h">
-      <Filter>Header Files\stb_image</Filter>
+      <Filter>Header Files\vendor\stb_image</Filter>
     </ClInclude>
-    <ClInclude Include="Material.h">
+    <ClInclude Include="..\vendor\entt\entt.hpp">
+      <Filter>Header Files\vendor\entt</Filter>
+    </ClInclude>
+    <ClInclude Include="entity.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Uniform.h">
+    <ClInclude Include="scene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Vertex.h">
+    <ClInclude Include="components.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="VertexAttributeIndex.h">
+    <ClInclude Include="scene_object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GameObject.h">
+    <ClInclude Include="component_data.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ModelLoader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ResourceManager.h">
+    <ClInclude Include="macros.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
