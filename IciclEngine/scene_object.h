@@ -3,7 +3,6 @@
 #include <string>
 #include <entt/entt.hpp>
 #include "component_data.h"
-
 #include "macros.h"
 
 class Scene;
@@ -19,14 +18,19 @@ private:
 	std::weak_ptr<Scene> scene;
 	
 	std::vector<std::unique_ptr<ComponentData>> component_datas;
-	std::shared_ptr<Entity> entity;
+
+	entt::handle entity_handle;
 
 public:
-	SceneObject() { name = "none"; };
-	SceneObject(const std::string a_name, std::weak_ptr<Scene> a_scene, std::shared_ptr<Entity> a_entity);
-	SceneObject(const std::string a_name, std::weak_ptr<SceneObject> a_parent, std::weak_ptr<Scene> a_scene, std::shared_ptr<Entity> a_entity);
+	SceneObject() { name = "none"; }
+	SceneObject(const std::string a_name, std::weak_ptr<Scene> a_scene); ///////////////////// REMOVE USAGE OF ENTITY (use entt::handle)
+	SceneObject(const std::string a_name, std::weak_ptr<SceneObject> a_parent, std::weak_ptr<Scene> a_scene);///////////////////// REMOVE USAGE OF ENTITY (use entt::handle)
+	~SceneObject() { PRINTLN("DECONSTRUCTOR CALLED"); }// if this has parent, add all children to it, otherwise I don't know... 
+	void scene_ended();
+	entt::entity get_entity() { return entity_handle.entity(); }
+	bool has_valid_entity() { return entity_handle.valid(); }
 
-	const std::weak_ptr<Entity> get_entity();
+	entt::handle get_entity_handle() const; ///////////////////// REMOVE USAGE OF ENTITY (use entt::handle)
 
 	void add_child(std::weak_ptr<SceneObject> a_child);
 
@@ -91,7 +95,6 @@ public:
 			{
 				if (auto component = dynamic_cast<Tdata*>(component_datas[i].get()))
 				{
-					PRINTLN("I am setting it");
 					a_component = component->name_component;
 					return;
 				}
@@ -99,16 +102,21 @@ public:
 		}
 	}
 
-	void remove_component_data(size_t a_index)
+	template<typename Tdata>
+	bool remove_component_data()
 	{
-		if (a_index < component_datas.size())
+		for (size_t i = 0; i < component_datas.size(); i++)
 		{
-			component_datas.erase(component_datas.begin() + a_index);
+			if (typeid(*component_datas[i]) == typeid(Tdata))
+			{
+				component_datas.erase(component_datas.begin() + i);
+				return true;
+			}
 		}
+		return false;
 	}
 
-	void to_runtime(std::weak_ptr<Scene> a_scene); // call on ComponentData to make entities
-
+	entt::handle to_runtime(std::weak_ptr<Scene> a_scene);
 	void draw_components();
 };
 

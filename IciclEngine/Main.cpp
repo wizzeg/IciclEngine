@@ -22,6 +22,7 @@
 #include <entt/entt.hpp>
 
 #include "scene.h"
+#include "scene_object.h"
 #include "entity.h"
 #include "macros.h"
 
@@ -111,7 +112,6 @@ int main(void)
 	}
 
 	bool game_playing = false;
-	std::shared_ptr<Scene> runtimeScene = std::make_shared<Scene>();
 	while (!glfwWindowShouldClose(window))
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -125,8 +125,40 @@ int main(void)
 			// we are to convert scene_objects into Entity, and IF in editor, then also create scene objects...
 			// should be placed in a new scene
 			// So, FIRST we make Entity, then we make the scene_object ... no I need two versions, one for runtime and one for not runtime.
+
+
+
+			// Idea, when an entity is going to add a component, then also the scene must be notified, this is only way to
+			// I guess same could be done for removal and adding entities aswell.
+			// I guess I'll always make some kind of "ecb" that takes those requests, and will then handle all it needs to do.
+
+			scene.get()->to_runtime(); // deal with making a runtime copy later -------- runtime thing works at least, entities are created
+			// for now I need to be able to see changes to entities -> handle signaling
 			game_playing = true;
 		}
+
+		//////////////////////// systems start here for now
+
+
+		auto& registry = scene.get()->get_registry();
+
+		for (auto [entity, name, worldpos] : registry.view<NameComponent, WorldPositionComponent>().each())
+		{
+			//registry.remove<WorldPositionComponent>(entity);
+			//PRINTLN("entity position x value: {}", worldpos.position.x);
+			registry.destroy(entity);
+			PRINTLN("destorying entity");
+		}
+
+		//for (auto [entity, name] : registry.view<NameComponent>().each())
+		//{
+		//	std::cout << (name.name.c_str()) << std::endl;
+		//}
+
+		/////////////////////// systems end here for now
+
+
+
 		///* Render here */
 
 		//Enginecontext

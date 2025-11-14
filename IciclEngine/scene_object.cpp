@@ -1,24 +1,30 @@
 #include "scene_object.h"
+
 #include "scene.h"
-#include "entity.h"
 #include "macros.h"
 
 
-SceneObject::SceneObject(const std::string a_name, std::weak_ptr<Scene> a_scene, std::shared_ptr<Entity> a_entity)
-	: name(a_name), scene(a_scene), entity(a_entity) { }
+SceneObject::SceneObject(const std::string a_name, std::weak_ptr<Scene> a_scene)
+	: name(a_name), scene(a_scene)
+{
+	component_datas.emplace_back(std::make_unique<NameComponentData>(NameComponent{ a_name }));
+}
 
-SceneObject::SceneObject(const std::string a_name, std::weak_ptr<SceneObject> a_parent, std::weak_ptr<Scene> a_scene, std::shared_ptr<Entity> a_entity)
-	: name(a_name), parent(a_parent), scene(a_scene), entity(a_entity) { }
+SceneObject::SceneObject(const std::string a_name, std::weak_ptr<SceneObject> a_parent, std::weak_ptr<Scene> a_scene)
+	: name(a_name), parent(a_parent), scene(a_scene)
+{
+	component_datas.emplace_back(std::make_unique<NameComponentData>(NameComponent{ a_name }));
+}
 
 void SceneObject::add_child(std::weak_ptr<SceneObject> a_child)
 {
-	if (auto a_lock = a_child.lock())
+	if (auto a_shared = a_child.lock())
 	{
 		for (size_t i = 0; i < children.size(); i++)
 		{
-			if (auto lock = children[i].lock())
+			if (auto shared = children[i].lock())
 			{
-				if (a_lock == lock)
+				if (a_shared == shared)
 				{
 					return;
 				}
@@ -30,25 +36,41 @@ void SceneObject::add_child(std::weak_ptr<SceneObject> a_child)
 
 void SceneObject::draw_components()
 {
-	for (size_t i = 0; i < component_datas.size(); i++)
+	// !entity_handle.valid() -> !!!! this is how you check if entity still exists !!!!!
+	///only test, this will not work in actual editor, works only with specific circumstances
+	if (!entity_handle.valid())
 	{
-		component_datas[i]->draw_imgui();
+		PRINTLN("entity null, removing");
+	}
+	bool remove_component = false;
+	for (size_t i = component_datas.size(); i > 0; i--)
+	{
+		if (!component_datas[i - 1]->draw_imgui(entity_handle)) // has component?
+		{
+			component_datas.erase(component_datas.begin() + (i -1));
+		}
 	}
 }
 
-const std::weak_ptr<Entity> SceneObject::get_entity()
+entt::handle SceneObject::get_entity_handle() const
 {
-	return entity;
+	return entity_handle;
 }
 
-void SceneObject::to_runtime(std::weak_ptr<Scene> a_scene)
+entt::handle SceneObject::to_runtime(std::weak_ptr<Scene> a_scene)
 {
 	if (auto scene = a_scene.lock())
 	{
-		auto& entity = scene->create_entity("test", 3);
+		entity_handle = scene->create_entity(name);
 		for (size_t i = 0; i < component_datas.size(); i++)
 		{
-			component_datas[i]->to_runtime(entity.get_handle());
+			component_datas[i]->to_runtime(entity_handle);
 		}
 	}
+	return entity_handle;
+}
+
+void SceneObject::scene_ended()
+{
+
 }

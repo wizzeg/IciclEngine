@@ -13,8 +13,8 @@ struct ComponentData
 	~ComponentData() {};
 
 	// implementation in .cpp
-	virtual void draw_imgui() = 0;
-	virtual void to_runtime(entt::handle a_handle);
+	virtual bool draw_imgui(entt::handle a_handle) = 0;
+	virtual void to_runtime(entt::handle a_handle) = 0;
 };
 
 struct NameComponentData : ComponentData
@@ -25,7 +25,7 @@ struct NameComponentData : ComponentData
 	NameComponentData() {};
 
 	// implementation in .cpp
-	void draw_imgui() override;
+	bool draw_imgui(entt::handle a_handle) override;
 	void to_runtime(entt::handle a_handle) override;
 };
 
@@ -37,6 +37,6 @@ struct WorldPositionComponentData : ComponentData
 	WorldPositionComponentData() : worldpos_component({glm::vec3(0,0 ,0)}) {};
 
 	// implementation in .cpp
-	void draw_imgui() override;
+	bool draw_imgui(entt::handle a_handle) override;
 	void to_runtime(entt::handle a_handle) override;
 };
