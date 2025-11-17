@@ -10,3 +10,5 @@
 #else
 #define PRINTLN(...)
 #endif
+
+#define ELEMENTS_IN_ARRAY(a) (sizeof(a)/sizeof(a[0]))

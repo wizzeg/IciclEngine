@@ -32,22 +32,26 @@ void SceneObject::add_child(std::weak_ptr<SceneObject> a_child)
 		}
 	}
 	children.push_back(a_child);
+	PRINTLN("child acquired, I have this many children now: {}", children.size());
 };
 
 void SceneObject::draw_components()
 {
-	// !entity_handle.valid() -> !!!! this is how you check if entity still exists !!!!!
-	///only test, this will not work in actual editor, works only with specific circumstances
-	if (!entity_handle.valid())
+	bool minus_one = false;
+	for (size_t i = 0; i < component_datas.size(); i++)
 	{
-		PRINTLN("entity null, removing");
-	}
-	bool remove_component = false;
-	for (size_t i = component_datas.size(); i > 0; i--)
-	{
-		if (!component_datas[i - 1]->draw_imgui(entity_handle)) // has component?
+		if (minus_one)
 		{
-			component_datas.erase(component_datas.begin() + (i -1));
+			i--;
+			minus_one = false;
+		}
+		if (!component_datas[i]->draw_imgui(entity_handle, runtime)) // has component?
+		{
+			if (runtime)
+			{
+				component_datas.erase(component_datas.begin() + i); // this is not great, should be removing in a smarter way, this will rearrange multiple times
+				minus_one = true;
+			}
 		}
 	}
 }
@@ -59,6 +63,8 @@ entt::handle SceneObject::get_entity_handle() const
 
 entt::handle SceneObject::to_runtime(std::weak_ptr<Scene> a_scene)
 {
+	runtime = true;
+	PRINTLN("runtime started");
 	if (auto scene = a_scene.lock())
 	{
 		entity_handle = scene->create_entity(name);
@@ -72,5 +78,5 @@ entt::handle SceneObject::to_runtime(std::weak_ptr<Scene> a_scene)
 
 void SceneObject::scene_ended()
 {
-
+	runtime = false;
 }

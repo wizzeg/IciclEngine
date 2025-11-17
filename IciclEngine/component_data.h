@@ -13,7 +13,7 @@ struct ComponentData
 	~ComponentData() {};
 
 	// implementation in .cpp
-	virtual bool draw_imgui(entt::handle a_handle) = 0;
+	virtual bool draw_imgui(entt::handle a_handle, bool runtime) = 0;
 	virtual void to_runtime(entt::handle a_handle) = 0;
 };
 
@@ -21,11 +21,11 @@ struct NameComponentData : ComponentData
 {
 	NameComponent name_component;
 	const std::string get_name() const override { return "name component"; }
-	NameComponentData(NameComponent a_name) { name_component = a_name; /*PRINTLN("name_component.name: {}", name_component.name);*/ };
+	NameComponentData(NameComponent a_name) { name_component = a_name; };
 	NameComponentData() {};
 
 	// implementation in .cpp
-	bool draw_imgui(entt::handle a_handle) override;
+	bool draw_imgui(entt::handle a_handle, bool runtime) override;
 	void to_runtime(entt::handle a_handle) override;
 };
 
@@ -37,6 +37,18 @@ struct WorldPositionComponentData : ComponentData
 	WorldPositionComponentData() : worldpos_component({glm::vec3(0,0 ,0)}) {};
 
 	// implementation in .cpp
-	bool draw_imgui(entt::handle a_handle) override;
+	bool draw_imgui(entt::handle a_handle, bool runtime) override;
+	void to_runtime(entt::handle a_handle) override;
+};
+
+struct RenderableComponentData : ComponentData
+{
+	RenderableComponent renderable;
+	const std::string get_name() const override { return "renderable component"; }
+	RenderableComponentData(const RenderableComponent a_renderable) { renderable = a_renderable; };
+	RenderableComponentData() : renderable({0, 0}) {};
+
+	// implementation in .cpp
+	bool draw_imgui(entt::handle a_handle, bool runtime) override;
 	void to_runtime(entt::handle a_handle) override;
 };

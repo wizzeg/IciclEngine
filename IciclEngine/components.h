@@ -6,10 +6,11 @@
 #include <algorithm>
 #include <utility>
 #include <glm/glm.hpp>
+#include "render_info.h"
 
 struct NameComponent
 {
-	std::string name;
+	std::string name; // string not ideal, but I rather not have to deal with char limitations etc, especially with paths
 };
 
 struct WorldPositionComponent
@@ -17,7 +18,16 @@ struct WorldPositionComponent
     glm::vec3 position;
 };
 
-class StaticComponentUIDrawer
+struct RenderableComponent
+{
+    MeshHandle meshID;
+    MaterialHandle mateiralID;
+};
+
+//static_assert(std::is_trivially_copyable<WorldPositionComponent>::value, "MyPOD is not a POD type");
+
+// perhaps gonna use this after all, with some form of reflecaiton maybe, to still let users define how to draw, but hide the logic of choosing which component to modify
+class StaticComponentUIDrawer // not used
 {
 public:
     // add every drawable component here

@@ -153,12 +153,19 @@
     <ClCompile Include="..\vendor\imgui-docking\imgui_impl_opengl3.cpp" />
     <ClCompile Include="..\vendor\imgui-docking\imgui_tables.cpp" />
     <ClCompile Include="..\vendor\imgui-docking\imgui_widgets.cpp" />
+    <ClCompile Include="asset_manager.cpp" />
+    <ClCompile Include="asset_loader.cpp" />
     <ClCompile Include="component_data.cpp" />
     <ClCompile Include="entity.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="renderer.cpp" />
     <ClCompile Include="scene_object.cpp" />
     <ClCompile Include="stb_image.cpp" />
     <ClCompile Include="scene.cpp" />
+    <ClCompile Include="systems.cpp" />
+    <ClCompile Include="ui_object_property_drawer.cpp" />
+    <ClCompile Include="ui_scene_hierarchy_drawer.cpp" />
+    <ClCompile Include="ui_manager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\entt\entt.hpp" />
@@ -174,12 +181,21 @@
     <ClInclude Include="..\vendor\imgui-docking\imstb_truetype.h" />
     <ClInclude Include="..\vendor\KHR\khrplatform.h" />
     <ClInclude Include="..\vendor\stb_image\stb_image.h" />
+    <ClInclude Include="asset_loader.h" />
+    <ClInclude Include="asset_manager.h" />
     <ClInclude Include="components.h" />
     <ClInclude Include="component_data.h" />
     <ClInclude Include="entity.h" />
     <ClInclude Include="macros.h" />
+    <ClInclude Include="renderer.h" />
+    <ClInclude Include="render_info.h" />
     <ClInclude Include="scene.h" />
     <ClInclude Include="scene_object.h" />
+    <ClInclude Include="static_conversions.h" />
+    <ClInclude Include="systems.h" />
+    <ClInclude Include="ui_object_property_drawer.h" />
+    <ClInclude Include="ui_scene_hierarchy_drawer.h" />
+    <ClInclude Include="ui_manager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\assets\shaders\fragment\frag.glsl" />

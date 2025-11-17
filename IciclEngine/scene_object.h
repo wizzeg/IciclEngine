@@ -6,12 +6,11 @@
 #include "macros.h"
 
 class Scene;
-class Entity;
-
 class SceneObject
 {
 
 private:
+
 	std::string name;
 	std::weak_ptr<SceneObject> parent;
 	std::vector<std::weak_ptr<SceneObject>> children;
@@ -20,6 +19,10 @@ private:
 	std::vector<std::unique_ptr<ComponentData>> component_datas;
 
 	entt::handle entity_handle;
+
+	bool runtime = false;
+	bool ui_opened = false;
+	bool original = true;
 
 public:
 	SceneObject() { name = "none"; }
@@ -116,7 +119,22 @@ public:
 		return false;
 	}
 
+	//template<typename T>
+	//bool get_object_component(T& object_component)
+	//{
+	//	if (typeid(T) == typid(UISceneHierarchyDrawer))
+	//	{
+	//		object_component = ui_hierarchy_drawer;
+	//		return true;
+	//	}
+	//}
+
 	entt::handle to_runtime(std::weak_ptr<Scene> a_scene);
 	void draw_components();
+
+	size_t num_children() const { return children.size(); };
+	std::string get_name() const { return name; };
+
+	std::vector<std::weak_ptr<SceneObject>> get_children() { return children; };
 };
 

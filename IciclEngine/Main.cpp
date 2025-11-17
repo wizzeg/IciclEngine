@@ -29,6 +29,7 @@
 #ifndef ASSIMP_LOAD_FLAGS
 #define ASSIMP_LOAD_FLAGS (aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices)
 #endif
+#include "ui_manager.h"
 
 
 int main(void)
@@ -91,34 +92,68 @@ int main(void)
 	///////////////////////////////////////
 
 	std::shared_ptr<Scene> scene = std::make_shared<Scene>();
-	std::weak_ptr<SceneObject> tempobj =  scene.get()->new_scene_object("new scene object");
-	if (auto shared = tempobj.lock())
 	{
-		shared->add_component_data<NameComponentData>(NameComponent{"testing with name"});
-		NameComponent test;
-		shared->get_component<NameComponent, NameComponentData>(test);
+		std::weak_ptr<SceneObject> withoutChild = scene.get()->new_scene_object("without Child", true);
+		if (auto shared = withoutChild.lock())
+		{
+			shared->add_component_data<WorldPositionComponentData>(WorldPositionComponent{ glm::vec3(3.f,2.f,1.f) });
+		}
+		std::weak_ptr<SceneObject> withtChild = scene.get()->new_scene_object("with Child", true);
+		std::weak_ptr<SceneObject> wChild = scene.get()->new_scene_object("without Child", false);
+		std::weak_ptr<SceneObject> ChildwChild = scene.get()->new_scene_object("Child with child", false);
+		std::weak_ptr<SceneObject> childofchild = scene.get()->new_scene_object("Child of Child", false);
+		if (auto parent = withtChild.lock())
+		{
+			parent->add_child(wChild);
+			parent->add_child(ChildwChild);
+			if (auto shared = ChildwChild.lock())
+			{
+				shared->add_child(childofchild);
+				if (auto shared = childofchild.lock())
+				{
+					shared->add_component_data<WorldPositionComponentData>(WorldPositionComponent{ glm::vec3(3.f,5.f,1.f) });
+				}
+			}
+		}
 	}
-	
-	tempobj = scene.get()->new_scene_object("different name");
-	if (auto shared = tempobj.lock())
-	{
-		shared->add_component_data<NameComponentData>(NameComponent{ "different name" });
-		NameComponent test;
-		shared->get_component<NameComponent, NameComponentData>(test);
-		shared->add_component_data<NameComponentData>(NameComponent{ "different name2" });
-		shared->replace_component_data<NameComponentData>(NameComponent{ "different name replaced" });
-		shared->add_or_replace_component_data<NameComponentData>(NameComponent{ "different name added or replaced" });
-		shared->add_component_data<WorldPositionComponentData>(WorldPositionComponent{ glm::vec3(1.6f, 1.f, 1.f) });
-	}
+
+	/*std::weak_ptr<SceneObject> tempobj =  scene.get()->new_scene_object("new scene object");*/
+	//if (auto shared = tempobj.lock())
+	//{
+	//	shared->add_component_data<NameComponentData>(NameComponent{"testing with name"});
+	//	NameComponent test;
+	//	shared->get_component<NameComponent, NameComponentData>(test);
+	//}
+	//
+	//tempobj = scene.get()->new_scene_object("different name");
+	//if (auto shared = tempobj.lock())
+	//{
+	//	shared->add_component_data<NameComponentData>(NameComponent{ "different name" });
+	//	NameComponent test;
+	//	shared->get_component<NameComponent, NameComponentData>(test);
+	//	shared->add_component_data<NameComponentData>(NameComponent{ "different name2" });
+	//	shared->replace_component_data<NameComponentData>(NameComponent{ "different name replaced" });
+	//	shared->add_or_replace_component_data<NameComponentData>(NameComponent{ "different name added or replaced" });
+	//	shared->add_component_data<WorldPositionComponentData>(WorldPositionComponent{ glm::vec3(1.6f, 1.f, 1.f) });
+	//	shared->add_component_data<RenderableComponentData>(RenderableComponent{3, 2});
+	//}
+
+	//auto tempobj2 = scene.get()->new_scene_object("child object");
+	//if (auto shared = tempobj.lock())
+	//{
+	//	shared->add_child(tempobj2);
+	//}
+	UIManager ui_mananger = UIManager();
+	ui_mananger.set_scene(scene);
 
 	bool game_playing = false;
 	while (!glfwWindowShouldClose(window))
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClearColor(0.1f, 0.3f, 0.2f, 1.0f);
 
 		if (!game_playing)
 		{
-
 			// do runtime scene here
 			///////////////////////////////////
 			// What should it do?
@@ -132,7 +167,7 @@ int main(void)
 			// I guess same could be done for removal and adding entities aswell.
 			// I guess I'll always make some kind of "ecb" that takes those requests, and will then handle all it needs to do.
 
-			scene.get()->to_runtime(); // deal with making a runtime copy later -------- runtime thing works at least, entities are created
+			//scene.get()->to_runtime(); // deal with making a runtime copy later -------- runtime thing works at least, entities are created
 			// for now I need to be able to see changes to entities -> handle signaling
 			game_playing = true;
 		}
@@ -146,8 +181,8 @@ int main(void)
 		{
 			//registry.remove<WorldPositionComponent>(entity);
 			//PRINTLN("entity position x value: {}", worldpos.position.x);
-			registry.destroy(entity);
-			PRINTLN("destorying entity");
+			//registry.destroy(entity);
+			//PRINTLN("destorying entity");
 		}
 
 		//for (auto [entity, name] : registry.view<NameComponent>().each())
@@ -176,23 +211,123 @@ int main(void)
 		ImGui::NewFrame();
 
 		ImGui::SetNextWindowSize(ImVec2(500, 400));
-		ImGui::Begin("GameObjects list");
-		
-		//const std::vector<std::shared_ptr<SceneObject>> scene_objects = scene.get()->get_scene_objects();
-		//for (size_t i = 0; i < scene_objects.size(); i++)
-		//{
-		//	scene_objects[i].get()->draw_components();
-		//	//if (auto shared = scene_objects[i].get()->get_entity().lock())
-		//	//{
-		//	//	auto handle = shared->get_handle();
-		//	//	auto val = static_cast<uint32_t>(handle.entity());
-		//	//	PRINTLN("handle: {}", val);
-		//	//}
-		//	//
-		//}
-		scene->draw_imgui();
+		//scene->draw_imgui();
+		ui_mananger.draw_object_hierarchy();
+		ui_mananger.draw_object_properties();
+
+
+		ImGui::Begin("tree view thingy");
+
+		if (ImGui::TreeNode("Tree view"))
+		{
+			const float TEXT_BASE_WIDTH = ImGui::CalcTextSize("A").x;
+			const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
+			static ImGuiTableFlags table_flags = ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoBordersInBody;
+
+			static ImGuiTreeNodeFlags tree_node_flags_base = ImGuiTreeNodeFlags_SpanAllColumns | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_DrawLinesFull;
+
+			if (ImGui::BeginTable("3ways", 3, table_flags))
+			{
+				// The first column will use the default _WidthStretch when ScrollX is Off and _WidthFixed when ScrollX is On
+				ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_NoHide);
+				ImGui::TableSetupColumn("Size", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 12.0f);
+				ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 18.0f);
+				ImGui::TableHeadersRow();
+
+				// Simple storage to output a dummy file-system.
+				struct MyTreeNode
+				{
+					const char* Name;
+					const char* Type;
+					int             Size;
+					int             ChildIdx;
+					int             ChildCount;
+					static void DisplayNode(const MyTreeNode* node, const MyTreeNode* all_nodes)
+					{
+						ImGui::TableNextRow();
+						ImGui::TableNextColumn();
+						const bool is_folder = (node->ChildCount > 0);
+
+						ImGuiTreeNodeFlags node_flags = tree_node_flags_base;
+						if (node != &all_nodes[0])
+							node_flags &= ~ImGuiTreeNodeFlags_LabelSpanAllColumns; // Only demonstrate this on the root node.
+
+						if (is_folder)
+						{
+							bool open = ImGui::TreeNodeEx(node->Name, node_flags);
+							if ((node_flags & ImGuiTreeNodeFlags_LabelSpanAllColumns) == 0)
+							{
+								ImGui::TableNextColumn();
+								ImGui::TextDisabled("--");
+								ImGui::TableNextColumn();
+								ImGui::TextUnformatted(node->Type);
+							}
+							if (open)
+							{
+								for (int child_n = 0; child_n < node->ChildCount; child_n++)
+									DisplayNode(&all_nodes[node->ChildIdx + child_n], all_nodes);
+								ImGui::TreePop();
+							}
+						}
+						else
+						{
+							ImGui::TreeNodeEx(node->Name, node_flags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+							ImGui::TableNextColumn();
+							ImGui::Text("%d", node->Size);
+							ImGui::TableNextColumn();
+							ImGui::TextUnformatted(node->Type);
+						}
+					}
+				};
+				static const MyTreeNode nodes[] =
+				{
+					{ "Root with Long Name",          "Folder",       -1,       1, 3    }, // 0
+					{ "Music",                        "Folder",       -1,       4, 2    }, // 1
+					{ "Textures",                     "Folder",       -1,       6, 3    }, // 2
+					{ "desktop.ini",                  "System file",  1024,    -1,-1    }, // 3
+					{ "File1_a.wav",                  "Audio file",   123000,  -1,-1    }, // 4
+					{ "File1_b.wav",                  "Audio file",   456000,  -1,-1    }, // 5
+					{ "Image001.png",                 "Image file",   203128,  -1,-1    }, // 6
+					{ "Copy of Image001.png",         "Image file",   203256,  -1,-1    }, // 7
+					{ "Copy of Image001 (Final2).png","Image file",   203512,  -1,-1    }, // 8
+				};
+
+				MyTreeNode::DisplayNode(&nodes[0], nodes);
+
+				ImGui::EndTable();
+			}
+			ImGui::TreePop();
+		}
 
 		ImGui::End();
+
+		//ImGui::Begin("test trreee");
+		//if (ImGui::TreeNodeEx("node_label", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen))
+		//{
+
+		//}
+		//
+		//if (ImGui::TreeNode("Root")) {
+		//	if (ImGui::TreeNode("Child 1")) {
+		//		ImGui::Text("Leaf 1");
+		//		ImGui::TreePop();
+		//	}
+		//	if (ImGui::TreeNode("Child 2")) {
+		//		ImGui::Text("Leaf 2");
+		//		ImGui::TreePop();
+		//	}
+		//	ImGui::TreePop();
+
+		//}
+		//if (ImGui::TreeNode("Root 2"))
+		//{
+		//	ImGui::TreePop();
+		//}
+		//
+
+		//ImGui::End();
+
+
 		if (demo)
 			ImGui::ShowDemoWindow(&demo);
 		if (test >= 9.999999)
