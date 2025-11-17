@@ -40,7 +40,15 @@ void NameComponentData::to_runtime(entt::handle a_handle)
 
 		registry->emplace<NameComponent>(entity, name_component);
 	}
-};
+}
+std::vector<FieldInfo> NameComponentData::get_field_info()
+{
+	return
+	{
+		{"entity name: ", typeid(std::string), &name_component.name }
+	};
+}
+
 
 
 bool WorldPositionComponentData::draw_imgui(entt::handle a_handle, bool runtime) // need to draw differently if it's runtime or not.
@@ -55,7 +63,7 @@ bool WorldPositionComponentData::draw_imgui(entt::handle a_handle, bool runtime)
 
 			if (auto component = registry->try_get<WorldPositionComponent>(entity))
 			{
-				if (ImGui::DragFloat3("World Position: ", &component->position.x, 0.1f)) {
+				if (ImGui::DragFloat3("World Position ssdfsdf: ", &component->position.x, 0.1f)) {
 				}
 				has_component = true;
 			}
@@ -63,7 +71,7 @@ bool WorldPositionComponentData::draw_imgui(entt::handle a_handle, bool runtime)
 	}
 	else
 	{
-		if (ImGui::DragFloat3("World Position: ", &worldpos_component.position.x, 0.1f))
+		if (ImGui::DragFloat3("World Position asdasd: ", &worldpos_component.position.x, 0.1f))
 		{
 
 		}
@@ -78,7 +86,14 @@ void WorldPositionComponentData::to_runtime(entt::handle a_handle)
 		auto entity = a_handle.entity();
 		registry->emplace<WorldPositionComponent>(entity, worldpos_component);
 	}
-};
+}
+std::vector<FieldInfo> WorldPositionComponentData::get_field_info()
+{
+	return
+	{
+		{"world position:", typeid(glm::vec3), &worldpos_component.position.x }
+	};
+}
 
 bool RenderableComponentData::draw_imgui(entt::handle a_handle, bool runtime)
 {
@@ -110,5 +125,14 @@ void RenderableComponentData::to_runtime(entt::handle a_handle)
 		registry->emplace<RenderableComponent>(entity, renderable);
 	}
 };
+std::vector<FieldInfo> RenderableComponentData::get_field_info()
+{
+	return
+	{
+		{"mesh id:", typeid(uint32_t), &renderable.meshID },
+		{"material id:", typeid(uint32_t), &renderable.mateiralID }
+	};
+}
+
 
 // here make a drawer...

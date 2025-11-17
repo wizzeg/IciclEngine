@@ -20,8 +20,8 @@ struct WorldPositionComponent
 
 struct RenderableComponent
 {
-    MeshHandle meshID;
-    MaterialHandle mateiralID;
+    uint32_t meshID;
+    uint32_t mateiralID;
 };
 
 //static_assert(std::is_trivially_copyable<WorldPositionComponent>::value, "MyPOD is not a POD type");

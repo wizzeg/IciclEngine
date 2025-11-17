@@ -113,6 +113,8 @@ int main(void)
 				if (auto shared = childofchild.lock())
 				{
 					shared->add_component_data<WorldPositionComponentData>(WorldPositionComponent{ glm::vec3(3.f,5.f,1.f) });
+					shared->add_component_data<RenderableComponentData>(RenderableComponent{ 2,3 });
+					shared->remove_component_data<NameComponentData>();
 				}
 			}
 		}
@@ -215,6 +217,11 @@ int main(void)
 		//scene->draw_imgui();
 		ui_mananger.draw_object_hierarchy();
 		ui_mananger.draw_object_properties();
+
+		ImGui::Begin("UI Manager Window");
+		bool focused = ImGui::IsWindowFocused();
+		ImGui::Text("Focused: %s", focused ? "Yes" : "No");
+		ImGui::End();
 
 
 		ImGui::Begin("tree view thingy");

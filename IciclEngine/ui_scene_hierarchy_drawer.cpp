@@ -18,11 +18,10 @@ void UISceneHierarchyDrawer::draw_hierarchy_node(std::weak_ptr<SceneObject> a_sc
 		auto node_name = scene_object->get_name();
 		bool is_open = ImGui::TreeNodeEx(node_name.c_str(), flags);
 
-		if (ImGui::IsItemActive())
+		if (ImGui::IsItemClicked())
 		{
-			selected_scene_object = scene_object;
+			selected_scene_object = a_scene_object;
 		}
-
 
 		if (is_open) {
 			for (size_t i = 0; i < children.size(); i++)
@@ -38,9 +37,4 @@ void UISceneHierarchyDrawer::draw_hierarchy_node(std::weak_ptr<SceneObject> a_sc
 			ImGui::TreePop();
 		}
 	}
-
-	//if (auto selected = selected_scene_object.lock())
-	//{
-	//	PRINTLN("I do indeed have a selection");
-	//}
 }
