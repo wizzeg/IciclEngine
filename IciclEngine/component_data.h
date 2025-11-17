@@ -21,7 +21,7 @@ struct NameComponentData : ComponentData
 {
 	NameComponent name_component;
 	const std::string get_name() const override { return "name component"; }
-	NameComponentData(NameComponent a_name) { name_component = a_name; };
+	NameComponentData(NameComponent a_name) : name_component(a_name) { };
 	NameComponentData() {};
 
 	// implementation in .cpp

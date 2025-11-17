@@ -18,9 +18,8 @@ void UISceneHierarchyDrawer::draw_hierarchy_node(std::weak_ptr<SceneObject> a_sc
 		auto node_name = scene_object->get_name();
 		bool is_open = ImGui::TreeNodeEx(node_name.c_str(), flags);
 
-		if (ImGui::IsItemClicked())
+		if (ImGui::IsItemActive())
 		{
-			PRINTLN("CLICKED");
 			selected_scene_object = scene_object;
 		}
 

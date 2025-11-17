@@ -16,7 +16,7 @@ SceneObject::SceneObject(const std::string a_name, std::weak_ptr<SceneObject> a_
 	component_datas.emplace_back(std::make_unique<NameComponentData>(NameComponent{ a_name }));
 }
 
-void SceneObject::add_child(std::weak_ptr<SceneObject> a_child)
+void SceneObject::add_child(std::weak_ptr<SceneObject> a_child) // need to add remove_child aswell, and give entity children if added childre, and tell children they have a new parent -> make these into components
 {
 	if (auto a_shared = a_child.lock())
 	{

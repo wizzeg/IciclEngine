@@ -93,12 +93,13 @@ int main(void)
 
 	std::shared_ptr<Scene> scene = std::make_shared<Scene>();
 	{
+
+		std::weak_ptr<SceneObject> withtChild = scene.get()->new_scene_object("with Child", true);
 		std::weak_ptr<SceneObject> withoutChild = scene.get()->new_scene_object("without Child", true);
 		if (auto shared = withoutChild.lock())
 		{
 			shared->add_component_data<WorldPositionComponentData>(WorldPositionComponent{ glm::vec3(3.f,2.f,1.f) });
 		}
-		std::weak_ptr<SceneObject> withtChild = scene.get()->new_scene_object("with Child", true);
 		std::weak_ptr<SceneObject> wChild = scene.get()->new_scene_object("without Child", false);
 		std::weak_ptr<SceneObject> ChildwChild = scene.get()->new_scene_object("Child with child", false);
 		std::weak_ptr<SceneObject> childofchild = scene.get()->new_scene_object("Child of Child", false);

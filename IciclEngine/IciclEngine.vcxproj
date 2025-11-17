@@ -163,6 +163,7 @@
     <ClCompile Include="stb_image.cpp" />
     <ClCompile Include="scene.cpp" />
     <ClCompile Include="systems.cpp" />
+    <ClCompile Include="ui_component_drawer.cpp" />
     <ClCompile Include="ui_object_property_drawer.cpp" />
     <ClCompile Include="ui_scene_hierarchy_drawer.cpp" />
     <ClCompile Include="ui_manager.cpp" />
@@ -193,6 +194,7 @@
     <ClInclude Include="scene_object.h" />
     <ClInclude Include="static_conversions.h" />
     <ClInclude Include="systems.h" />
+    <ClInclude Include="ui_component_drawer.h" />
     <ClInclude Include="ui_object_property_drawer.h" />
     <ClInclude Include="ui_scene_hierarchy_drawer.h" />
     <ClInclude Include="ui_manager.h" />

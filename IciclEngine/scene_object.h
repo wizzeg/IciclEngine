@@ -136,5 +136,8 @@ public:
 	std::string get_name() const { return name; };
 
 	std::vector<std::weak_ptr<SceneObject>> get_children() { return children; };
+
+	const std::vector<std::unique_ptr<ComponentData>>& get_component_datas() const { return component_datas; }
+	bool is_runtime() { return runtime; }
 };
 
