@@ -30,6 +30,7 @@
 #define ASSIMP_LOAD_FLAGS (aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices)
 #endif
 #include "ui_manager.h"
+#include "obj_parser.h"
 
 
 int main(void)
@@ -148,6 +149,9 @@ int main(void)
 	//}
 	UIManager ui_mananger = UIManager();
 	ui_mananger.set_scene(scene);
+
+	ObjParser obj_parser;
+	obj_parser.load_mesh_from_filepath("./assets/obj/plane.obj");//triobjmonkey
 
 	bool game_playing = false;
 	while (!glfwWindowShouldClose(window))

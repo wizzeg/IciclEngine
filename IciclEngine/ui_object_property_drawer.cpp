@@ -8,19 +8,25 @@ void UIObjectPropertyDrawer::draw_object_properties(std::weak_ptr<SceneObject> a
 {
 	if (auto scene_object = a_scene_object.lock())
 	{
-		//ImGui::BeginGroup();
+		ImGui::BeginGroup();
 		//scene_object->draw_components();
 		const auto& component_datas = scene_object->get_component_datas();
 		for (size_t i = 0; i < component_datas.size(); i++)
 		{
-			ImGui::SeparatorText(component_datas[i]->get_name().c_str());
+			//ImGui::SeparatorText(component_datas[i]->get_name().c_str());
 			//component_datas[i]->draw_imgui(scene_object->get_entity_handle(), scene_object->is_runtime());
-			//ImGui::BeginChild(component_datas[i]->get_name().c_str(), ImVec2(0, 0), true, ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiChildFlags_AutoResizeY);
-			auto field_info = component_datas[i]->get_field_info();
+			std::vector<FieldInfo> field_info = component_datas[i]->get_field_info();
+			float field_size = 0.33f;
+			for (size_t i = 0; i < field_info.size(); i++)
+			{
+				field_size += field_info[i].imgui_size;
+			}
+			ImVec2 child_size = ImVec2(0, ImGui::GetFrameHeightWithSpacing() * field_size);
+			ImGui::BeginChild(component_datas[i]->get_name().c_str(), child_size , true, ImGuiChildFlags_AutoResizeY);
 			draw_component_fields(field_info);
-			//ImGui::EndChild();
+			ImGui::EndChild();
 		}
-		//ImGui::EndGroup();
+		ImGui::EndGroup();
 	}
 }
 

@@ -20,13 +20,12 @@ struct WorldPositionComponent
 
 struct RenderableComponent
 {
-    uint32_t meshID;
-    uint32_t mateiralID;
+    uint32_t mesh_id;
+    uint32_t mateiral_id;
 };
 
-//static_assert(std::is_trivially_copyable<WorldPositionComponent>::value, "MyPOD is not a POD type");
-
 // perhaps gonna use this after all, with some form of reflecaiton maybe, to still let users define how to draw, but hide the logic of choosing which component to modify
+// this no longer needed
 class StaticComponentUIDrawer // not used
 {
 public:

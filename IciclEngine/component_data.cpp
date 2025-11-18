@@ -4,9 +4,9 @@
 
 
 
-// idea make ComopnentData into template instead, always call T component, 
-// then it can run typeid check and match with the staic unordered map drawer to see if user has put in a drawer.
-
+// make component data have a default function call to get typeinfo to draw
+// then user specificed gef_field_info that takes in type T, so that it can properly draw, 
+// but the default function determines if it's entt component or scene objet component
 
 bool NameComponentData::draw_imgui(entt::handle a_handle, bool runtime)
 {
@@ -91,7 +91,7 @@ std::vector<FieldInfo> WorldPositionComponentData::get_field_info()
 {
 	return
 	{
-		{"world position:", typeid(glm::vec3), &worldpos_component.position.x }
+		{"world position:", typeid(glm::vec3), &worldpos_component.position.x , 2.0f}
 	};
 }
 
@@ -105,13 +105,13 @@ bool RenderableComponentData::draw_imgui(entt::handle a_handle, bool runtime)
 
 		if (auto component = registry->try_get<RenderableComponent>(entity))
 		{
-			ImGui::Text("mesh: " ); //+ component->meshID + ", MaterialID: " + component->mateiralID
+			ImGui::Text("mesh: " ); //+ component->mesh_id + ", MaterialID: " + component->mateiral_id
 			has_component = true;
 		}
 	}
 	else
 	{
-		ImGui::Text("mesh: "); //+ component->meshID + ", MaterialID: " + component->mateiralID
+		ImGui::Text("mesh: "); //+ component->mesh_id + ", MaterialID: " + component->mateiral_id
 		has_component = true;
 	}
 	return has_component;
@@ -129,8 +129,8 @@ std::vector<FieldInfo> RenderableComponentData::get_field_info()
 {
 	return
 	{
-		{"mesh id:", typeid(uint32_t), &renderable.meshID },
-		{"material id:", typeid(uint32_t), &renderable.mateiralID }
+		{"mesh id:", typeid(uint32_t), &renderable.mesh_id , 1.f },
+		{"material id:", typeid(uint32_t), &renderable.mateiral_id, 1.f }
 	};
 }
 

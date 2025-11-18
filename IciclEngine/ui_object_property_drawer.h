@@ -3,8 +3,8 @@
 #include <vector>
 
 struct FieldInfo;
-
 class SceneObject;
+
 struct UIObjectPropertyDrawer
 {
 	void draw_object_properties(std::weak_ptr<SceneObject> a_scene_object);
