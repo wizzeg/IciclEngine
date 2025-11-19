@@ -1,11 +1,13 @@
 #pragma once
 #include <string>
-#include "components.h"
+//#include "components.h"
+#include <engine/game/components.h>
 #include <entt/entt.hpp>
 #include <imgui-docking/imgui.h>
 #include <glm/glm.hpp>
 
-#include "macros.h"
+//#include "macros.h"
+#include <engine/utilities/macros.h>
 
 struct FieldInfo
 {

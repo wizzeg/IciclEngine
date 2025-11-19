@@ -1,7 +1,6 @@
-#include "scene_object.h"
-
-#include "scene.h"
-#include "macros.h"
+#include <engine/editor/scene_object.h>
+#include <engine/editor/scene.h>
+#include <engine/utilities/macros.h>
 
 
 SceneObject::SceneObject(const std::string a_name, std::weak_ptr<Scene> a_scene)

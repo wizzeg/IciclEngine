@@ -6,7 +6,8 @@
 #include <algorithm>
 #include <utility>
 #include <glm/glm.hpp>
-#include "render_info.h"
+//#include "render_info.h"
+#include <engine/renderer/render_info.h>
 
 struct NameComponent
 {

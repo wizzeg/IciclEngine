@@ -1,8 +1,9 @@
-#include "scene.h"
+//#include "scene.h"
+#include <engine/editor/scene.h>
 
-#include "components.h"
-#include "scene_object.h"
-#include "imgui-docking/imgui.h"
+#include <engine/game/components.h>
+#include <engine/editor/scene_object.h>
+#include <imgui-docking/imgui.h>
 
 Scene::Scene()
 {

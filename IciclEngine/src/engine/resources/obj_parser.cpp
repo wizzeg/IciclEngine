@@ -1,10 +1,10 @@
-#include "obj_parser.h"
+#include <engine/resources/obj_parser.h>
 #include <fstream>
 #include <sstream>
-#include "macros.h"
+#include <engine/utilities/macros.h>
 #include <algorithm>
 #include <chrono>
-#include "utilities.h"
+#include <engine/utilities/utilities.h>
 
 ObjMesh ObjParser::load_mesh_from_filepath(const std::string& a_path)
 {

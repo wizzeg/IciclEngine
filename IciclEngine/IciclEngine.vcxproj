@@ -71,11 +71,11 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)\vendor\;$(SolutionDir)\external\include\;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\vendor\;$(SolutionDir)\external\include\;$(ProjectDir)\include\;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)\external\library\$(Configuration)\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SolutionDir)\vendor\;$(SolutionDir)\external\include\;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\vendor\;$(SolutionDir)\external\include\;$(ProjectDir)\include\;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)\external\library\$(Configuration)\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -112,7 +112,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)\vendor\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\vendor\;$(ProjectDir)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
     </ClCompile>
@@ -131,7 +131,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)\vendor\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\vendor\;$(ProjectDir)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
     </ClCompile>
@@ -153,22 +153,21 @@
     <ClCompile Include="..\vendor\imgui-docking\imgui_impl_opengl3.cpp" />
     <ClCompile Include="..\vendor\imgui-docking\imgui_tables.cpp" />
     <ClCompile Include="..\vendor\imgui-docking\imgui_widgets.cpp" />
-    <ClCompile Include="asset_manager.cpp" />
-    <ClCompile Include="asset_loader.cpp" />
-    <ClCompile Include="component_data.cpp" />
-    <ClCompile Include="entity.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="obj_parser.cpp" />
-    <ClCompile Include="renderer.cpp" />
-    <ClCompile Include="scene_object.cpp" />
-    <ClCompile Include="scene_object_registry.cpp" />
+    <ClCompile Include="src\engine\editor\scene.cpp" />
+    <ClCompile Include="src\engine\editor\scene_object.cpp" />
+    <ClCompile Include="src\engine\game\component_data.cpp" />
+    <ClCompile Include="src\engine\renderer\renderer.cpp" />
+    <ClCompile Include="src\engine\resources\asset_loader.cpp" />
+    <ClCompile Include="src\engine\resources\asset_manager.cpp" />
+    <ClCompile Include="src\engine\resources\obj_parser.cpp" />
+    <ClCompile Include="src\engine\resources\scene_object_registry.cpp" />
+    <ClCompile Include="src\engine\ui\ui_component_drawer.cpp" />
+    <ClCompile Include="src\engine\ui\ui_manager.cpp" />
+    <ClCompile Include="src\engine\ui\ui_object_property_drawer.cpp" />
+    <ClCompile Include="src\engine\ui\ui_scene_hierarchy_drawer.cpp" />
     <ClCompile Include="stb_image.cpp" />
-    <ClCompile Include="scene.cpp" />
     <ClCompile Include="systems.cpp" />
-    <ClCompile Include="ui_component_drawer.cpp" />
-    <ClCompile Include="ui_object_property_drawer.cpp" />
-    <ClCompile Include="ui_scene_hierarchy_drawer.cpp" />
-    <ClCompile Include="ui_manager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\entt\entt.hpp" />
@@ -184,25 +183,24 @@
     <ClInclude Include="..\vendor\imgui-docking\imstb_truetype.h" />
     <ClInclude Include="..\vendor\KHR\khrplatform.h" />
     <ClInclude Include="..\vendor\stb_image\stb_image.h" />
-    <ClInclude Include="asset_loader.h" />
-    <ClInclude Include="asset_manager.h" />
-    <ClInclude Include="components.h" />
-    <ClInclude Include="component_data.h" />
-    <ClInclude Include="entity.h" />
-    <ClInclude Include="macros.h" />
-    <ClInclude Include="obj_parser.h" />
-    <ClInclude Include="renderer.h" />
-    <ClInclude Include="render_info.h" />
-    <ClInclude Include="scene.h" />
-    <ClInclude Include="scene_object.h" />
-    <ClInclude Include="scene_object_registry.h" />
-    <ClInclude Include="static_conversions.h" />
+    <ClInclude Include="include\engine\editor\scene.h" />
+    <ClInclude Include="include\engine\editor\scene_object.h" />
+    <ClInclude Include="include\engine\game\components.h" />
+    <ClInclude Include="include\engine\game\component_data.h" />
+    <ClInclude Include="include\engine\renderer\renderer.h" />
+    <ClInclude Include="include\engine\renderer\render_info.h" />
+    <ClInclude Include="include\engine\resources\asset_loader.h" />
+    <ClInclude Include="include\engine\resources\asset_manager.h" />
+    <ClInclude Include="include\engine\resources\obj_parser.h" />
+    <ClInclude Include="include\engine\resources\scene_object_registry.h" />
+    <ClInclude Include="include\engine\ui\ui_component_drawer.h" />
+    <ClInclude Include="include\engine\ui\ui_manager.h" />
+    <ClInclude Include="include\engine\ui\ui_object_property_drawer.h" />
+    <ClInclude Include="include\engine\ui\ui_scene_hierarchy_drawer.h" />
+    <ClInclude Include="include\engine\utilities\macros.h" />
+    <ClInclude Include="include\engine\utilities\static_conversions.h" />
+    <ClInclude Include="include\engine\utilities\utilities.h" />
     <ClInclude Include="systems.h" />
-    <ClInclude Include="ui_component_drawer.h" />
-    <ClInclude Include="ui_object_property_drawer.h" />
-    <ClInclude Include="ui_scene_hierarchy_drawer.h" />
-    <ClInclude Include="ui_manager.h" />
-    <ClInclude Include="utilities.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\assets\shaders\fragment\frag.glsl" />

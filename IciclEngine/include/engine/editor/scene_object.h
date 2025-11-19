@@ -2,8 +2,8 @@
 
 #include <string>
 #include <entt/entt.hpp>
-#include "component_data.h"
-#include "macros.h"
+#include <engine/game/component_data.h>
+#include <engine/utilities/macros.h>
 
 class Scene;
 class SceneObject

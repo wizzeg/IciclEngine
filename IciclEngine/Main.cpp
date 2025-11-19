@@ -21,16 +21,15 @@
 
 #include <entt/entt.hpp>
 
-#include "scene.h"
-#include "scene_object.h"
-#include "entity.h"
-#include "macros.h"
+#include <engine/editor/scene.h>
+#include <engine/editor/scene_object.h>
+#include <engine/utilities/macros.h>
 
 #ifndef ASSIMP_LOAD_FLAGS
 #define ASSIMP_LOAD_FLAGS (aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices)
 #endif
-#include "ui_manager.h"
-#include "obj_parser.h"
+#include <engine/ui/ui_manager.h>
+#include <engine/resources/obj_parser.h>
 
 
 int main(void)

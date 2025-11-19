@@ -1,5 +1,5 @@
-#include "scene_object_registry.h"
-#include "scene_object.h"
+#include <engine/resources/scene_object_registry.h>
+#include <engine/editor/scene_object.h>
 
 uint32_t SceneObjectRegistry::add_scene_object(std::weak_ptr<SceneObject> a_scene_object_wptr)
 {

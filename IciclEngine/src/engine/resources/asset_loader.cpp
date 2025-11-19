@@ -1,8 +1,9 @@
-#include "asset_loader.h"
-#include "render_info.h"
-#include "macros.h"
+#include <engine/resources/asset_loader.h>
+#include <engine/renderer/render_info.h>
+#include <engine/utilities/macros.h>
+#include <engine/utilities/static_conversions.h>
 #include <vector>
-#include "static_conversions.h"
+
 
 std::uint32_t AssetLoader::load_from_path(const std::string& a_path)
 {

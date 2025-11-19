@@ -1,8 +1,8 @@
-#include "ui_object_property_drawer.h"
-#include "scene_object.h"
+#include <engine/ui/ui_object_property_drawer.h>
+#include <engine/editor/scene_object.h>
 #include <glm/glm.hpp>
 #include <string>
-#include "component_data.h"
+#include <engine/game/component_data.h>
 
 void UIObjectPropertyDrawer::draw_object_properties(std::weak_ptr<SceneObject> a_scene_object)
 {

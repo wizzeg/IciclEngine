@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <string>
+#include <vector>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -8,9 +9,7 @@
 
 #include <glm/glm.hpp>
 
-#include <vector>
-
-#include "render_info.h"
+#include <engine/renderer/render_info.h>
 
 #ifndef ASSIMP_LOAD_FLAGS
 #define ASSIMP_LOAD_FLAGS (aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices)

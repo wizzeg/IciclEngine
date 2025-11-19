@@ -1,7 +1,7 @@
-#include "ui_scene_hierarchy_drawer.h"
+#include <engine/ui/ui_scene_hierarchy_drawer.h>
 #include <imgui-docking/imgui.h>
-#include "macros.h"
-#include "scene_object.h"
+#include <engine/utilities/macros.h>
+#include <engine/editor/scene_object.h>
 
 void UISceneHierarchyDrawer::draw_hierarchy_node(std::weak_ptr<SceneObject> a_scene_object)
 {

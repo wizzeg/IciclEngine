@@ -1,7 +1,7 @@
 #include "systems.h"
-#include "scene.h"
+#include <engine/editor/scene.h>
 #include <entt/entt.hpp>
-#include "components.h"
+#include <engine/game/components.h>
 
 void UIDrawerSystem::execute(std::weak_ptr<Scene> a_scene)
 {

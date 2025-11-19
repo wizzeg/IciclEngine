@@ -1,6 +1,6 @@
 #pragma once
-#include "component_data.h"
-#include "scene.h"
+#include <engine/game/component_data.h>
+#include <engine/editor/scene.h>
 
 
 

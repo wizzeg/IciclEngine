@@ -58,6 +58,48 @@
     <Filter Include="Source Files\vendor\glad">
       <UniqueIdentifier>{9c17a55e-07f2-47cf-93bc-50aedf7d49f5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\engine">
+      <UniqueIdentifier>{f295c699-5efe-4885-8ffd-d3799ff80f4e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\engine\renderer">
+      <UniqueIdentifier>{881a5e0c-b1a7-4620-a617-eb9f6e3728a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\engine\editor">
+      <UniqueIdentifier>{78034814-cbd9-41ee-bfd3-6f13782c158d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\engine\game">
+      <UniqueIdentifier>{010e631a-7ec1-4649-af1a-35f470631a89}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\engine\resources">
+      <UniqueIdentifier>{abf7fa2e-fdbb-4318-a7b8-8f6144cb0f6c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\engine\ui">
+      <UniqueIdentifier>{11904a9c-9d78-47bd-b08a-1c3c6fc00dc9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\engine\utilities">
+      <UniqueIdentifier>{0b5dafe1-fa24-4054-baa4-ce8e94fbce32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\engine">
+      <UniqueIdentifier>{2d0fb246-3c0a-4533-8d49-bd20f41448e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\engine\editor">
+      <UniqueIdentifier>{229c6c90-ec20-4bb9-b839-0a6b6632e9df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\engine\game">
+      <UniqueIdentifier>{607850a4-2e07-473b-b48f-1fe89091dfbb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\engine\renderer">
+      <UniqueIdentifier>{ae559937-61fe-4a00-81a9-230b2faa6c03}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\engine\resources">
+      <UniqueIdentifier>{a7ad0933-5be3-4208-be2b-809122647a4c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\engine\ui">
+      <UniqueIdentifier>{37f8d3e3-0697-4890-bada-8056e6271756}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\engine\utilities">
+      <UniqueIdentifier>{5b53879d-9751-4da6-83d0-4456a5c70de7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -90,47 +132,44 @@
     <ClCompile Include="stb_image.cpp">
       <Filter>Source Files\vendor\stb_image</Filter>
     </ClCompile>
-    <ClCompile Include="entity.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="scene.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="scene_object.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="component_data.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="systems.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="renderer.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="src\engine\editor\scene.cpp">
+      <Filter>Source Files\engine\editor</Filter>
     </ClCompile>
-    <ClCompile Include="asset_manager.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="src\engine\editor\scene_object.cpp">
+      <Filter>Source Files\engine\editor</Filter>
     </ClCompile>
-    <ClCompile Include="asset_loader.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="src\engine\game\component_data.cpp">
+      <Filter>Source Files\engine\game</Filter>
     </ClCompile>
-    <ClCompile Include="ui_manager.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="src\engine\ui\ui_component_drawer.cpp">
+      <Filter>Source Files\engine\ui</Filter>
     </ClCompile>
-    <ClCompile Include="ui_scene_hierarchy_drawer.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="src\engine\ui\ui_manager.cpp">
+      <Filter>Source Files\engine\ui</Filter>
     </ClCompile>
-    <ClCompile Include="ui_object_property_drawer.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="src\engine\ui\ui_object_property_drawer.cpp">
+      <Filter>Source Files\engine\ui</Filter>
     </ClCompile>
-    <ClCompile Include="ui_component_drawer.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="src\engine\ui\ui_scene_hierarchy_drawer.cpp">
+      <Filter>Source Files\engine\ui</Filter>
     </ClCompile>
-    <ClCompile Include="obj_parser.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="src\engine\resources\asset_loader.cpp">
+      <Filter>Source Files\engine\resources</Filter>
     </ClCompile>
-    <ClCompile Include="scene_object_registry.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="src\engine\resources\asset_manager.cpp">
+      <Filter>Source Files\engine\resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\resources\obj_parser.cpp">
+      <Filter>Source Files\engine\resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\resources\scene_object_registry.cpp">
+      <Filter>Source Files\engine\resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\renderer\renderer.cpp">
+      <Filter>Source Files\engine\renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -173,62 +212,59 @@
     <ClInclude Include="..\vendor\entt\entt.hpp">
       <Filter>Header Files\vendor\entt</Filter>
     </ClInclude>
-    <ClInclude Include="entity.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="scene.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="components.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="scene_object.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="component_data.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="macros.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="systems.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="renderer.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="include\engine\renderer\render_info.h">
+      <Filter>Header Files\engine\renderer</Filter>
     </ClInclude>
-    <ClInclude Include="asset_loader.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="include\engine\renderer\renderer.h">
+      <Filter>Header Files\engine\renderer</Filter>
     </ClInclude>
-    <ClInclude Include="asset_manager.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="include\engine\editor\scene.h">
+      <Filter>Header Files\engine\editor</Filter>
     </ClInclude>
-    <ClInclude Include="render_info.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="include\engine\editor\scene_object.h">
+      <Filter>Header Files\engine\editor</Filter>
     </ClInclude>
-    <ClInclude Include="static_conversions.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="include\engine\game\component_data.h">
+      <Filter>Header Files\engine\game</Filter>
     </ClInclude>
-    <ClInclude Include="ui_manager.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="include\engine\game\components.h">
+      <Filter>Header Files\engine\game</Filter>
     </ClInclude>
-    <ClInclude Include="ui_scene_hierarchy_drawer.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="include\engine\resources\asset_loader.h">
+      <Filter>Header Files\engine\resources</Filter>
     </ClInclude>
-    <ClInclude Include="ui_object_property_drawer.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="include\engine\resources\asset_manager.h">
+      <Filter>Header Files\engine\resources</Filter>
     </ClInclude>
-    <ClInclude Include="ui_component_drawer.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="include\engine\resources\obj_parser.h">
+      <Filter>Header Files\engine\resources</Filter>
     </ClInclude>
-    <ClInclude Include="obj_parser.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="include\engine\resources\scene_object_registry.h">
+      <Filter>Header Files\engine\resources</Filter>
     </ClInclude>
-    <ClInclude Include="utilities.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="include\engine\ui\ui_component_drawer.h">
+      <Filter>Header Files\engine\ui</Filter>
     </ClInclude>
-    <ClInclude Include="scene_object_registry.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="include\engine\ui\ui_manager.h">
+      <Filter>Header Files\engine\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\ui\ui_object_property_drawer.h">
+      <Filter>Header Files\engine\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\ui\ui_scene_hierarchy_drawer.h">
+      <Filter>Header Files\engine\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\utilities\macros.h">
+      <Filter>Header Files\engine\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\utilities\static_conversions.h">
+      <Filter>Header Files\engine\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\utilities\utilities.h">
+      <Filter>Header Files\engine\utilities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
