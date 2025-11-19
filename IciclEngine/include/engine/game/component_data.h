@@ -33,7 +33,7 @@ private:
 public:
 	ComponentDataaad(T a_component) : component(a_component) {};
 
-	void set_new_component_value(T a_component) { component = a_component; }
+	void set_new_component_value(T a_component) { component = a_component; } // should not be called during runtime
 
 	const char* get_name() const { return typeid(T).name(); }
 	virtual void to_runtime(entt::handle a_handle)
@@ -45,6 +45,7 @@ public:
 			entt::registry* registry = a_handle.registry();
 			entt::entity entity = a_handle.entity();
 			registry->emplace<T>(entity, component);
+			// will need to look through typeinfo of T ... to see if it contains a entt::entity and immediately uint32_t under, to bind scene_object and entity.
 		}
 	}
 
