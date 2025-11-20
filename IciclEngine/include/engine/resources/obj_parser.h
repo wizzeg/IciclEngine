@@ -39,6 +39,10 @@ struct ObjFace
 
 struct ObjVertex
 {
+	unsigned int VAO;
+	unsigned int VBOs[4]; // position, color, normal, uv
+	unsigned int EBO;
+
 	ObjPosition position;
 	ObjNormal normal;
 	ObjUVs uv;
@@ -48,6 +52,7 @@ struct ObjVertex
 
 struct ObjMesh
 {
+	
 	std::string path;
 	std::vector<ObjPosition> verticies;
 	std::vector<ObjColor> colors;

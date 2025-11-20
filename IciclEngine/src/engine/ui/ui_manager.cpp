@@ -11,7 +11,7 @@ void UIManager::draw_object_hierarchy()
 
 	if (auto scene_ptr = scene.lock())
 	{
-		ImGui::SetNextWindowSize(ImVec2(500, 400));
+		//ImGui::SetNextWindowSize(ImVec2(500, 400));
 		ImGui::Begin("scene objects");
 		auto root_scene_objects = scene_ptr->get_root_scene_objects();
 		for (size_t i = 0; i < root_scene_objects.size(); i++)
@@ -25,14 +25,17 @@ void UIManager::draw_object_hierarchy()
 
 void UIManager::draw_object_properties()
 {
-
-	if (auto scene_object = ui_hiearchy_drawer.selected_scene_object.lock())
-	{
-		ImGui::SetNextWindowSize(ImVec2(500, 400));
+	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	// BUG, if I double click on this window it breaks (but now I can't reproduce it again...)
+	// 
+	//if (auto scene_object = ui_hiearchy_drawer.selected_scene_object.lock())
+	//{
+		//ImGui::SetNextWindowSize(ImVec2(500, 400));
 		ImGui::Begin("component properties");
-		ui_property_drawer.draw_object_properties(scene_object);
+		ui_property_drawer.draw_object_properties(ui_hiearchy_drawer.selected_scene_object);
 		ImGui::End();
-	}
+	//}
+	//ui_hiearchy_drawer.selected_scene_object.reset();
 
 }
 

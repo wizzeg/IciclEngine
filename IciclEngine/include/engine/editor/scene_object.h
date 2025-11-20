@@ -6,6 +6,7 @@
 #include <engine/utilities/macros.h>
 
 class Scene;
+
 class SceneObject
 {
 
@@ -16,7 +17,8 @@ private:
 	std::vector<std::weak_ptr<SceneObject>> children;
 	std::weak_ptr<Scene> scene;
 	
-	std::vector<std::unique_ptr<ComponentData>> component_datas;
+	std::vector<std::unique_ptr<ComponentDataBase>> component_datas;
+	std::vector<std::type_index> component_types;
 
 	entt::handle entity_handle;
 
@@ -37,107 +39,153 @@ public:
 
 	void add_child(std::weak_ptr<SceneObject> a_child);
 
-	template <typename T, typename... Args>
-	bool add_component_data(Args&&... args)
+	template <typename TcomponentData, typename TComponent>
+	bool add_component_data(TComponent&& a_component)
 	{
-		static_assert(std::is_base_of<ComponentData, T>::value, "SceneObject: added component data type T must derive from CompnentData");
-		//I really should check so that this does not contain one of T already
-		for (size_t i = 0; i < component_datas.size(); i++)
+		static_assert(std::is_base_of<ComponentData<std::decay_t<TComponent>>, TcomponentData>::value, "TcomponentData must derive from ComponentData<T> with matching TComponent");
+		static_assert(std::is_standard_layout<std::decay_t<TComponent>>::value, "TComponent must be a standard-layout type (e.g no inheritance)");
+		static_assert(std::is_trivial<std::decay_t<TComponent>>::value, "TComponent must be trivial (e.g. no smart pointers)");
+		std::type_index t_type = typeid(std::decay_t<TComponent>);
+		for (size_t i = 0; i < component_types.size(); i++)
 		{
-			if (typeid(*component_datas[i]) == typeid(T))
+			if (t_type == component_types[i])
 			{
 				return false;
 			}
 		}
-		component_datas.emplace_back(std::make_unique<T>(std::forward<Args>(args)...));
+		component_types.push_back(t_type);
+		component_datas.emplace_back(std::make_unique<TcomponentData>(std::forward<TComponent>(a_component)));
 		return true;
 	}
 
-	template <typename T, typename... Args>
-	bool replace_component_data(Args&&... args)
+	template <typename TComponent>
+	bool replace_component_data(TComponent&& a_component)
 	{
-		static_assert(std::is_base_of<ComponentData, T>::value, "SceneObject: added component data type T must derive from CompnentData");
-		//I really should check so that this does not contain one of T already
-		for (size_t i = 0; i < component_datas.size(); i++)
+		static_assert(std::is_standard_layout<std::decay_t<TComponent>>::value, "TComponent must be a standard-layout type (e.g no inheritance)");
+		static_assert(std::is_trivial<std::decay_t<TComponent>>::value, "TComponent must be trivial (e.g. no smart pointers)");
+		std::type_index t_type = typeid(std::decay_t<TComponent>);
+		bool error = false;
+		for (size_t i = 0; i < component_types.size(); i++) // may want to consider to sort these in order of each other.
 		{
-			if (typeid(*component_datas[i]) == typeid(T))
+			if (t_type == component_types[i])
 			{
-				component_datas[i] = std::make_unique<T>(std::forward<Args>(args)...);
-				return true;
+				for (size_t i = 0; i < component_datas.size(); i++)
+				{
+					if (component_datas[i].get()->get_type() == t_type)
+					{
+						ComponentData<std::decay_t<TComponent>>& component_data = static_cast<ComponentData<std::decay_t<TComponent>>&>(*component_datas[i]);
+						std::decay_t<TComponent> component = std::forward<TComponent>(a_component);
+						component_data.set_new_component_value(component);
+						return true;
+					}
+				}
+				error = true;
+				break;
 			}
 		}
-		//component_datas.emplace_back(std::make_unique<T>(std::forward<Args>(args)...));
+		if (error)
+		{
+			PRINTLN("MISSMATCH: scene_object has component_type info of component for which there's no comopnent_data for");
+			// perhaps remove the component_type ?
+		}
 		return false;
 	}
 
-	template <typename T, typename... Args>
-	void add_or_replace_component_data(Args&&... args)
+	template <typename TComopnentData, typename TComponent>
+	bool add_or_replace_component_data(TComponent&& a_component)
 	{
-		static_assert(std::is_base_of<ComponentData, T>::value, "SceneObject: added component data type T must derive from CompnentData");
-		//I really should check so that this does not contain one of T already
-		for (size_t i = 0; i < component_datas.size(); i++)
+		if (!replace_component_data<std::decay_t<TComponent>>(std::forward<TComponent>(a_component)))
 		{
-			if (typeid(*component_datas[i]) == typeid(T))
+			if (!add_component_data<TComopnentData>(std::forward<TComponent>(a_component)))
 			{
-				component_datas[i] = std::make_unique<T>(std::forward<Args>(args)...);
-				return;
+				PRINTLN("ERROR: somehow component could not be replaced, and not added");
+				return false;
 			}
+			return true;
 		}
-		component_datas.emplace_back(std::make_unique<T>(std::forward<Args>(args)...));
+		return false;
 	}
 
 
-	template<typename Tcomponent, typename Tdata>
-	void get_component(Tcomponent& a_component)
+	template<typename TComponent>
+	bool get_component(TComponent*& a_component)
 	{
-		PRINTLN("tried to get component");
-		static_assert(std::is_base_of<ComponentData, Tdata>::value, "SceneObject: requested component data type T must derive from ComponentData");
-		for (size_t i = 0; i < component_datas.size(); i++)
+		static_assert(std::is_standard_layout<std::decay_t<TComponent>>::value, "TComponent must be a standard-layout type (e.g no inheritance)");
+		static_assert(std::is_trivial<std::decay_t<TComponent>>::value, "TComponent must be trivial (e.g. no smart pointers)");
+		std::type_index t_type = typeid(std::decay_t<TComponent>);
+		bool error = false;
+		for (size_t i = 0; i < component_types.size(); i++) // may want to consider to sort these in order of each other.
 		{
-			if (typeid(*component_datas[i]) == typeid(Tdata))
+			if (t_type == component_types[i])
 			{
-				if (auto component = dynamic_cast<Tdata*>(component_datas[i].get()))
+				for (size_t i = 0; i < component_datas.size(); i++)
 				{
-					a_component = component->name_component;
-					return;
+					if (component_datas[i].get()->get_type() == t_type)
+					{
+						ComponentData<std::decay_t<TComponent>>& component_data = static_cast<ComponentData<std::decay_t<TComponent>>&>(*component_datas[i]);
+						a_component = &component_data.get_component();
+						return true;
+					}
 				}
+				error = true;
+				break;
 			}
 		}
+		if (error)
+		{
+			PRINTLN("MISSMATCH: scene_object has component_type info of component for which there's no comopnent_data for");
+			// perhaps remove the component_type ?
+		}
+		return false;
 	}
 
-	template<typename Tdata>
+	template<typename TComponent>
 	bool remove_component_data()
 	{
-		for (size_t i = 0; i < component_datas.size(); i++)
+
+		std::type_index t_type = typeid(TComponent);
+		size_t index = 0;
+		bool found_index = false;
+		bool found_component = false;
+		for (size_t i = 0; i < component_types.size(); i++) // may want to consider to sort these in order of each other.
 		{
-			if (typeid(*component_datas[i]) == typeid(Tdata))
+			if (t_type == component_types[i])
 			{
-				component_datas.erase(component_datas.begin() + i);
-				return true;
+				index = i;
+				found_index = true;
+				for (size_t i = 0; i < component_datas.size(); i++)
+				{
+					if (component_datas[i].get()->get_type() == t_type)
+					{
+						component_datas.erase(component_datas.begin() + i);
+						found_component = true;
+						break;
+					}
+				}
+				break;
 			}
 		}
-		return false;
+		if (found_component != found_index)
+		{
+			PRINTLN("MISSMATCH: scene_object has component_type info of component for which there's no comopnent_data for");
+			// perhaps remove the component_type ?
+		}
+		if (found_index)
+		{
+			component_types.erase(component_types.begin() + index);
+		}
+		return found_component;
 	}
 
-	//template<typename T>
-	//bool get_object_component(T& object_component)
-	//{
-	//	if (typeid(T) == typid(UISceneHierarchyDrawer))
-	//	{
-	//		object_component = ui_hierarchy_drawer;
-	//		return true;
-	//	}
-	//}
-
 	entt::handle to_runtime(std::weak_ptr<Scene> a_scene);
-	void draw_components();
+	//void draw_components();
 
 	size_t num_children() const { return children.size(); };
 	std::string get_name() const { return name; };
 
 	std::vector<std::weak_ptr<SceneObject>> get_children() { return children; };
 
-	const std::vector<std::unique_ptr<ComponentData>>& get_component_datas() const { return component_datas; }
-	bool is_runtime() { return runtime; }
+	const std::vector<std::unique_ptr<ComponentDataBase>>& get_component_datas() const { return component_datas; }
+	bool is_runtime() const { return runtime; }
 };
 

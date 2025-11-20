@@ -7,12 +7,15 @@ SceneObject::SceneObject(const std::string a_name, std::weak_ptr<Scene> a_scene)
 	: name(a_name), scene(a_scene)
 {
 	component_datas.emplace_back(std::make_unique<NameComponentData>(NameComponent{ a_name }));
+	component_types.emplace_back(typeid(NameComponent));
 }
 
 SceneObject::SceneObject(const std::string a_name, std::weak_ptr<SceneObject> a_parent, std::weak_ptr<Scene> a_scene)
 	: name(a_name), parent(a_parent), scene(a_scene)
 {
-	component_datas.emplace_back(std::make_unique<NameComponentData>(NameComponent{ a_name }));
+	PRINTLN("DO NOT USE THIS SCENE OBJECT CONSTRUCTOR YET");
+	component_datas.emplace_back(std::make_unique<ComponentData<NameComponentData>>(NameComponent{ a_name }));
+	component_types.emplace_back(typeid(NameComponent));
 }
 
 void SceneObject::add_child(std::weak_ptr<SceneObject> a_child) // need to add remove_child aswell, and give entity children if added childre, and tell children they have a new parent -> make these into components
@@ -34,26 +37,26 @@ void SceneObject::add_child(std::weak_ptr<SceneObject> a_child) // need to add r
 	PRINTLN("child acquired, I have this many children now: {}", children.size());
 };
 
-void SceneObject::draw_components()
-{
-	bool minus_one = false;
-	for (size_t i = 0; i < component_datas.size(); i++)
-	{
-		if (minus_one)
-		{
-			i--;
-			minus_one = false;
-		}
-		if (!component_datas[i]->draw_imgui(entity_handle, runtime)) // has component?
-		{
-			if (runtime)
-			{
-				component_datas.erase(component_datas.begin() + i); // this is not great, should be removing in a smarter way, this will rearrange multiple times
-				minus_one = true;
-			}
-		}
-	}
-}
+//void SceneObject::draw_components()
+//{
+//	bool minus_one = false;
+//	for (size_t i = 0; i < component_datas.size(); i++)
+//	{
+//		if (minus_one)
+//		{
+//			i--;
+//			minus_one = false;
+//		}
+//		if (!component_datas[i]->draw_imgui(entity_handle, runtime)) // has component?
+//		{
+//			if (runtime)
+//			{
+//				component_datas.erase(component_datas.begin() + i); // this is not great, should be removing in a smarter way, this will rearrange multiple times
+//				minus_one = true;
+//			}
+//		}
+//	}
+//}
 
 entt::handle SceneObject::get_entity_handle() const
 {

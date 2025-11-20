@@ -9,7 +9,6 @@
 #include <GLFW/glfw3.h>
 
 #include <chrono>
-//#include <print>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -105,6 +104,18 @@ int main(void)
 		std::weak_ptr<SceneObject> childofchild = scene.get()->new_scene_object("Child of Child", false);
 		if (auto parent = withtChild.lock())
 		{
+			parent->add_component_data<WorldPositionComponentData>(WorldPositionComponent{glm::vec3(0,1,2)});
+			parent->replace_component_data(WorldPositionComponent{ glm::vec3(1,2,3) });
+			parent->add_or_replace_component_data<WorldPositionComponentData>(WorldPositionComponent{ glm::vec3(2,3,4) });
+			WorldPositionComponent* test;
+			if (parent->get_component(test))
+			{
+				PRINTLN("x value: {}", test->position.x);
+				test->position.x = 10;
+			}
+			else {
+				PRINTLN("failes");
+			}
 			parent->add_child(wChild);
 			parent->add_child(ChildwChild);
 			if (auto shared = ChildwChild.lock())
@@ -173,7 +184,7 @@ int main(void)
 			// I guess same could be done for removal and adding entities aswell.
 			// I guess I'll always make some kind of "ecb" that takes those requests, and will then handle all it needs to do.
 
-			//scene.get()->to_runtime(); // deal with making a runtime copy later -------- runtime thing works at least, entities are created
+			scene.get()->to_runtime(); // deal with making a runtime copy later -------- runtime thing works at least, entities are created
 			// for now I need to be able to see changes to entities -> handle signaling
 			game_playing = true;
 		}
@@ -189,6 +200,7 @@ int main(void)
 			//PRINTLN("entity position x value: {}", worldpos.position.x);
 			//registry.destroy(entity);
 			//PRINTLN("destorying entity");
+			worldpos.position.x += 0.001f;
 		}
 
 		//for (auto [entity, name] : registry.view<NameComponent>().each())
@@ -217,14 +229,13 @@ int main(void)
 		ImGui::NewFrame();
 
 		ImGui::SetNextWindowSize(ImVec2(500, 400));
-		//scene->draw_imgui();
 		ui_mananger.draw_object_hierarchy();
 		ui_mananger.draw_object_properties();
 
-		ImGui::Begin("UI Manager Window");
-		bool focused = ImGui::IsWindowFocused();
-		ImGui::Text("Focused: %s", focused ? "Yes" : "No");
-		ImGui::End();
+		//ImGui::Begin("UI Manager Window");
+		//bool focused = ImGui::IsWindowFocused();
+		//ImGui::Text("Focused: %s", focused ? "Yes" : "No");
+		//ImGui::End();
 
 
 		ImGui::Begin("tree view thingy");
@@ -311,33 +322,6 @@ int main(void)
 		}
 
 		ImGui::End();
-
-		//ImGui::Begin("test trreee");
-		//if (ImGui::TreeNodeEx("node_label", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen))
-		//{
-
-		//}
-		//
-		//if (ImGui::TreeNode("Root")) {
-		//	if (ImGui::TreeNode("Child 1")) {
-		//		ImGui::Text("Leaf 1");
-		//		ImGui::TreePop();
-		//	}
-		//	if (ImGui::TreeNode("Child 2")) {
-		//		ImGui::Text("Leaf 2");
-		//		ImGui::TreePop();
-		//	}
-		//	ImGui::TreePop();
-
-		//}
-		//if (ImGui::TreeNode("Root 2"))
-		//{
-		//	ImGui::TreePop();
-		//}
-		//
-
-		//ImGui::End();
-
 
 		if (demo)
 			ImGui::ShowDemoWindow(&demo);

@@ -8,15 +8,36 @@
 #include <glm/glm.hpp>
 //#include "render_info.h"
 #include <engine/renderer/render_info.h>
+#include <engine/resources/obj_parser.h>
 
 struct NameComponent
 {
-	std::string name; // string not ideal, but I rather not have to deal with char limitations etc, especially with paths
+	std::string name;
 };
 
 struct WorldPositionComponent
 {
     glm::vec3 position;
+};
+
+struct MeshLoaderComponent
+{
+    std::string path;
+};
+
+struct MaterialLoaderComponent
+{
+    std::string path;
+};
+
+struct MeshComponent
+{
+    uint32_t id;
+};
+
+struct MaterialComponent
+{
+    uint32_t id;
 };
 
 struct RenderableComponent

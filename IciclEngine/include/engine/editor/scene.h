@@ -27,8 +27,9 @@ public:
 	const std::vector<std::shared_ptr<SceneObject>> get_scene_objects();
 	const std::vector<std::shared_ptr<SceneObject>> get_root_scene_objects();
 
-	void draw_imgui();
+	//void draw_imgui();
 	void to_runtime();
+	bool is_runtime() { return runtime; };
 	void stop_scene();
 };
 

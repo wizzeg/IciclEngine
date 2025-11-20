@@ -15,30 +15,36 @@ struct FieldInfo
 	std::type_index type;
 	void* value_ptr;
 	float imgui_size = 1;
-	bool is_ref = false; // if ref, we can then know that some field there wants a ref... But I could also store entt::entity and right under uint32_t, because then I know
-	
 };
 
-// problem is references to other entities... this needs a custom conversion
-
-template <typename T>
-class ComponentDataaad
+// problem is references to other entities... 
+// this needs a custom conversion -> 
+// struct of EntityReference {entt::entity and uint32_t "ptr" (into uint32_t to scene_object wptr manager)}
+struct ComponentDataBase
 {
-private:
-	T component;
-	entt::handle entity_handle;
-	bool runtime = false;
-	virtual std::vector<FieldInfo> get_field_info(T& a_component)
+	ComponentDataBase() {}
+	virtual const std::type_info& get_type() = 0;
+	virtual void to_runtime(entt::handle a_handle) = 0;
+	virtual std::vector<FieldInfo> get_field_info() = 0;
+	virtual const char* get_name() const = 0;
+};
+
+template <typename TComponent>
+struct ComponentData : ComponentDataBase
+{
+	ComponentData(TComponent a_component) : component(a_component) {};
+	TComponent& get_component() { return component; } // should not be called during runtime (could probably be adapted to do it)
+
+	const std::type_info& get_type() override { return typeid(TComponent); }
+	virtual std::vector<FieldInfo> get_field_info(TComponent& a_component)
 	{
 		return { };
 	}
-public:
-	ComponentDataaad(T a_component) : component(a_component) {};
 
-	void set_new_component_value(T a_component) { component = a_component; } // should not be called during runtime
+	void set_new_component_value(TComponent a_component) { component = a_component; } // should not be called during runtime
 
-	const char* get_name() const { return typeid(T).name(); }
-	virtual void to_runtime(entt::handle a_handle)
+	const char* get_name() const override { return typeid(TComponent).name(); }
+	virtual void to_runtime(entt::handle a_handle) override
 	{
 		if (a_handle != entt::null)
 		{
@@ -46,12 +52,11 @@ public:
 			runtime = true;
 			entt::registry* registry = a_handle.registry();
 			entt::entity entity = a_handle.entity();
-			registry->emplace<T>(entity, component);
-			// will need to look through typeinfo of T ... to see if it contains a entt::entity and immediately uint32_t under, to bind scene_object and entity.
+			registry->emplace<TComponent>(entity, component);
 		}
 	}
 
-	std::vector<FieldInfo> get_field_info()
+	std::vector<FieldInfo> get_field_info() override
 	{
 		if (runtime)
 		{
@@ -60,21 +65,35 @@ public:
 				entt::entity entity = entity_handle.entity();
 				entt::registry* registry = entity_handle.registry();
 
-				if (T* entity_component = registry->try_get<T>(entity))
+				if (TComponent* entity_component = registry->try_get<TComponent>(entity))
 				{
 					return get_field_info(*entity_component);
 				}
+				else
+				{
+					PRINTLN("Component data attempted to retrieve entity component that doesn't exist");
+					return std::vector<FieldInfo>{};
+				}
+			}
+			else
+			{
+				PRINTLN("Component data attempted to retrieve non-existing entity");
+				return std::vector<FieldInfo>{};
 			}
 		}
-		else
-		{
-			return get_field_info(component);
-		}
+		return get_field_info(component);
 	}
+
+protected:
+	TComponent component;
+	entt::handle entity_handle;
+	bool runtime = false;
+
 };
 
-class NameComponentDataaad : ComponentDataaad<NameComponent>
+struct NameComponentData : ComponentData<NameComponent>
 {
+	NameComponentData(NameComponent a_component) : ComponentData<NameComponent>(a_component) {}
 	std::vector<FieldInfo> get_field_info(NameComponent& a_component) override
 	{
 		return
@@ -84,59 +103,131 @@ class NameComponentDataaad : ComponentDataaad<NameComponent>
 	}
 };
 
-
-
-
-
-
-struct ComponentData
+struct WorldPositionComponentData : ComponentData<WorldPositionComponent>
 {
-	virtual const std::string get_name() const = 0;
-	~ComponentData() {};
-
-	// implementation in .cpp
-	virtual bool draw_imgui(entt::handle a_handle, bool runtime) = 0;
-	virtual void to_runtime(entt::handle a_handle) = 0;
-
-	
-	virtual std::vector<FieldInfo> get_field_info() = 0;
+	WorldPositionComponentData(WorldPositionComponent a_component) : ComponentData<WorldPositionComponent>(a_component){}
+	std::vector<FieldInfo> get_field_info(WorldPositionComponent& a_component) override
+	{
+		return
+		{
+			{"world position: ", typeid(glm::vec3), &a_component.position.x, 2.f }
+		};
+	}
 };
 
-struct NameComponentData : ComponentData
+struct MeshLoaderComponentData : ComponentData<MeshLoaderComponent>
 {
-	NameComponent name_component;
-	const std::string get_name() const override { return "Entity name component"; }
-	NameComponentData(NameComponent a_name) : name_component(a_name) { };
-	NameComponentData() {};
-
-	// implementation in .cpp
-	bool draw_imgui(entt::handle a_handle, bool runtime) override;
-	void to_runtime(entt::handle a_handle) override;
-	std::vector<FieldInfo> get_field_info() override;
+	MeshLoaderComponentData(MeshLoaderComponent a_component) : ComponentData<MeshLoaderComponent>(a_component) {}
+	std::vector<FieldInfo> get_field_info(MeshLoaderComponent& a_component) override
+	{
+		return
+		{
+			{"mesh path: ", typeid(std::string), &a_component.path }
+		};
+	}
 };
 
-struct WorldPositionComponentData : ComponentData
+struct MaterialLoaderComponentData : ComponentData<MaterialLoaderComponent>
 {
-	WorldPositionComponent worldpos_component;
-	const std::string get_name() const override { return "world position component"; }
-	WorldPositionComponentData(const WorldPositionComponent a_world_pos) { worldpos_component = a_world_pos; };
-	WorldPositionComponentData() : worldpos_component({glm::vec3(0,0 ,0)}) {};
-
-	// implementation in .cpp
-	bool draw_imgui(entt::handle a_handle, bool runtime) override;
-	void to_runtime(entt::handle a_handle) override;
-	std::vector<FieldInfo> get_field_info() override;
+	MaterialLoaderComponentData(MaterialLoaderComponent a_component) : ComponentData<MaterialLoaderComponent>(a_component) {}
+	std::vector<FieldInfo> get_field_info(MaterialLoaderComponent& a_component) override
+	{
+		return
+		{
+			{"material path: ", typeid(std::string), &a_component.path }
+		};
+	}
 };
 
-struct RenderableComponentData : ComponentData
+struct MeshComponentData : ComponentData<MeshComponent>
 {
-	RenderableComponent renderable;
-	const std::string get_name() const override { return "renderable component"; }
-	RenderableComponentData(const RenderableComponent a_renderable) { renderable = a_renderable; };
-	RenderableComponentData() : renderable({0, 0}) {};
-
-	// implementation in .cpp
-	bool draw_imgui(entt::handle a_handle, bool runtime) override;
-	void to_runtime(entt::handle a_handle) override;
-	std::vector<FieldInfo> get_field_info() override;
+	MeshComponentData(MeshComponent a_component) : ComponentData<MeshComponent>(a_component) {}
+	std::vector<FieldInfo> get_field_info(MeshComponent& a_component) override
+	{
+		return
+		{
+			{"mesh id: ", typeid(uint32_t), &a_component.id }
+		};
+	}
 };
+
+struct MaterialComponentData : ComponentData<MaterialComponent>
+{
+	MaterialComponentData(MaterialComponent a_component) : ComponentData<MaterialComponent>(a_component) {}
+	std::vector<FieldInfo> get_field_info(MaterialComponent& a_component) override
+	{
+		return
+		{
+			{"material id: ", typeid(uint32_t), &a_component.id }
+		};
+	}
+};
+
+struct RenderableComponentData : ComponentData<RenderableComponent>
+{
+	RenderableComponentData(RenderableComponent a_component) : ComponentData<RenderableComponent>(a_component) {}
+	std::vector<FieldInfo> get_field_info(RenderableComponent& a_component) override
+	{
+		return
+		{
+			{"mesh id: ", typeid(uint32_t), &a_component.mesh_id },
+			{ "material id: ", typeid(uint32_t),& a_component.mateiral_id }
+		};
+	}
+};
+
+
+
+
+
+//struct ComponentData
+//{
+//	virtual const std::string get_name() const = 0;
+//	~ComponentData() {};
+//
+//	// implementation in .cpp
+//	virtual bool draw_imgui(entt::handle a_handle, bool runtime) = 0;
+//	virtual void to_runtime(entt::handle a_handle) = 0;
+//
+//	
+//	virtual std::vector<FieldInfo> get_field_info() = 0;
+//};
+//
+//struct NameComponentData : ComponentData
+//{
+//	NameComponent name_component;
+//	const std::string get_name() const override { return "Entity name component"; }
+//	NameComponentData(NameComponent a_name) : name_component(a_name) { };
+//	NameComponentData() {};
+//
+//	// implementation in .cpp
+//	bool draw_imgui(entt::handle a_handle, bool runtime) override;
+//	void to_runtime(entt::handle a_handle) override;
+//	std::vector<FieldInfo> get_field_info() override;
+//};
+//
+//struct WorldPositionComponentData : ComponentData
+//{
+//	WorldPositionComponent worldpos_component;
+//	const std::string get_name() const override { return "world position component"; }
+//	WorldPositionComponentData(const WorldPositionComponent a_world_pos) { worldpos_component = a_world_pos; };
+//	WorldPositionComponentData() : worldpos_component({glm::vec3(0,0 ,0)}) {};
+//
+//	// implementation in .cpp
+//	bool draw_imgui(entt::handle a_handle, bool runtime) override;
+//	void to_runtime(entt::handle a_handle) override;
+//	std::vector<FieldInfo> get_field_info() override;
+//};
+//
+//struct RenderableComponentData : ComponentData
+//{
+//	RenderableComponent renderable;
+//	const std::string get_name() const override { return "renderable component"; }
+//	RenderableComponentData(const RenderableComponent a_renderable) { renderable = a_renderable; };
+//	RenderableComponentData() : renderable({0, 0}) {};
+//
+//	// implementation in .cpp
+//	bool draw_imgui(entt::handle a_handle, bool runtime) override;
+//	void to_runtime(entt::handle a_handle) override;
+//	std::vector<FieldInfo> get_field_info() override;
+//};

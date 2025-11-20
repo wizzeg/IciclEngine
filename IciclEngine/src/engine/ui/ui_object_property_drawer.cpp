@@ -3,26 +3,29 @@
 #include <glm/glm.hpp>
 #include <string>
 #include <engine/game/component_data.h>
+#include <random>
 
 void UIObjectPropertyDrawer::draw_object_properties(std::weak_ptr<SceneObject> a_scene_object)
 {
-	if (auto scene_object = a_scene_object.lock())
+	
+	if (std::shared_ptr<SceneObject> scene_object = a_scene_object.lock())
 	{
+		std::srand(std::time(nullptr));
 		ImGui::BeginGroup();
-		//scene_object->draw_components();
 		const auto& component_datas = scene_object->get_component_datas();
 		for (size_t i = 0; i < component_datas.size(); i++)
 		{
-			//ImGui::SeparatorText(component_datas[i]->get_name().c_str());
-			//component_datas[i]->draw_imgui(scene_object->get_entity_handle(), scene_object->is_runtime());
 			std::vector<FieldInfo> field_info = component_datas[i]->get_field_info();
-			float field_size = 0.33f;
+			float field_size = 1.33f;
+			//std::string id_salt = " ";
 			for (size_t i = 0; i < field_info.size(); i++)
 			{
+				//id_salt += field_info[i].name;
 				field_size += field_info[i].imgui_size;
 			}
 			ImVec2 child_size = ImVec2(0, ImGui::GetFrameHeightWithSpacing() * field_size);
-			ImGui::BeginChild(component_datas[i]->get_name().c_str(), child_size , true, ImGuiChildFlags_AutoResizeY);
+			ImGui::BeginChild((std::to_string((uint32_t)scene_object->get_entity() + std::rand())).c_str(), child_size, true, ImGuiChildFlags_AutoResizeY); // problem, it does not display name, it's an ID.. Need to make an ID system if I want to do this
+			ImGui::SeparatorText(component_datas[i]->get_name());
 			draw_component_fields(field_info);
 			ImGui::EndChild();
 		}
@@ -56,6 +59,10 @@ void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo> a_fiel
 			uint32_t* value = static_cast<uint32_t*>(field.value_ptr);
 			std::string final_string = field.name + std::to_string(*value);
 			ImGui::Text(final_string.c_str());
+		}
+		else
+		{
+			ImGui::Text("empty field");
 		}
 	}
 }

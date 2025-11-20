@@ -94,11 +94,11 @@
     <Filter Include="Source Files\engine\resources">
       <UniqueIdentifier>{a7ad0933-5be3-4208-be2b-809122647a4c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\engine\ui">
-      <UniqueIdentifier>{37f8d3e3-0697-4890-bada-8056e6271756}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\engine\utilities">
       <UniqueIdentifier>{5b53879d-9751-4da6-83d0-4456a5c70de7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\engine\ui">
+      <UniqueIdentifier>{37f8d3e3-0697-4890-bada-8056e6271756}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -128,9 +128,6 @@
     </ClCompile>
     <ClCompile Include="..\vendor\glad\glad.c">
       <Filter>Source Files\vendor\glad</Filter>
-    </ClCompile>
-    <ClCompile Include="stb_image.cpp">
-      <Filter>Source Files\vendor\stb_image</Filter>
     </ClCompile>
     <ClCompile Include="systems.cpp">
       <Filter>Source Files</Filter>
@@ -170,6 +167,12 @@
     </ClCompile>
     <ClCompile Include="src\engine\renderer\renderer.cpp">
       <Filter>Source Files\engine\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="obj_renderer.cpp">
+      <Filter>Source Files\engine\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\vendor\stb_image\stb_image.cpp">
+      <Filter>Source Files\vendor\stb_image</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -265,6 +268,9 @@
     </ClInclude>
     <ClInclude Include="include\engine\utilities\utilities.h">
       <Filter>Header Files\engine\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="obj_renderer.h">
+      <Filter>Header Files\engine\renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

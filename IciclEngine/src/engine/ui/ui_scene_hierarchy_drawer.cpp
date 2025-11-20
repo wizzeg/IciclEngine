@@ -21,9 +21,12 @@ void UISceneHierarchyDrawer::draw_hierarchy_node(std::weak_ptr<SceneObject> a_sc
 		if (ImGui::IsItemClicked())
 		{
 			selected_scene_object = a_scene_object;
+			//ImGui::IsMouseReleased(true); // seems to fix the weird bug of losing ability to focus window
+			//ImGui::SetNextFrameWantCaptureMouse(true);
 		}
 
-		if (is_open) {
+		if (is_open)
+		{
 			for (size_t i = 0; i < children.size(); i++)
 			{
 				if (auto child = children[i].lock())
@@ -31,9 +34,6 @@ void UISceneHierarchyDrawer::draw_hierarchy_node(std::weak_ptr<SceneObject> a_sc
 					draw_hierarchy_node(child);
 				}
 			}
-		}
-		if (is_open)
-		{
 			ImGui::TreePop();
 		}
 	}

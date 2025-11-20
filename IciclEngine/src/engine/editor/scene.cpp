@@ -62,24 +62,25 @@ const std::vector<std::shared_ptr<SceneObject>> Scene::get_root_scene_objects()
 {
 	return root_scene_objects;
 }
-void Scene::draw_imgui()
-{
-	for (size_t i = scene_objects.size(); i > 0; i--)
-	{
-		if (runtime && !scene_objects[i-1].get()->has_valid_entity())
-		{
-			scene_objects.erase(scene_objects.begin() + (i-1));
-			PRINTLN("removing scene_object, as it has no entity");
-		}
-		else
-		{
-			//if (ImGui::TreeNode(scene_objects[i - 1].get()->get_name().c_str()))
-			//{
-				scene_objects[i - 1].get()->draw_components();
-			//}
-		}
-	}
-}
+
+//void Scene::draw_imgui()
+//{
+//	for (size_t i = scene_objects.size(); i > 0; i--)
+//	{
+//		if (runtime && !scene_objects[i-1].get()->has_valid_entity())
+//		{
+//			scene_objects.erase(scene_objects.begin() + (i-1));
+//			PRINTLN("removing scene_object, as it has no entity");
+//		}
+//		else
+//		{
+//			//if (ImGui::TreeNode(scene_objects[i - 1].get()->get_name().c_str()))
+//			//{
+//				scene_objects[i - 1].get()->draw_components();
+//			//}
+//		}
+//	}
+//}
 
 void Scene::to_runtime()
 {

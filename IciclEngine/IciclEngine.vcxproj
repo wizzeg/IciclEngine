@@ -153,7 +153,9 @@
     <ClCompile Include="..\vendor\imgui-docking\imgui_impl_opengl3.cpp" />
     <ClCompile Include="..\vendor\imgui-docking\imgui_tables.cpp" />
     <ClCompile Include="..\vendor\imgui-docking\imgui_widgets.cpp" />
+    <ClCompile Include="..\vendor\stb_image\stb_image.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="obj_renderer.cpp" />
     <ClCompile Include="src\engine\editor\scene.cpp" />
     <ClCompile Include="src\engine\editor\scene_object.cpp" />
     <ClCompile Include="src\engine\game\component_data.cpp" />
@@ -166,7 +168,6 @@
     <ClCompile Include="src\engine\ui\ui_manager.cpp" />
     <ClCompile Include="src\engine\ui\ui_object_property_drawer.cpp" />
     <ClCompile Include="src\engine\ui\ui_scene_hierarchy_drawer.cpp" />
-    <ClCompile Include="stb_image.cpp" />
     <ClCompile Include="systems.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -200,6 +201,7 @@
     <ClInclude Include="include\engine\utilities\macros.h" />
     <ClInclude Include="include\engine\utilities\static_conversions.h" />
     <ClInclude Include="include\engine\utilities\utilities.h" />
+    <ClInclude Include="obj_renderer.h" />
     <ClInclude Include="systems.h" />
   </ItemGroup>
   <ItemGroup>

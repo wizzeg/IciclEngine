@@ -7,7 +7,7 @@ void UIDrawerSystem::execute(std::weak_ptr<Scene> a_scene)
 {
 	if (auto scene = a_scene.lock())
 	{
-		scene->draw_imgui();
+		//scene->draw_imgui();
 	}
 }
 
