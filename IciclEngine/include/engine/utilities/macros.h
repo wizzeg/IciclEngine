@@ -11,4 +11,4 @@
 #define PRINTLN(...)
 #endif
 
-#define ELEMENTS_IN_ARRAY(a) (sizeof(a)/sizeof(a[0]))
+#define SIZEOF_ELEMENTS_IN_VECTOR(a) (a.size() * sizeof(a[0]))

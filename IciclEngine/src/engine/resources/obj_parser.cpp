@@ -5,8 +5,11 @@
 #include <algorithm>
 #include <chrono>
 #include <engine/utilities/utilities.h>
+#include <engine/renderer/render_info.h>
+#include <map>
 
-ObjMesh ObjParser::load_mesh_from_filepath(const std::string& a_path)
+
+MeshData ObjParser::load_mesh_from_filepath(const std::string& a_path)
 {
     HighResolutionTimer timer;
     timer.start();
@@ -15,13 +18,40 @@ ObjMesh ObjParser::load_mesh_from_filepath(const std::string& a_path)
     std::string line;
 
     ObjMesh obj_mesh;
+    MeshData mesh;
 
     if (!file.is_open())
     {
         PRINTLN("failed open file at: {}", a_path);
-        return obj_mesh;
+        mesh.bad_load = true;
+        return mesh;
     }
-    
+    bool has_color = false;
+    bool has_3d_uvs = false;
+    mesh.colors.emplace_back(std::vector<glm::vec4>());
+    mesh.uvs.emplace_back(std::vector<glm::vec3>());
+    size_t num_pos = 0;
+    size_t num_nrm = 0;
+    size_t num_uv = 0;
+    size_t num_f = 0;
+
+    std::vector<glm::vec3> v_pos;
+    std::vector<glm::vec4> v_col;
+    std::vector<glm::vec3> v_nrm;
+    std::vector<glm::vec3> v_uv;
+    std::vector<ObjFaceVertex> v_indicies;
+
+    glm::vec3 pos;
+    glm::vec4 col;
+    glm::vec3 nrm;
+    glm::vec3 uv;
+    ObjFace obj_face;
+    GLuint unique_index;
+
+    using vertexKey = std::tuple<GLuint, GLuint, GLuint>;
+    std::map<vertexKey, GLuint> v_map;
+
+    GLuint index = 0;
     while (std::getline(file, line))
     {
         std::istringstream string_stream(line);
@@ -29,69 +59,112 @@ ObjMesh ObjParser::load_mesh_from_filepath(const std::string& a_path)
         string_stream >> prefix;
         if (prefix == "v")
         {
-            ObjPosition obj_pos;
-            ObjColor obj_clr;
-            string_stream >> obj_pos.x >> obj_pos.y >> obj_pos.z >> obj_clr.r >> obj_clr.g >> obj_clr.b;
-            obj_pos.vec3 = glm::vec3(obj_pos.x, obj_pos.y, obj_pos.z);
-            obj_clr.r = std::max(0.0f, std::min(1.0f, obj_clr.r));
-            obj_clr.g = std::max(0.0f, std::min(1.0f, obj_clr.g));
-            obj_clr.b = std::max(0.0f, std::min(1.0f, obj_clr.b));
-            obj_clr.vec3 = glm::vec3(obj_clr.r ,obj_clr.g ,obj_clr.b);
-            obj_mesh.verticies.push_back(obj_pos);
-            obj_mesh.colors.push_back(obj_clr);
+            num_pos++;
+            string_stream >> pos.x >> pos.y >> pos.z >> col.r >> col.g >> col.b;
+            col.r = std::max(0.0f, std::min(1.0f, col.r));
+            col.g = std::max(0.0f, std::min(1.0f, col.g));
+            col.b = std::max(0.0f, std::min(1.0f, col.b));
+            has_color |= (col.r + col.g + col.b) > 0;
+            v_pos.push_back(pos);
+            v_col.push_back(glm::vec4(col.r, col.g, col.b, 1.0f));
         }
         else if (prefix == "vn")
         {
-            ObjNormal obj_nrm;
-            string_stream >> obj_nrm.x >> obj_nrm.y >> obj_nrm.z;
-            obj_nrm.x = std::max(0.0f, std::min(1.0f, obj_nrm.x));
-            obj_nrm.y = std::max(0.0f, std::min(1.0f, obj_nrm.y));
-            obj_nrm.z = std::max(0.0f, std::min(1.0f, obj_nrm.z));
-            obj_nrm.vec3 = glm::vec3(obj_nrm.x, obj_nrm.y, obj_nrm.z);
-            obj_mesh.normals.push_back(obj_nrm);
+            num_nrm++;
+
+            string_stream >> nrm.x >> nrm.y >> nrm.z;
+            nrm.x = std::max(-1.0f, std::min(1.0f, nrm.x));
+            nrm.y = std::max(-1.0f, std::min(1.0f, nrm.y));
+            nrm.z = std::max(-1.0f, std::min(1.0f, nrm.z));
+            v_nrm.push_back(nrm);
         }
         else if (prefix == "vt")
         {
-            ObjUVs obj_uv;
-            string_stream >> obj_uv.x >> obj_uv.y >> obj_uv.z;
-            obj_uv.x = std::max(0.0f, std::min(1.0f, obj_uv.x));
-            obj_uv.y = std::max(0.0f, std::min(1.0f, obj_uv.y));
-            obj_uv.z = std::max(0.0f, std::min(1.0f, obj_uv.z));
-            obj_uv.vec3 = glm::vec3(obj_uv.x, obj_uv.y, obj_uv.z);
-            obj_mesh.uvs.push_back(obj_uv);
+            num_uv++;
+
+            string_stream >> uv.x >> uv.y >> uv.z;
+            uv.x = std::max(0.0f, std::min(1.0f, uv.x));
+            uv.y = std::max(0.0f, std::min(1.0f, uv.y));
+            uv.z = std::max(0.0f, std::min(1.0f, uv.z));
+            has_3d_uvs |= uv.z > 0;
+            v_uv.push_back(uv);
         }
         else if (prefix == "f")
         {
-            
-            ObjFace obj_face;
+            num_f++;
+
             line.erase(0, 1);
 
             std::istringstream faces_string_stream(line);
             std::string face_string;
 
-            size_t index = 0;
+            size_t num_indices = 0;
             while (faces_string_stream >> face_string)
             {
-                ObjFaceVertex obj_face_vert;
+                //index++;
+                num_indices++;
+                ObjFaceVertex obj_face_vert; // should be making these once, ...
                 std::replace(face_string.begin(), face_string.end(), '/', ' ');
                 std::istringstream face_stream(face_string);
+                face_stream >> obj_face_vert.pos >> obj_face_vert.uv >> obj_face_vert.nrm;
 
-                glm::uint* spot_2 = &obj_face_vert.nrm;
-                if (!(obj_mesh.normals.size() > 0)) spot_2 = &obj_face_vert.uv;
+                vertexKey key(obj_face_vert.pos, obj_face_vert.uv, obj_face_vert.nrm);
+                auto it = v_map.find(key);
+                if (it == v_map.end())
+                {
+                    v_map[key] = index;
+                    unique_index = index++;
+                }
+                else
+                {
+                    unique_index = it->second;
+                }
+                mesh.indices.push_back(unique_index);
 
-                face_stream >> obj_face_vert.pos >> *spot_2 >> obj_face_vert.uv;
-                obj_face_vert.pos = std::max(glm::uint(0), std::min( glm::uint(obj_mesh.verticies.size()), obj_face_vert.pos));
-                obj_face_vert.nrm = std::max(glm::uint(0), std::min(glm::uint(obj_mesh.normals.size()), obj_face_vert.nrm));
-                obj_face_vert.uv = std::max(glm::uint(0), std::min(glm::uint(obj_mesh.uvs.size()), obj_face_vert.uv));
+                if (unique_index == mesh.positions.size())
+                {
 
-                obj_face_vert.vec3 = glm::uvec3(obj_face_vert.pos, obj_face_vert.nrm, obj_face_vert.uv);
-                obj_face.indicies.push_back(obj_face_vert);
+                    mesh.positions.push_back(v_pos[obj_face_vert.pos - 1]);
+                    if (has_color)
+                    {
+                        mesh.colors[0].push_back(v_col[obj_face_vert.pos - 1]);
+                    }
+                    if (mesh.normals.size() > 0)
+                        mesh.normals.push_back(v_nrm[obj_face_vert.nrm - 1]);
+                    if (mesh.uvs[0].size() > 0)
+                        mesh.uvs[0].push_back(v_uv[obj_face_vert.uv - 1]);
+                }
+
             }
-            obj_mesh.faces.push_back(obj_face);
+            if (num_indices > 3)
+            {
+                PRINTLN("OBJ not triangulized");
+                mesh.bad_load = true;
+                return mesh;
+            }
         }
     }
-    obj_mesh.path = a_path;
+
+    if (has_color)
+    {
+        mesh.colors_dimensions.emplace_back(std::vector<uint8_t>().emplace_back(3));
+    }
+    else
+    {
+        mesh.colors[0].clear();
+        mesh.colors.clear();
+    }
+    if (mesh.uvs[0].size() > 0)
+    {
+        mesh.uvs_dimensions.emplace_back(has_3d_uvs ? 3 : 2);
+    }
+    else
+    {
+        mesh.uvs.clear();
+    }
     timer.stop();
+    mesh.path = a_path;
+    PRINTLN("pos: {}, nrm: {}, uv: {}, face: {}", num_pos, num_nrm, num_uv, num_f);
     PRINTLN("time to load {}: {}ms", a_path, timer.get_time_ms());
-    return ObjMesh();
+    return mesh;
 }

@@ -23,12 +23,19 @@
 #include <engine/editor/scene.h>
 #include <engine/editor/scene_object.h>
 #include <engine/utilities/macros.h>
+#include <engine/game/components.h>
 
 #ifndef ASSIMP_LOAD_FLAGS
 #define ASSIMP_LOAD_FLAGS (aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices)
 #endif
 #include <engine/ui/ui_manager.h>
 #include <engine/resources/obj_parser.h>
+#include <engine/renderer/vao_loader.h>
+#include <engine/renderer/shader_program.h>
+#include <engine/renderer/renderer.h>
+#include "worker_thread.h"
+
+#include <thread>
 
 
 int main(void)
@@ -82,14 +89,6 @@ int main(void)
 	glEnable(GL_DEPTH_TEST);
 	//glDisable(GL_CULL_FACE);
 
-	////////////////////////////////////////
-	// Idea...
-	// Create a wrapper around entity, which can add itself to world (register) if it wants to, and do all the entity stuff
-	// have pre-system and post-system, perhaps a mid-system phase with IciclBehavior which is normal OOP attachable classes
-	// The IciclBehavior then as OnEarlyUpdate, and OnUpdate, and perhaps some more, "hooks" to run after/before entt systems
-	// this way you can make a game without any ECS, or one fully in ECS, or a hybrid.
-	///////////////////////////////////////
-
 	std::shared_ptr<Scene> scene = std::make_shared<Scene>();
 	{
 
@@ -98,6 +97,8 @@ int main(void)
 		if (auto shared = withoutChild.lock())
 		{
 			shared->add_component_data<WorldPositionComponentData>(WorldPositionComponent{ glm::vec3(3.f,2.f,1.f) });
+			std::string path = "./assets/obj/triobjmonkey.obj";
+			shared->add_component_data<MeshComponentData>(MeshComponent{ 0, "./assets/obj/triobjmonkey.obj" });
 		}
 		std::weak_ptr<SceneObject> wChild = scene.get()->new_scene_object("without Child", false);
 		std::weak_ptr<SceneObject> ChildwChild = scene.get()->new_scene_object("Child with child", false);
@@ -131,38 +132,37 @@ int main(void)
 		}
 	}
 
-	/*std::weak_ptr<SceneObject> tempobj =  scene.get()->new_scene_object("new scene object");*/
-	//if (auto shared = tempobj.lock())
-	//{
-	//	shared->add_component_data<NameComponentData>(NameComponent{"testing with name"});
-	//	NameComponent test;
-	//	shared->get_component<NameComponent, NameComponentData>(test);
-	//}
-	//
-	//tempobj = scene.get()->new_scene_object("different name");
-	//if (auto shared = tempobj.lock())
-	//{
-	//	shared->add_component_data<NameComponentData>(NameComponent{ "different name" });
-	//	NameComponent test;
-	//	shared->get_component<NameComponent, NameComponentData>(test);
-	//	shared->add_component_data<NameComponentData>(NameComponent{ "different name2" });
-	//	shared->replace_component_data<NameComponentData>(NameComponent{ "different name replaced" });
-	//	shared->add_or_replace_component_data<NameComponentData>(NameComponent{ "different name added or replaced" });
-	//	shared->add_component_data<WorldPositionComponentData>(WorldPositionComponent{ glm::vec3(1.6f, 1.f, 1.f) });
-	//	shared->add_component_data<RenderableComponentData>(RenderableComponent{3, 2});
-	//}
 
-	//auto tempobj2 = scene.get()->new_scene_object("child object");
-	//if (auto shared = tempobj.lock())
-	//{
-	//	shared->add_child(tempobj2);
-	//}
+	//////////////////////////////////////////////////////////////////
+	//
+
 	UIManager ui_mananger = UIManager();
 	ui_mananger.set_scene(scene);
 
 	ObjParser obj_parser;
-	obj_parser.load_mesh_from_filepath("./assets/obj/plane.obj");//triobjmonkey
+	MeshData mesh = obj_parser.load_mesh_from_filepath("./assets/obj/triobjmonkey.obj");//triobjmonkey
+	VAOLoader vao_loader;
+	vao_loader.load_vao(mesh);
+	std::shared_ptr<ShaderProgram> shader_program = std::make_shared<ShaderProgram>("./assets/shaders/vertex/vert.glsl", "./assets/shaders/fragment/frag.glsl");
+	Renderer renderer;
+	renderer.temp_set_shader(shader_program);
+	std::shared_ptr<EngineContext> engine_context = std::make_shared<EngineContext>();
+	std::shared_ptr<MessageQueue<VAORequest>> vao_load = std::make_shared<MessageQueue<VAORequest>>();
+	std::shared_ptr<MessageQueue<VAORequest>> vao_delete = std::make_shared<MessageQueue<VAORequest>>();
 
+
+	RenderThread render_thread(engine_context, vao_load, vao_delete, shader_program);
+	GameThread game_thread(engine_context, scene, mesh);
+	EngineThread engine_thread(engine_context);
+
+	std::thread enginer_thread(&EngineThread::execute, &engine_thread);
+	std::thread renderer_thread(&RenderThread::execute, & render_thread);
+	std::thread gamer_thread(&GameThread::execute, &game_thread);
+	
+	
+
+	//RenderContext render_context;
+	//engine_context.
 	bool game_playing = false;
 	while (!glfwWindowShouldClose(window))
 	{
@@ -171,37 +171,47 @@ int main(void)
 
 		if (!game_playing)
 		{
-			// do runtime scene here
-			///////////////////////////////////
-			// What should it do?
-			// we are to convert scene_objects into Entity, and IF in editor, then also create scene objects...
-			// should be placed in a new scene
-			// So, FIRST we make Entity, then we make the scene_object ... no I need two versions, one for runtime and one for not runtime.
+			{
+				std::lock_guard<std::mutex> guard(engine_context.get()->mutex);
+				scene.get()->to_runtime(); // deal with making a runtime copy later -------- runtime thing works at least, entities are created
+				// for now I need to be able to see changes to entities -> handle signaling
+				game_playing = true;
+				engine_context.get()->game_playing = true;
+			}
 
-
-
-			// Idea, when an entity is going to add a component, then also the scene must be notified, this is only way to
-			// I guess same could be done for removal and adding entities aswell.
-			// I guess I'll always make some kind of "ecb" that takes those requests, and will then handle all it needs to do.
-
-			scene.get()->to_runtime(); // deal with making a runtime copy later -------- runtime thing works at least, entities are created
-			// for now I need to be able to see changes to entities -> handle signaling
-			game_playing = true;
 		}
 
 		//////////////////////// systems start here for now
 
+		//if (game_playing)
+		//{
+		//	auto& registry = scene.get()->get_registry();
 
-		auto& registry = scene.get()->get_registry();
+		//	for (auto [entity, name, worldpos] : registry.view<NameComponent, WorldPositionComponent>().each())
+		//	{
+		//		worldpos.position.x += 0.0005f;
+		//	}
 
-		for (auto [entity, name, worldpos] : registry.view<NameComponent, WorldPositionComponent>().each())
-		{
-			//registry.remove<WorldPositionComponent>(entity);
-			//PRINTLN("entity position x value: {}", worldpos.position.x);
-			//registry.destroy(entity);
-			//PRINTLN("destorying entity");
-			worldpos.position.x += 0.001f;
-		}
+		//	for (auto [entity, renderable, world_position] : registry.view<RenderableComponent, WorldPositionComponent>().each())
+		//	{
+		//		renderer.temp_render(mesh, world_position);
+		//	}
+		//}
+		//else
+		//{
+		//	auto scene_objects = scene.get()->get_scene_objects();
+		//	for (size_t i = 0; i < scene_objects.size(); i++)
+		//	{
+		//		if (RenderableComponent* renderable; scene_objects[i].get()->get_component(renderable))
+		//		{
+		//			if (WorldPositionComponent* world_pos; scene_objects[i].get()->get_component(world_pos))
+		//			{
+		//				renderer.temp_render(mesh, *world_pos);
+		//			}
+		//		}
+		//	}
+		//}
+
 
 		//for (auto [entity, name] : registry.view<NameComponent>().each())
 		//{
@@ -213,7 +223,6 @@ int main(void)
 
 
 		///* Render here */
-
 		//Enginecontext
 #pragma region Render
 		//Render stuff here

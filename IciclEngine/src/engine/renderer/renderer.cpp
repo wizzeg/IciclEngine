@@ -1,2 +1,50 @@
 #include <engine/renderer/renderer.h>
+#include <engine/utilities/macros.h>
+#include <glm/ext/matrix_transform.hpp>
+#include <engine/game/components.h>
 
+void Renderer::temp_render(MeshData& a_mesh, WorldPositionComponent& a_world_pos)
+{
+	if (a_mesh.VAO_loaded)
+	{
+		if (auto shader = shader_program.lock())
+		{
+			shader->bind();
+			// Rotate 45 degrees per second around Y axis
+			rotation += glm::radians(0.07f);
+
+			// identity matrix first
+			glm::mat4 model = glm::mat4(1.0f);
+
+			// apply rotation around Y axis
+			model = glm::translate(model, a_world_pos.position);
+
+			model = glm::rotate(model, rotation, glm::vec3(0, 1, 0));
+			shader->set_mat4fv(model, "model");
+			glBindVertexArray(a_mesh.VAO);
+			glDrawElements(GL_TRIANGLES, a_mesh.indices.size(), GL_UNSIGNED_INT, 0);
+			shader->unbind();
+		}
+
+	}
+}
+
+void Renderer::temp_render(RenderRequest& a_render_request)
+{
+	if (a_render_request.vao != 0)
+	{
+		if (auto shader = shader_program.lock())
+		{
+
+			shader->set_mat4fv(a_render_request.model_matrix, "model");
+			glBindVertexArray(a_render_request.vao);
+			glDrawElements(GL_TRIANGLES, a_render_request.indices_size, GL_UNSIGNED_INT, 0);
+			shader->unbind();
+		}
+
+	}
+}
+void Renderer::temp_set_shader(std::weak_ptr<ShaderProgram> a_shader)
+{
+	shader_program = a_shader;
+}

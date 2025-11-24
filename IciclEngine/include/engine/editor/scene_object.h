@@ -43,8 +43,8 @@ public:
 	bool add_component_data(TComponent&& a_component)
 	{
 		static_assert(std::is_base_of<ComponentData<std::decay_t<TComponent>>, TcomponentData>::value, "TcomponentData must derive from ComponentData<T> with matching TComponent");
-		static_assert(std::is_standard_layout<std::decay_t<TComponent>>::value, "TComponent must be a standard-layout type (e.g no inheritance)");
-		static_assert(std::is_trivial<std::decay_t<TComponent>>::value, "TComponent must be trivial (e.g. no smart pointers)");
+		//static_assert(std::is_standard_layout<std::decay_t<TComponent>>::value, "TComponent must be a standard-layout type (e.g no inheritance)");
+		//static_assert(std::is_trivial<std::decay_t<TComponent>>::value, "TComponent must be trivial (e.g. no smart pointers)");
 		std::type_index t_type = typeid(std::decay_t<TComponent>);
 		for (size_t i = 0; i < component_types.size(); i++)
 		{
@@ -61,8 +61,8 @@ public:
 	template <typename TComponent>
 	bool replace_component_data(TComponent&& a_component)
 	{
-		static_assert(std::is_standard_layout<std::decay_t<TComponent>>::value, "TComponent must be a standard-layout type (e.g no inheritance)");
-		static_assert(std::is_trivial<std::decay_t<TComponent>>::value, "TComponent must be trivial (e.g. no smart pointers)");
+		//static_assert(std::is_standard_layout<std::decay_t<TComponent>>::value, "TComponent must be a standard-layout type (e.g no inheritance)");
+		//static_assert(std::is_trivial<std::decay_t<TComponent>>::value, "TComponent must be trivial (e.g. no smart pointers)");
 		std::type_index t_type = typeid(std::decay_t<TComponent>);
 		bool error = false;
 		for (size_t i = 0; i < component_types.size(); i++) // may want to consider to sort these in order of each other.
@@ -110,8 +110,8 @@ public:
 	template<typename TComponent>
 	bool get_component(TComponent*& a_component)
 	{
-		static_assert(std::is_standard_layout<std::decay_t<TComponent>>::value, "TComponent must be a standard-layout type (e.g no inheritance)");
-		static_assert(std::is_trivial<std::decay_t<TComponent>>::value, "TComponent must be trivial (e.g. no smart pointers)");
+		//static_assert(std::is_standard_layout<std::decay_t<TComponent>>::value, "TComponent must be a standard-layout type (e.g no inheritance)");
+		//static_assert(std::is_trivial<std::decay_t<TComponent>>::value, "TComponent must be trivial (e.g. no smart pointers)");
 		std::type_index t_type = typeid(std::decay_t<TComponent>);
 		bool error = false;
 		for (size_t i = 0; i < component_types.size(); i++) // may want to consider to sort these in order of each other.

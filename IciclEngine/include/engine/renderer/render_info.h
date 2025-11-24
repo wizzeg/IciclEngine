@@ -2,29 +2,40 @@
 #include <string>
 #include <vector>
 #include <glm/glm.hpp>
+#include <glad/glad.h>
 
 #ifndef MAX_UVS_COLORS
 #define MAX_UVS_COLORS 6;
 #endif
 
-enum BufferType
+struct RenderRequest
 {
-	POSITION_VB,
-	NORMAL_VB,
-	TANGENT_VB,
-	BITANGET_VB,
-	COLOR0_VB,
-	COLOR1_VB,
-	COLOR2_VB,
-	COLOR3_VB,
-	COLOR4_VB,
-	COLOR5_VB,
-	UVCoords0_VB,
-	UVCoords1_VB,
-	UVCoords2_VB,
-	UVCoords3_VB,
-	UVCoords4_VB,
-	UVCoords5_VB,
+	uint32_t vao;
+	GLsizei indices_size;
+	glm::mat4 model_matrix;
+	uint32_t shader_program;
+	uint32_t material_id; // I don't know
+
+};
+
+enum BufferAttributeLocation
+{
+	Position = 0,
+	Normal = 1,
+	Tangent = 2,
+	Bitangent = 3,
+	Color0 = 4,
+	Color1 = 5,
+	Color2 = 6,
+	Color3 = 7,
+	Color4 = 8,
+	Color5 = 9,
+	UV0 = 10,
+	UV1 = 11,
+	UV2 = 12,
+	UV3 = 13,
+	UV4 = 14,
+	UV5 = 15
 };
 
 struct MeshHandle
@@ -37,105 +48,42 @@ struct MaterialHandle
 	std::uint32_t id;
 };
 
-struct Asset3D
+struct MeshPath
+{
+	std::string path;
+};
+
+struct MaterialPath
 {
 	std::string path;
 };
 
 
-
-struct VertexAttributeNums
+struct MeshData
 {
-	VertexAttributeNums() : Positions(0), TextureCoords(0), VertexColors(0), MaterialIndex(0), TangentsBitangents(false), Normals(false) {};
-	unsigned int Positions;
-	unsigned int TextureCoords;
-	std::vector<unsigned int> TextureCoordsDimensions;
-	unsigned int VertexColors;
-	unsigned int MaterialIndex;
-	bool TangentsBitangents;
-	bool Normals;
-};
-
-struct VertexData
-{
-	bool initialized = false;
+	std::string path;
+	bool VAO_loaded = false;
+	bool bad_load = false;
+	bool destroy = false;
 	unsigned int stride = 0;
 
-	size_t base_vertex = 0;
+	glm::mat4 offset_matrix = glm::mat4(1);
 
-	unsigned int VAO = 0; // don't think I'll use these 3 ... 
-	unsigned int VBO = 0;
-	unsigned int EBO = 0;
+	GLuint base_vertex = 0;
+	GLuint VAO = 0;
+	std::vector<GLuint> VBOs;
+	GLuint EBO = 0;
 
-
-
-	std::vector<glm::vec3> Positions;
-	std::vector<glm::vec3> Normals;
-	std::vector<glm::vec3> Tangents;
-	std::vector<glm::vec3> Bitangets;
-	std::vector<std::vector<glm::vec4>> Colors;
-	std::vector<std::vector<glm::vec3>> UVs;
-	std::vector<float> buffer;
-	std::vector<unsigned int> indices;
-	VertexData()
+	std::vector<glm::vec3> positions;
+	std::vector<glm::vec3> normals;
+	std::vector<glm::vec3> tangets;
+	std::vector<glm::vec3> bitangents;
+	std::vector<std::vector<uint8_t> >colors_dimensions;
+	std::vector<std::vector<glm::vec4>> colors;
+	std::vector<std::vector<uint8_t> >uvs_dimensions;
+	std::vector<std::vector<glm::vec3>> uvs;
+	std::vector<GLuint> indices;
+	MeshData()
 	{
 	}
-	VertexData(VertexAttributeNums* vertexAttributeNums)
-	{
-		unsigned int reserveSize = vertexAttributeNums->Positions;
-		stride = 0;
-		Positions.reserve(reserveSize);
-		stride += 3;
-		if (vertexAttributeNums->Normals)
-		{
-			Normals.reserve(reserveSize);
-			stride += 3;
-		}
-		if (vertexAttributeNums->TangentsBitangents)
-		{
-			Tangents.reserve(reserveSize);
-			stride += 3;
-		}
-
-		if (vertexAttributeNums->TangentsBitangents)
-		{
-			Bitangets.reserve(reserveSize);
-			stride += 3;
-		}
-		if (vertexAttributeNums->VertexColors > 0)
-		{
-			Colors.reserve(vertexAttributeNums->VertexColors);
-			for (unsigned int i = 0; i < vertexAttributeNums->VertexColors; i++)
-			{
-				Colors.push_back(std::vector<glm::vec4>());
-				Colors[i].reserve(reserveSize);
-				stride += 4;
-			}
-		}
-		if (vertexAttributeNums->TextureCoords > 0)
-		{
-			UVs.reserve(vertexAttributeNums->TextureCoords);
-			for (unsigned int i = 0; i < vertexAttributeNums->TextureCoords; i++)
-			{
-				UVs.push_back(std::vector<glm::vec3>());
-				UVs[i].reserve(reserveSize);
-				stride += vertexAttributeNums->TextureCoordsDimensions[i];
-			}
-		}
-		buffer.reserve(stride * reserveSize);
-		initialized = true;
-	}
-};
-
-struct SubMesh
-{
-	glm::mat4 transform;
-	VertexAttributeNums attribute_nums;
-	VertexData vertex_data;
-};
-
-struct Mesh
-{
-	VertexAttributeNums max_attribute_nums; // fill in trash defaults 0 if not all submeshes have all attributes
-	std::vector<SubMesh> sub_meshes;
 };

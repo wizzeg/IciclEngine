@@ -2,6 +2,7 @@
 #include <vector>
 #include <glm/glm.hpp>
 #include <string>
+#include <engine/renderer/render_info.h>
 
 struct ObjPosition
 {
@@ -29,7 +30,7 @@ struct ObjUVs
 struct ObjFaceVertex
 {
 	glm::uvec3 vec3;
-	glm::uint pos, nrm, uv;
+	GLuint pos, nrm, uv;
 };
 
 struct ObjFace
@@ -63,6 +64,6 @@ struct ObjMesh
 
 struct ObjParser
 {
-	ObjMesh load_mesh_from_filepath(const std::string& a_path);
+	MeshData load_mesh_from_filepath(const std::string& a_path);
 };
 

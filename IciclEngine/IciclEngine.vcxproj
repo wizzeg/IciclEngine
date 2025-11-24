@@ -154,14 +154,18 @@
     <ClCompile Include="..\vendor\imgui-docking\imgui_tables.cpp" />
     <ClCompile Include="..\vendor\imgui-docking\imgui_widgets.cpp" />
     <ClCompile Include="..\vendor\stb_image\stb_image.cpp" />
+    <ClCompile Include="game_engine.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="obj_renderer.cpp" />
     <ClCompile Include="src\engine\editor\scene.cpp" />
     <ClCompile Include="src\engine\editor\scene_object.cpp" />
     <ClCompile Include="src\engine\game\component_data.cpp" />
+    <ClCompile Include="src\engine\renderer\obj_renderer.cpp" />
     <ClCompile Include="src\engine\renderer\renderer.cpp" />
+    <ClCompile Include="src\engine\renderer\shader_program.cpp" />
+    <ClCompile Include="src\engine\renderer\vao_loader.cpp" />
     <ClCompile Include="src\engine\resources\asset_loader.cpp" />
     <ClCompile Include="src\engine\resources\asset_manager.cpp" />
+    <ClCompile Include="src\engine\resources\data_storage.cpp" />
     <ClCompile Include="src\engine\resources\obj_parser.cpp" />
     <ClCompile Include="src\engine\resources\scene_object_registry.cpp" />
     <ClCompile Include="src\engine\ui\ui_component_drawer.cpp" />
@@ -169,6 +173,7 @@
     <ClCompile Include="src\engine\ui\ui_object_property_drawer.cpp" />
     <ClCompile Include="src\engine\ui\ui_scene_hierarchy_drawer.cpp" />
     <ClCompile Include="systems.cpp" />
+    <ClCompile Include="worker_thread.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\entt\entt.hpp" />
@@ -184,14 +189,20 @@
     <ClInclude Include="..\vendor\imgui-docking\imstb_truetype.h" />
     <ClInclude Include="..\vendor\KHR\khrplatform.h" />
     <ClInclude Include="..\vendor\stb_image\stb_image.h" />
+    <ClInclude Include="game_engine.h" />
     <ClInclude Include="include\engine\editor\scene.h" />
     <ClInclude Include="include\engine\editor\scene_object.h" />
     <ClInclude Include="include\engine\game\components.h" />
     <ClInclude Include="include\engine\game\component_data.h" />
+    <ClInclude Include="include\engine\renderer\obj_renderer.h" />
     <ClInclude Include="include\engine\renderer\renderer.h" />
     <ClInclude Include="include\engine\renderer\render_info.h" />
+    <ClInclude Include="include\engine\renderer\shader_loader.h" />
+    <ClInclude Include="include\engine\renderer\shader_program.h" />
+    <ClInclude Include="include\engine\renderer\vao_loader.h" />
     <ClInclude Include="include\engine\resources\asset_loader.h" />
     <ClInclude Include="include\engine\resources\asset_manager.h" />
+    <ClInclude Include="include\engine\resources\data_storage.h" />
     <ClInclude Include="include\engine\resources\obj_parser.h" />
     <ClInclude Include="include\engine\resources\scene_object_registry.h" />
     <ClInclude Include="include\engine\ui\ui_component_drawer.h" />
@@ -201,8 +212,8 @@
     <ClInclude Include="include\engine\utilities\macros.h" />
     <ClInclude Include="include\engine\utilities\static_conversions.h" />
     <ClInclude Include="include\engine\utilities\utilities.h" />
-    <ClInclude Include="obj_renderer.h" />
     <ClInclude Include="systems.h" />
+    <ClInclude Include="worker_thread.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\assets\shaders\fragment\frag.glsl" />

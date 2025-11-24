@@ -6,7 +6,6 @@
 #include <algorithm>
 #include <utility>
 #include <glm/glm.hpp>
-//#include "render_info.h"
 #include <engine/renderer/render_info.h>
 #include <engine/resources/obj_parser.h>
 
@@ -33,11 +32,13 @@ struct MaterialLoaderComponent
 struct MeshComponent
 {
     uint32_t id;
+    std::string path;
 };
 
 struct MaterialComponent
 {
     uint32_t id;
+    std::string path;
 };
 
 struct RenderableComponent

@@ -33,7 +33,7 @@ void UIObjectPropertyDrawer::draw_object_properties(std::weak_ptr<SceneObject> a
 	}
 }
 
-void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo> a_field_info)
+void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_field_info)
 {
 	for (const auto& field : a_field_info)
 	{

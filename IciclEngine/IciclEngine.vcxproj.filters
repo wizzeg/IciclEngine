@@ -85,9 +85,6 @@
     <Filter Include="Source Files\engine\editor">
       <UniqueIdentifier>{229c6c90-ec20-4bb9-b839-0a6b6632e9df}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\engine\game">
-      <UniqueIdentifier>{607850a4-2e07-473b-b48f-1fe89091dfbb}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\engine\renderer">
       <UniqueIdentifier>{ae559937-61fe-4a00-81a9-230b2faa6c03}</UniqueIdentifier>
     </Filter>
@@ -99,6 +96,9 @@
     </Filter>
     <Filter Include="Source Files\engine\ui">
       <UniqueIdentifier>{37f8d3e3-0697-4890-bada-8056e6271756}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\engine\game">
+      <UniqueIdentifier>{607850a4-2e07-473b-b48f-1fe89091dfbb}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -168,11 +168,26 @@
     <ClCompile Include="src\engine\renderer\renderer.cpp">
       <Filter>Source Files\engine\renderer</Filter>
     </ClCompile>
-    <ClCompile Include="obj_renderer.cpp">
-      <Filter>Source Files\engine\renderer</Filter>
-    </ClCompile>
     <ClCompile Include="..\vendor\stb_image\stb_image.cpp">
       <Filter>Source Files\vendor\stb_image</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\renderer\vao_loader.cpp">
+      <Filter>Source Files\engine\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\renderer\obj_renderer.cpp">
+      <Filter>Source Files\engine\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\renderer\shader_program.cpp">
+      <Filter>Source Files\engine\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\resources\data_storage.cpp">
+      <Filter>Source Files\engine\resources</Filter>
+    </ClCompile>
+    <ClCompile Include="worker_thread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="game_engine.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -269,8 +284,26 @@
     <ClInclude Include="include\engine\utilities\utilities.h">
       <Filter>Header Files\engine\utilities</Filter>
     </ClInclude>
-    <ClInclude Include="obj_renderer.h">
+    <ClInclude Include="include\engine\renderer\vao_loader.h">
       <Filter>Header Files\engine\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\renderer\obj_renderer.h">
+      <Filter>Header Files\engine\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\renderer\shader_loader.h">
+      <Filter>Header Files\engine\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\renderer\shader_program.h">
+      <Filter>Header Files\engine\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\resources\data_storage.h">
+      <Filter>Header Files\engine\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="worker_thread.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="game_engine.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

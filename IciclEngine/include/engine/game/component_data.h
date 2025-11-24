@@ -146,7 +146,8 @@ struct MeshComponentData : ComponentData<MeshComponent>
 	{
 		return
 		{
-			{"mesh id: ", typeid(uint32_t), &a_component.id }
+			{"mesh id: ", typeid(uint32_t), &a_component.id },
+			{"mesh path: ", typeid(std::string), &a_component.path }
 		};
 	}
 };
@@ -171,7 +172,7 @@ struct RenderableComponentData : ComponentData<RenderableComponent>
 		return
 		{
 			{"mesh id: ", typeid(uint32_t), &a_component.mesh_id },
-			{ "material id: ", typeid(uint32_t),& a_component.mateiral_id }
+			{ "material id: ", typeid(uint32_t), &a_component.mateiral_id }
 		};
 	}
 };
