@@ -71,7 +71,7 @@ public:
 			{
 				for (size_t i = 0; i < component_datas.size(); i++)
 				{
-					if (component_datas[i].get()->get_type() == t_type)
+					if (component_datas[i]->get_type() == t_type)
 					{
 						ComponentData<std::decay_t<TComponent>>& component_data = static_cast<ComponentData<std::decay_t<TComponent>>&>(*component_datas[i]);
 						std::decay_t<TComponent> component = std::forward<TComponent>(a_component);
@@ -120,7 +120,7 @@ public:
 			{
 				for (size_t i = 0; i < component_datas.size(); i++)
 				{
-					if (component_datas[i].get()->get_type() == t_type)
+					if (component_datas[i]->get_type() == t_type)
 					{
 						ComponentData<std::decay_t<TComponent>>& component_data = static_cast<ComponentData<std::decay_t<TComponent>>&>(*component_datas[i]);
 						a_component = &component_data.get_component();
@@ -155,7 +155,7 @@ public:
 				found_index = true;
 				for (size_t i = 0; i < component_datas.size(); i++)
 				{
-					if (component_datas[i].get()->get_type() == t_type)
+					if (component_datas[i]->get_type() == t_type)
 					{
 						component_datas.erase(component_datas.begin() + i);
 						found_component = true;

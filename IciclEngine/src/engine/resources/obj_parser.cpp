@@ -19,7 +19,7 @@ MeshData ObjParser::load_mesh_from_filepath(const std::string& a_path)
 
     ObjMesh obj_mesh;
     MeshData mesh;
-
+    mesh.started_load = true;
     if (!file.is_open())
     {
         PRINTLN("failed open file at: {}", a_path);

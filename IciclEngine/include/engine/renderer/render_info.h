@@ -1,20 +1,32 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <entt/entt.hpp>
 #include <glm/glm.hpp>
 #include <glad/glad.h>
-
 #ifndef MAX_UVS_COLORS
 #define MAX_UVS_COLORS 6;
 #endif
 
+struct VAORequest
+{
+	uint32_t mesh_id;
+	entt::hashed_string hashed_path;
+};
+
+struct LoadRequest
+{
+	std::string path;
+};
+
+
 struct RenderRequest
 {
-	uint32_t vao;
-	GLsizei indices_size;
-	glm::mat4 model_matrix;
-	uint32_t shader_program;
-	uint32_t material_id; // I don't know
+	GLuint vao = 0;
+	GLsizei indices_size = 0;
+	glm::mat4 model_matrix = glm::mat4(0);
+	GLuint shader_program = 0;
+	uint32_t material_id = 0; // I don't know
 
 };
 
@@ -62,8 +74,11 @@ struct MaterialPath
 struct MeshData
 {
 	std::string path;
+	entt::hashed_string path_hashed;
+	uint32_t mesh_id = 0;
 	bool VAO_loaded = false;
 	bool bad_load = false;
+	bool started_load = false;
 	bool destroy = false;
 	unsigned int stride = 0;
 
@@ -83,7 +98,4 @@ struct MeshData
 	std::vector<std::vector<uint8_t> >uvs_dimensions;
 	std::vector<std::vector<glm::vec3>> uvs;
 	std::vector<GLuint> indices;
-	MeshData()
-	{
-	}
 };

@@ -1,0 +1,1 @@
+#include <engine/resources/message_queue.h>

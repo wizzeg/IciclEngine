@@ -33,6 +33,7 @@ struct MeshComponent
 {
     uint32_t id;
     std::string path;
+    entt::hashed_string hashed_path;
 };
 
 struct MaterialComponent

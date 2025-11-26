@@ -11,7 +11,7 @@ Scene::Scene()
 }
 Scene::Scene(std::shared_ptr<Scene> a_scene)
 {
-	auto scene = a_scene.get();
+	auto scene = a_scene;
 	auto scene_objects = scene->get_scene_objects();
 	for (size_t i = 0; i < scene_objects.size(); i++)
 	{
@@ -22,7 +22,7 @@ Scene::~Scene()
 {
 	for (size_t i = 0; i < scene_objects.size(); i++)
 	{
-		scene_objects[i].get()->scene_ended();
+		scene_objects[i]->scene_ended();
 	}
 }
 
@@ -87,7 +87,7 @@ void Scene::to_runtime()
 	runtime = true;
 	for (size_t i = 0; i < scene_objects.size(); i++)
 	{
-		scene_objects[i].get()->to_runtime(shared_from_this());
+		scene_objects[i]->to_runtime(shared_from_this());
 	}
 }
 

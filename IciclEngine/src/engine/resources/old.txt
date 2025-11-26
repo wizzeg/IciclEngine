@@ -1,0 +1,274 @@
+#pragma once
+
+#include <vector>
+#include <memory>
+#include <mutex>
+#include <random>
+#include <engine/utilities/macros.h>
+#include <engine/renderer/render_info.h>
+#include <engine/resources/obj_parser.h>
+#include <map>
+
+struct LockKey
+{
+	uint8_t key;
+	std::unique_lock<std::mutex> lock;
+	LockKey(uint8_t a_key, std::unique_lock<std::mutex>&& a_lock) : key(a_key), lock(std::move(a_lock)) {};
+};
+
+
+struct DataGenerationStorageBase
+{
+	virtual const std::type_info& get_data_type() = 0;
+	virtual const std::type_info& get_class_type() = 0;
+
+	std::optional<LockKey> try_get_lock()
+	{
+		std::unique_lock<std::mutex> lock(mutex, std::try_to_lock);
+		if (lock.owns_lock())
+		{
+			key = get_random_key();
+			return LockKey(key, std::move(lock));
+		}
+		else
+			return std::nullopt;
+	}
+
+	LockKey get_lock()
+	{
+		std::unique_lock<std::mutex> lock(mutex);
+		key = get_random_key();
+		return LockKey(key, std::move(lock));
+	}
+
+	void release_lock(LockKey&& a_lock_key) { LockKey destroy_key(std::move(a_lock_key)); key = 0; }
+
+protected:
+	uint8_t get_random_key()
+	{
+		static thread_local std::mt19937 rng(std::random_device{}());
+		std::uniform_int_distribution<int> dist(1, 255);
+		return (uint8_t)dist(rng);
+	}
+	uint32_t get_next_id() { return next_id++; };
+
+	uint32_t next_id = 0;
+	std::mutex mutex;
+	uint8_t key;
+};
+
+template <typename TData>
+struct DataGenerationStorage : DataGenerationStorageBase
+{
+	virtual std::optional<std::weak_ptr<TData>> get_data_from_string(const LockKey& a_lock, const std::string& a_string)
+	{
+		if (a_lock.key != key)
+			return std::nullopt;
+		auto it = map_string_data.find(a_string);
+		if (it != map_string_data.end())
+			return std::nullopt;
+		else
+		{
+			if (it->second.lock())
+				return it->second;
+			else
+			{
+				map_string_data.erase(it);
+				return std::nullopt;
+			}
+		}
+	} // string to the map to the data
+
+	virtual std::optional<std::weak_ptr<TData>> generate_or_get_from_string(const LockKey& a_lock, const std::string& a_string)
+	{
+		if (a_lock.key != key)
+			return std::nullopt;
+		auto it = map_string_data.find(a_string);
+		if (it != map_string_data.end())
+		{ 
+			storage_data.emplace_back(std::make_shared<TData>(generate_from_string(a_string)));
+			std::weak_ptr<TData> data = storage_data.back();
+			map_string_data[a_string] = data;
+			// // should ensure sorting right now instead ... think about it later
+			return data;;
+		}
+		else
+		{
+			if (it->second.lock())
+				return it->second;
+			else
+			{
+				storage_data.emplace_back(std::make_shared<TData>(generate_from_string(a_string)));
+				std::weak_ptr<TData> data = storage_data.back();
+				map_string_data[a_string] = data;
+				return data;
+			}
+		}
+			
+	}// string to look existance, if not create new element in vector, or return
+
+	std::optional<typename std::vector<std::shared_ptr<TData>>::iterator> begin(const LockKey& a_lock) // unsure about this syntaxical stuff, why it really needs it
+	{
+		if (a_lock.key != key)
+			return std::nullopt;
+		return storage_data.begin();
+	}
+	std::optional<typename std::vector<std::shared_ptr<TData>>::iterator> end(const LockKey& a_lock)
+	{
+		if (a_lock.key != key)
+			return std::nullopt;
+		return storage_data.end();
+	}
+
+	virtual void sort_data() = 0;
+	virtual std::optional<std::weak_ptr<TData>> get_data_by_id(const LockKey& a_lock, uint32_t a_id) = 0;
+
+	const std::type_info& get_data_type() override { return typeid(TData); }
+	const std::type_info& get_class_type() override { return typeid(*this); }
+protected:
+	virtual TData generate_from_string(const std::string& a_string) = 0;
+	std::vector<std::shared_ptr<TData>> storage_data; // this is kinda terrible... the value is non-contigious
+	std::map<std::string, std::weak_ptr<TData>> map_string_data; // take in a string, and map it to the TData
+};
+
+struct MeshDataGenerationStorage : DataGenerationStorage<MeshData>
+{
+	MeshDataGenerationStorage(uint8_t a_num_max_threads = 1) : num_threads(a_num_max_threads) {};
+	// Inherited via DataGenerationStorage
+	void sort_data() override;
+	std::optional<std::weak_ptr<MeshData>> get_data_by_id(const LockKey& a_lock, uint32_t a_id) override;
+protected:
+	std::condition_variable cv_loaders;
+	ObjParser obj_parser;
+	uint8_t num_threads;
+	MeshData generate_from_string(const std::string& a_string) override;
+};
+
+
+//
+//template <typename TData>
+//struct DataStorage : DataStorageBase
+//{
+//
+//	DataStorage() : key(0) {};
+//
+//	virtual LockKey get_mutex_lock()
+//	{
+//		std::unique_lock<std::mutex> lock(mutex);
+//		key = get_random_key();
+//		return LockKey{ key, lock };
+//	}
+//
+//
+//	virtual std::optional<LockKey> try_get_mutex_lock() {
+//		std::unique_lock<std::mutex> lock(mutex, std::try_to_lock);
+//		if (lock.owns_lock())
+//		{
+//			key = get_random_key();
+//			return LockKey{ key, lock };
+//		}
+//		else
+//		{
+//			return std::nullopt;
+//		}
+//	};
+//
+//	virtual bool add_data(const TData& a_data, const LockKey& a_key)
+//	{
+//		if (a_key.key == key)
+//		{
+//			data_storage.emplace_back(std::make_unique<TData>(a_data));
+//			return true;
+//		}
+//		else
+//		{
+//			PRINTLN("WARNING: tried to add data with invalid key");
+//		}
+//		return false;
+//	}
+//	virtual void add_data_nodupe(const TData& a_data, const LockKey& a_key)
+//	{
+//		PRINTLN("WARNING: no implenetation");
+//	};
+//	virtual std::vector<std::unique_ptr<TData>>* get_data_vector(const LockKey& a_key)
+//	{
+//		if (a_key.key == key)
+//		{
+//			return &data_storage;
+//		}
+//		else
+//		{
+//			PRINTLN("WARNING: tried to add data with invalid key");
+//			return nullptr;
+//		}
+//	}
+//	virtual TData* get_data_at(size_t a_index, const LockKey& a_key)
+//	{
+//		if (a_key.key == key)
+//		{
+//			if (a_index < data_storage.size())
+//			{
+//				return data_storage[a_index].get();
+//			}
+//			else
+//			{
+//				PRINTLN("data_storage index out of bounds");
+//				return nullptr;
+//			}
+//		}
+//		else
+//		{
+//			PRINTLN("WARNING: tried to add data with invalid key");
+//			return nullptr;
+//		}
+//	};
+//
+//	virtual typename std::optional<typename std::vector<std::unique_ptr<TData>>::const_iterator> begin(const LockKey& a_key) const
+//	{ 
+//		if (a_key.key == key)
+//		{
+//			return data_storage.begin();
+//		}
+//		else
+//		{
+//			PRINTLN("WARNING: tried to add data with invalid key");
+//			return std::nullopt;
+//		}
+//	}
+//	virtual typename std::optional<typename std::vector<std::unique_ptr<TData>>::const_iterator> end(const LockKey& a_key) const
+//	{
+//		if (a_key.key == key)
+//		{
+//			return data_storage.end();
+//		}
+//		else
+//		{
+//			PRINTLN("WARNING: tried to add data with invalid key");
+//			return std::nullopt;
+//		}
+//		
+//	}
+//
+//	virtual const std::type_info& get_data_type() override { return typeid(TData); }
+//	virtual const std::type_info& get_class_type() override { return typeid(*this); }
+//
+//	
+//
+//private:
+//	uint8_t get_random_key()
+//	{
+//		static thread_local std::mt19937 rng(std::random_device{}());
+//		std::uniform_int_distribution<int> dist(1, 255);
+//		return (uint8_t)dist(rng);
+//	}
+//
+//	std::vector<std::unique_ptr<TData>> data_storage;
+//	std::mutex mutex;
+//	uint8_t key;
+//};
+//
+//
+//struct MeshDataStorage : DataStorage<MeshData>
+//{
+//
+//};

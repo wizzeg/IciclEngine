@@ -189,6 +189,15 @@
     <ClCompile Include="game_engine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\resources\message_queue.cpp">
+      <Filter>Source Files\engine\resources</Filter>
+    </ClCompile>
+    <ClCompile Include="GL_context.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui_manager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\imgui-docking\imconfig.h">
@@ -303,6 +312,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="game_engine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\resources\message_queue.h">
+      <Filter>Header Files\engine\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="GL_context.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui_manager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

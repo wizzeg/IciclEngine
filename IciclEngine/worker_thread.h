@@ -3,48 +3,29 @@
 #include <functional>
 #include <map>
 #include <glad/glad.h>
+#include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
-#include <deque>
+#include <engine/resources/message_queue.h>
 #include <optional>
 #include <engine/renderer/renderer.h>
 #include <barrier>
 #include <latch>
 #include <condition_variable>
 #include <engine/editor/scene.h>
+#include <engine/resources/data_storage.h>
 
-struct VAORequest
-{
-	uint32_t mesh_id;
-};
-
-template <typename T>
-struct MessageQueue
-{
-	std::deque<T> messages;
-	std::mutex mutex;
-
-	void add_message(T& a_message)
-	{
-		std::lock_guard guard(mutex);
-		messages.push_back(a_message);
-	}
+#include <imgui-docking/imgui.h>
+#include <imgui-docking/imgui_impl_glfw.h>
+#include <imgui-docking/imgui_impl_opengl3.h>
+#include "GL_context.h"
+#include "imgui_manager.h"
+#include <engine/ui/ui_manager.h>
 
 
-	std::optional<T> get_message()
-	{
-		std::lock_guard guard(mutex);
-		if (messages.empty())
-		{
-			return std::nullopt;
-		}
-		T message = messages.front();
-		messages.pop_front();
-		return message;
-	}
-};
 
 struct EngineContext
 {
+	EngineContext(std::shared_ptr<MeshDataGenStorage> a_storage) : storage(a_storage) {};
 	void set_render_request(std::vector<RenderRequest>& a_render_requests)
 	{
 		render_requests[(std::size_t(write_pos))] = a_render_requests;
@@ -53,93 +34,138 @@ struct EngineContext
 	{
 		return render_requests[(std::size_t(!write_pos))];
 	}
-	void swap_render_requests() { write_pos = !write_pos; }
+	void swap_render_requests() { write_pos = !write_pos; render_requests[std::size_t(write_pos)].clear(); }
 	bool run() { return !kill_all; }
 	std::mutex mutex;
 	std::condition_variable cv_frame_coordinator;
 	std::condition_variable cv_threads;
-	bool write_pos = false;
+	std::atomic<bool> write_pos = false;
 	std::vector<RenderRequest> render_requests[2];
+	std::shared_ptr<MeshDataGenStorage> storage;
+	//MessageQueue<>
 	std::atomic<bool> kill_all;
 	bool game_thread = false;
 	bool render_thread = false;
 	bool next_frame = false;
 	bool game_playing = false;
+	std::mutex glfw_mutex;
 	
 };
 
-struct RenderContext
+template <typename TMessage>
+struct MessageThreadContext
 {
-	RenderContext(Renderer& a_renderer, std::shared_ptr<MessageQueue<VAORequest>> a_vao_load_requests,
-		std::shared_ptr<MessageQueue<VAORequest>> a_vao_delete_requests, std::weak_ptr<EngineContext> a_engine_context, 
-		std::weak_ptr<ShaderProgram> a_shader_program)
-		: renderer(a_renderer), vao_load_requests(a_vao_load_requests), vao_delete_requests(a_vao_delete_requests), 
-		engine_context(a_engine_context) { renderer.temp_set_shader(a_shader_program); };
-
-	std::vector<RenderRequest> render_requests;
-	Renderer renderer;
-	std::shared_ptr<MessageQueue<VAORequest>> vao_load_requests;
-	std::shared_ptr<MessageQueue<VAORequest>> vao_delete_requests;
-	std::weak_ptr<EngineContext> engine_context;
+	std::mutex mutex;
+	std::condition_variable cv_message_queue;
+	MessageQueue<TMessage> message_queue;
+	bool exit = false;
 };
 
-struct GameContext
+struct MeshLoadThreadContext : MessageThreadContext<LoadRequest>
 {
-	GameContext(std::weak_ptr<EngineContext> a_engine_context, std::weak_ptr<Scene> a_scene, MeshData& a_mesh) :
-		engine_context(a_engine_context), scene(a_scene), mesh(a_mesh) {
-	};
-	std::weak_ptr<EngineContext> engine_context;
-	std::weak_ptr<Scene> scene;
-	MeshData mesh;
+	//some asset manager
 };
-
-
-
 
 
 struct RenderThread
 {
 
-	RenderThread(std::shared_ptr<EngineContext> a_context, std::shared_ptr<MessageQueue<VAORequest>> a_vao_load_requests,
-		std::shared_ptr<MessageQueue<VAORequest>> a_vao_delete_requests, std::weak_ptr<ShaderProgram> a_shader)
-		: engine_context(a_context), vao_load_requests(a_vao_load_requests), vao_delete_requests(a_vao_delete_requests)
+	RenderThread(std::shared_ptr<EngineContext> a_context, ShaderProgram& a_default_shader, std::weak_ptr<GLContext> a_gl_context)
+		: engine_context(a_context), default_shader(a_default_shader), gl_context(a_gl_context)
 	{
-		renderer.temp_set_shader(a_shader);
 	};
 
 	void execute();
-	//void execute(std::weak_ptr<RenderContext> render_context);
 
 private:
 	std::shared_ptr<EngineContext> engine_context;
-	std::vector<RenderRequest> render_requests;
-	
 	Renderer renderer;
-	std::shared_ptr<MessageQueue<VAORequest>> vao_load_requests;
-	std::shared_ptr<MessageQueue<VAORequest>> vao_delete_requests;
+	ShaderProgram default_shader;
+	std::weak_ptr<GLContext> gl_context;
 };
 
 struct GameThread
 {
-	GameThread(std::shared_ptr<EngineContext> a_context, std::shared_ptr<Scene> a_scene, MeshData& a_mesh)
-		: engine_context(a_context), scene(a_scene), mesh(a_mesh) {};
+	GameThread(std::shared_ptr<EngineContext> a_context, std::shared_ptr<Scene> a_scene)
+		: engine_context(a_context), scene(a_scene){};
 
 	void execute();
-	void exdcute(std::weak_ptr<GameContext> a_game_context);
-
 private:
 	std::shared_ptr<EngineContext> engine_context;
 	std::shared_ptr<Scene> scene;
-	MeshData mesh;
+
+	// worker threads
 };
 
 struct EngineThread
 {
-	EngineThread(std::shared_ptr<EngineContext> a_context)
-		: engine_context(a_context) { };
+	EngineThread(std::shared_ptr<EngineContext> a_context, std::weak_ptr<ImGuiManager> a_imgui_manager, std::weak_ptr<UIManager> a_ui_manager)
+		: engine_context(a_context), imgui_manager(a_imgui_manager), ui_manager(a_ui_manager)
+	{
+	};
 
 	void execute();
 
 private:
 	std::shared_ptr<EngineContext> engine_context;
+	std::weak_ptr<ImGuiManager> imgui_manager;
+	std::weak_ptr<UIManager> ui_manager;
 };
+
+template <typename TMessage>
+struct MessageQueueThread
+{
+	MessageQueueThread(std::shared_ptr<MessageThreadContext<TMessage>> a_pool_context) 
+		: pool_context(a_pool_context) {};
+	void execute()
+	{
+		while (!pool_context->exit)
+		{
+			while (auto message = pool_context->message_queue.get_message())
+			{
+				handle_message(message.value());
+			}
+			{
+				std::unique_lock<std::mutex> lock(pool_context->mutex);
+				pool_context->cv_message_queue.wait(lock, [this] { return pool_context->message_queue.is_empty(); });
+			}
+		}
+	}
+	virtual void handle_message(TMessage& a_message) {};
+	std::shared_ptr<MessageThreadContext<TMessage>> pool_context;
+};
+
+struct RenderRequestThread : MessageQueueThread<LoadRequest>
+{
+	RenderRequestThread(std::shared_ptr<MeshLoadThreadContext> a_pool_context) 
+		: MessageQueueThread<LoadRequest>(static_cast<std::shared_ptr<MessageThreadContext<LoadRequest>>>(a_pool_context)) {}
+	void handle_message(RenderRequest& a_message)
+	{
+
+	}
+};
+
+
+
+//struct RenderThread
+//{
+//
+//	RenderThread(std::shared_ptr<EngineContext> a_context) : engine_context(a_context)
+//	{
+//		window = glfwGetCurrentContext();
+//		if (!window)
+//		{
+//			PRINTLN("Failed getting WINDOW for RENDER THREAD");
+//		}
+//		// then I need to create the standard shader program
+//		default_shader = std::make_unique<ShaderProgram>("./assets/shaders/vertex/vert.glsl", "./assets/shaders/fragment/frag.glsl");
+//	};
+//
+//	void execute();
+//
+//private:
+//	std::shared_ptr<EngineContext> engine_context;
+//	Renderer renderer;
+//	GLFWwindow* window;
+//	std::unique_ptr<ShaderProgram> default_shader;
+//};
