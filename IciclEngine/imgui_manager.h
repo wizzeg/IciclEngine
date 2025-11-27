@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GL_context.h"
+#include "glfw_context.h"
 
 #include <imgui-docking/imgui.h>
 #include <imgui-docking/imgui_impl_glfw.h>
@@ -8,7 +8,7 @@
 
 struct ImGuiManager
 {
-	ImGuiManager(std::weak_ptr<GLContext> a_context) : gl_context(a_context)
+	ImGuiManager(std::weak_ptr<GLFWContext> a_context) : gl_context(a_context)
 	{
 		if (auto gl = gl_context.lock())
 		{
@@ -114,7 +114,7 @@ struct ImGuiManager
 	}
 
 private:
-	std::weak_ptr<GLContext> gl_context;
+	std::weak_ptr<GLFWContext> gl_context;
 	ImGuiContext* imgui_context;
 	ImGuiIO* io;
 	ImGuiStyle* style;

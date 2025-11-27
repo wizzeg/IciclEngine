@@ -40,14 +40,15 @@
 // readers lock mutex, increase readers count, wait cv_write if readers, -> write -> unlock -> notify all writers then readers
 struct MeshDataGenStorage
 {
-	MeshDataGenStorage(std::shared_ptr<MessageQueue<LoadRequest>> a_load_request_messeges, std::shared_ptr<MessageQueue<VAORequest>> a_vao_request_messeges,
-		uint8_t a_max_threads = 2) 
-		: load_request_messages(a_load_request_messeges), vao_request_messages(a_vao_request_messeges), num_threads(a_max_threads)
+	MeshDataGenStorage(uint8_t a_max_threads = 2) : num_threads(a_max_threads)
 	{
+		load_request_messages = std::make_shared<MessageQueue<LoadRequest>>();
+		vao_request_messages = std::make_shared<MessageQueue<VAOLoadRequest>>();
+		vao_update_messages = std::make_shared<MessageQueue<VAOLoadInfo>>();
 		mesh_datas.reserve(10);
 		for (size_t i = 0; i < num_threads; i++)
 		{
-			threads.emplace_back(&MeshDataGenStorage::handle_load_requests, this);
+			threads.emplace_back(&MeshDataGenStorage::handle_load_requests, this, i);
 		}
 	};
 	~MeshDataGenStorage()
@@ -65,6 +66,17 @@ struct MeshDataGenStorage
 			}
 		}
 	};
+
+	std::optional<VAOLoadRequest> get_vao_request()
+	{
+		return vao_request_messages->get_message();
+	}
+
+	void update_vao_info(const VAOLoadInfo& a_vao_load_info)
+	{
+		vao_update_messages->add_message(a_vao_load_info);
+		cv_threads.notify_one();
+	}
 	
 	// need to be able to get keydata from mesh_id
 	// 
@@ -76,16 +88,35 @@ struct MeshDataGenStorage
 		{
 			if (a_hashed_string == mesh_data.path_hashed)
 			{
-				return RenderRequest{mesh_data.VAO, ((GLsizei)mesh_data.indices.size()), glm::mat4(1.0f), 0, 0};
+				return RenderRequest{ a_hashed_string, mesh_data.VAO, ((GLsizei)mesh_data.indices.size()), glm::mat4(1.0f), 0, 0};
 			}
 		}
 		return RenderRequest();
 	}
 
-	std::optional<VAORequest> get_vao_request()
+	// perhaps make this into unique ptr, or raw pointer, skip copy
+	std::vector<RenderRequest> get_render_request(std::vector<entt::hashed_string>& a_hashed_string) 
 	{
-		return vao_request_messages->get_message();
+		std::vector<RenderRequest> render_requests;
+		size_t mesh_index = 0;
+		std::lock_guard<std::mutex> guard(data_mutex);
+
+		for (auto& hashed_string : a_hashed_string) // n log n I think, not too bad ... especially if I cache them later
+		{
+			for (; mesh_index  < mesh_datas.size(); mesh_index++)
+			{
+				if (hashed_string == mesh_datas[mesh_index].path_hashed)
+				{
+					RenderRequest request(hashed_string, mesh_datas[mesh_index].VAO, mesh_datas[mesh_index].indices.size(), glm::mat4(1), 0, 0);
+					render_requests.emplace_back(request);
+					break;
+				}
+			}
+		}
+		return render_requests;
 	}
+
+
 
 	bool load_request(const entt::hashed_string a_hashed_string)
 	{
@@ -111,6 +142,10 @@ struct MeshDataGenStorage
 		}
 		mesh_datas.emplace_back(MeshData());
 		mesh_datas.back().path_hashed = a_hashed_string;
+		std::sort(mesh_datas.begin(), mesh_datas.end(), [](const MeshData& mesh_a, const MeshData& mesh_b)
+			{
+				return mesh_a.path_hashed < mesh_b.path_hashed;
+			});
 		std::string temp_string = a_hashed_string.data();
 		lock.unlock();
 		load_request_messages->add_message(LoadRequest{ temp_string});
@@ -147,13 +182,39 @@ struct MeshDataGenStorage
 		}
 	}
 
-	void handle_load_requests()
+	void handle_load_requests(size_t a_thread_id = 0)
 	{
 		while (!exit)
 		{
+			if (auto message = vao_update_messages->get_message())
+			{
+				PRINTLN("Recieved MeshData vao update request (thread {})", a_thread_id);
+				VAOLoadInfo& vao_info = message.value();
+				if (vao_info.vao_loaded)
+				{
+					std::lock_guard<std::mutex> mesh_guard(data_mutex);
+					for (auto& mesh_data : mesh_datas)
+					{
+						if (mesh_data.path_hashed == vao_info.hashed_path)
+						{
+							mesh_data.VAO_loaded = vao_info.vao_loaded;
+							mesh_data.VAO = vao_info.vao;
+							mesh_data.VBOs = vao_info.VBOs; // hm, not great copy, but it's like max 16 gluints
+							mesh_data.EBO = vao_info.ebo;
+							break;
+						}
+					}
+				}
+				else
+				{
+					// I dunno, just drop it I guess
+				}
+
+			}
+
 			if (auto message = load_request_messages->get_message()) // message is immedietly unlocked, is fine yo
 			{
-				PRINTLN("got message");
+				PRINTLN("Recieved mesh obj load request (thread {})", a_thread_id);
 				entt::hashed_string check_hash(message.value().path.c_str());
 				bool skip = false;
 				{
@@ -183,17 +244,21 @@ struct MeshDataGenStorage
 						{
 							if (mesh_data.path_hashed == new_mesh_data.path_hashed)
 							{
-								PRINTLN("found entry");
+								PRINTLN("found MeshData entry (thread {})", a_thread_id);
 								mesh_data = new_mesh_data;
 								added = true;
-								PRINTLN("adding entry into vao");
-								vao_request_messages->add_message(VAORequest{ mesh_data.mesh_id, mesh_data.path_hashed }); // try this in thread tomorrow
+								PRINTLN("Adding VAO requestmessage (thread {})", a_thread_id);
+								vao_request_messages->add_message(VAOLoadRequest{ mesh_data });
 								break;
 							}
 						}
 						if (!added)
 						{
 							mesh_datas.push_back(new_mesh_data);
+							std::sort(mesh_datas.begin(), mesh_datas.end(), [](const MeshData& mesh_a, const MeshData& mesh_b)
+								{
+									return mesh_a.path_hashed < mesh_b.path_hashed;
+								});
 						}
 					}
 					else
@@ -217,7 +282,7 @@ struct MeshDataGenStorage
 				std::unique_lock lock(thread_mutex);
 				cv_threads.wait(lock, [this] { return wait_check(); });
 			}
-			PRINTLN("obj loader woke up");
+			PRINTLN("MeshDataGenStorage thread({}) woke up", a_thread_id);
 		}
 	}
 
@@ -227,6 +292,8 @@ struct MeshDataGenStorage
 		std::lock_guard<std::mutex> guard(exit_mutex);
 		result |= exit;
 		bool is_empty = !load_request_messages->is_empty();
+		result |= is_empty;
+		is_empty = !vao_update_messages->is_empty();
 		result |= is_empty;
 		return result;
 	}
@@ -238,7 +305,8 @@ struct MeshDataGenStorage
 
 	// these must be set on initialization.
 	std::shared_ptr<MessageQueue<LoadRequest>> load_request_messages;
-	std::shared_ptr<MessageQueue<VAORequest>> vao_request_messages;
+	std::shared_ptr<MessageQueue<VAOLoadRequest>> vao_request_messages;
+	std::shared_ptr<MessageQueue<VAOLoadInfo>> vao_update_messages;
 
 	std::condition_variable cv_threads;
 	std::mutex data_mutex;
@@ -246,8 +314,8 @@ struct MeshDataGenStorage
 	std::mutex thread_mutex;
 
 	// these need to sync up
-	std::vector<MeshData> mesh_datas;
-	std::map<entt::hashed_string, bool> string_loaded; // not gonna use
+	std::vector<MeshData> mesh_datas; // make this into vector of vector, set vector size atmost 128mb
+	std::map<entt::hashed_string, size_t> string_loaded; // should use for faster look up perhaps hashsed_string to index
 };
 
 //template <typename TDataIn, typename TDataOut>

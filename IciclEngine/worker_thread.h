@@ -17,7 +17,7 @@
 #include <imgui-docking/imgui.h>
 #include <imgui-docking/imgui_impl_glfw.h>
 #include <imgui-docking/imgui_impl_opengl3.h>
-#include "GL_context.h"
+#include "glfw_context.h"
 #include "imgui_manager.h"
 #include <engine/ui/ui_manager.h>
 
@@ -70,7 +70,7 @@ struct MeshLoadThreadContext : MessageThreadContext<LoadRequest>
 struct RenderThread
 {
 
-	RenderThread(std::shared_ptr<EngineContext> a_context, ShaderProgram& a_default_shader, std::weak_ptr<GLContext> a_gl_context)
+	RenderThread(std::shared_ptr<EngineContext> a_context, ShaderProgram& a_default_shader, std::weak_ptr<GLFWContext> a_gl_context)
 		: engine_context(a_context), default_shader(a_default_shader), gl_context(a_gl_context)
 	{
 	};
@@ -81,7 +81,7 @@ private:
 	std::shared_ptr<EngineContext> engine_context;
 	Renderer renderer;
 	ShaderProgram default_shader;
-	std::weak_ptr<GLContext> gl_context;
+	std::weak_ptr<GLFWContext> gl_context;
 };
 
 struct GameThread

@@ -6,10 +6,10 @@
 #include <engine/utilities/macros.h>
 #include <memory>
 
-struct GLContext
+struct GLFWContext
 {
 
-	GLContext(int a_width, int a_height, const char* a_title, bool a_vsync = 0)
+	GLFWContext(int a_width, int a_height, const char* a_title, bool a_depth_test = true, bool a_vsync = false)
 	{
 		/* Create a windowed mode window and its OpenGL context */
 		
@@ -28,6 +28,10 @@ struct GLContext
 			PRINTLN("Failed to initialize Glad");
 		}
 		glfwSwapInterval((int)a_vsync);
+		if (a_depth_test)
+		{
+			glEnable(GL_DEPTH_TEST);
+		}
 	}
 
 	void activate() { glfwMakeContextCurrent(window); }

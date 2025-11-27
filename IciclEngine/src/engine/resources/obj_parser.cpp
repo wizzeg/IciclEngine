@@ -12,7 +12,10 @@
 MeshData ObjParser::load_mesh_from_filepath(const std::string& a_path)
 {
     HighResolutionTimer timer;
+    TimeNow time_now;
+    std::string title = a_path + " loading started at";
     timer.start();
+    time_now.print_time(title);
     std::vector<ObjVertex> vertices;
     std::ifstream file(a_path);
     std::string line;
@@ -162,9 +165,12 @@ MeshData ObjParser::load_mesh_from_filepath(const std::string& a_path)
     {
         mesh.uvs.clear();
     }
+    title = a_path + " finished started at";
+    time_now.print_time(title);
     timer.stop();
     mesh.path = a_path;
     PRINTLN("pos: {}, nrm: {}, uv: {}, face: {}", num_pos, num_nrm, num_uv, num_f);
     PRINTLN("time to load {}: {}ms", a_path, timer.get_time_ms());
+
     return mesh;
 }

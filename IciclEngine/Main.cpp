@@ -37,8 +37,9 @@
 
 #include <thread>
 #include <engine/resources/data_storage.h>
-#include "GL_context.h"
+#include "glfw_context.h"
 #include "imgui_manager.h"
+#include <engine/utilities/utilities.h>
 
 
 int main(void)
@@ -49,10 +50,10 @@ int main(void)
 	if (!glfwInit())
 		return -1;
 
-	std::shared_ptr<GLContext> render_context = std::make_shared<GLContext>(1280, 960, "render window");
-	render_context.get()->deactivate();
-	std::shared_ptr<ImGuiManager> imgui_manager = std::make_shared<ImGuiManager>(render_context);
-
+	std::shared_ptr<GLFWContext> glfw_context = std::make_shared<GLFWContext>(1280, 960, "Icicl engine", true, true);
+	glfw_context->deactivate();
+	std::shared_ptr<ImGuiManager> imgui_manager = std::make_shared<ImGuiManager>(glfw_context);
+	glfw_context->activate();
 
 	///* Initialize ImGUI */
 	//ImGuiContext* imgui_context; // this needs to be shared
@@ -92,9 +93,9 @@ int main(void)
 		std::weak_ptr<SceneObject> withoutChild = scene->new_scene_object("without Child", true);
 		if (auto shared = withoutChild.lock())
 		{
-			shared->add_component_data<WorldPositionComponentData>(WorldPositionComponent{ glm::vec3(3.f,2.f,1.f) });
-			std::string path = "./assets/obj/triobjmonkey.obj";
-			shared->add_component_data<MeshComponentData>(MeshComponent{ 0, "./assets/obj/triobjmonkey.obj", string });
+			shared->add_component_data<WorldPositionComponentData>(WorldPositionComponent{ glm::vec3(0.f,0.f,0.f) });
+			entt::hashed_string path("./assets/obj/sizanne.obj");
+			shared->add_component_data<MeshComponentData>(MeshComponent{ 0, path.data(), path});
 		}
 		std::weak_ptr<SceneObject> wChild = scene->new_scene_object("without Child", false);
 		std::weak_ptr<SceneObject> ChildwChild = scene->new_scene_object("Child with child", false);
@@ -109,6 +110,7 @@ int main(void)
 			{
 				PRINTLN("x value: {}", test->position.x);
 				test->position.x = 10;
+				PRINTLN("x value: {}", test->position.x);
 			}
 			else {
 				PRINTLN("failes");
@@ -120,11 +122,11 @@ int main(void)
 				shared->add_child(childofchild);
 				if (auto shared = childofchild.lock())
 				{
-					shared->add_component_data<WorldPositionComponentData>(WorldPositionComponent{ glm::vec3(3.f,5.f,1.f) });
+					shared->add_component_data<WorldPositionComponentData>(WorldPositionComponent{ glm::vec3(-1.f,0.f,0.f) });
 					shared->add_component_data<RenderableComponentData>(RenderableComponent{ 2,3 });
 					shared->remove_component_data<NameComponentData>();
 					entt::hashed_string string("./assets/obj/triobjmonkey.obj");
-					shared->add_component_data<MeshComponentData>(MeshComponent{0, " ", string });
+					shared->add_component_data<MeshComponentData>(MeshComponent{0, string.data(), string});
 				}
 			}
 		}
@@ -134,22 +136,20 @@ int main(void)
 	ui_mananger->set_scene(scene);
 
 	ObjParser obj_parser;
-	MeshData mesh = obj_parser.load_mesh_from_filepath("./assets/obj/triobjmonkey.obj");//triobjmonkey
+	//MeshData mesh = obj_parser.load_mesh_from_filepath("./assets/obj/triobjmonkey.obj");//triobjmonkey
 	VAOLoader vao_loader;
-	vao_loader.load_vao(mesh);
+	//vao_loader.load_vao(mesh);
 	std::shared_ptr<ShaderProgram> shader_program = std::make_shared<ShaderProgram>("./assets/shaders/vertex/vert.glsl", "./assets/shaders/fragment/frag.glsl");
 	Renderer renderer;
 	renderer.temp_set_shader(shader_program);
 
 	std::shared_ptr<MeshDataGenStorage> storage = 
-		std::make_shared<MeshDataGenStorage>
-		(std::make_shared<MessageQueue<LoadRequest>>(),
-			std::make_shared<MessageQueue<VAORequest>>(), 2);
+		std::make_shared<MeshDataGenStorage>(2);
 	std::shared_ptr<EngineContext> engine_context = std::make_shared<EngineContext>(storage);
 	
-	//RenderThread render_thread(engine_context, *shader_program, render_context);
+	//RenderThread render_thread(engine_context, *shader_program, glfw_context);
 	GameThread game_thread(engine_context, scene);
-	//EngineThread engine_thread(engine_context, render_context, ui_mananger);
+	//EngineThread engine_thread(engine_context, imgui_manager, ui_mananger);
 
 	std::vector<std::unique_ptr<std::thread>> threads;
 	
@@ -159,7 +159,7 @@ int main(void)
 	//threads.push_back(std::make_unique<std::thread>(gamer_thread));
 
 	bool game_playing = false;
-
+	
 	if (!game_playing)
 	{
 		{
@@ -173,13 +173,18 @@ int main(void)
 	//std::thread enginer_thread(&EngineThread::execute, &engine_thread);
 	//std::thread renderer_thread(&RenderThread::execute, &render_thread);
 	std::thread gamer_thread(&GameThread::execute, &game_thread);
-
+	HighResolutionTimer timer;
+	timer.start();
+	double total_time = 0;
+	size_t frames = 0;
+	std::string title = "";
+	window = glfw_context->get_window();
 	while (engine_context->run())
 	{
 		////////////////////////////////////////////////////
 		// RENDERING -- needs reordering
-		render_context->swap_buffers();
-		render_context->deactivate();
+		glfw_context->swap_buffers();
+		glfw_context->deactivate();
 		//PRINTLN("render thread going to sleep: {}", runs++);
 
 		if (!engine_context->run())
@@ -189,33 +194,64 @@ int main(void)
 			break;
 		}
 
-		if (render_context->window_should_close()) engine_context->kill_all = true;
-		render_context->activate();
-		render_context->clear();
+		if (glfw_context->window_should_close()) engine_context->kill_all = true;
+		glfw_context->activate();
+		glfw_context->clear();
 
 		auto& render_requests = engine_context->render_requests[std::size_t(!engine_context->write_pos)];
 		for (size_t i = 0; i < render_requests.size(); i++)
 		{
-			PRINTLN("vao: {}, size: {}, entity: {}", render_requests[i].vao, render_requests[i].indices_size, render_requests[i].shader_program);
+			//PRINTLN("vao: {}, size: {}, entity: {}", render_requests[i].vao, render_requests[i].indices_size, render_requests[i].shader_program);
+			if (render_requests[i].vao != 0)
+			{
+				renderer.temp_render(render_requests[i]);
+			}
 		}
 
 		if (auto vao_request = engine_context->storage->get_vao_request())
 		{
+			MeshData& mesh_data = vao_request.value().mesh_data;
 			PRINTLN("Render thread got vao request");
+			if (vao_loader.load_vao(mesh_data))
+			{
+				PRINTLN("Render sending vao upate request message");
+				VAOLoadInfo load_info{mesh_data.path_hashed, mesh_data.VAO_loaded, mesh_data.VAO, mesh_data.VBOs, mesh_data.EBO};
+				engine_context->storage->update_vao_info(load_info);
+			}
+			else
+			{
+				// I don't know what to do...
+			}
+			//vao_loader.load_vao(vao_request);
 			// load in vao..
 			// then I have to change the meshdata entry to notify that I've loaded the vao.
 		}
-
+		
+		frames++;
+		timer.stop();
+		total_time += timer.get_time_ms();
+		timer.start();
+		if (total_time > 1000)
+		{
+			title = "Icicl engine - FPS: " + std::to_string(frames/(1000.0 / total_time));
+			//title = "Icicl engine - frame time: " + std::to_string(total_time);
+			glfwSetWindowTitle(window, title.c_str());
+			total_time = 0;
+			frames = 0;
+		}
+		
 		{
 			std::unique_lock<std::mutex> lock(engine_context->mutex);
 			engine_context->cv_frame_coordinator.wait(lock, [engine_context] 
 				{ return (!engine_context->game_thread || !engine_context->run()); });
 		}
-		//////////////////////////////////////////////////////////////
-		/// Rendering ends
-		/// may as well do rendering now on main thread...
-		/////////////////////////////////////////////////////////////
-		// ImGui starts
+		
+
+		////////////////////////////////////////////////////////////////
+		///// Rendering ends
+		///// may as well do rendering now on main thread...
+		///////////////////////////////////////////////////////////////
+		//// ImGui starts
 		{
 			std::lock_guard<std::mutex> guard(engine_context->mutex);
 			engine_context->swap_render_requests();
@@ -229,8 +265,8 @@ int main(void)
 			imgui_manager->render();
 		}
 		engine_context->cv_threads.notify_all();
-		////////////////////////////////////////////
-		// ImGui ends
+		//////////////////////////////////////////
+		//ImGui ends
 		glfwPollEvents();
 
 	}
@@ -248,7 +284,7 @@ int main(void)
 	//}
 	/// No more opengl or imgui
 
-	//RenderContext render_context;
+	//RenderContext glfw_context;
 	//engine_context.
 	
 	while (false && !glfwWindowShouldClose(window))

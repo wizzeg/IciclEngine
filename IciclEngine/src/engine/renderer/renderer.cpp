@@ -35,7 +35,10 @@ void Renderer::temp_render(RenderRequest& a_render_request)
 	{
 		if (auto shader = shader_program.lock())
 		{
-
+			shader->bind();
+			rotation += glm::radians(0.07f);
+			a_render_request.model_matrix = glm::rotate(a_render_request.model_matrix, rotation, glm::vec3(0, 1, 0));
+			// identity matrix first
 			shader->set_mat4fv(a_render_request.model_matrix, "model");
 			glBindVertexArray(a_render_request.vao);
 			glDrawElements(GL_TRIANGLES, a_render_request.indices_size, GL_UNSIGNED_INT, 0);

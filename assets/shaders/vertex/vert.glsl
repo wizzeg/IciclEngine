@@ -5,8 +5,8 @@ layout (location = 1) in vec3 aNrm;
 layout (location = 4) in vec4 aCol;
 layout (location = 10) in vec3 aTexCoord;
 
-out vec3 vCol;
-out vec2 vTexCoord;
+out vec4 vCol;
+out vec3 vTexCoord;
 
 uniform mat4 transform;
 
@@ -19,6 +19,6 @@ void main()
 	//int vertexIndex = gl_VertexID;
 	//projection * view * model *
 	gl_Position = projection * view * model * vec4(aPos, 1.0);
-	vCol = aCol.rgb;
-	vTexCoord = aTexCoord.xy;
+	vCol = vec4(aCol.rgb, 1.0);
+	vTexCoord = aTexCoord.xyz;
 }

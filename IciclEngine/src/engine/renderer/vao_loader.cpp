@@ -25,7 +25,7 @@ bool VAOLoader::load_vao(MeshData& a_mesh)
 		a_mesh.VAO = 0;
 		a_mesh.VAO_loaded = false;
 	}
-	PRINTLN("loading mesh: {}", a_mesh.path);
+	PRINTLN("loading vao for mesh: {}", a_mesh.path);
 	glGenVertexArrays(1, &a_mesh.VAO);
 	glBindVertexArray(a_mesh.VAO);
 

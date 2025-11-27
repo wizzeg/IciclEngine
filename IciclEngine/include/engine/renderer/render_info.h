@@ -8,10 +8,21 @@
 #define MAX_UVS_COLORS 6;
 #endif
 
-struct VAORequest
+
+
+struct PreRenderRequest
 {
-	uint32_t mesh_id;
 	entt::hashed_string hashed_path;
+	glm::mat4 model_matrix;
+};
+
+struct VAOLoadInfo
+{
+	entt::hashed_string hashed_path;
+	bool vao_loaded;
+	GLuint vao;
+	std::vector<GLuint> VBOs;
+	GLuint ebo;
 };
 
 struct LoadRequest
@@ -22,6 +33,7 @@ struct LoadRequest
 
 struct RenderRequest
 {
+	entt::hashed_string hashed_path;
 	GLuint vao = 0;
 	GLsizei indices_size = 0;
 	glm::mat4 model_matrix = glm::mat4(0);
@@ -98,4 +110,8 @@ struct MeshData
 	std::vector<std::vector<uint8_t> >uvs_dimensions;
 	std::vector<std::vector<glm::vec3>> uvs;
 	std::vector<GLuint> indices;
+};
+struct VAOLoadRequest
+{
+	MeshData mesh_data;
 };

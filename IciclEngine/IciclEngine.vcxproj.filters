@@ -192,7 +192,7 @@
     <ClCompile Include="src\engine\resources\message_queue.cpp">
       <Filter>Source Files\engine\resources</Filter>
     </ClCompile>
-    <ClCompile Include="GL_context.cpp">
+    <ClCompile Include="glfw_context.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="imgui_manager.cpp">
@@ -317,7 +317,7 @@
     <ClInclude Include="include\engine\resources\message_queue.h">
       <Filter>Header Files\engine\resources</Filter>
     </ClInclude>
-    <ClInclude Include="GL_context.h">
+    <ClInclude Include="glfw_context.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="imgui_manager.h">
