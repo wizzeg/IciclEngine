@@ -5,15 +5,18 @@
 #include <GLFW/glfw3.h>
 #include <engine/utilities/macros.h>
 #include <memory>
+#include <vector>
+#include "frame_buffer.h"
+#include <string>
 
 struct GLFWContext
 {
 
-	GLFWContext(int a_width, int a_height, const char* a_title, bool a_depth_test = true, bool a_vsync = false)
+	GLFWContext(int a_width, int a_height, const char* a_title, bool a_depth_test = true, bool a_vsync = false) : width(a_width), height(a_height)
 	{
 		/* Create a windowed mode window and its OpenGL context */
 		
-		window = glfwCreateWindow(a_width, a_height, a_title, NULL, NULL);
+		window = glfwCreateWindow(width, height, a_title, NULL, NULL);
 		if (!window)
 		{
 			PRINTLN("NO WINDOW-- - Terminated");
@@ -45,7 +48,59 @@ struct GLFWContext
 	};
 	GLFWwindow* get_window() { return window; }
 
+	void bind_framebuffer(const std::string a_name)
+	{
+		for (size_t i = 0; i < frame_buffers.size(); i++)
+		{
+			if (frame_buffers[i].get_name() == a_name)
+			{
+				frame_buffers[i].bind();
+				break;
+			}
+		}
+	}
+	void unbind_framebuffer(const std::string a_name)
+	{
+		for (size_t i = 0; i < frame_buffers.size(); i++)
+		{
+			if (frame_buffers[i].get_name() == a_name)
+			{
+				frame_buffers[i].bind();
+				break;
+			}
+		}
+	}
+	void resize_framebuffer(const std::string a_name, int a_width, int a_height)
+	{
+		for (size_t i = 0; i < frame_buffers.size(); i++)
+		{
+			if (frame_buffers[i].get_name() == a_name)
+			{
+				frame_buffers[i].resize(a_width, a_height);
+				break;
+			}
+		}
+	}
+
+	void create_framebuffer(const std::string name, int a_width, int a_height)
+	{
+		frame_buffers.emplace_back(name, a_width, a_height);
+	}
+
+	unsigned int get_framebuffer_texture(const std::string a_name)
+	{
+		for (size_t i = 0; i < frame_buffers.size(); i++)
+		{
+			if (frame_buffers[i].get_name() == a_name)
+			{
+				return frame_buffers[i].get_texture();
+			}
+		}
+	}
 private:
+	std::vector<FrameBuffer> frame_buffers;
 	GLFWwindow* window;
+	int height;
+	int width;
 };
 

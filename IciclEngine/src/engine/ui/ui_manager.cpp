@@ -20,7 +20,6 @@ void UIManager::draw_object_hierarchy()
 		}
 		ImGui::End();
 	}
-	
 }
 
 void UIManager::draw_object_properties()
@@ -31,9 +30,26 @@ void UIManager::draw_object_properties()
 	//if (auto scene_object = ui_hiearchy_drawer.selected_scene_object.lock())
 	//{
 		//ImGui::SetNextWindowSize(ImVec2(500, 400));
-		ImGui::Begin("component properties");
-		ui_property_drawer.draw_object_properties(ui_hiearchy_drawer.selected_scene_object);
+	
+	if (!ui_hiearchy_drawer.selected_scene_object.expired())
+	{
+		open = true;
+	}
+	if (open)
+	{
+		ImGui::Begin("component properties", &open);
+		if (auto selected = ui_hiearchy_drawer.selected_scene_object.lock())
+		{
+			ui_property_drawer.draw_object_properties(selected);
+		}
+		else
+		{
+			ImGui::Text("No scene object selected");
+		}
 		ImGui::End();
+	}
+	if (!open) ui_hiearchy_drawer.selected_scene_object.reset();
+
 	//}
 	//ui_hiearchy_drawer.selected_scene_object.reset();
 

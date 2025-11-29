@@ -22,8 +22,17 @@ struct ImGuiManager
 			io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // IF using Docking Branch
 			io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;		  // Enable Multi-Viewport / Platform Windows
 
-			ImGui::StyleColorsDark();
+
+			ImGui::StyleColorsClassic();
 			style = &ImGui::GetStyle();
+			style->FrameRounding = 4;
+			style->TreeLinesRounding = 4;
+			style->ImageBorderSize = 1;
+			style->FrameBorderSize = 1;
+			style->TreeLinesSize = 2;
+			style->GrabRounding = 4;
+			style->ChildRounding = 4;
+
 			ImGui_ImplGlfw_InitForOpenGL(gl->get_window(), true);
 			ImGui_ImplOpenGL3_Init("#version 460");
 
@@ -112,7 +121,7 @@ struct ImGuiManager
 			cleaned_up = true;
 		}
 	}
-
+	ImGuiIO* get_io() const { return io; }
 private:
 	std::weak_ptr<GLFWContext> gl_context;
 	ImGuiContext* imgui_context;

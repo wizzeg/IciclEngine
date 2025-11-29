@@ -5,14 +5,15 @@
 #include <engine/game/component_data.h>
 #include <random>
 
-void UIObjectPropertyDrawer::draw_object_properties(std::weak_ptr<SceneObject> a_scene_object)
+void UIObjectPropertyDrawer::draw_object_properties(std::shared_ptr<SceneObject>& a_scene_object)
 {
 	
-	if (std::shared_ptr<SceneObject> scene_object = a_scene_object.lock())
-	{
-		std::srand(std::time(nullptr));
+	//if (std::shared_ptr<SceneObject> scene_object = a_scene_object.lock())
+	//{
+		std::srand(std::time(0));
 		ImGui::BeginGroup();
-		const auto& component_datas = scene_object->get_component_datas();
+		bool drawn_anything = false;
+		const auto& component_datas = a_scene_object->get_component_datas();
 		for (size_t i = 0; i < component_datas.size(); i++)
 		{
 			std::vector<FieldInfo> field_info = component_datas[i]->get_field_info();
@@ -22,15 +23,21 @@ void UIObjectPropertyDrawer::draw_object_properties(std::weak_ptr<SceneObject> a
 			{
 				//id_salt += field_info[i].name;
 				field_size += field_info[i].imgui_size;
+				drawn_anything = true;
 			}
 			ImVec2 child_size = ImVec2(0, ImGui::GetFrameHeightWithSpacing() * field_size);
-			ImGui::BeginChild((std::to_string((uint32_t)scene_object->get_entity() + std::rand())).c_str(), child_size, true, ImGuiChildFlags_AutoResizeY); // problem, it does not display name, it's an ID.. Need to make an ID system if I want to do this
+			ImGui::BeginChild((std::to_string((uint32_t)a_scene_object->get_entity() + std::rand())).c_str(), child_size, true, ImGuiChildFlags_AutoResizeY); // problem, it does not display name, it's an ID.. Need to make an ID system if I want to do this
 			ImGui::SeparatorText(component_datas[i]->get_name());
 			draw_component_fields(field_info);
 			ImGui::EndChild();
 		}
+		if (!drawn_anything)
+		{
+			ImGui::Text("No properties found");
+			PRINTLN("Nothing drawn");
+		}
 		ImGui::EndGroup();
-	}
+	//}
 }
 
 void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_field_info)
@@ -59,6 +66,12 @@ void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_fie
 			uint32_t* value = static_cast<uint32_t*>(field.value_ptr);
 			std::string final_string = field.name + std::to_string(*value);
 			ImGui::Text(final_string.c_str());
+		}
+		else if (field.type == typeid(entt::hashed_string))
+		{
+			entt::hashed_string value = *reinterpret_cast<entt::hashed_string*>(field.value_ptr);
+			std::string text = "path hash: " + std::to_string(value.value())/*+ " - path: " + value.data()*/;
+			ImGui::Text(text.c_str());
 		}
 		else
 		{

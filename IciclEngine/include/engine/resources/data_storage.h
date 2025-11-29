@@ -95,21 +95,23 @@ struct MeshDataGenStorage
 	}
 
 	// perhaps make this into unique ptr, or raw pointer, skip copy
-	std::vector<RenderRequest> get_render_request(std::vector<entt::hashed_string>& a_hashed_string) 
+	std::vector<RenderRequest> get_render_request(std::vector<entt::hashed_string>& a_hashed_string)  /// RELEIS ON SORTED VECTOR
 	{
 		std::vector<RenderRequest> render_requests;
 		size_t mesh_index = 0;
-		std::lock_guard<std::mutex> guard(data_mutex);
-
-		for (auto& hashed_string : a_hashed_string) // n log n I think, not too bad ... especially if I cache them later
 		{
-			for (; mesh_index  < mesh_datas.size(); mesh_index++)
+			std::lock_guard<std::mutex> guard(data_mutex);
+			for (auto& hashed_string : a_hashed_string) // O(n) I think, not too bad ... especially if I cache them later
 			{
-				if (hashed_string == mesh_datas[mesh_index].path_hashed)
+				for (; mesh_index < mesh_datas.size(); mesh_index++)
 				{
-					RenderRequest request(hashed_string, mesh_datas[mesh_index].VAO, mesh_datas[mesh_index].indices.size(), glm::mat4(1), 0, 0);
-					render_requests.emplace_back(request);
-					break;
+					if (hashed_string == mesh_datas[mesh_index].path_hashed)
+					{
+						RenderRequest request(hashed_string, mesh_datas[mesh_index].VAO, mesh_datas[mesh_index].indices.size(), glm::mat4(1), 0, 0);
+						render_requests.emplace_back(request);
+						mesh_index++;
+						break;
+					}
 				}
 			}
 		}
@@ -154,11 +156,12 @@ struct MeshDataGenStorage
 		return true;
 	}
 
-	void load_requests(const std::vector<entt::hashed_string>& a_hashed_strings)
+	void load_requests(const std::vector<entt::hashed_string>& a_hashed_strings) // should do sorted here too for O(n) ... but I'll probably remove component anyway
 	{
 		std::unique_lock<std::mutex> lock(data_mutex);
 		std::vector<LoadRequest> load_requests;
-		for (const entt::hashed_string& a_hashed_string : a_hashed_strings)
+		bool exists = false;
+		for (const entt::hashed_string& a_hashed_string : a_hashed_strings) // O(mn) ... do sorting and this will be fine. I may try to do some mesh copying on entities later
 		{
 			for (auto& mesh_data : mesh_datas)
 			{
@@ -166,12 +169,17 @@ struct MeshDataGenStorage
 				// If I really need to, chop up string in two by every other char ... or just do hashing myself, but annoying
 				if (a_hashed_string == mesh_data.path_hashed)
 				{
-					continue;
+					exists = true;
+					break;
 				}
 			}
-			mesh_datas.emplace_back();
-			mesh_datas.back().path_hashed = a_hashed_string;
-			load_requests.emplace_back(a_hashed_string.data());
+			if (!exists)
+			{
+				mesh_datas.emplace_back();
+				mesh_datas.back().path_hashed = a_hashed_string;
+				load_requests.emplace_back(a_hashed_string.data());
+			}
+			exists = false;
 		}
 		if (load_requests.size() > 0)
 		{

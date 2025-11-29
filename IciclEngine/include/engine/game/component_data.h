@@ -147,7 +147,8 @@ struct MeshComponentData : ComponentData<MeshComponent>
 		return
 		{
 			{"mesh id: ", typeid(uint32_t), &a_component.id },
-			{"mesh path: ", typeid(std::string), &a_component.path }
+			{"mesh path: ", typeid(std::string), &a_component.path },
+			{ "mesh path: ", typeid(entt::hashed_string),& a_component.hashed_path }
 		};
 	}
 };

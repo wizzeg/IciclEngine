@@ -9,6 +9,7 @@ class SceneObject;
 
 class UIManager
 {
+	bool open = true;
 	std::weak_ptr<Scene> scene;
 	std::weak_ptr<SceneObject> selected_scene_object;
 	UISceneHierarchyDrawer ui_hiearchy_drawer;

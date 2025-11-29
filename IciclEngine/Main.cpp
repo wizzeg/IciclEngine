@@ -50,7 +50,7 @@ int main(void)
 	if (!glfwInit())
 		return -1;
 
-	std::shared_ptr<GLFWContext> glfw_context = std::make_shared<GLFWContext>(1280, 960, "Icicl engine", true, true);
+	std::shared_ptr<GLFWContext> glfw_context = std::make_shared<GLFWContext>(450,1, "Icicl engine", true, true);
 	glfw_context->deactivate();
 	std::shared_ptr<ImGuiManager> imgui_manager = std::make_shared<ImGuiManager>(glfw_context);
 	glfw_context->activate();
@@ -105,6 +105,7 @@ int main(void)
 			parent->add_component_data<WorldPositionComponentData>(WorldPositionComponent{glm::vec3(0,1,2)});
 			parent->replace_component_data(WorldPositionComponent{ glm::vec3(1,2,3) });
 			parent->add_or_replace_component_data<WorldPositionComponentData>(WorldPositionComponent{ glm::vec3(2,3,4) });
+			parent->add_component_data<MeshComponentData>(MeshComponent{0, string.data(), string});
 			WorldPositionComponent* test;
 			if (parent->get_component(test))
 			{
@@ -179,6 +180,8 @@ int main(void)
 	size_t frames = 0;
 	std::string title = "";
 	window = glfw_context->get_window();
+	glfw_context->create_framebuffer("imgui_frame_buffer", 1280, 960);
+	ImGuiIO* io = imgui_manager->get_io();
 	while (engine_context->run())
 	{
 		////////////////////////////////////////////////////
@@ -196,7 +199,9 @@ int main(void)
 
 		if (glfw_context->window_should_close()) engine_context->kill_all = true;
 		glfw_context->activate();
+		glfw_context->bind_framebuffer("imgui_frame_buffer");
 		glfw_context->clear();
+		
 
 		auto& render_requests = engine_context->render_requests[std::size_t(!engine_context->write_pos)];
 		for (size_t i = 0; i < render_requests.size(); i++)
@@ -241,12 +246,12 @@ int main(void)
 		}
 		
 		{
+			glfw_context->unbind_framebuffer("imgui_frame_buffer");
 			std::unique_lock<std::mutex> lock(engine_context->mutex);
 			engine_context->cv_frame_coordinator.wait(lock, [engine_context] 
 				{ return (!engine_context->game_thread || !engine_context->run()); });
 		}
 		
-
 		////////////////////////////////////////////////////////////////
 		///// Rendering ends
 		///// may as well do rendering now on main thread...
@@ -260,8 +265,21 @@ int main(void)
 
 			// do all ui drawing.
 			imgui_manager->new_frame();
+
+			ImGui::Begin("imgui_frame_buffer", nullptr, ImGuiWindowFlags_NoInputs);
+			ImGui::Image(glfw_context->get_framebuffer_texture("imgui_frame_buffer"), ImVec2(1280, 960), ImVec2(0, 1), ImVec2(1, 0));
+			ImGui::End();
+
+			//ImGui::SetNextWindowSize(ImVec2(1280, 960));
+
+			bool demo = true;
+			ImGui::ShowDemoWindow(&demo);
+
 			ui_mananger->draw_object_hierarchy();
 			ui_mananger->draw_object_properties();
+
+
+
 			imgui_manager->render();
 		}
 		engine_context->cv_threads.notify_all();
