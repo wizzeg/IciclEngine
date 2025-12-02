@@ -30,7 +30,7 @@ ShaderProgram::ShaderProgram(const char* a_vertex_path, const char* a_frag_path)
 
 	glUseProgram(shader_program);
 
-	///////////////////////// REMOVE THIS LATER ///////////////////////////////////////
+	///////////////////////// REMOVE THIS LATER /////////////////////////////////////// can kinda do this though as start anyway
 	glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 10.0f);
 	glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 	glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -39,7 +39,7 @@ ShaderProgram::ShaderProgram(const char* a_vertex_path, const char* a_frag_path)
 	view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 	glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)640 / (float)480, 0.1f, 100.0f);
 	set_mat4fv(view, "view");
-	set_mat4fv(proj, "projection");
+	set_mat4fv(proj, "proj");
 	glUseProgram(0);
 }
 

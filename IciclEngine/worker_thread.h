@@ -20,12 +20,12 @@
 #include "glfw_context.h"
 #include "imgui_manager.h"
 #include <engine/ui/ui_manager.h>
-
-
+#include "camera.h"
+#include "input_manager.h"
 
 struct EngineContext
 {
-	EngineContext(std::shared_ptr<MeshDataGenStorage> a_storage) : storage(a_storage) {};
+	EngineContext(std::shared_ptr<MeshDataGenStorage> a_storage) : storage(a_storage), editor_camera("editor camera", 1280, 960), input_manager(InputManager::get()) {};
 	void set_render_request(std::vector<RenderRequest>& a_render_requests)
 	{
 		render_requests[(std::size_t(write_pos))] = a_render_requests;
@@ -42,8 +42,11 @@ struct EngineContext
 	std::atomic<bool> write_pos = false;
 	std::vector<RenderRequest> render_requests[2];
 	std::shared_ptr<MeshDataGenStorage> storage;
+	Camera editor_camera;
+	InputManager& input_manager;
 	//MessageQueue<>
 	std::atomic<bool> kill_all;
+	double delta_time = 0;
 	bool game_thread = false;
 	bool render_thread = false;
 	bool next_frame = false;

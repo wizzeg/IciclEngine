@@ -9,7 +9,7 @@ Scene::Scene()
 {
 	
 }
-Scene::Scene(std::shared_ptr<Scene> a_scene)
+Scene::Scene(std::shared_ptr<Scene> a_scene) // do I ever use this??
 {
 	auto scene = a_scene;
 	auto scene_objects = scene->get_scene_objects();
@@ -24,6 +24,7 @@ Scene::~Scene()
 	{
 		scene_objects[i]->scene_ended();
 	}
+	
 }
 
 entt::handle Scene::create_entity(const std::string a_name)

@@ -1,5 +1,5 @@
 #include <iostream>
-
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui-docking/imgui.h>
 #include <imgui-docking/imgui_impl_glfw.h>
 #include <imgui-docking/imgui_impl_opengl3.h>
@@ -17,8 +17,8 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-
-#include <entt/entt.hpp>
+#include <engine/utilities/entt_modified.h>
+//#include <entt/entt.hpp>
 
 #include <engine/editor/scene.h>
 #include <engine/editor/scene_object.h>
@@ -40,6 +40,8 @@
 #include "glfw_context.h"
 #include "imgui_manager.h"
 #include <engine/utilities/utilities.h>
+#include "input_manager.h"
+#include "camera.h"
 
 
 int main(void)
@@ -50,52 +52,32 @@ int main(void)
 	if (!glfwInit())
 		return -1;
 
-	std::shared_ptr<GLFWContext> glfw_context = std::make_shared<GLFWContext>(450,1, "Icicl engine", true, true);
+	std::shared_ptr<GLFWContext> glfw_context = std::make_shared<GLFWContext>(450, 1, "Icicl engine", true, true);
 	glfw_context->deactivate();
 	std::shared_ptr<ImGuiManager> imgui_manager = std::make_shared<ImGuiManager>(glfw_context);
 	glfw_context->activate();
+	glfw_context->create_framebuffer("editor_frame_buffer", 1280, 960);
+	glfw_context->bind_framebuffer("editor_frame_buffer"); // Need to do this every frame really, when I'm changing framebuffers
+	//InputManager input_manager(glfw_context->get_window());
 
-	///* Initialize ImGUI */
-	//ImGuiContext* imgui_context; // this needs to be shared
-	//imgui_context = ImGui::CreateContext();
-	//ImGuiIO& io = ImGui::GetIO();
-	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-	//io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // IF using Docking Branch
-	//io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;		  // Enable Multi-Viewport / Platform Windows
-
-	//ImGui::StyleColorsDark();
-	//ImGuiStyle& style = ImGui::GetStyle();
-	//ImGui_ImplGlfw_InitForOpenGL(window, true);
-	//ImGui_ImplOpenGL3_Init("#version 460");
-
-	//float test = 5.0f;
-	//bool demo = true;
-	//if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-	//{
-	//	style.WindowRounding = 0.0f;
-	//	style.Colors[ImGuiCol_WindowBg].w = 1.0f;
-	//}
-
-	// load the sahder
-
-	/* Loop until the user closes the window */
-
-	//glfwSwapInterval(0);
-	//glEnable(GL_DEPTH_TEST);
-
-	//glDisable(GL_CULL_FACE);
-
+	///////////
+	// Making scene and adding test scene_objects
 	std::shared_ptr<Scene> scene = std::make_shared<Scene>();
 	{
-		entt::hashed_string string("./assets/obj/triobjmonkey.obj");
+		auto camera = scene->new_scene_object("Camera test", true);
+		if (auto c = camera.lock())
+		{
+			hashed_string_64 buffer_name("editor_frame_buffer");
+			c->add_component_data<CameraComponentData, CameraComponent>(CameraComponent{ true, glm::mat4(0), glm::mat4(0), buffer_name });
+		}
+		hashed_string_64 string("./assets/obj/triobjmonkey.obj");
 		std::weak_ptr<SceneObject> withtChild = scene->new_scene_object("with Child", true);
 		std::weak_ptr<SceneObject> withoutChild = scene->new_scene_object("without Child", true);
 		if (auto shared = withoutChild.lock())
 		{
 			shared->add_component_data<WorldPositionComponentData>(WorldPositionComponent{ glm::vec3(0.f,0.f,0.f) });
-			entt::hashed_string path("./assets/obj/sizanne.obj");
-			shared->add_component_data<MeshComponentData>(MeshComponent{ 0, path.data(), path});
+			hashed_string_64 path("./assets/obj/sizanne.obj");
+			shared->add_component_data<MeshComponentData>(MeshComponent{ 0, path});
 		}
 		std::weak_ptr<SceneObject> wChild = scene->new_scene_object("without Child", false);
 		std::weak_ptr<SceneObject> ChildwChild = scene->new_scene_object("Child with child", false);
@@ -105,7 +87,7 @@ int main(void)
 			parent->add_component_data<WorldPositionComponentData>(WorldPositionComponent{glm::vec3(0,1,2)});
 			parent->replace_component_data(WorldPositionComponent{ glm::vec3(1,2,3) });
 			parent->add_or_replace_component_data<WorldPositionComponentData>(WorldPositionComponent{ glm::vec3(2,3,4) });
-			parent->add_component_data<MeshComponentData>(MeshComponent{0, string.data(), string});
+			parent->add_component_data<MeshComponentData>(MeshComponent{0, string});
 			WorldPositionComponent* test;
 			if (parent->get_component(test))
 			{
@@ -123,44 +105,40 @@ int main(void)
 				shared->add_child(childofchild);
 				if (auto shared = childofchild.lock())
 				{
+					
+					if (MaterialComponent* mat_test; shared->get_component<MaterialComponent>(mat_test))
+					{
+						PRINTLN("GOT MAT TEST SOMEHOW");
+					}
+					
 					shared->add_component_data<WorldPositionComponentData>(WorldPositionComponent{ glm::vec3(-1.f,0.f,0.f) });
 					shared->add_component_data<RenderableComponentData>(RenderableComponent{ 2,3 });
 					shared->remove_component_data<NameComponentData>();
-					entt::hashed_string string("./assets/obj/triobjmonkey.obj");
-					shared->add_component_data<MeshComponentData>(MeshComponent{0, string.data(), string});
+					hashed_string_64 string("./assets/obj/triobjmonkey.obj");
+					shared->add_component_data<MeshComponentData>(MeshComponent{0, string });
 				}
 			}
 		}
 	}
 
+
 	std::shared_ptr<UIManager> ui_mananger  = std::make_shared<UIManager>();
 	ui_mananger->set_scene(scene);
 
 	ObjParser obj_parser;
-	//MeshData mesh = obj_parser.load_mesh_from_filepath("./assets/obj/triobjmonkey.obj");//triobjmonkey
 	VAOLoader vao_loader;
-	//vao_loader.load_vao(mesh);
 	std::shared_ptr<ShaderProgram> shader_program = std::make_shared<ShaderProgram>("./assets/shaders/vertex/vert.glsl", "./assets/shaders/fragment/frag.glsl");
 	Renderer renderer;
 	renderer.temp_set_shader(shader_program);
 
-	std::shared_ptr<MeshDataGenStorage> storage = 
-		std::make_shared<MeshDataGenStorage>(2);
+	std::shared_ptr<MeshDataGenStorage> storage = std::make_shared<MeshDataGenStorage>(2);
 	std::shared_ptr<EngineContext> engine_context = std::make_shared<EngineContext>(storage);
 	
 	//RenderThread render_thread(engine_context, *shader_program, glfw_context);
 	GameThread game_thread(engine_context, scene);
 	//EngineThread engine_thread(engine_context, imgui_manager, ui_mananger);
 
-	std::vector<std::unique_ptr<std::thread>> threads;
-	
-
-	//threads.push_back(std::make_unique<std::thread>(enginer_thread));
-	//threads.push_back(std::make_unique<std::thread>(renderer_thread));
-	//threads.push_back(std::make_unique<std::thread>(gamer_thread));
-
 	bool game_playing = false;
-	
 	if (!game_playing)
 	{
 		{
@@ -171,21 +149,26 @@ int main(void)
 			engine_context.get()->game_playing = true;
 		}
 	}
+
 	//std::thread enginer_thread(&EngineThread::execute, &engine_thread);
 	//std::thread renderer_thread(&RenderThread::execute, &render_thread);
 	std::thread gamer_thread(&GameThread::execute, &game_thread);
+
 	HighResolutionTimer timer;
 	timer.start();
 	double total_time = 0;
 	size_t frames = 0;
 	std::string title = "";
+
 	window = glfw_context->get_window();
-	glfw_context->create_framebuffer("imgui_frame_buffer", 1280, 960);
 	ImGuiIO* io = imgui_manager->get_io();
+
+	InputManager& input_manager = InputManager::get();
+	
 	while (engine_context->run())
 	{
 		////////////////////////////////////////////////////
-		// RENDERING -- needs reordering
+		// RENDERING 
 		glfw_context->swap_buffers();
 		glfw_context->deactivate();
 		//PRINTLN("render thread going to sleep: {}", runs++);
@@ -198,21 +181,24 @@ int main(void)
 		}
 
 		if (glfw_context->window_should_close()) engine_context->kill_all = true;
-		glfw_context->activate();
-		glfw_context->bind_framebuffer("imgui_frame_buffer");
-		glfw_context->clear();
-		
 
+		glfw_context->activate();
+		///////////////////////
+		//Render the render requests
+		// Here this would be repeated for every camera ... Yes, I suppose so... Do they bind the frame buffer themselves, perhaps?
+		// Lets just start with a hardcoded editor camera.
+		glfw_context->clear();
 		auto& render_requests = engine_context->render_requests[std::size_t(!engine_context->write_pos)];
+		renderer.set_proj_view_matrix(engine_context->editor_camera.get_proj_matrix(), engine_context->editor_camera.get_view_matrix());
 		for (size_t i = 0; i < render_requests.size(); i++)
 		{
-			//PRINTLN("vao: {}, size: {}, entity: {}", render_requests[i].vao, render_requests[i].indices_size, render_requests[i].shader_program);
 			if (render_requests[i].vao != 0)
 			{
 				renderer.temp_render(render_requests[i]);
 			}
 		}
-
+		/////////////////////////////////////////
+		// Loading a VAO request
 		if (auto vao_request = engine_context->storage->get_vao_request())
 		{
 			MeshData& mesh_data = vao_request.value().mesh_data;
@@ -223,34 +209,32 @@ int main(void)
 				VAOLoadInfo load_info{mesh_data.path_hashed, mesh_data.VAO_loaded, mesh_data.VAO, mesh_data.VBOs, mesh_data.EBO};
 				engine_context->storage->update_vao_info(load_info);
 			}
-			else
-			{
-				// I don't know what to do...
-			}
-			//vao_loader.load_vao(vao_request);
-			// load in vao..
-			// then I have to change the meshdata entry to notify that I've loaded the vao.
+			//else // I don't know what to do...
 		}
 		
+
+
+		
+		{
+			glfw_context->unbind_framebuffer("editor_frame_buffer");
+			std::unique_lock<std::mutex> lock(engine_context->mutex);
+			engine_context->cv_frame_coordinator.wait(lock, [engine_context] 
+				{ return (!engine_context->game_thread || !engine_context->run()); });
+		}
 		frames++;
 		timer.stop();
-		total_time += timer.get_time_ms();
+		engine_context->delta_time = timer.get_time_ms();
 		timer.start();
+		total_time += engine_context->delta_time; // this should be on game thread too: stop at start of frame -> record dt -> immedietly into start
 		if (total_time > 1000)
 		{
-			title = "Icicl engine - FPS: " + std::to_string(frames/(1000.0 / total_time));
+			title = "Icicl engine - FPS: " + std::to_string(frames / (1000.0 / total_time));
 			//title = "Icicl engine - frame time: " + std::to_string(total_time);
 			glfwSetWindowTitle(window, title.c_str());
 			total_time = 0;
 			frames = 0;
 		}
-		
-		{
-			glfw_context->unbind_framebuffer("imgui_frame_buffer");
-			std::unique_lock<std::mutex> lock(engine_context->mutex);
-			engine_context->cv_frame_coordinator.wait(lock, [engine_context] 
-				{ return (!engine_context->game_thread || !engine_context->run()); });
-		}
+		glfwPollEvents();
 		
 		////////////////////////////////////////////////////////////////
 		///// Rendering ends
@@ -265,9 +249,22 @@ int main(void)
 
 			// do all ui drawing.
 			imgui_manager->new_frame();
+			ImGui::Begin("editor_frame_buffer");
 
-			ImGui::Begin("imgui_frame_buffer", nullptr, ImGuiWindowFlags_NoInputs);
-			ImGui::Image(glfw_context->get_framebuffer_texture("imgui_frame_buffer"), ImVec2(1280, 960), ImVec2(0, 1), ImVec2(1, 0));
+			ImGui::Image(glfw_context->get_framebuffer_texture("editor_frame_buffer"), ImVec2(1280, 960), ImVec2(0, 1), ImVec2(1, 0));
+			if (engine_context->input_manager.is_key_held(EKey::RightMouseButton))
+			{
+				ImVec2 content_min = ImGui::GetWindowContentRegionMin() + ImGui::GetWindowPos();
+				ImVec2 content_max = ImGui::GetWindowContentRegionMax() + ImGui::GetWindowPos();
+				ImVec2 mouse_pos;
+				engine_context->input_manager.get_mouse_position(mouse_pos.x, mouse_pos.y);
+				if ((mouse_pos.x > content_min.x && mouse_pos.x < content_max.x) &&
+					(mouse_pos.y > content_min.y && mouse_pos.y < content_max.y))
+				{
+					engine_context->editor_camera.set_camera_movable(true);
+				}
+			} else engine_context->editor_camera.set_camera_movable(false);
+			
 			ImGui::End();
 
 			//ImGui::SetNextWindowSize(ImVec2(1280, 960));
@@ -278,14 +275,20 @@ int main(void)
 			ui_mananger->draw_object_hierarchy();
 			ui_mananger->draw_object_properties();
 
-
+			//input_manager.update_input();
+			input_manager.update_input();
+			if (input_manager.is_key_held(EKey::A))
+			{
+				//PRINTLN("HELD A for: {}s", input_manager.key_held_duration(EKey::A));
+			}
 
 			imgui_manager->render();
 		}
 		engine_context->cv_threads.notify_all();
 		//////////////////////////////////////////
 		//ImGui ends
-		glfwPollEvents();
+		
+		
 
 	}
 

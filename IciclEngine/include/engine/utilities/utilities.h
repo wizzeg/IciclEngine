@@ -36,3 +36,4 @@ struct TimeNow
 			a_title, hours, minutes, seconds, ms, us, ns);
     }
 };
+

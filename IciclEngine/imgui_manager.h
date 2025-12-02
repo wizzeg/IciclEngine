@@ -22,7 +22,6 @@ struct ImGuiManager
 			io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // IF using Docking Branch
 			io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;		  // Enable Multi-Viewport / Platform Windows
 
-
 			ImGui::StyleColorsClassic();
 			style = &ImGui::GetStyle();
 			style->FrameRounding = 4;
@@ -45,6 +44,7 @@ struct ImGuiManager
 		}
 		else PRINTLN("Failed to generate imgui manager");
 	};
+
 	~ImGuiManager()
 	{
 		if (!cleaned_up)
@@ -121,6 +121,28 @@ struct ImGuiManager
 			cleaned_up = true;
 		}
 	}
+
+	void make_dockspace() // This doesn't work
+	{
+		ImGuiViewport* viewport = ImGui::GetMainViewport();
+		ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode;
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+
+		ImGui::SetNextWindowPos(viewport->WorkPos);
+		ImGui::SetNextWindowSize(viewport->WorkSize);
+		ImGui::SetNextWindowViewport(viewport->ID);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
+		ImGui::Begin("DockSpace Demo", nullptr, window_flags);
+		ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+		ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+		ImGui::End();
+		ImGui::PopStyleVar(3);
+	}
+
 	ImGuiIO* get_io() const { return io; }
 private:
 	std::weak_ptr<GLFWContext> gl_context;

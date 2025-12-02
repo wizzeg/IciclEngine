@@ -154,10 +154,12 @@
     <ClCompile Include="..\vendor\imgui-docking\imgui_tables.cpp" />
     <ClCompile Include="..\vendor\imgui-docking\imgui_widgets.cpp" />
     <ClCompile Include="..\vendor\stb_image\stb_image.cpp" />
+    <ClCompile Include="camera.cpp" />
     <ClCompile Include="frame_buffer.cpp" />
     <ClCompile Include="game_engine.cpp" />
     <ClCompile Include="glfw_context.cpp" />
     <ClCompile Include="imgui_manager.cpp" />
+    <ClCompile Include="input_manager.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="src\engine\editor\scene.cpp" />
     <ClCompile Include="src\engine\editor\scene_object.cpp" />
@@ -193,6 +195,7 @@
     <ClInclude Include="..\vendor\imgui-docking\imstb_truetype.h" />
     <ClInclude Include="..\vendor\KHR\khrplatform.h" />
     <ClInclude Include="..\vendor\stb_image\stb_image.h" />
+    <ClInclude Include="camera.h" />
     <ClInclude Include="frame_buffer.h" />
     <ClInclude Include="game_engine.h" />
     <ClInclude Include="glfw_context.h" />
@@ -217,9 +220,12 @@
     <ClInclude Include="include\engine\ui\ui_manager.h" />
     <ClInclude Include="include\engine\ui\ui_object_property_drawer.h" />
     <ClInclude Include="include\engine\ui\ui_scene_hierarchy_drawer.h" />
+    <ClInclude Include="include\engine\utilities\entt_modified.h" />
     <ClInclude Include="include\engine\utilities\macros.h" />
+    <ClInclude Include="include\engine\utilities\memory_checking.h" />
     <ClInclude Include="include\engine\utilities\static_conversions.h" />
     <ClInclude Include="include\engine\utilities\utilities.h" />
+    <ClInclude Include="input_manager.h" />
     <ClInclude Include="systems.h" />
     <ClInclude Include="worker_thread.h" />
   </ItemGroup>

@@ -5,6 +5,9 @@
 #include <glfw/glfw3.h>
 #include <memory>
 #include <engine/game/components.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/mat4x4.hpp>
 
 struct Renderer
 {
@@ -13,5 +16,9 @@ struct Renderer
 	void temp_render(MeshData& a_mesh, WorldPositionComponent& a_world_pos);
 	void temp_render(RenderRequest& a_render_request);
 	void temp_set_shader(std::weak_ptr<ShaderProgram> a_shader);
+	void set_proj_view_matrix(glm::mat4 a_proj, glm::mat4 a_view);
+private:
+	glm::mat4 proj;
+	glm::mat4 view;
 };
 

@@ -12,13 +12,13 @@ uniform mat4 transform;
 
 uniform mat4 model;
 uniform mat4 view;
-uniform mat4 projection;
+uniform mat4 proj;
 
 void main()
 {
 	//int vertexIndex = gl_VertexID;
 	//projection * view * model *
-	gl_Position = projection * view * model * vec4(aPos, 1.0);
+	gl_Position = proj * view * model * vec4(aPos, 1.0);
 	vCol = vec4(aCol.rgb, 1.0);
 	vTexCoord = aTexCoord.xyz;
 }

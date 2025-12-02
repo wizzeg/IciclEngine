@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
-#include <entt/entt.hpp>
+#include <engine/utilities/entt_modified.h>
 #include <glm/glm.hpp>
 #include <glad/glad.h>
 #ifndef MAX_UVS_COLORS
@@ -12,13 +12,13 @@
 
 struct PreRenderRequest
 {
-	entt::hashed_string hashed_path;
+	hashed_string_64 hashed_path;
 	glm::mat4 model_matrix;
 };
 
 struct VAOLoadInfo
 {
-	entt::hashed_string hashed_path;
+	hashed_string_64 hashed_path;
 	bool vao_loaded;
 	GLuint vao;
 	std::vector<GLuint> VBOs;
@@ -33,7 +33,7 @@ struct LoadRequest
 
 struct RenderRequest
 {
-	entt::hashed_string hashed_path;
+	hashed_string_64 hashed_path;
 	GLuint vao = 0;
 	GLsizei indices_size = 0;
 	glm::mat4 model_matrix = glm::mat4(0);
@@ -86,7 +86,7 @@ struct MaterialPath
 struct MeshData
 {
 	std::string path;
-	entt::hashed_string path_hashed;
+	hashed_string_64 path_hashed;
 	uint32_t mesh_id = 0;
 	bool VAO_loaded = false;
 	bool bad_load = false;

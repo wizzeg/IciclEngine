@@ -1,5 +1,5 @@
 #pragma once
-#include <entt/entt.hpp>
+#include <engine/utilities/entt_modified.h>
 #include <vector>
 
 class SceneObject;

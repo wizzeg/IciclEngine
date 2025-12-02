@@ -1,6 +1,7 @@
 #include <engine/renderer/renderer.h>
 #include <engine/utilities/macros.h>
-#include <glm/ext/matrix_transform.hpp>
+//#include <glm/ext/matrix_transform.hpp>
+//#include <glm/gtc/type_ptr.hpp>
 #include <engine/game/components.h>
 
 void Renderer::temp_render(MeshData& a_mesh, WorldPositionComponent& a_world_pos)
@@ -38,7 +39,9 @@ void Renderer::temp_render(RenderRequest& a_render_request)
 			shader->bind();
 			rotation += glm::radians(0.07f);
 			a_render_request.model_matrix = glm::rotate(a_render_request.model_matrix, rotation, glm::vec3(0, 1, 0));
-			// identity matrix first
+
+			shader->set_mat4fv(proj, "proj");
+			shader->set_mat4fv(view, "view");
 			shader->set_mat4fv(a_render_request.model_matrix, "model");
 			glBindVertexArray(a_render_request.vao);
 			glDrawElements(GL_TRIANGLES, a_render_request.indices_size, GL_UNSIGNED_INT, 0);
@@ -50,4 +53,10 @@ void Renderer::temp_render(RenderRequest& a_render_request)
 void Renderer::temp_set_shader(std::weak_ptr<ShaderProgram> a_shader)
 {
 	shader_program = a_shader;
+}
+
+void Renderer::set_proj_view_matrix(glm::mat4 a_proj, glm::mat4 a_view)
+{
+	proj = a_proj;
+	view = a_view;
 }

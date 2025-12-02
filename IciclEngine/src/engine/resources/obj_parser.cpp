@@ -7,6 +7,8 @@
 #include <engine/utilities/utilities.h>
 #include <engine/renderer/render_info.h>
 #include <map>
+#include<engine/utilities/memory_checking.h>
+
 
 
 MeshData ObjParser::load_mesh_from_filepath(const std::string& a_path)
@@ -26,6 +28,17 @@ MeshData ObjParser::load_mesh_from_filepath(const std::string& a_path)
     if (!file.is_open())
     {
         PRINTLN("failed open file at: {}", a_path);
+        mesh.bad_load = true;
+        return mesh;
+    }
+    file.seekg(0, std::ios::end);
+    std::streampos model_size = file.tellg();
+    file.seekg(0, std::ios::beg);
+    
+    if (((float)(model_size / (1024.0f * 1024.0f)) + 200) > memory_checker::get_mb_left())
+    {
+        PRINTLN("not enough available memory (free: {}MB, model: {:.4f}MB) for path: {}",
+            memory_checker::get_mb_left(), ((float)(model_size / (1024.0f * 1024.0f))), a_path);
         mesh.bad_load = true;
         return mesh;
     }
@@ -132,9 +145,9 @@ MeshData ObjParser::load_mesh_from_filepath(const std::string& a_path)
                     {
                         mesh.colors[0].push_back(v_col[obj_face_vert.pos - 1]);
                     }
-                    if (mesh.normals.size() > 0)
+                    if (v_nrm.size() > 0)
                         mesh.normals.push_back(v_nrm[obj_face_vert.nrm - 1]);
-                    if (mesh.uvs[0].size() > 0)
+                    if (v_uv.size() > 0)
                         mesh.uvs[0].push_back(v_uv[obj_face_vert.uv - 1]);
                 }
 

@@ -2,15 +2,22 @@
 #include <string>
 //#include "components.h"
 #include <engine/game/components.h>
-#include <entt/entt.hpp>
+#include <engine/utilities/entt_modified.h>
+//#include <entt/entt.hpp>
 #include <imgui-docking/imgui.h>
 #include <glm/glm.hpp>
 
 //#include "macros.h"
 #include <engine/utilities/macros.h>
+enum EEditMode
+{
+	Editable,
+	Uneditable,
+};
 
 struct FieldInfo
 {
+	EEditMode edit_mode;
 	std::string name;
 	std::type_index type;
 	void* value_ptr;
@@ -33,7 +40,21 @@ template <typename TComponent>
 struct ComponentData : ComponentDataBase
 {
 	ComponentData(TComponent a_component) : component(a_component) {};
-	TComponent& get_component() { return component; } // should not be called during runtime (could probably be adapted to do it)
+	TComponent& get_component()
+	{
+		if (entity_handle.entity() != entt::null && runtime)
+		{
+			auto entity = entity_handle.entity();
+			auto registry = entity_handle.registry();
+			
+			
+			if (TComponent* comp = registry->try_get<TComponent>(entity))
+			{
+				return *comp;
+			}
+		}
+		return component;
+	} // seems to work runtime if(TComponent* component; scene_object->try_get<TComponent>(component))
 
 	const std::type_info& get_type() override { return typeid(TComponent); }
 	virtual std::vector<FieldInfo> get_field_info(TComponent& a_component)
@@ -41,7 +62,19 @@ struct ComponentData : ComponentDataBase
 		return { };
 	}
 
-	void set_new_component_value(TComponent a_component) { component = a_component; } // should not be called during runtime
+	void set_new_component_value(TComponent a_component)
+	{ 
+		if (entity_handle.entity() != entt::null && runtime)
+		{
+			auto entity = entity_handle.entity();
+			auto registry = entity_handle.registry();
+			if (TComponent* comp = registry->try_get<TComponent>(entity))
+			{
+				*comp = a_component;
+			}
+		}
+		component = a_component;
+	} // might work at runtime
 
 	const char* get_name() const override { return typeid(TComponent).name(); }
 	virtual void to_runtime(entt::handle a_handle) override
@@ -98,7 +131,7 @@ struct NameComponentData : ComponentData<NameComponent>
 	{
 		return
 		{
-			{"entity name: ", typeid(std::string), &a_component.name }
+			{EEditMode::Editable, "entity name: ", typeid(std::string), &a_component.name, 1.25f }
 		};
 	}
 };
@@ -110,7 +143,7 @@ struct WorldPositionComponentData : ComponentData<WorldPositionComponent>
 	{
 		return
 		{
-			{"world position: ", typeid(glm::vec3), &a_component.position.x, 2.f }
+			{EEditMode::Editable, "world position: ", typeid(glm::vec3), &a_component.position.x, 2.f }
 		};
 	}
 };
@@ -122,7 +155,7 @@ struct MeshLoaderComponentData : ComponentData<MeshLoaderComponent>
 	{
 		return
 		{
-			{"mesh path: ", typeid(std::string), &a_component.path }
+			{EEditMode::Editable, "mesh path: ", typeid(std::string), &a_component.path }
 		};
 	}
 };
@@ -134,7 +167,7 @@ struct MaterialLoaderComponentData : ComponentData<MaterialLoaderComponent>
 	{
 		return
 		{
-			{"material path: ", typeid(std::string), &a_component.path }
+			{EEditMode::Editable, "material path: ", typeid(std::string), &a_component.path }
 		};
 	}
 };
@@ -146,9 +179,10 @@ struct MeshComponentData : ComponentData<MeshComponent>
 	{
 		return
 		{
-			{"mesh id: ", typeid(uint32_t), &a_component.id },
-			{"mesh path: ", typeid(std::string), &a_component.path },
-			{ "mesh path: ", typeid(entt::hashed_string),& a_component.hashed_path }
+			{EEditMode::Editable, "mesh id: ", typeid(uint32_t), &a_component.id },
+			{EEditMode::Editable, "mesh: ", typeid(hashed_string_64), &a_component.hashed_path, 2.25 }
+			//{EEditMode::Editable, "mesh path: ", typeid(std::string), &a_component.hashed_path.string },
+			//{EEditMode::Uneditable, "hashed path: ", typeid(uint64_t),& a_component.hashed_path.hash }
 		};
 	}
 };
@@ -160,7 +194,7 @@ struct MaterialComponentData : ComponentData<MaterialComponent>
 	{
 		return
 		{
-			{"material id: ", typeid(uint32_t), &a_component.id }
+			{EEditMode::Editable, "material id: ", typeid(uint32_t), &a_component.id }
 		};
 	}
 };
@@ -172,8 +206,23 @@ struct RenderableComponentData : ComponentData<RenderableComponent>
 	{
 		return
 		{
-			{"mesh id: ", typeid(uint32_t), &a_component.mesh_id },
-			{ "material id: ", typeid(uint32_t), &a_component.mateiral_id }
+			{EEditMode::Editable, "mesh id: ", typeid(uint32_t), &a_component.mesh_id },
+			{EEditMode::Editable, "material id: ", typeid(uint32_t), &a_component.mateiral_id }
+		};
+	}
+};
+
+struct CameraComponentData : ComponentData<CameraComponent>
+{
+	CameraComponentData(CameraComponent a_component) : ComponentData<CameraComponent>(a_component) {}
+	std::vector<FieldInfo> get_field_info(CameraComponent& a_component) override
+	{
+		return
+		{
+			{ EEditMode::Editable, "camera active: ", typeid(bool), &a_component.render_from },
+			{EEditMode::Editable, "buffer: ", typeid(hashed_string_64), &a_component.buffer_target, 2.25 }
+			//{ EEditMode::Editable, "buffer target: ", typeid(std::string), &a_component.buffer_target.string },
+			//{ EEditMode::Editable, "buffer hash: ", typeid(uint64_t),& a_component.buffer_target.hash }
 		};
 	}
 };

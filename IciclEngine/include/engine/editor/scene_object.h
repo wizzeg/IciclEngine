@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <entt/entt.hpp>
+#include <engine/utilities/entt_modified.h>
 #include <engine/game/component_data.h>
 #include <engine/utilities/macros.h>
 
@@ -124,6 +124,7 @@ public:
 					{
 						ComponentData<std::decay_t<TComponent>>& component_data = static_cast<ComponentData<std::decay_t<TComponent>>&>(*component_datas[i]);
 						a_component = &component_data.get_component();
+						if (a_component == nullptr) return false;
 						return true;
 					}
 				}
@@ -181,7 +182,14 @@ public:
 	//void draw_components();
 
 	size_t num_children() const { return children.size(); };
-	std::string get_name() const { return name; };
+	std::string get_name() 
+	{
+		if (NameComponent* name_comp; get_component<NameComponent>(name_comp))
+		{
+			name = name_comp->name;
+		}
+		return name;
+	};
 
 	std::vector<std::weak_ptr<SceneObject>> get_children() { return children; };
 

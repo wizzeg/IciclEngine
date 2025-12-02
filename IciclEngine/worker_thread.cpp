@@ -112,14 +112,24 @@ void GameThread::execute()
 		}
 		//PRINTLN("game thread woke up");
 
-				//PRINTLN("game thread going to sleep: {}", runs++);
 		std::vector<RenderRequest>& render_requests = engine_context->render_requests[std::size_t(engine_context->write_pos)];
 
 		std::vector<PreRenderRequest> pre_render_requests;
 		pre_render_requests.reserve(previous_total_render_requests);
 
-		std::vector<entt::hashed_string> hashed_loads;
+		std::vector<hashed_string_64> hashed_loads;
 		hashed_loads.reserve(previous_total_render_requests);
+
+		glm::vec3 camera_move;
+		{
+			camera_move.x = (engine_context->input_manager.is_key_held(EKey::D) - engine_context->input_manager.is_key_held(EKey::A)) * (float)(engine_context->delta_time * 0.001);
+			camera_move.z = (engine_context->input_manager.is_key_held(EKey::S) - engine_context->input_manager.is_key_held(EKey::W)) * (float)(engine_context->delta_time * 0.001);
+			camera_move.y = (engine_context->input_manager.is_key_held(EKey::LeftShift) - engine_context->input_manager.is_key_held(EKey::LeftControl)) * (float)(engine_context->delta_time * 0.001);
+		}
+		if (std::abs(camera_move.x) > 0.0 || std::abs(camera_move.y) > 0.0 || std::abs(camera_move.z) > 0.0) engine_context->editor_camera.move(camera_move);
+
+		
+
 		if (engine_context->game_playing)
 		{
 			auto& registry = scene->get_registry();
@@ -138,7 +148,9 @@ void GameThread::execute()
 				if (mesh_component.id == 0)
 				{
 					// fecthing all entities with a mesh
-					hashed_loads.push_back(mesh_component.hashed_path);
+					hashed_string_64 temp(mesh_component.hashed_path);
+					mesh_component.hashed_path = temp;
+					hashed_loads.push_back(temp);
 					mesh_component.id = 1;
 				}
 			}
@@ -149,11 +161,11 @@ void GameThread::execute()
 			{
 				// all load requests
 				std::sort(hashed_loads.begin(), hashed_loads.end(), std::less<>{});
-				std::vector<entt::hashed_string> load_requests;
+				std::vector<hashed_string_64> load_requests;
 				load_requests.reserve(previous_unique_meshes);
 
 				// unique load requests
-				entt::hashed_string previous_value = hashed_loads[0];
+				hashed_string_64 previous_value = hashed_loads[0];
 				load_requests.push_back(previous_value);
 				size_t i = 1;
 				for (; i < hashed_loads.size(); i++)
@@ -187,8 +199,8 @@ void GameThread::execute()
 				});
 			if (!pre_render_requests.empty())
 			{
-				std::vector<entt::hashed_string> unique_render_paths;
-				entt::hashed_string previous_value = pre_render_requests[0].hashed_path;
+				std::vector<hashed_string_64> unique_render_paths;
+				hashed_string_64 previous_value = pre_render_requests[0].hashed_path;
 				unique_render_paths.push_back(previous_value);
 				size_t i = 1;
 				for (; i < pre_render_requests.size(); i++)
@@ -203,39 +215,32 @@ void GameThread::execute()
 				std::vector<RenderRequest> unique_render_requests = engine_context->storage->get_render_request(unique_render_paths);
 				previous_unique_meshes = unique_render_paths.size();
 				size_t unique_index = 0;
+				size_t start_index = 0;
+				bool none_found = true;
 				for (auto& render_request : pre_render_requests)
 				{
+					none_found = true;
+					start_index = unique_index;
 					for (; unique_index < unique_render_requests.size(); unique_index++)
 					{
 						if (render_request.hashed_path == unique_render_requests[unique_index].hashed_path)
 						{
-							render_requests.push_back(
-								RenderRequest{ render_request.hashed_path, unique_render_requests[unique_index].vao,
-								unique_render_requests[unique_index].indices_size, render_request.model_matrix, 0, 0 });
+							render_requests.emplace_back(
+								render_request.hashed_path, unique_render_requests[unique_index].vao,
+								unique_render_requests[unique_index].indices_size, render_request.model_matrix, 0, 0 );
+							none_found = false;
 							break;
 						}
 
+					}
+					if (none_found)
+					{
+						unique_index = start_index;
 					}
 				}
 				previous_total_render_requests = render_requests.size();
 			}
 		}
-		//else
-		//{
-		//	auto scene_objects = scene->get_scene_objects();
-		//	for (size_t i = 0; i < scene_objects.size(); i++)
-		//	{
-		//		if (RenderableComponent* renderable; scene_objects[i]->get_component(renderable))
-		//		{
-		//			if (WorldPositionComponent* world_pos; scene_objects[i]->get_component(world_pos))
-		//			{
-		//				glm::mat4 model = glm::mat4(1.0f);
-		//				model = glm::translate(model, world_pos->position);
-		//				render_requests.emplace_back(RenderRequest{ 0, 0, model, 0 ,0 });
-		//			}
-		//		}
-		//	}
-		//}
 	}
 
 }

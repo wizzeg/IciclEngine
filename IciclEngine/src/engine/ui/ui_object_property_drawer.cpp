@@ -5,7 +5,7 @@
 #include <engine/game/component_data.h>
 #include <random>
 
-void UIObjectPropertyDrawer::draw_object_properties(std::shared_ptr<SceneObject>& a_scene_object)
+void UIObjectPropertyDrawer::draw_object_properties(std::shared_ptr<SceneObject>& a_scene_object) /// need to cache the fields if they're selected
 {
 	
 	//if (std::shared_ptr<SceneObject> scene_object = a_scene_object.lock())
@@ -44,10 +44,14 @@ void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_fie
 {
 	for (const auto& field : a_field_info)
 	{
+
 		if (field.type == typeid(float))
 		{
-
 			ImGui::DragFloat(field.name.c_str(), static_cast<float*>(field.value_ptr));
+		}
+		else if (field.type == typeid(bool))
+		{
+			ImGui::Checkbox(field.name.c_str(), static_cast<bool*>(field.value_ptr));
 		}
 		else if (field.type == typeid(glm::vec3))
 		{
@@ -59,18 +63,97 @@ void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_fie
 		{
 			std::string* string_ptr = reinterpret_cast<std::string*>(field.value_ptr);
 			std::string final_string = field.name + *string_ptr;
-			ImGui::Text(final_string.c_str());
+			char buffer[128];
+			ImGui::Text(field.name.c_str());
+			ImGui::SameLine();
+			strncpy_s(buffer, string_ptr->c_str(), 128);
+			if (ImGui::InputText(" ", buffer, 128))
+			{
+				*string_ptr = buffer;
+			}
 		}
 		else if (field.type == typeid(uint32_t))
 		{
 			uint32_t* value = static_cast<uint32_t*>(field.value_ptr);
 			std::string final_string = field.name + std::to_string(*value);
-			ImGui::Text(final_string.c_str());
+			int temp = static_cast<int>(*value);
+			if (ImGui::InputInt(final_string.c_str(), &temp, 1, 100, 0))
+			{
+				*value = ((uint32_t)temp);
+			}
 		}
-		else if (field.type == typeid(entt::hashed_string))
+		else if (field.type == typeid(uint64_t))
 		{
-			entt::hashed_string value = *reinterpret_cast<entt::hashed_string*>(field.value_ptr);
-			std::string text = "path hash: " + std::to_string(value.value())/*+ " - path: " + value.data()*/;
+			uint64_t* value = static_cast<uint64_t*>(field.value_ptr);
+			std::string final_string = field.name + std::to_string(*value);
+			int temp = static_cast<int>(*value);
+			if (ImGui::InputInt(final_string.c_str(), &temp, 1, 100, 0))
+			{
+				*value = ((uint64_t)temp);
+			}
+		}
+		else if (field.type == typeid(hashed_string_64))
+		{
+			hashed_string_64* value = reinterpret_cast<hashed_string_64*>(field.value_ptr);
+
+			std::string final_string = field.name + value->string;
+			char buffer[128];
+			ImGui::Text(field.name.c_str());
+			ImGui::SameLine();
+			strncpy_s(buffer, value->string.c_str(), 128);
+			if (ImGui::InputText(" ", buffer, 128))
+			{
+				*value = hashed_string_64(buffer);
+			}
+
+			std::string text = "path hash: " + std::to_string(value->hash)/*+ " - path: " + value.data()*/;
+			ImGui::Text(text.c_str());
+		}
+		else
+		{
+			ImGui::Text("empty field");
+		}
+	}
+}
+
+void UIObjectPropertyDrawer::draw_editable_field(FieldInfo& a_field_info)
+{
+	if (a_field_info.edit_mode == EEditMode::Editable)
+	{
+		if (a_field_info.type == typeid(float))
+		{
+			ImGui::DragFloat(a_field_info.name.c_str(), static_cast<float*>(a_field_info.value_ptr));
+		}
+		else if (a_field_info.type == typeid(glm::vec3))
+		{
+			ImGui::Text(a_field_info.name.c_str());
+			//ImGui::SameLine();
+			ImGui::DragFloat3("", &reinterpret_cast<glm::vec3*>(a_field_info.value_ptr)->x);
+		}
+		else if (a_field_info.type == typeid(std::string))
+		{
+			std::string* string_ptr = reinterpret_cast<std::string*>(a_field_info.value_ptr);
+			std::string final_string = a_field_info.name + *string_ptr;
+			char* buffer[128] = {0};
+			if (ImGui::InputText(a_field_info.name.c_str(), buffer[0], sizeof(buffer)))
+			{
+				*string_ptr = std::string(buffer[0]);
+			}
+		}
+		else if (a_field_info.type == typeid(uint32_t))
+		{
+			uint32_t* value = static_cast<uint32_t*>(a_field_info.value_ptr);
+			std::string final_string = a_field_info.name + std::to_string(*value);
+			int temp = static_cast<int>(*value);
+			if (ImGui::InputInt(final_string.c_str(), &temp, 1, 100, 0))
+			{
+				*value = ((uint32_t)temp);
+			}
+		}
+		else if (a_field_info.type == typeid(hashed_string_64))
+		{
+			hashed_string_64 value = *reinterpret_cast<hashed_string_64*>(a_field_info.value_ptr);
+			std::string text = "path hash: " + std::to_string(value.hash)/*+ " - path: " + value.data()*/;
 			ImGui::Text(text.c_str());
 		}
 		else

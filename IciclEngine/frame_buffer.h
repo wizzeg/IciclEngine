@@ -33,15 +33,14 @@ struct FrameBuffer
 		{
 			PRINTLN("Something went wrong when making new framebuffer");
 		}
-			// handle error
 
-		glBindFramebuffer(GL_FRAMEBUFFER, 0); // unbind
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
 	void bind()
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer);
-		glViewport(0, 0, width, height);  // Important: set viewport to FBO size}
+		glViewport(0, 0, width, height);
 	}
 	void unbind()
 	{

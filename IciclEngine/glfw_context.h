@@ -12,7 +12,7 @@
 struct GLFWContext
 {
 
-	GLFWContext(int a_width, int a_height, const char* a_title, bool a_depth_test = true, bool a_vsync = false) : width(a_width), height(a_height)
+	GLFWContext(int a_width, int a_height, const char* a_title, bool a_vsync = false, bool a_depth_test = true) : width(a_width), height(a_height)
 	{
 		/* Create a windowed mode window and its OpenGL context */
 		

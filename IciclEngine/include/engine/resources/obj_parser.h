@@ -3,7 +3,16 @@
 #include <glm/glm.hpp>
 #include <string>
 #include <engine/renderer/render_info.h>
-
+enum ELoadStatus
+{
+	None,
+	Success,
+	WaitngForLoad,
+	FailedOpen,
+	NotEnoughSpace,
+	NotTriangulized,
+	SomethingElse
+};
 struct ObjPosition
 {
 	glm::vec3 vec3;

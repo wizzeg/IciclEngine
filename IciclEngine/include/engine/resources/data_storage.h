@@ -81,7 +81,7 @@ struct MeshDataGenStorage
 	// need to be able to get keydata from mesh_id
 	// 
 	// need to be able to give RenderRequest data from mesh_id
-	RenderRequest get_render_request(entt::hashed_string& a_hashed_string)
+	RenderRequest get_render_request(hashed_string_64& a_hashed_string)
 	{
 		std::lock_guard<std::mutex> guard(data_mutex);
 		for (auto mesh_data : mesh_datas)
@@ -95,14 +95,18 @@ struct MeshDataGenStorage
 	}
 
 	// perhaps make this into unique ptr, or raw pointer, skip copy
-	std::vector<RenderRequest> get_render_request(std::vector<entt::hashed_string>& a_hashed_string)  /// RELEIS ON SORTED VECTOR
+	std::vector<RenderRequest> get_render_request(std::vector<hashed_string_64>& a_hashed_string)  /// RELEIS ON SORTED VECTOR
 	{
 		std::vector<RenderRequest> render_requests;
 		size_t mesh_index = 0;
+		size_t start_index = 0;
+		bool none_found = true;
 		{
 			std::lock_guard<std::mutex> guard(data_mutex);
 			for (auto& hashed_string : a_hashed_string) // O(n) I think, not too bad ... especially if I cache them later
 			{
+				start_index = mesh_index;
+				none_found = true;
 				for (; mesh_index < mesh_datas.size(); mesh_index++)
 				{
 					if (hashed_string == mesh_datas[mesh_index].path_hashed)
@@ -110,8 +114,13 @@ struct MeshDataGenStorage
 						RenderRequest request(hashed_string, mesh_datas[mesh_index].VAO, mesh_datas[mesh_index].indices.size(), glm::mat4(1), 0, 0);
 						render_requests.emplace_back(request);
 						mesh_index++;
+						none_found = false;
 						break;
 					}
+				}
+				if (none_found)
+				{
+					mesh_index = start_index;
 				}
 			}
 		}
@@ -120,7 +129,7 @@ struct MeshDataGenStorage
 
 
 
-	bool load_request(const entt::hashed_string a_hashed_string)
+	bool load_request(const hashed_string_64 a_hashed_string)
 	{
 		std::unique_lock<std::mutex> lock(data_mutex);
 		for (auto mesh_data : mesh_datas)
@@ -133,7 +142,7 @@ struct MeshDataGenStorage
 				if (mesh_data.bad_load && !mesh_data.started_load)
 				{
 					PRINTLN("attempting reload by bad load -- duplicate");
-					std::string temp_string = a_hashed_string.data();
+					std::string temp_string = a_hashed_string.string;
 					load_request_messages->add_message(LoadRequest{ temp_string });
 					std::lock_guard<std::mutex> thread_guard(thread_mutex);
 					cv_threads.notify_one();
@@ -148,7 +157,7 @@ struct MeshDataGenStorage
 			{
 				return mesh_a.path_hashed < mesh_b.path_hashed;
 			});
-		std::string temp_string = a_hashed_string.data();
+		std::string temp_string = a_hashed_string.string;
 		lock.unlock();
 		load_request_messages->add_message(LoadRequest{ temp_string});
 		std::lock_guard<std::mutex> thread_guard(thread_mutex);
@@ -156,12 +165,12 @@ struct MeshDataGenStorage
 		return true;
 	}
 
-	void load_requests(const std::vector<entt::hashed_string>& a_hashed_strings) // should do sorted here too for O(n) ... but I'll probably remove component anyway
+	void load_requests(const std::vector<hashed_string_64>& a_hashed_strings) // should do sorted here too for O(n) ... but I'll probably remove component anyway
 	{
 		std::unique_lock<std::mutex> lock(data_mutex);
 		std::vector<LoadRequest> load_requests;
 		bool exists = false;
-		for (const entt::hashed_string& a_hashed_string : a_hashed_strings) // O(mn) ... do sorting and this will be fine. I may try to do some mesh copying on entities later
+		for (const hashed_string_64& a_hashed_string : a_hashed_strings) // O(n) ... so sorting and this will be fine. I may try to do some mesh copying on entities later
 		{
 			for (auto& mesh_data : mesh_datas)
 			{
@@ -177,16 +186,25 @@ struct MeshDataGenStorage
 			{
 				mesh_datas.emplace_back();
 				mesh_datas.back().path_hashed = a_hashed_string;
-				load_requests.emplace_back(a_hashed_string.data());
+				load_requests.emplace_back(a_hashed_string.string);
+
 			}
 			exists = false;
 		}
 		if (load_requests.size() > 0)
 		{
+			std::sort(mesh_datas.begin(), mesh_datas.end(), [](const MeshData& mesh_a, const MeshData& mesh_b)
+				{
+					return mesh_a.path_hashed < mesh_b.path_hashed;
+				});
 			lock.unlock();
 			load_request_messages->add_messages(load_requests);
 			std::lock_guard<std::mutex> thread_guard(thread_mutex);
-			cv_threads.notify_all();
+			for (size_t i = 0; i < load_requests.size(); i++)
+			{
+				cv_threads.notify_one();
+			}
+			
 		}
 	}
 
@@ -223,7 +241,7 @@ struct MeshDataGenStorage
 			if (auto message = load_request_messages->get_message()) // message is immedietly unlocked, is fine yo
 			{
 				PRINTLN("Recieved mesh obj load request (thread {})", a_thread_id);
-				entt::hashed_string check_hash(message.value().path.c_str());
+				hashed_string_64 check_hash(message.value().path.c_str());
 				bool skip = false;
 				{
 					std::lock_guard<std::mutex> mesh_guard(data_mutex);
@@ -245,7 +263,7 @@ struct MeshDataGenStorage
 					MeshData new_mesh_data = obj_parser.load_mesh_from_filepath(message.value().path); // problem is that it's not checking so it's not already loading it
 					if (!new_mesh_data.bad_load)
 					{
-						new_mesh_data.path_hashed = entt::hashed_string(message.value().path.c_str());
+						new_mesh_data.path_hashed = hashed_string_64(message.value().path.c_str());
 						std::lock_guard<std::mutex> guard(data_mutex);
 						bool added = false;
 						for (auto& mesh_data : mesh_datas)
@@ -322,8 +340,8 @@ struct MeshDataGenStorage
 	std::mutex thread_mutex;
 
 	// these need to sync up
-	std::vector<MeshData> mesh_datas; // make this into vector of vector, set vector size atmost 128mb
-	std::map<entt::hashed_string, size_t> string_loaded; // should use for faster look up perhaps hashsed_string to index
+	std::vector<MeshData> mesh_datas; 
+	std::map<hashed_string_64, size_t> string_loaded; // should use for faster look up perhaps hashsed_string to index -- probably slower
 };
 
 //template <typename TDataIn, typename TDataOut>
