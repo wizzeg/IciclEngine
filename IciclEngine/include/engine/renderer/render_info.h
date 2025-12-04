@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
-#include <engine/utilities/entt_modified.h>
+#include <engine/utilities/hashed_string_64.h>
 #include <glm/glm.hpp>
 #include <glad/glad.h>
 #ifndef MAX_UVS_COLORS
@@ -82,6 +82,15 @@ struct MaterialPath
 	std::string path;
 };
 
+struct CameraData
+{
+	bool clear_color_buffer = true;
+	bool clear_depth_buffer = true;
+	uint32_t priority;
+	glm::mat4 view_matrix;
+	glm::mat4 proj_matrix;
+	hashed_string_64 frame_buffer_hashed;
+};
 
 struct MeshData
 {

@@ -6,8 +6,13 @@
 #include <algorithm>
 #include <utility>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
+// #include <glm/gtx/quaternion.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <engine/renderer/render_info.h>
 #include <engine/resources/obj_parser.h>
+#include <engine/utilities/entt_modified.h>
 
 struct NameComponent
 {
@@ -16,7 +21,13 @@ struct NameComponent
 
 struct WorldPositionComponent
 {
-    glm::vec3 position;
+    glm::vec3 position = glm::vec3(0.0f);
+    glm::vec3 scale = glm::vec3(1.0f);
+    glm::mat4 model_matrix = glm::mat4(1);
+    glm::quat rotation_quat = glm::quat(1.0f, 0.f,0.f,0.f);
+    bool get_euler_angles = true;
+    bool overide_quaternion = false;
+    glm::vec3 rotation_euler_do_not_use = glm::vec3(0.0f);
 };
 
 struct MeshLoaderComponent
@@ -49,10 +60,25 @@ struct RenderableComponent
 
 struct CameraComponent
 {
-    bool render_from;
-    glm::mat4 projection_matrix;
-    glm::mat4 view_matrix;
-    hashed_string_64 buffer_target;
+    bool orbit_camera = false;
+    bool wants_to_render = true;
+    bool clear_color_buffer = true;
+    bool clear_depth_buffer = true;
+    float near_plane = 300.f;
+    float far_plane = 0.1f;
+    float aspect_ratio = 720.f / 480.f;
+    float fied_of_view = 70.f;
+    uint16_t render_priority = 5000;
+    entt::entity target_entity = entt::null;
+    glm::vec3 target_location = glm::vec3(0); // really should perhaps just have forward? ... would need rotation/up vector too
+    glm::mat4 projection_matrix = glm::mat4(1);
+    glm::mat4 view_matrix = glm::mat4(1);
+    hashed_string_64 frame_buffer_target = hashed_string_64("main_camera_buffer");
+};
+
+struct FrameBufferComponent
+{
+    // perhaps to make a new frame buffer
 };
 
 struct ParentComponent

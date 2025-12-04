@@ -43,6 +43,8 @@
 #include "input_manager.h"
 #include "camera.h"
 
+#include <engine/utilities/memory_checking.h>
+
 
 int main(void)
 {
@@ -56,8 +58,11 @@ int main(void)
 	glfw_context->deactivate();
 	std::shared_ptr<ImGuiManager> imgui_manager = std::make_shared<ImGuiManager>(glfw_context);
 	glfw_context->activate();
-	glfw_context->create_framebuffer("editor_frame_buffer", 1280, 960);
+	glfw_context->create_framebuffer("editor_frame_buffer", 720, 480);
 	glfw_context->bind_framebuffer("editor_frame_buffer"); // Need to do this every frame really, when I'm changing framebuffers
+	glfw_context->unbind_framebuffer();
+	glfw_context->create_framebuffer("main_camera_buffer", 720, 480);
+	glfw_context->bind_framebuffer("editor_frame_buffer");
 	//InputManager input_manager(glfw_context->get_window());
 
 	///////////
@@ -67,8 +72,19 @@ int main(void)
 		auto camera = scene->new_scene_object("Camera test", true);
 		if (auto c = camera.lock())
 		{
-			hashed_string_64 buffer_name("editor_frame_buffer");
-			c->add_component_data<CameraComponentData, CameraComponent>(CameraComponent{ true, glm::mat4(0), glm::mat4(0), buffer_name });
+			hashed_string_64 buffer_name("main_camera_buffer");
+			c->add_component_data<WorldPositionComponentData, WorldPositionComponent>(WorldPositionComponent{ glm::vec3(0.0f, 0.0f, 10.0f) });
+			c->add_component_data<CameraComponentData, CameraComponent>
+				(CameraComponent{});
+		}
+
+		auto camera2 = scene->new_scene_object("Camera test2", true);
+		if (auto c = camera2.lock())
+		{
+			hashed_string_64 buffer_name("main_camera_buffer");
+			c->add_component_data<WorldPositionComponentData, WorldPositionComponent>(WorldPositionComponent{ glm::vec3(5.0f, 5.0f, 10.0f) });
+			c->add_component_data<CameraComponentData, CameraComponent>
+				(CameraComponent{});
 		}
 		hashed_string_64 string("./assets/obj/triobjmonkey.obj");
 		std::weak_ptr<SceneObject> withtChild = scene->new_scene_object("with Child", true);
@@ -164,7 +180,8 @@ int main(void)
 	ImGuiIO* io = imgui_manager->get_io();
 
 	InputManager& input_manager = InputManager::get();
-	
+	bool captured_prev_frame = false;
+	ImVec2 mouse_pos;
 	while (engine_context->run())
 	{
 		////////////////////////////////////////////////////
@@ -181,14 +198,18 @@ int main(void)
 		}
 
 		if (glfw_context->window_should_close()) engine_context->kill_all = true;
-
-		glfw_context->activate();
+		
+		glfw_context->activate(); /// just sets this window as the active context... hmm...
 		///////////////////////
 		//Render the render requests
 		// Here this would be repeated for every camera ... Yes, I suppose so... Do they bind the frame buffer themselves, perhaps?
 		// Lets just start with a hardcoded editor camera.
-		glfw_context->clear();
 		auto& render_requests = engine_context->render_requests[std::size_t(!engine_context->write_pos)];
+
+		// do for each camera.
+		renderer.rotation += 0.07f * engine_context->delta_time * 0.01;
+		glfw_context->bind_framebuffer("editor_frame_buffer");
+		glfw_context->clear();
 		renderer.set_proj_view_matrix(engine_context->editor_camera.get_proj_matrix(), engine_context->editor_camera.get_view_matrix());
 		for (size_t i = 0; i < render_requests.size(); i++)
 		{
@@ -197,6 +218,26 @@ int main(void)
 				renderer.temp_render(render_requests[i]);
 			}
 		}
+		glfw_context->bind_framebuffer("main_camera_buffer");
+		glfw_context->clear();
+		// render for each ingame camera
+		for (size_t i = 0; i < engine_context->cameras_render[std::size_t(!engine_context->write_pos)].size(); i++)
+		{
+			if (glfw_context->bind_framebuffer(engine_context->cameras_render[std::size_t(!engine_context->write_pos)][i].frame_buffer_hashed.string))
+			{
+				glfw_context->clear();
+				renderer.set_proj_view_matrix(engine_context->cameras_render[std::size_t(!engine_context->write_pos)][i].proj_matrix,
+					engine_context->cameras_render[std::size_t(!engine_context->write_pos)][i].view_matrix);
+				for (size_t i = 0; i < render_requests.size(); i++)
+				{
+					if (render_requests[i].vao != 0)
+					{
+						renderer.temp_render(render_requests[i]);
+					}
+				}
+			}
+		}
+
 		/////////////////////////////////////////
 		// Loading a VAO request
 		if (auto vao_request = engine_context->storage->get_vao_request())
@@ -216,11 +257,12 @@ int main(void)
 
 		
 		{
-			glfw_context->unbind_framebuffer("editor_frame_buffer");
+			glfw_context->unbind_framebuffer();
 			std::unique_lock<std::mutex> lock(engine_context->mutex);
 			engine_context->cv_frame_coordinator.wait(lock, [engine_context] 
 				{ return (!engine_context->game_thread || !engine_context->run()); });
 		}
+		glfwPollEvents();
 		frames++;
 		timer.stop();
 		engine_context->delta_time = timer.get_time_ms();
@@ -234,7 +276,7 @@ int main(void)
 			total_time = 0;
 			frames = 0;
 		}
-		glfwPollEvents();
+		
 		
 		////////////////////////////////////////////////////////////////
 		///// Rendering ends
@@ -250,21 +292,32 @@ int main(void)
 			// do all ui drawing.
 			imgui_manager->new_frame();
 			ImGui::Begin("editor_frame_buffer");
-
-			ImGui::Image(glfw_context->get_framebuffer_texture("editor_frame_buffer"), ImVec2(1280, 960), ImVec2(0, 1), ImVec2(1, 0));
-			if (engine_context->input_manager.is_key_held(EKey::RightMouseButton))
+			ImGui::Image(glfw_context->get_framebuffer_texture("editor_frame_buffer"), ImVec2(720, 480), ImVec2(0, 1), ImVec2(1, 0));
+			if (engine_context->input_manager.is_key_held(EKey::RightMouseButton) && ImGui::IsItemHovered()) // all of this should be put into camera
 			{
-				ImVec2 content_min = ImGui::GetWindowContentRegionMin() + ImGui::GetWindowPos();
-				ImVec2 content_max = ImGui::GetWindowContentRegionMax() + ImGui::GetWindowPos();
-				ImVec2 mouse_pos;
-				engine_context->input_manager.get_mouse_position(mouse_pos.x, mouse_pos.y);
-				if ((mouse_pos.x > content_min.x && mouse_pos.x < content_max.x) &&
-					(mouse_pos.y > content_min.y && mouse_pos.y < content_max.y))
+				if (!captured_prev_frame) /// not sure where I should put this bool... cache in the camera perhaps? Yes probably
 				{
-					engine_context->editor_camera.set_camera_movable(true);
+					mouse_pos = ImGui::GetMousePos();
+					captured_prev_frame = true;
 				}
-			} else engine_context->editor_camera.set_camera_movable(false);
-			
+				ImVec2 mouse_delta = ImGui::GetMousePos() - mouse_pos;
+				engine_context->editor_camera.set_camera_movable(true);
+				engine_context->editor_camera.move(glm::vec2(mouse_delta.x, -mouse_delta.y));
+				SetCursorPos((int)mouse_pos.x, (int)mouse_pos.y); // windows function... not pretty, but works
+				// I'll also need something like this when the play button is pressed, to reset the mouse position all the time...use ~ to lose capture?
+				// so the mouse capture has to be some kind of singleton perhaps
+			}
+			else
+			{
+				engine_context->editor_camera.set_camera_movable(false);
+				captured_prev_frame = false;
+			}
+			ImGui::End();
+
+			ImGui::Begin("main_camera_buffer");
+
+			ImGui::Image(glfw_context->get_framebuffer_texture("main_camera_buffer"), ImVec2(720, 480), ImVec2(0, 1), ImVec2(1, 0));
+
 			ImGui::End();
 
 			//ImGui::SetNextWindowSize(ImVec2(1280, 960));

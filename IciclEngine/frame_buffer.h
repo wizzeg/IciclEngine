@@ -9,6 +9,7 @@ struct FrameBuffer
 	{
 		name = a_name;
 		glGenFramebuffers(1, &frame_buffer);
+		PRINTLN("generated frame buffer {}", frame_buffer);
 		glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer);
 
 		// Create a texture for color attachment

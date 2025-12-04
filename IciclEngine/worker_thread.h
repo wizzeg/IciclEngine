@@ -34,15 +34,25 @@ struct EngineContext
 	{
 		return render_requests[(std::size_t(!write_pos))];
 	}
-	void swap_render_requests() { write_pos = !write_pos; render_requests[std::size_t(write_pos)].clear(); }
+	std::vector<CameraData>& get_camera_render()
+	{
+		return cameras_render[(std::size_t(!write_pos))];
+	}
+	void swap_render_requests()
+	{
+		write_pos = !write_pos;
+		render_requests[std::size_t(write_pos)].clear();
+		cameras_render[std::size_t(write_pos)].clear();
+	}
 	bool run() { return !kill_all; }
 	std::mutex mutex;
 	std::condition_variable cv_frame_coordinator;
 	std::condition_variable cv_threads;
 	std::atomic<bool> write_pos = false;
 	std::vector<RenderRequest> render_requests[2];
+	std::vector<CameraData> cameras_render[2];
 	std::shared_ptr<MeshDataGenStorage> storage;
-	Camera editor_camera;
+	Camera editor_camera = Camera("editor camera", 720, 480);
 	InputManager& input_manager;
 	//MessageQueue<>
 	std::atomic<bool> kill_all;

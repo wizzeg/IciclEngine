@@ -42,9 +42,10 @@ void UIObjectPropertyDrawer::draw_object_properties(std::shared_ptr<SceneObject>
 
 void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_field_info)
 {
+	int i = 0;
 	for (const auto& field : a_field_info)
 	{
-
+		
 		if (field.type == typeid(float))
 		{
 			ImGui::DragFloat(field.name.c_str(), static_cast<float*>(field.value_ptr));
@@ -57,7 +58,8 @@ void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_fie
 		{
 			ImGui::Text(field.name.c_str());
 			//ImGui::SameLine();
-			ImGui::DragFloat3("", &reinterpret_cast<glm::vec3*>(field.value_ptr)->x);
+			std::string salt = "##" + field.name + std::to_string(i++);
+			ImGui::DragFloat3(salt.c_str(), &reinterpret_cast<glm::vec3*>(field.value_ptr)->x);
 		}
 		else if (field.type == typeid(std::string))
 		{
@@ -80,6 +82,16 @@ void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_fie
 			if (ImGui::InputInt(final_string.c_str(), &temp, 1, 100, 0))
 			{
 				*value = ((uint32_t)temp);
+			}
+		}
+		else if (field.type == typeid(uint16_t))
+		{
+			uint16_t* value = static_cast<uint16_t*>(field.value_ptr);
+			std::string final_string = field.name + std::to_string(*value);
+			int temp = static_cast<int>(*value);
+			if (ImGui::InputInt(final_string.c_str(), &temp, 1, 100, 0))
+			{
+				*value = ((uint16_t)temp);
 			}
 		}
 		else if (field.type == typeid(uint64_t))
@@ -112,6 +124,11 @@ void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_fie
 		else
 		{
 			ImGui::Text("empty field");
+		}
+
+		if (field.same_line)
+		{
+			ImGui::SameLine();
 		}
 	}
 }

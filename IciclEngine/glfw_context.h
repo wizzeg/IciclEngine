@@ -48,27 +48,30 @@ struct GLFWContext
 	};
 	GLFWwindow* get_window() { return window; }
 
-	void bind_framebuffer(const std::string a_name)
+	bool bind_framebuffer(const std::string a_name)
 	{
 		for (size_t i = 0; i < frame_buffers.size(); i++)
 		{
 			if (frame_buffers[i].get_name() == a_name)
 			{
 				frame_buffers[i].bind();
+				return true;
 				break;
 			}
 		}
+		return false;
 	}
-	void unbind_framebuffer(const std::string a_name)
+	void unbind_framebuffer()
 	{
-		for (size_t i = 0; i < frame_buffers.size(); i++)
-		{
-			if (frame_buffers[i].get_name() == a_name)
-			{
-				frame_buffers[i].bind();
-				break;
-			}
-		}
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		//for (size_t i = 0; i < frame_buffers.size(); i++)
+		//{
+		//	if (frame_buffers[i].get_name() == a_name)
+		//	{
+		//		frame_buffers[i].bind();
+		//		break;
+		//	}
+		//}
 	}
 	void resize_framebuffer(const std::string a_name, int a_width, int a_height)
 	{

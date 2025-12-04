@@ -347,6 +347,9 @@
     <ClInclude Include="include\engine\utilities\memory_checking.h">
       <Filter>Header Files\engine\utilities</Filter>
     </ClInclude>
+    <ClInclude Include="include\engine\utilities\hashed_string_64.h">
+      <Filter>Header Files\engine\utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\assets\shaders\fragment\frag.glsl">

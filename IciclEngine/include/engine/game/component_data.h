@@ -9,19 +9,21 @@
 
 //#include "macros.h"
 #include <engine/utilities/macros.h>
+
 enum EEditMode
 {
 	Editable,
 	Uneditable,
 };
 
-struct FieldInfo
+struct FieldInfo /// perhaps make these into imgui drawcalls instead... but then caching becomes problem? unless just include the drawcall as extra?
 {
 	EEditMode edit_mode;
 	std::string name;
 	std::type_index type;
 	void* value_ptr;
 	float imgui_size = 1;
+	bool same_line = false;
 };
 
 // problem is references to other entities... 
@@ -143,7 +145,11 @@ struct WorldPositionComponentData : ComponentData<WorldPositionComponent>
 	{
 		return
 		{
-			{EEditMode::Editable, "world position: ", typeid(glm::vec3), &a_component.position.x, 2.f }
+			{EEditMode::Editable, "position: ", typeid(glm::vec3), &a_component.position, 2.f },
+			{EEditMode::Editable, "scale: ", typeid(glm::vec3), &a_component.scale, 2.f },
+			{EEditMode::Editable, "rotation: ", typeid(glm::vec3), &a_component.rotation_euler_do_not_use, 2.f },
+			{EEditMode::Editable, "update euler rotation: ", typeid(bool), &a_component.get_euler_angles, 1.1f, true},
+			{EEditMode::Editable, "overwrite quaternion rotation: ", typeid(bool), &a_component.overide_quaternion, 0.f }
 		};
 	}
 };
@@ -219,10 +225,12 @@ struct CameraComponentData : ComponentData<CameraComponent>
 	{
 		return
 		{
-			{ EEditMode::Editable, "camera active: ", typeid(bool), &a_component.render_from },
-			{EEditMode::Editable, "buffer: ", typeid(hashed_string_64), &a_component.buffer_target, 2.25 }
-			//{ EEditMode::Editable, "buffer target: ", typeid(std::string), &a_component.buffer_target.string },
-			//{ EEditMode::Editable, "buffer hash: ", typeid(uint64_t),& a_component.buffer_target.hash }
+			{ EEditMode::Editable, "camera active: ", typeid(bool), &a_component.wants_to_render ,1.1f, true },
+			{ EEditMode::Editable, "orbital camera: ", typeid(bool), &a_component.orbit_camera , 0.f },
+			{ EEditMode::Editable, "orbital point: ", typeid(glm::vec3), &a_component.target_location, 2.0f },
+			{ EEditMode::Editable, "priority: ", typeid(uint16_t),&a_component.render_priority },
+			{ EEditMode::Editable, "buffer: ", typeid(hashed_string_64), &a_component.frame_buffer_target, 2.25 },
+			{ EEditMode::Editable, "field of view: ", typeid(float), &a_component.fied_of_view }
 		};
 	}
 };

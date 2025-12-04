@@ -221,6 +221,7 @@
     <ClInclude Include="include\engine\ui\ui_object_property_drawer.h" />
     <ClInclude Include="include\engine\ui\ui_scene_hierarchy_drawer.h" />
     <ClInclude Include="include\engine\utilities\entt_modified.h" />
+    <ClInclude Include="include\engine\utilities\hashed_string_64.h" />
     <ClInclude Include="include\engine\utilities\macros.h" />
     <ClInclude Include="include\engine\utilities\memory_checking.h" />
     <ClInclude Include="include\engine\utilities\static_conversions.h" />
