@@ -306,7 +306,7 @@ void GameThread::execute()
 				if (unique_render_requests_new.has_value()) uniques_exist = true;
 				if (uniques_exist)
 				{
-					std::vector<RenderRequest> unique_render_requests_new_nonopt = unique_render_requests_new.value();
+					unique_render_requests_new_nonopt = unique_render_requests_new.value();
 				}
 				//// Todo, replace old render requests
 
@@ -320,29 +320,13 @@ void GameThread::execute()
 					if (!uniques_exist) break;
 					none_found = true;
 					start_index = unique_index;
-					for (; unique_index < unique_render_requests.size(); unique_index++)
-					{
-						if (render_request.hashed_path == unique_render_requests[unique_index].hashed_path)
-						{
-							render_requests.emplace_back(
-								render_request.hashed_path, unique_render_requests[unique_index].vao,
-								unique_render_requests[unique_index].indices_size, render_request.model_matrix, 0, 0 );
-							none_found = false;
-							break;
-						}
-
-					}
-					if (none_found)
-					{
-						unique_index = start_index;
-					}
-					//for (; unique_index < unique_render_requests_new_nonopt.size(); unique_index++)
+					//for (; unique_index < unique_render_requests.size(); unique_index++)
 					//{
-					//	if (render_request.hashed_path == unique_render_requests_new_nonopt[unique_index].hashed_path)
+					//	if (render_request.hashed_path == unique_render_requests[unique_index].hashed_path)
 					//	{
 					//		render_requests.emplace_back(
-					//			render_request.hashed_path, unique_render_requests_new_nonopt[unique_index].vao,
-					//			unique_render_requests_new_nonopt[unique_index].indices_size, render_request.model_matrix, 0, 0);
+					//			render_request.hashed_path, unique_render_requests[unique_index].vao,
+					//			unique_render_requests[unique_index].indices_size, render_request.model_matrix, 0, 0 );
 					//		none_found = false;
 					//		break;
 					//	}
@@ -352,6 +336,22 @@ void GameThread::execute()
 					//{
 					//	unique_index = start_index;
 					//}
+					for (; unique_index < unique_render_requests_new_nonopt.size(); unique_index++)
+					{
+						if (render_request.hashed_path == unique_render_requests_new_nonopt[unique_index].hashed_path)
+						{
+							render_requests.emplace_back(
+								render_request.hashed_path, unique_render_requests_new_nonopt[unique_index].vao,
+								unique_render_requests_new_nonopt[unique_index].indices_size, render_request.model_matrix, 0, 0);
+							none_found = false;
+							break;
+						}
+
+					}
+					if (none_found)
+					{
+						unique_index = start_index;
+					}
 				}
 				previous_total_render_requests = render_requests.size();
 			}

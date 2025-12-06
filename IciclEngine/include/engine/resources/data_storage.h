@@ -72,12 +72,11 @@ protected:
 
 struct VAOInfoProcessor : JobProcessor<VAOLoadInfo>
 {
-	VAOInfoProcessor(std::shared_ptr<std::mutex> a_data_mutex, std::shared_ptr<std::vector<MeshData>> a_datas);
+	VAOInfoProcessor(ModelGenStorage& a_gen_storage);
 	void process_job(VAOLoadInfo& a_job) override;
 protected:
 	void sort_data(std::unique_lock<std::mutex>& a_lock); /// make sure you have locked it first
-	std::shared_ptr<std::mutex> vao_processor_data_mutex;
-	std::shared_ptr<std::vector<MeshData>> vao_processor_datas;
+	ModelGenStorage& vaoinfo_gen_storage;
 };
 
 struct GenStorageThreadPool // this is abstract, must be inherited, this one holds jobs and adds jobs
@@ -100,17 +99,17 @@ protected:
 struct ModelGenStorage : GenStorageThreadPool // this will have more job processors, but only one genstoragethreadpool
 {
 	ModelGenStorage(size_t num_threads = 2);
-	//std::optional<VAOLoadRequest> get_vao_request(); // replace with the VAOLoadReturner
-	//void fulfilled_vao_request(LoadJob& a_job); // this should just be on add_job
 	const std::type_info& get_cast_type() override;
 	friend struct MeshJobProcessor;
 	friend struct VAOInfoProcessor;
+	friend struct RenderRequestReturner;
+	friend struct VAOLoadReturner;
 protected:
 	void worker_loop(size_t a_thread_id) override;
 	bool worker_wait_condition();
 	std::shared_ptr<std::mutex> mesh_mutex;
 	std::shared_ptr <std::vector<MeshData>> mesh_datas;
-	std::shared_ptr<MessageQueue<VAOLoadRequest>> vao_requester;
+	std::shared_ptr<MessageQueue<VAOLoadRequest>> vaoload_requests;
 	MeshJobProcessor mesh_job_processor;
 	VAOInfoProcessor vaoinfo_job_processor;
 public:

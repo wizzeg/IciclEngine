@@ -25,6 +25,7 @@ MeshData ObjParser::load_mesh_from_filepath(const std::string& a_path)
     ObjMesh obj_mesh;
     MeshData mesh;
     mesh.started_load = true;
+    mesh.path_hashed = hashed_string_64(a_path.c_str());
     mesh.ram_load_status = EMeshDataRAMLoadStatus::StartedLoad;
     if (!file.is_open())
     {

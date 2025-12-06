@@ -252,6 +252,17 @@ int main(void)
 			}
 			//else // I don't know what to do...
 		}
+		if (auto vao_request = engine_context->model_storage->vaoload_returner.return_request())
+		{
+			MeshData& mesh_data = vao_request.value().mesh_data;
+			PRINTLN("got the new type of vao load request");
+			if (vao_loader.load_vao(mesh_data))
+			{
+				PRINTLN("Render sending the new form of vao upate request message");
+				LoadJob load_job = std::move(VAOLoadInfo{ mesh_data.path_hashed, mesh_data.VAO_loaded, mesh_data.VAO, mesh_data.VBOs, mesh_data.EBO });
+				engine_context->model_storage->add_job(load_job);
+			}
+		}
 		
 
 

@@ -49,12 +49,12 @@ void MeshJobProcessor::process_job(MeshDataJob& a_job)
 		{
 			MeshData data = obj_parser.load_mesh_from_filepath(a_job.path_hashed.string);
 			{
-				std::unique_lock<std::mutex> data_lock(*meshjob_gen_storage.mesh_mutex);
 				if (data.ram_load_status == EMeshDataRAMLoadStatus::LoadedRAM)
 				{
 					data.vao_load_status = EMeshDataVAOLoadStatus::RequstedVAOLoad;
-					meshjob_gen_storage.vao_requester->add_message(VAOLoadRequest{ data }); // copying data for the VAOLoadRequest
+					meshjob_gen_storage.vaoload_requests->add_message(VAOLoadRequest{ data }); // copying data for the VAOLoadRequest
 				}
+				std::unique_lock<std::mutex> data_lock(*meshjob_gen_storage.mesh_mutex);
 				auto& datas = *meshjob_gen_storage.mesh_datas;
 				bool found_data = false;       // Make sure that we add it, this should always exist, but safety check
 				for (size_t i = 0; i < datas.size(); i++)
@@ -88,36 +88,42 @@ void MeshJobProcessor::sort_data(std::unique_lock<std::mutex>& a_lock)
 	}
 }
 
-VAOInfoProcessor::VAOInfoProcessor(std::shared_ptr<std::mutex> a_data_mutex, std::shared_ptr<std::vector<MeshData>> a_datas)
-	: vao_processor_data_mutex(a_data_mutex), vao_processor_datas(a_datas) {}
+VAOInfoProcessor::VAOInfoProcessor(ModelGenStorage& a_gen_storage) : vaoinfo_gen_storage(a_gen_storage){}
 
 void VAOInfoProcessor::process_job(VAOLoadInfo& a_job)
 {
 	if (a_job.vao_loaded)
 	{
-		std::unique_lock<std::mutex> data_lock(*vao_processor_data_mutex);
-		auto& datas = *vao_processor_datas;
+		std::unique_lock<std::mutex> data_lock(*vaoinfo_gen_storage.mesh_mutex);
+		auto& datas = *vaoinfo_gen_storage.mesh_datas;
 		bool found_data = false;
 		for (size_t i = 0; i < datas.size(); i++)
 		{
 			if (a_job.hashed_path == datas[i].path_hashed)
 			{
+				auto& data = datas[i];
 				found_data = true;
-				datas[i].vao_load_status = EMeshDataVAOLoadStatus::VAOLoaded; /// I need the actual data too...
+				data.vao_load_status = EMeshDataVAOLoadStatus::VAOLoaded; /// I need the actual data too...
+				data.VAO = a_job.vao;
+				data.EBO = a_job.ebo;
+				data.VBOs = a_job.VBOs;
 			}
 		}
 		if (!found_data)
 		{
 			MeshData new_mesh;
 			new_mesh.vao_load_status = EMeshDataVAOLoadStatus::VAOLoaded;
-			vao_processor_datas->push_back(new_mesh);
+			new_mesh.VAO = a_job.vao;
+			new_mesh.EBO = a_job.ebo;
+			new_mesh.VBOs = a_job.VBOs;
+			datas.push_back(new_mesh);
 			sort_data(data_lock);
 		}
 	}
 	else
 	{
-		std::unique_lock<std::mutex> data_lock(*vao_processor_data_mutex);
-		auto& datas = *vao_processor_datas;
+		std::unique_lock<std::mutex> data_lock(*vaoinfo_gen_storage.mesh_mutex);
+		auto& datas = *vaoinfo_gen_storage.mesh_datas;
 		bool found_data = false;
 		for (size_t i = 0; i < datas.size(); i++)
 		{
@@ -131,7 +137,7 @@ void VAOInfoProcessor::process_job(VAOLoadInfo& a_job)
 		{
 			MeshData new_mesh;
 			new_mesh.vao_load_status = EMeshDataVAOLoadStatus::NotVAOLoaded;
-			vao_processor_datas->push_back(new_mesh);
+			datas.push_back(new_mesh);
 			sort_data(data_lock);
 		}
 	}
@@ -141,7 +147,7 @@ void VAOInfoProcessor::sort_data(std::unique_lock<std::mutex>& a_lock)
 {
 	if (a_lock.owns_lock())
 	{
-		std::sort(vao_processor_datas->begin(), vao_processor_datas->end(), [](const MeshData& mesh_a, const MeshData& mesh_b)
+		std::sort(vaoinfo_gen_storage.mesh_datas->begin(), vaoinfo_gen_storage.mesh_datas->end(), [](const MeshData& mesh_a, const MeshData& mesh_b)
 			{
 				return mesh_a.path_hashed < mesh_b.path_hashed;
 			});
@@ -183,16 +189,14 @@ void GenStorageThreadPool::clear_jobs()
 }
 
 ModelGenStorage::ModelGenStorage(size_t num_threads)
-	: GenStorageThreadPool(num_threads),  mesh_mutex(std::make_shared<std::mutex>()), mesh_datas(std::make_shared<std::vector<MeshData>>()), vao_requester(std::make_shared<MessageQueue<VAOLoadRequest>>()),
-	mesh_job_processor(*this), vaoinfo_job_processor(mesh_mutex, mesh_datas), render_request_returner(mesh_datas, mesh_mutex), vaoload_returner(vao_requester) {}
+	: GenStorageThreadPool(num_threads),  mesh_mutex(std::make_shared<std::mutex>()), mesh_datas(std::make_shared<std::vector<MeshData>>()), vaoload_requests(std::make_shared<MessageQueue<VAOLoadRequest>>()),
+	mesh_job_processor(*this), vaoinfo_job_processor(*this), render_request_returner(mesh_datas, mesh_mutex), vaoload_returner(vaoload_requests) {}
 
-const std::type_info& ModelGenStorage::get_cast_type()
+const std::type_info& ModelGenStorage::get_cast_type() // not actually using this
 {
 	return typeid(ModelGenStorage);
 }
 
-//std::optional<VAOLoadRequest> ModelGenStorage::get_vao_request() { return vao_requester->get_message(); }
-//void ModelGenStorage::fulfilled_vao_request(LoadJob& a_job) { add_job(a_job); }
 void ModelGenStorage::worker_loop(size_t a_thread_id)
 {
 	while (!exit)
