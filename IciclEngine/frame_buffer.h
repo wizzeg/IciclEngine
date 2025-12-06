@@ -1,17 +1,19 @@
 #pragma once
 #include <glad/glad.h>
+#include <GLFW/glfw3.h>
 #include <cstddef>
 #include <engine/utilities/macros.h>
 #include <string>
+#include <engine/utilities/hashed_string_64.h>
+
 struct FrameBuffer
 {
-	FrameBuffer(const std::string a_name, int a_width, int a_height) : width(a_width), height(a_height)
+	FrameBuffer(const std::string a_name, int a_width, int a_height) 
+		: width(a_width), height(a_height), name(a_name), hashed_name(a_name.c_str()) // RGB/RGBA/RG/R I think
 	{
-		name = a_name;
 		glGenFramebuffers(1, &frame_buffer);
 		PRINTLN("generated frame buffer {}", frame_buffer);
 		glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer);
-
 		// Create a texture for color attachment
 		glGenTextures(1, &texture_color_buffer);
 		glBindTexture(GL_TEXTURE_2D, texture_color_buffer);
@@ -34,7 +36,6 @@ struct FrameBuffer
 		{
 			PRINTLN("Something went wrong when making new framebuffer");
 		}
-
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
@@ -77,15 +78,17 @@ struct FrameBuffer
 	}
 
 	const std::string get_name() const { return name; }
+	const hashed_string_64 get_hashed_name() const { return hashed_name; }
 	int get_width() const { return width; }
 	int get_height() const { return height; }
-	unsigned int get_texture() const { return texture_color_buffer; }
+	GLuint get_texture() { return texture_color_buffer; }
 private:
 	std::string name;
+	hashed_string_64 hashed_name;
 
-	unsigned int render_buffer = 0;
-	unsigned int texture_color_buffer = 0;
-	unsigned int frame_buffer = 0;
+	GLuint texture_color_buffer = 0;
+	GLuint render_buffer = 0;
+	GLuint frame_buffer = 0;
 
 	int width = 1;
 	int height = 1;

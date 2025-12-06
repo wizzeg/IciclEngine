@@ -12,33 +12,115 @@
 #include <glad/glad.h>
 #include <string>
 #include <map>
+#include <variant>
+#include <engine/resources/job_info.h>
 
-//struct LockKey
-//{
-//	uint8_t key;
-//	std::unique_lock<std::mutex> lock;
-//	LockKey(uint8_t a_key, std::unique_lock<std::mutex>&& a_lock) : key(a_key), lock(std::move(a_lock)) {};
-//};
-//
-//
-//struct DataGenerationStorageBase
-//{
-//	virtual const std::type_info& get_data_type() = 0;
-//	virtual const std::type_info& get_class_type() = 0;
-//
-//	uint32_t get_next_id() { std::lock_guard<std::mutex> guard(mutex); uint32_t result = next_id++; return result; };
-//
-//	uint32_t next_id = 0;
-//	std::mutex mutex;
-//	uint8_t key;
-//};
+struct ModelGenStorage;
+struct GenStorageThreadPool;
 
-// lock orders
-// exit -> message
-// data -> message
-// for free roam read... lock mutex, if there are writers/waiting writers, wait cv_read, otherwise increment readers count -> unlock -> read -> lock -> decrement -> unlock if 1 writer notify cv_write
-// readers lock mutex, increase readers count, wait cv_write if readers, -> write -> unlock -> notify all writers then readers
-struct MeshDataGenStorage
+using LoadJob = std::variant<MeshDataJob, VAOLoadInfo>;
+
+template <typename TReturn, typename TRequest>
+struct JobRequestReturner
+{
+	virtual std::optional<TReturn> return_request(const TRequest& a_request) = 0;
+	virtual std::optional<std::vector<TReturn>> return_requests(std::vector<TRequest>& a_requests, bool sorted = false) = 0;
+};
+template <typename TReturn>
+struct JobReturner
+{
+	virtual std::optional<TReturn> return_request() = 0;
+	virtual std::optional<std::vector<TReturn>> return_requests() = 0;
+};
+
+struct RenderRequestReturner : JobRequestReturner<RenderRequest, hashed_string_64>
+{
+	RenderRequestReturner(std::shared_ptr <std::vector<MeshData>> a_mesh_datas, std::shared_ptr<std::mutex> a_mutex) : render_request_returner_mesh_datas(a_mesh_datas), render_request_returner_mesh_mutex(a_mutex){}
+	std::optional<RenderRequest> return_request(const hashed_string_64& a_request) override;
+	std::optional<std::vector<RenderRequest>> return_requests(std::vector<hashed_string_64>& a_request, bool sorted = false) override;
+protected:
+	std::shared_ptr<std::vector<MeshData>> render_request_returner_mesh_datas;
+	std::shared_ptr<std::mutex> render_request_returner_mesh_mutex;
+};
+
+struct VAOLoadReturner : JobReturner<VAOLoadRequest>
+{
+	VAOLoadReturner(std::shared_ptr<MessageQueue<VAOLoadRequest>> a_message_queue) : vaoreturner_vao_requester(a_message_queue) {}
+	std::optional<VAOLoadRequest> return_request() override { return vaoreturner_vao_requester->get_message(); }
+	std::optional<std::vector<VAOLoadRequest>> return_requests() override { return vaoreturner_vao_requester->get_messages(); }
+protected:
+	std::shared_ptr<MessageQueue<VAOLoadRequest>> vaoreturner_vao_requester;
+};
+
+
+template <typename TJob>
+struct JobProcessor  // this only processes a given job
+{
+	virtual void process_job(TJob& a_job) = 0;
+};
+
+struct MeshJobProcessor : JobProcessor<MeshDataJob>
+{
+	MeshJobProcessor(ModelGenStorage& a_gen_storage);
+	void process_job(MeshDataJob& a_job) override;
+	//void generate_render_requests(RenderRequest& a_render_request);
+protected:
+	void sort_data(std::unique_lock<std::mutex>& a_lock); /// make sure you have locked it first
+	ObjParser obj_parser;
+	ModelGenStorage& meshjob_gen_storage;
+};
+
+struct VAOInfoProcessor : JobProcessor<VAOLoadInfo>
+{
+	VAOInfoProcessor(std::shared_ptr<std::mutex> a_data_mutex, std::shared_ptr<std::vector<MeshData>> a_datas);
+	void process_job(VAOLoadInfo& a_job) override;
+protected:
+	void sort_data(std::unique_lock<std::mutex>& a_lock); /// make sure you have locked it first
+	std::shared_ptr<std::mutex> vao_processor_data_mutex;
+	std::shared_ptr<std::vector<MeshData>> vao_processor_datas;
+};
+
+struct GenStorageThreadPool // this is abstract, must be inherited, this one holds jobs and adds jobs
+{
+	GenStorageThreadPool(size_t num_threads = 2);
+	~GenStorageThreadPool();
+	void add_job(LoadJob& a_job);
+	void add_jobs(std::vector<LoadJob>& a_jobs);
+	void clear_jobs();
+	virtual const std::type_info& get_cast_type() { return typeid(GenStorageThreadPool); };
+protected:
+	virtual void worker_loop(size_t a_thread_id) = 0;
+	std::shared_ptr<MessageQueue<LoadJob>> job_messages;
+	std::mutex thread_mutex;
+	std::vector<std::thread> threads;
+	std::atomic<bool> exit = false;
+	std::condition_variable cv_new_job;
+};
+
+struct ModelGenStorage : GenStorageThreadPool // this will have more job processors, but only one genstoragethreadpool
+{
+	ModelGenStorage(size_t num_threads = 2);
+	//std::optional<VAOLoadRequest> get_vao_request(); // replace with the VAOLoadReturner
+	//void fulfilled_vao_request(LoadJob& a_job); // this should just be on add_job
+	const std::type_info& get_cast_type() override;
+	friend struct MeshJobProcessor;
+	friend struct VAOInfoProcessor;
+protected:
+	void worker_loop(size_t a_thread_id) override;
+	bool worker_wait_condition();
+	std::shared_ptr<std::mutex> mesh_mutex;
+	std::shared_ptr <std::vector<MeshData>> mesh_datas;
+	std::shared_ptr<MessageQueue<VAOLoadRequest>> vao_requester;
+	MeshJobProcessor mesh_job_processor;
+	VAOInfoProcessor vaoinfo_job_processor;
+public:
+	RenderRequestReturner render_request_returner;
+	VAOLoadReturner vaoload_returner;
+
+};
+
+// OLD
+struct MeshDataGenStorage // this now needs to be able to handle texture load requests.... How can I structure this?
 {
 	MeshDataGenStorage(uint8_t a_max_threads = 2) : num_threads(a_max_threads)
 	{
@@ -344,35 +426,3 @@ struct MeshDataGenStorage
 	std::map<hashed_string_64, size_t> string_loaded; // should use for faster look up perhaps hashsed_string to index -- probably slower
 };
 
-//template <typename TDataIn, typename TDataOut>
-//struct DataGenerationStorage : DataGenerationStorageBase
-//{
-//
-//	virtual uint32_t load_from_path(const std::string& a_path)
-//	{
-//		std::lock_guard<std::mutex> guard(mutex);
-//		auto it = map_string_data.find(a_path);
-//		if (it == map_string_data.end())
-//			return handle_load_from_path(a_path);
-//		else return find_id_from_index(it->second);
-//	}
-//
-//	virtual std::optional<TDataOut> get_data_by_id(uint32_t a_id)
-//	{
-//		std::lock_guard<std::mutex> guard(mutex);
-//		return retreive_data_by_id(a_id);
-//	}
-//
-//	virtual void sort_data() = 0;
-//	virtual std::optional<std::weak_ptr<TData>> get_data_by_id(const LockKey& a_lock, uint32_t a_id) = 0;
-//
-//	const std::type_info& get_data_type() override { return typeid(TDataIn); }
-//	const std::type_info& get_class_type() override { return typeid(*this); }
-//protected:
-//	virtual uint32_t handle_load_from_path(const std::string& a_path) = 0;
-//	virtual uint32_t find_id_from_index(size_t a_index) = 0;
-//	virtual std::optional<TDataOut> retreive_data_by_id(uint32_t a_id) = 0;
-//
-//	std::vector<TDataIn> storage_data; // this is kinda terrible... the value is non-contigious
-//	std::map<std::string, size_t index> map_string_data; // take in a string, and map it to the TData
-//};

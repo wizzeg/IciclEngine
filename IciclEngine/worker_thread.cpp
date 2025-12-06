@@ -11,11 +11,6 @@
 
 void RenderThread::execute()
 {
-	//if (auto window = gl_context.lock())
-	//{
-	//	window->activate();
-	//}
-
 	int runs = 0;
 	while (true)
 	{
@@ -52,8 +47,6 @@ void RenderThread::execute()
 				PRINTLN("Render thread got vao request");
 			}
 		}
-		
-
 	}
 }
 
@@ -259,8 +252,17 @@ void GameThread::execute()
 						previous_value = hashed_loads[i];
 					}
 				}
+				// NEW MODEL LOADING SYSTEM
+				std::vector<LoadJob> load_jobs;
+				load_jobs.reserve(previous_unique_meshes);
+				for (size_t j = 0; j < load_requests.size(); j++)
+				{
+					MeshDataJob job(load_requests[j], EMeshDataRequest::LoadFromFile);
+					load_jobs.emplace_back(std::move(job));
+				}
 				previous_unique_meshes = i;
 				engine_context->storage->load_requests(load_requests);
+				engine_context->model_storage->add_jobs(load_jobs);
 			}
 			///////////////////////////////////////////////////////
 
@@ -295,6 +297,19 @@ void GameThread::execute()
 					}
 				}
 				previous_unique_meshes = i;
+
+
+				// NEW MODEL LOADING SYSTEM
+				std::optional<std::vector<RenderRequest>> unique_render_requests_new = engine_context->model_storage->render_request_returner.return_requests(unique_render_paths);
+				std::vector<RenderRequest> unique_render_requests_new_nonopt;
+				bool uniques_exist = false;
+				if (unique_render_requests_new.has_value()) uniques_exist = true;
+				if (uniques_exist)
+				{
+					std::vector<RenderRequest> unique_render_requests_new_nonopt = unique_render_requests_new.value();
+				}
+				//// Todo, replace old render requests
+
 				std::vector<RenderRequest> unique_render_requests = engine_context->storage->get_render_request(unique_render_paths);
 				previous_unique_meshes = unique_render_paths.size();
 				size_t unique_index = 0;
@@ -302,6 +317,7 @@ void GameThread::execute()
 				bool none_found = true;
 				for (auto& render_request : pre_render_requests)
 				{
+					if (!uniques_exist) break;
 					none_found = true;
 					start_index = unique_index;
 					for (; unique_index < unique_render_requests.size(); unique_index++)
@@ -320,6 +336,22 @@ void GameThread::execute()
 					{
 						unique_index = start_index;
 					}
+					//for (; unique_index < unique_render_requests_new_nonopt.size(); unique_index++)
+					//{
+					//	if (render_request.hashed_path == unique_render_requests_new_nonopt[unique_index].hashed_path)
+					//	{
+					//		render_requests.emplace_back(
+					//			render_request.hashed_path, unique_render_requests_new_nonopt[unique_index].vao,
+					//			unique_render_requests_new_nonopt[unique_index].indices_size, render_request.model_matrix, 0, 0);
+					//		none_found = false;
+					//		break;
+					//	}
+
+					//}
+					//if (none_found)
+					//{
+					//	unique_index = start_index;
+					//}
 				}
 				previous_total_render_requests = render_requests.size();
 			}

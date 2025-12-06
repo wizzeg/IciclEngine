@@ -6,6 +6,7 @@
 #include <engine/utilities/macros.h>
 #include <memory>
 #include <vector>
+
 #include "frame_buffer.h"
 #include <string>
 
@@ -64,14 +65,6 @@ struct GLFWContext
 	void unbind_framebuffer()
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		//for (size_t i = 0; i < frame_buffers.size(); i++)
-		//{
-		//	if (frame_buffers[i].get_name() == a_name)
-		//	{
-		//		frame_buffers[i].bind();
-		//		break;
-		//	}
-		//}
 	}
 	void resize_framebuffer(const std::string a_name, int a_width, int a_height)
 	{
@@ -92,9 +85,10 @@ struct GLFWContext
 
 	unsigned int get_framebuffer_texture(const std::string a_name)
 	{
+		hashed_string_64 target_hash(a_name.c_str());
 		for (size_t i = 0; i < frame_buffers.size(); i++)
 		{
-			if (frame_buffers[i].get_name() == a_name)
+			if (frame_buffers[i].get_hashed_name() == target_hash)
 			{
 				return frame_buffers[i].get_texture();
 			}

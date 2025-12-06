@@ -33,20 +33,11 @@ void Camera::move(glm::vec3 input)
 
 void Camera::update_proj_view_matrix()
 {
-	// when up changes this must also adjust for that.
-	//glm::vec3 direction = glm::normalize(camera_pos - camera_target);
-	//glm::vec3 right = glm::normalize(glm::cross(direction, glm::vec3(0.f, 1.f, 0.f)));
-	//glm::vec3 up = glm::cross(right, direction);
-	//view = glm::lookAt(camera_pos, camera_target, up);
-	//proj = glm::perspective(glm::radians(field_of_view), ((float)camera_aspect.x / (float)camera_aspect.y), 0.1f, 300.0f);
-	//
-
 	glm::mat4 rotation_matrix = glm::mat4_cast(rotation_quaternion);
 	glm::mat4 translation_matrix = glm::translate(glm::mat4(1.0f), -camera_pos);
 	view = glm::transpose(rotation_matrix) * translation_matrix;
 	proj = glm::perspective(glm::radians(field_of_view), ((float)camera_aspect.x / (float)camera_aspect.y), 0.1f, 300.0f);
 	proj_view_unchanged = true;
-
 }
 
 glm::mat4 Camera::get_view_matrix()

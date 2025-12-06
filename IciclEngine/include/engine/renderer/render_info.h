@@ -42,7 +42,7 @@ struct RenderRequest
 
 };
 
-enum BufferAttributeLocation
+enum BufferAttributeLocation : uint8_t
 {
 	Position = 0,
 	Normal = 1,
@@ -92,6 +92,24 @@ struct CameraData
 	hashed_string_64 frame_buffer_hashed;
 };
 
+enum EMeshDataRAMLoadStatus : uint8_t
+{
+	NotRAMLoaded,
+	StartedLoad,
+	FailedLoadBadPath,
+	FailedLoadNoAccess,
+	FailedOpen,
+	FailedNoSpace,
+	FailedBadModel,
+	LoadedRAM
+};
+enum EMeshDataVAOLoadStatus : uint8_t
+{
+	NotVAOLoaded,
+	RequstedVAOLoad,
+	VAOLoaded
+};
+
 struct MeshData
 {
 	std::string path;
@@ -102,6 +120,9 @@ struct MeshData
 	bool started_load = false;
 	bool destroy = false;
 	unsigned int stride = 0;
+
+	EMeshDataRAMLoadStatus ram_load_status = EMeshDataRAMLoadStatus::NotRAMLoaded;
+	EMeshDataVAOLoadStatus vao_load_status = EMeshDataVAOLoadStatus::NotVAOLoaded;
 
 	glm::mat4 offset_matrix = glm::mat4(1);
 

@@ -295,6 +295,7 @@ int main(void)
 			ImGui::Image(glfw_context->get_framebuffer_texture("editor_frame_buffer"), ImVec2(720, 480), ImVec2(0, 1), ImVec2(1, 0));
 			if (engine_context->input_manager.is_key_held(EKey::RightMouseButton) && ImGui::IsItemHovered()) // all of this should be put into camera
 			{
+				ImGui::SetMouseCursor(ImGuiMouseCursor_None);
 				if (!captured_prev_frame) /// not sure where I should put this bool... cache in the camera perhaps? Yes probably
 				{
 					mouse_pos = ImGui::GetMousePos();
@@ -304,6 +305,7 @@ int main(void)
 				engine_context->editor_camera.set_camera_movable(true);
 				engine_context->editor_camera.move(glm::vec2(mouse_delta.x, -mouse_delta.y));
 				SetCursorPos((int)mouse_pos.x, (int)mouse_pos.y); // windows function... not pretty, but works
+				
 				// I'll also need something like this when the play button is pressed, to reset the mouse position all the time...use ~ to lose capture?
 				// so the mouse capture has to be some kind of singleton perhaps
 			}

@@ -8,9 +8,6 @@
 template <typename TMessage>
 struct MessageQueue
 {
-	std::deque<TMessage> messages;
-	std::mutex mutex;
-
 	void add_message(const TMessage& a_message)
 	{
 		std::lock_guard guard(mutex);
@@ -66,5 +63,12 @@ struct MessageQueue
 		return temp_messages;
 	}
 
-
+	void clear_messages()
+	{
+		std::lock_guard<std::mutex> guard(mutex);
+		messages.clear();
+	}
+protected:
+	std::deque<TMessage> messages;
+	std::mutex mutex;
 };

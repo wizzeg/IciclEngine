@@ -179,6 +179,7 @@
     <ClCompile Include="src\engine\ui\ui_object_property_drawer.cpp" />
     <ClCompile Include="src\engine\ui\ui_scene_hierarchy_drawer.cpp" />
     <ClCompile Include="systems.cpp" />
+    <ClCompile Include="texture.cpp" />
     <ClCompile Include="worker_thread.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -213,6 +214,7 @@
     <ClInclude Include="include\engine\resources\asset_loader.h" />
     <ClInclude Include="include\engine\resources\asset_manager.h" />
     <ClInclude Include="include\engine\resources\data_storage.h" />
+    <ClInclude Include="include\engine\resources\job_info.h" />
     <ClInclude Include="include\engine\resources\message_queue.h" />
     <ClInclude Include="include\engine\resources\obj_parser.h" />
     <ClInclude Include="include\engine\resources\scene_object_registry.h" />
@@ -228,6 +230,7 @@
     <ClInclude Include="include\engine\utilities\utilities.h" />
     <ClInclude Include="input_manager.h" />
     <ClInclude Include="systems.h" />
+    <ClInclude Include="texture.h" />
     <ClInclude Include="worker_thread.h" />
   </ItemGroup>
   <ItemGroup>

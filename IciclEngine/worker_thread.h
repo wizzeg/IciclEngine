@@ -25,7 +25,7 @@
 
 struct EngineContext
 {
-	EngineContext(std::shared_ptr<MeshDataGenStorage> a_storage) : storage(a_storage), editor_camera("editor camera", 1280, 960), input_manager(InputManager::get()) {};
+	EngineContext(std::shared_ptr<MeshDataGenStorage> a_storage) : storage(a_storage), model_storage(std::make_shared<ModelGenStorage>()), editor_camera("editor camera", 1280, 960), input_manager(InputManager::get()) {};
 	void set_render_request(std::vector<RenderRequest>& a_render_requests)
 	{
 		render_requests[(std::size_t(write_pos))] = a_render_requests;
@@ -52,6 +52,8 @@ struct EngineContext
 	std::vector<RenderRequest> render_requests[2];
 	std::vector<CameraData> cameras_render[2];
 	std::shared_ptr<MeshDataGenStorage> storage;
+	std::shared_ptr<ModelGenStorage> model_storage;
+
 	Camera editor_camera = Camera("editor camera", 720, 480);
 	InputManager& input_manager;
 	//MessageQueue<>
