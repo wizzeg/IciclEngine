@@ -7,8 +7,8 @@
 #ifndef MAX_UVS_COLORS
 #define MAX_UVS_COLORS 6;
 #endif
-
-
+#include <stb_image/stb_image.h>
+#include <memory>
 
 struct PreRenderRequest
 {
@@ -92,23 +92,20 @@ struct CameraData
 	hashed_string_64 frame_buffer_hashed;
 };
 
-enum EMeshDataRAMLoadStatus : uint8_t
+enum ELoadStatus : uint8_t
 {
-	NotRAMLoaded,
+	NotLoaded,
+	RequestedLoad,
 	StartedLoad,
+	Loaded,
 	FailedLoadBadPath,
 	FailedLoadNoAccess,
-	FailedOpen,
-	FailedNoSpace,
-	FailedBadModel,
-	LoadedRAM
+	FailedLoadOpen,
+	FailedLoadBadModel,
+	FailedLoadNoSpace,
+	FailedUpload
 };
-enum EMeshDataVAOLoadStatus : uint8_t
-{
-	NotVAOLoaded,
-	RequstedVAOLoad,
-	VAOLoaded
-};
+
 
 struct MeshData
 {
@@ -121,8 +118,8 @@ struct MeshData
 	bool destroy = false;
 	unsigned int stride = 0;
 
-	EMeshDataRAMLoadStatus ram_load_status = EMeshDataRAMLoadStatus::NotRAMLoaded;
-	EMeshDataVAOLoadStatus vao_load_status = EMeshDataVAOLoadStatus::NotVAOLoaded;
+	ELoadStatus ram_load_status = ELoadStatus::NotLoaded;
+	ELoadStatus vao_load_status = ELoadStatus::NotLoaded;
 
 	glm::mat4 offset_matrix = glm::mat4(1);
 
@@ -144,4 +141,35 @@ struct MeshData
 struct VAOLoadRequest
 {
 	MeshData mesh_data;
+};
+
+struct TextureGenInfo
+{
+	hashed_string_64 hashed_path;
+	GLuint texture_id;
+	ELoadStatus texture_gen_status;
+};
+
+struct TextureData
+{
+	hashed_string_64 hashed_path;
+	std::string path = " ";
+
+	GLuint texture_id = 0;
+	uint8_t bound_index = 0;
+	GLsizei width = 0;
+	GLsizei height = 0;
+
+	float border_color[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	GLenum color_format = GL_RGB;
+	GLenum wrap_x = GL_REPEAT;
+	GLenum wrap_y = GL_REPEAT;
+	GLenum filtering_min = GL_NEAREST;
+	GLenum filtering_mag = GL_LINEAR;
+	bool generate_mipmap = true;
+	GLenum mipmap_filtering = GL_LINEAR_MIPMAP_LINEAR;
+	std::shared_ptr<stbi_uc> texture_data;
+
+	ELoadStatus texture_ram_status = ELoadStatus::NotLoaded;
+	ELoadStatus texture_gen_status = ELoadStatus::NotLoaded;
 };

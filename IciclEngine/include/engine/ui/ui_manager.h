@@ -1,8 +1,8 @@
 #pragma once
 
 #include <memory>
-#include "ui_scene_hierarchy_drawer.h"
-#include "ui_object_property_drawer.h"
+#include <engine/ui/ui_scene_hierarchy_drawer.h>
+#include <engine/ui/ui_object_property_drawer.h>
 
 class Scene;
 class SceneObject;

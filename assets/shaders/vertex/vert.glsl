@@ -19,6 +19,7 @@ void main()
 	//int vertexIndex = gl_VertexID;
 	//projection * view * model *
 	gl_Position = proj * view * model * vec4(aPos, 1.0);
-	vCol = vec4(aCol.rgb, 1.0);
+	vec3 combined = aCol.rgb * 0.35 + (aNrm.rgb * 0.5 + 0.5) * 0.65;
+	vCol = vec4(combined, 1.0);
 	vTexCoord = aTexCoord.xyz;
 }

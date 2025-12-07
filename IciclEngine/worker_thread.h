@@ -17,15 +17,15 @@
 #include <imgui-docking/imgui.h>
 #include <imgui-docking/imgui_impl_glfw.h>
 #include <imgui-docking/imgui_impl_opengl3.h>
-#include "glfw_context.h"
-#include "imgui_manager.h"
+#include <engine/renderer/glfw_context.h>
+#include <engine/ui/imgui_manager.h>
 #include <engine/ui/ui_manager.h>
-#include "camera.h"
-#include "input_manager.h"
+#include <engine/game/camera.h>
+#include <engine/game/input_manager.h>
 
 struct EngineContext
 {
-	EngineContext(std::shared_ptr<MeshDataGenStorage> a_storage) : storage(a_storage), model_storage(std::make_shared<ModelGenStorage>()), editor_camera("editor camera", 1280, 960), input_manager(InputManager::get()) {};
+	EngineContext(/*std::shared_ptr<MeshDataGenStorage> a_storage*/) : /*storage(a_storage), */ model_storage(std::make_shared<ModelGenStorage>()), editor_camera("editor camera", 1280, 960), input_manager(InputManager::get()) {};
 	void set_render_request(std::vector<RenderRequest>& a_render_requests)
 	{
 		render_requests[(std::size_t(write_pos))] = a_render_requests;
@@ -51,7 +51,7 @@ struct EngineContext
 	std::atomic<bool> write_pos = false;
 	std::vector<RenderRequest> render_requests[2];
 	std::vector<CameraData> cameras_render[2];
-	std::shared_ptr<MeshDataGenStorage> storage;
+	//std::shared_ptr<MeshDataGenStorage> storage;
 	std::shared_ptr<ModelGenStorage> model_storage;
 
 	Camera editor_camera = Camera("editor camera", 720, 480);
@@ -82,23 +82,6 @@ struct MeshLoadThreadContext : MessageThreadContext<LoadRequest>
 };
 
 
-struct RenderThread
-{
-
-	RenderThread(std::shared_ptr<EngineContext> a_context, ShaderProgram& a_default_shader, std::weak_ptr<GLFWContext> a_gl_context)
-		: engine_context(a_context), default_shader(a_default_shader), gl_context(a_gl_context)
-	{
-	};
-
-	void execute();
-
-private:
-	std::shared_ptr<EngineContext> engine_context;
-	Renderer renderer;
-	ShaderProgram default_shader;
-	std::weak_ptr<GLFWContext> gl_context;
-};
-
 struct GameThread
 {
 	GameThread(std::shared_ptr<EngineContext> a_context, std::shared_ptr<Scene> a_scene)
@@ -110,21 +93,6 @@ private:
 	std::shared_ptr<Scene> scene;
 
 	// worker threads
-};
-
-struct EngineThread
-{
-	EngineThread(std::shared_ptr<EngineContext> a_context, std::weak_ptr<ImGuiManager> a_imgui_manager, std::weak_ptr<UIManager> a_ui_manager)
-		: engine_context(a_context), imgui_manager(a_imgui_manager), ui_manager(a_ui_manager)
-	{
-	};
-
-	void execute();
-
-private:
-	std::shared_ptr<EngineContext> engine_context;
-	std::weak_ptr<ImGuiManager> imgui_manager;
-	std::weak_ptr<UIManager> ui_manager;
 };
 
 template <typename TMessage>

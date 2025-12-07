@@ -1,4 +1,4 @@
-#include "input_manager.h"
+#include <engine/game/input_manager.h>
 
 void InputManager::update_input()
 {

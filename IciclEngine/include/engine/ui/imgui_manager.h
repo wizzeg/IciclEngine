@@ -1,6 +1,6 @@
 #pragma once
 
-#include "glfw_context.h"
+#include <engine/renderer/glfw_context.h>
 
 #include <imgui-docking/imgui.h>
 #include <imgui-docking/imgui_impl_glfw.h>

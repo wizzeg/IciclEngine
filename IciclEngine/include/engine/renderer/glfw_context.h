@@ -7,7 +7,7 @@
 #include <memory>
 #include <vector>
 
-#include "frame_buffer.h"
+#include <engine/renderer/frame_buffer.h>
 #include <string>
 
 struct GLFWContext

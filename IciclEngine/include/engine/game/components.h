@@ -42,7 +42,13 @@ struct MaterialLoaderComponent
 
 struct MeshComponent
 {
-    uint32_t id;
+    bool loaded;
+    hashed_string_64 hashed_path;
+};
+
+struct TextureComponent
+{
+    bool loaded;
     hashed_string_64 hashed_path;
 };
 
@@ -75,6 +81,7 @@ struct CameraComponent
     glm::mat4 view_matrix = glm::mat4(1);
     hashed_string_64 frame_buffer_target = hashed_string_64("main_camera_buffer");
 };
+
 
 struct FrameBufferComponent
 {

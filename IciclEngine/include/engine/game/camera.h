@@ -1,5 +1,5 @@
 #pragma once
-#include "frame_buffer.h"
+#include <engine/renderer/frame_buffer.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/mat4x4.hpp>

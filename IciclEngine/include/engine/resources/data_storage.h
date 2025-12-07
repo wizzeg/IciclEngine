@@ -18,7 +18,7 @@
 struct ModelGenStorage;
 struct GenStorageThreadPool;
 
-using LoadJob = std::variant<MeshDataJob, VAOLoadInfo>;
+using LoadJob = std::variant<MeshDataJob, VAOLoadInfo, TextureDataJob>;
 
 template <typename TReturn, typename TRequest>
 struct JobRequestReturner
@@ -35,21 +35,20 @@ struct JobReturner
 
 struct RenderRequestReturner : JobRequestReturner<RenderRequest, hashed_string_64>
 {
-	RenderRequestReturner(std::shared_ptr <std::vector<MeshData>> a_mesh_datas, std::shared_ptr<std::mutex> a_mutex) : render_request_returner_mesh_datas(a_mesh_datas), render_request_returner_mesh_mutex(a_mutex){}
+	RenderRequestReturner(ModelGenStorage& a_gen_storage);
 	std::optional<RenderRequest> return_request(const hashed_string_64& a_request) override;
 	std::optional<std::vector<RenderRequest>> return_requests(std::vector<hashed_string_64>& a_request, bool sorted = false) override;
 protected:
-	std::shared_ptr<std::vector<MeshData>> render_request_returner_mesh_datas;
-	std::shared_ptr<std::mutex> render_request_returner_mesh_mutex;
+	ModelGenStorage& renderreqret_gen_storage;
 };
 
 struct VAOLoadReturner : JobReturner<VAOLoadRequest>
 {
-	VAOLoadReturner(std::shared_ptr<MessageQueue<VAOLoadRequest>> a_message_queue) : vaoreturner_vao_requester(a_message_queue) {}
-	std::optional<VAOLoadRequest> return_request() override { return vaoreturner_vao_requester->get_message(); }
-	std::optional<std::vector<VAOLoadRequest>> return_requests() override { return vaoreturner_vao_requester->get_messages(); }
+	VAOLoadReturner(ModelGenStorage& a_gen_storage);
+	std::optional<VAOLoadRequest> return_request() override;
+	std::optional<std::vector<VAOLoadRequest>> return_requests() override;
 protected:
-	std::shared_ptr<MessageQueue<VAOLoadRequest>> vaoreturner_vao_requester;
+	ModelGenStorage& vaoreturner_gen_storage;
 };
 
 
@@ -79,10 +78,20 @@ protected:
 	ModelGenStorage& vaoinfo_gen_storage;
 };
 
+struct TextureDataProcessor : JobProcessor<TextureDataJob>
+{
+	TextureDataProcessor(ModelGenStorage& a_gen_storage);
+	void process_job(TextureDataJob& a_job) override;
+protected:
+	void sort_data(std::unique_lock<std::mutex>& a_lock); /// make sure you have locked it first
+	ModelGenStorage& texturedata_gen_storage;
+};
+
 struct GenStorageThreadPool // this is abstract, must be inherited, this one holds jobs and adds jobs
 {
 	GenStorageThreadPool(size_t num_threads = 2);
 	~GenStorageThreadPool();
+	void start_threads();
 	void add_job(LoadJob& a_job);
 	void add_jobs(std::vector<LoadJob>& a_jobs);
 	void clear_jobs();
@@ -91,14 +100,17 @@ protected:
 	virtual void worker_loop(size_t a_thread_id) = 0;
 	std::shared_ptr<MessageQueue<LoadJob>> job_messages;
 	std::mutex thread_mutex;
-	std::vector<std::thread> threads;
-	std::atomic<bool> exit = false;
+	bool exit = false;
 	std::condition_variable cv_new_job;
+	bool start = false;
+	std::condition_variable cv_start_threads;
+	std::vector<std::thread> threads;
+	int num_threads;
 };
 
 struct ModelGenStorage : GenStorageThreadPool // this will have more job processors, but only one genstoragethreadpool
 {
-	ModelGenStorage(size_t num_threads = 2);
+	ModelGenStorage(size_t num_threads = 2); // this mf is EXTREMELY tightly coupled to all the other things, soo... doing any composition/polymorphism here really didn't give any benefits
 	const std::type_info& get_cast_type() override;
 	friend struct MeshJobProcessor;
 	friend struct VAOInfoProcessor;
@@ -107,9 +119,10 @@ struct ModelGenStorage : GenStorageThreadPool // this will have more job process
 protected:
 	void worker_loop(size_t a_thread_id) override;
 	bool worker_wait_condition();
-	std::shared_ptr<std::mutex> mesh_mutex;
-	std::shared_ptr <std::vector<MeshData>> mesh_datas;
-	std::shared_ptr<MessageQueue<VAOLoadRequest>> vaoload_requests;
+	std::mutex mesh_mutex;
+	std::vector<MeshData> mesh_datas;
+	std::mutex texture_mutex;
+	MessageQueue<VAOLoadRequest> vaoload_requests;
 	MeshJobProcessor mesh_job_processor;
 	VAOInfoProcessor vaoinfo_job_processor;
 public:

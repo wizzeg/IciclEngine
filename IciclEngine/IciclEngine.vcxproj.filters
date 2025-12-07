@@ -192,23 +192,29 @@
     <ClCompile Include="src\engine\resources\message_queue.cpp">
       <Filter>Source Files\engine\resources</Filter>
     </ClCompile>
-    <ClCompile Include="glfw_context.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="src\engine\game\camera.cpp">
+      <Filter>Source Files\engine\game</Filter>
     </ClCompile>
-    <ClCompile Include="imgui_manager.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="src\engine\renderer\frame_buffer.cpp">
+      <Filter>Source Files\engine\renderer</Filter>
     </ClCompile>
-    <ClCompile Include="frame_buffer.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="src\engine\renderer\glfw_context.cpp">
+      <Filter>Source Files\engine\renderer</Filter>
     </ClCompile>
-    <ClCompile Include="camera.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="src\engine\renderer\texture.cpp">
+      <Filter>Source Files\engine\renderer</Filter>
     </ClCompile>
-    <ClCompile Include="input_manager.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="src\engine\game\input_manager.cpp">
+      <Filter>Source Files\engine\game</Filter>
     </ClCompile>
-    <ClCompile Include="texture.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="src\engine\ui\imgui_manager.cpp">
+      <Filter>Source Files\engine\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\renderer\texture_loader.cpp">
+      <Filter>Source Files\engine\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\resources\model_loader.cpp">
+      <Filter>Source Files\engine\resources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -329,21 +335,6 @@
     <ClInclude Include="include\engine\resources\message_queue.h">
       <Filter>Header Files\engine\resources</Filter>
     </ClInclude>
-    <ClInclude Include="glfw_context.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui_manager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="frame_buffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="camera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="input_manager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\engine\utilities\entt_modified.h">
       <Filter>Header Files\engine\utilities</Filter>
     </ClInclude>
@@ -353,10 +344,31 @@
     <ClInclude Include="include\engine\utilities\hashed_string_64.h">
       <Filter>Header Files\engine\utilities</Filter>
     </ClInclude>
-    <ClInclude Include="texture.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\engine\resources\job_info.h">
+      <Filter>Header Files\engine\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\game\camera.h">
+      <Filter>Header Files\engine\game</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\renderer\frame_buffer.h">
+      <Filter>Header Files\engine\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\renderer\glfw_context.h">
+      <Filter>Header Files\engine\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\renderer\texture.h">
+      <Filter>Header Files\engine\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\game\input_manager.h">
+      <Filter>Header Files\engine\game</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\ui\imgui_manager.h">
+      <Filter>Header Files\engine\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\renderer\texture_loader.h">
+      <Filter>Header Files\engine\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\resources\model_loader.h">
       <Filter>Header Files\engine\resources</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,4 +1,4 @@
-#include "Texture.h"
+#include <engine/renderer/texture.h>
 #include <engine/utilities/macros.h>
 
 Texture::Texture(const char* a_path, const GLenum a_wrap_x, const GLenum a_wrap_y, const GLenum filtering_min, const GLenum filtering_mag, const GLenum mipmap_filtering, bool a_mipmap)

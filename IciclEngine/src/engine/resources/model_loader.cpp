@@ -1,18 +1,13 @@
-#include <engine/resources/obj_parser.h>
+#include <engine/resources/model_loader.h>
+#include <map>
+#include <engine/utilities/macros.h>
+#include <engine/utilities/utilities.h>
+#include <engine/utilities/memory_checking.h>
 #include <fstream>
 #include <sstream>
-#include <engine/utilities/macros.h>
 #include <algorithm>
-#include <chrono>
-#include <engine/utilities/utilities.h>
-#include <engine/renderer/render_info.h>
-#include <map>
-#include <engine/utilities/memory_checking.h>
-#include <engine/utilities/hashed_string_64.h>
 
-
-
-MeshData ObjParser::load_mesh_from_filepath(const std::string& a_path)
+MeshData ModelLoader::load_obj_mesh_from_file(const std::string a_path)
 {
     HighResolutionTimer timer;
     TimeNow time_now;
@@ -23,7 +18,6 @@ MeshData ObjParser::load_mesh_from_filepath(const std::string& a_path)
     std::ifstream file(a_path);
     std::string line;
 
-    ObjMesh obj_mesh;
     MeshData mesh;
     mesh.started_load = true;
     mesh.path_hashed = hashed_string_64(a_path.c_str());
@@ -38,7 +32,7 @@ MeshData ObjParser::load_mesh_from_filepath(const std::string& a_path)
     file.seekg(0, std::ios::end);
     std::streampos model_size = file.tellg();
     file.seekg(0, std::ios::beg);
-    
+
     if (((float)(model_size / (1024.0f * 1024.0f)) + 200) > memory_checker::get_mb_left())
     {
         PRINTLN("not enough available memory (free: {}MB, model: {:.4f}MB) for path: {}",
@@ -192,4 +186,94 @@ MeshData ObjParser::load_mesh_from_filepath(const std::string& a_path)
     PRINTLN("time to load {}: {}ms", a_path, timer.get_time_ms());
     mesh.ram_load_status = ELoadStatus::Loaded;
     return mesh;
+}
+
+void ModelLoader::load_texture_from_file(TextureData& a_texture_data)
+{
+    if (a_texture_data.path == "")
+    {
+        PRINTLN("No path assigned");
+        a_texture_data.texture_ram_status = ELoadStatus::NotLoaded;
+        return;
+    }
+    // load and generate the texture
+    int temp_width, temp_height, temp_num_comps;
+    stbi_uc* raw_ptr = stbi_load(a_texture_data.hashed_path.string.c_str(), &temp_width, &temp_height, &temp_num_comps, 0);
+    if (raw_ptr == nullptr)
+    {
+        PRINTLN("Failed Generate STBI data");
+        a_texture_data.texture_ram_status = ELoadStatus::FailedLoadOpen;
+        return;
+    }
+    if (temp_num_comps == 1) a_texture_data.color_format = GL_RED;
+    else if (temp_num_comps == 2) a_texture_data.color_format = GL_RG;
+    else if (temp_num_comps == 3) a_texture_data.color_format = GL_RGB;
+    else if (temp_num_comps == 4) a_texture_data.color_format = GL_RGBA;
+    else
+    {
+        std::println("Failed to load texture");
+        std::println("loaded texture at {}", a_texture_data.texture_id);
+        a_texture_data.texture_ram_status = ELoadStatus::FailedLoadBadModel;
+        stbi_image_free(raw_ptr);
+        return;
+    }
+    size_t data_size = static_cast<size_t>(temp_width) * temp_height * temp_num_comps;
+    a_texture_data.texture_data = std::shared_ptr<stbi_uc>(new stbi_uc[data_size]);
+    std::copy_n(raw_ptr, data_size, a_texture_data.texture_data.get());
+    stbi_image_free(raw_ptr);
+
+    a_texture_data.width = temp_width;
+    a_texture_data.height = temp_height;
+    a_texture_data.texture_ram_status = ELoadStatus::Loaded;
+}
+
+TextureData ModelLoader::load_texture_from_file(const std::string a_path, bool a_mipmap)
+{
+    TextureData texture_data;
+    texture_data.hashed_path = hashed_string_64(a_path.c_str());
+    texture_data.path = a_path;
+    texture_data.generate_mipmap = a_mipmap;
+    load_texture_from_file(texture_data);
+    return texture_data;
+}
+
+TextureData ModelLoader::load_texture_from_file(const std::string a_path, const GLenum a_wrap_x, const GLenum a_wrap_y, bool a_mipmap)
+{
+    TextureData texture_data;
+    texture_data.hashed_path = hashed_string_64(a_path.c_str());
+    texture_data.path = a_path;
+    texture_data.wrap_x = a_wrap_x;
+    texture_data.wrap_y = a_wrap_y;
+    texture_data.generate_mipmap = a_mipmap;
+    load_texture_from_file(texture_data);
+    return texture_data;
+}
+
+TextureData ModelLoader::load_texture_from_file(const std::string a_path, const GLenum a_wrap_x, const GLenum a_wrap_y, const GLenum a_filtering_min, const GLenum a_fintering_mag, bool a_mipmap)
+{
+    TextureData texture_data;
+    texture_data.hashed_path = hashed_string_64(a_path.c_str());
+    texture_data.path = a_path;
+    texture_data.wrap_x = a_wrap_x;
+    texture_data.wrap_y = a_wrap_y;
+    texture_data.generate_mipmap = a_mipmap;
+    texture_data.filtering_min = a_filtering_min;
+    texture_data.filtering_mag = a_fintering_mag;
+    load_texture_from_file(texture_data);
+    return texture_data;
+}
+
+TextureData ModelLoader::load_texture_from_file(const std::string a_path, const GLenum a_wrap_x, const GLenum a_wrap_y, const GLenum a_filtering_min, const GLenum a_fintering_mag, const GLenum a_mipmap_filtering, bool a_mipmap)
+{
+    TextureData texture_data;
+    texture_data.hashed_path = hashed_string_64(a_path.c_str());
+    texture_data.path = a_path;
+    texture_data.wrap_x = a_wrap_x;
+    texture_data.wrap_y = a_wrap_y;
+    texture_data.generate_mipmap = a_mipmap;
+    texture_data.filtering_min = a_filtering_min;
+    texture_data.filtering_mag = a_fintering_mag;
+    texture_data.mipmap_filtering = a_mipmap_filtering;
+    load_texture_from_file(texture_data);
+    return texture_data;
 }

@@ -37,11 +37,11 @@
 
 #include <thread>
 #include <engine/resources/data_storage.h>
-#include "glfw_context.h"
-#include "imgui_manager.h"
+#include <engine/renderer/glfw_context.h>
+#include <engine/ui/imgui_manager.h>
 #include <engine/utilities/utilities.h>
-#include "input_manager.h"
-#include "camera.h"
+#include <engine/game/input_manager.h>
+#include <engine/game/camera.h>
 
 #include <engine/utilities/memory_checking.h>
 
@@ -94,6 +94,8 @@ int main(void)
 			shared->add_component_data<WorldPositionComponentData>(WorldPositionComponent{ glm::vec3(0.f,0.f,0.f) });
 			hashed_string_64 path("./assets/obj/sizanne.obj");
 			shared->add_component_data<MeshComponentData>(MeshComponent{ 0, path});
+			hashed_string_64 texture("./assets/textures/awesomeface.png");
+			shared->add_component_data<TextureComponentData>(TextureComponent{ false, texture});
 		}
 		std::weak_ptr<SceneObject> wChild = scene->new_scene_object("without Child", false);
 		std::weak_ptr<SceneObject> ChildwChild = scene->new_scene_object("Child with child", false);
@@ -147,8 +149,8 @@ int main(void)
 	Renderer renderer;
 	renderer.temp_set_shader(shader_program);
 
-	std::shared_ptr<MeshDataGenStorage> storage = std::make_shared<MeshDataGenStorage>(2);
-	std::shared_ptr<EngineContext> engine_context = std::make_shared<EngineContext>(storage);
+	//std::shared_ptr<MeshDataGenStorage> storage = std::make_shared<MeshDataGenStorage>(2);
+	std::shared_ptr<EngineContext> engine_context = std::make_shared<EngineContext>(/*storage*/);
 	
 	//RenderThread render_thread(engine_context, *shader_program, glfw_context);
 	GameThread game_thread(engine_context, scene);
@@ -240,18 +242,6 @@ int main(void)
 
 		/////////////////////////////////////////
 		// Loading a VAO request
-		if (auto vao_request = engine_context->storage->get_vao_request())
-		{
-			MeshData& mesh_data = vao_request.value().mesh_data;
-			PRINTLN("Render thread got vao request");
-			if (vao_loader.load_vao(mesh_data))
-			{
-				PRINTLN("Render sending vao upate request message");
-				VAOLoadInfo load_info{mesh_data.path_hashed, mesh_data.VAO_loaded, mesh_data.VAO, mesh_data.VBOs, mesh_data.EBO};
-				engine_context->storage->update_vao_info(load_info);
-			}
-			//else // I don't know what to do...
-		}
 		if (auto vao_request = engine_context->model_storage->vaoload_returner.return_request())
 		{
 			MeshData& mesh_data = vao_request.value().mesh_data;
@@ -263,9 +253,6 @@ int main(void)
 				engine_context->model_storage->add_job(load_job);
 			}
 		}
-		
-
-
 		
 		{
 			glfw_context->unbind_framebuffer();
