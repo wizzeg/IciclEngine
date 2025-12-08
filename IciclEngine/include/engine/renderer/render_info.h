@@ -187,7 +187,7 @@ struct MeshData
 	hashed_string_64 path_hashed;
 	std::shared_ptr<MeshDataContents> contents;
 	GLuint VAO = 0;
-	GLsizei num_indicies;
+	GLsizei num_indicies = 0;
 	ELoadStatus ram_load_status = ELoadStatus::NotLoaded;
 	ELoadStatus vao_load_status = ELoadStatus::NotLoaded;
 	
@@ -196,8 +196,8 @@ struct MeshData
 struct TextureGenInfo
 {
 	hashed_string_64 hashed_path;
-	GLuint texture_id;
-	ELoadStatus texture_gen_status;
+	GLuint texture_id = 0;
+	ELoadStatus texture_gen_status = ELoadStatus::NotLoaded;
 };
 
 struct TextureDataContents
