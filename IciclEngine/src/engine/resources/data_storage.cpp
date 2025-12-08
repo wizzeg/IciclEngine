@@ -19,7 +19,7 @@ void MeshJobProcessor::process_job(MeshDataJob& a_job)
 				{
 					found_data = true;
 					auto& data = datas[i];
-					switch (data.contents->ram_load_status) // what to do depending on what the ram load status is
+					switch (data.ram_load_status) // what to do depending on what the ram load status is
 					{
 					case ELoadStatus::FailedLoadBadModel: // fall through
 					case ELoadStatus::FailedLoadOpen:
@@ -28,7 +28,7 @@ void MeshJobProcessor::process_job(MeshDataJob& a_job)
 					case ELoadStatus::FailedLoadNoSpace: // fall through
 					case ELoadStatus::NotLoaded:
 						start_load = true;
-						data.contents->ram_load_status = ELoadStatus::StartedLoad;
+						data.ram_load_status = ELoadStatus::StartedLoad;
 						break;
 					default:
 						break;
@@ -41,7 +41,7 @@ void MeshJobProcessor::process_job(MeshDataJob& a_job)
 				auto& data = meshjob_gen_storage.mesh_datas.back();
 				data.path_hashed = a_job.path_hashed;
 				//data.path = data.path_hashed.string;
-				data.contents->ram_load_status = ELoadStatus::StartedLoad;
+				data.ram_load_status = ELoadStatus::StartedLoad;
 				start_load = true;
 				sort_data(data_lock);
 			}
@@ -51,9 +51,9 @@ void MeshJobProcessor::process_job(MeshDataJob& a_job)
 			MeshData data = obj_parser.load_mesh_from_filepath(a_job.path_hashed.string);
 			{
 				std::unique_lock<std::mutex> data_lock(meshjob_gen_storage.mesh_mutex);
-				if (data.contents->ram_load_status == ELoadStatus::Loaded)
+				if (data.ram_load_status == ELoadStatus::Loaded)
 				{
-					data.contents->vao_load_status = ELoadStatus::RequestedLoad;
+					data.vao_load_status = ELoadStatus::RequestedLoad;
 					meshjob_gen_storage.vaoload_requests.add_message(VAOLoadRequest{ data }); // copying data for the VAOLoadRequest
 				}
 				auto& datas = meshjob_gen_storage.mesh_datas;
@@ -104,8 +104,8 @@ void VAOInfoProcessor::process_job(VAOLoadInfo& a_job)
 			{
 				auto& data = datas[i];
 				found_data = true;
-				data.contents->vao_load_status = ELoadStatus::Loaded; /// I need the actual data too...
-				data.contents->VAO = a_job.vao;
+				data.vao_load_status = ELoadStatus::Loaded; /// I need the actual data too...
+				data.VAO = a_job.vao;
 				data.contents->EBO = a_job.ebo;
 				data.contents->VBOs = a_job.VBOs;
 				break;
@@ -114,8 +114,8 @@ void VAOInfoProcessor::process_job(VAOLoadInfo& a_job)
 		if (!found_data)
 		{
 			MeshData new_mesh;
-			new_mesh.contents->vao_load_status = ELoadStatus::Loaded;
-			new_mesh.contents->VAO = a_job.vao;
+			new_mesh.vao_load_status = ELoadStatus::Loaded;
+			new_mesh.VAO = a_job.vao;
 			new_mesh.contents->EBO = a_job.ebo;
 			new_mesh.contents->VBOs = a_job.VBOs;
 			datas.push_back(new_mesh);
@@ -132,7 +132,7 @@ void VAOInfoProcessor::process_job(VAOLoadInfo& a_job)
 			if (a_job.hashed_path == datas[i].path_hashed)
 			{
 				found_data = true;
-				datas[i].contents->vao_load_status = ELoadStatus::NotLoaded; /// I need the actual data too...
+				datas[i].vao_load_status = ELoadStatus::NotLoaded; /// I need the actual data too...
 				break;
 			}
 		}
@@ -141,7 +141,7 @@ void VAOInfoProcessor::process_job(VAOLoadInfo& a_job)
 			MeshData new_mesh;
 			new_mesh.path_hashed = a_job.hashed_path;
 			//new_mesh.path = a_job.hashed_path.string;
-			new_mesh.contents->vao_load_status = ELoadStatus::NotLoaded;
+			new_mesh.vao_load_status = ELoadStatus::NotLoaded;
 			datas.push_back(new_mesh);
 			sort_data(data_lock);
 		}
@@ -225,7 +225,7 @@ void TextureDataProcessor::process_job(TextureDataJob& a_job)
 					// found a match
 					if (data.texture_ram_status == ELoadStatus::RequestedLoad || data.texture_ram_status == ELoadStatus::NotLoaded)
 					{
-						data.texture_ram_status == ELoadStatus::StartedLoad;
+						data.texture_ram_status = ELoadStatus::StartedLoad;
 						start_index = i;
 						load_texture = true;
 						found_texture = true;
@@ -461,7 +461,7 @@ std::optional<RenderRequest> RenderRequestReturner::return_request(const PreRend
 				if (a_request.mesh_hash == datas[i].path_hashed.hash)
 				{
 					render_request = RenderRequest
-						(glm::mat4(1), a_request.mesh_hash, a_request.tex_hash, datas[i].contents->VAO, (GLsizei)datas[i].contents->indices.size(), 0, 0);
+						(glm::mat4(1), a_request.mesh_hash, a_request.tex_hash, datas[i].VAO, (GLsizei)datas[i].num_indicies, 0, 0);
 					found_mesh = true;
 					break;
 				}
@@ -516,7 +516,7 @@ std::optional<std::vector<RenderRequest>> RenderRequestReturner::return_requests
 				if (request.mesh_hash == data.path_hashed.hash)
 				{
 					render_requests.emplace_back
-						(request.model_matrix, request.mesh_hash, request.tex_hash, data.contents->VAO, (GLsizei)data.contents->indices.size(), 0, 0);
+						(request.model_matrix, request.mesh_hash, request.tex_hash, data.VAO, (GLsizei)data.num_indicies, 0, 0);
 					mesh_start_index = mesh_index;
 					mesh_found = true;
 					break;

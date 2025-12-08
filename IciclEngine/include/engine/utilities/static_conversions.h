@@ -2,7 +2,7 @@
 #include <glm/glm.hpp>
 #include <assimp/matrix4x4.h>
 
-static struct conversions
+struct conversions
 {
 	static glm::mat4 ai_matrix4x4_to_glm_mat4(const aiMatrix4x4& ai_matrix) {
 		glm::mat4 glm_matrix = glm::mat4(0);

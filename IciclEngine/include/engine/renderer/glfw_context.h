@@ -93,6 +93,7 @@ struct GLFWContext
 				return frame_buffers[i].get_texture();
 			}
 		}
+		return 0;
 	}
 private:
 	std::vector<FrameBuffer> frame_buffers;

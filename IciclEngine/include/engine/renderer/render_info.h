@@ -173,48 +173,24 @@ struct MeshDataContents
 	std::vector<std::vector<glm::vec4>> colors;
 	std::vector<std::vector<uint8_t> >uvs_dimensions;
 	std::vector<std::vector<glm::vec3>> uvs;
-
 	std::vector<GLuint> indices;
+	
 	std::vector<GLuint> VBOs;
 	GLuint EBO = 0;
 
-	GLuint VAO = 0;
 
-	ELoadStatus ram_load_status = ELoadStatus::NotLoaded;
-	ELoadStatus vao_load_status = ELoadStatus::NotLoaded;
 };
 
 struct MeshData
 {
 	MeshData() : contents(std::make_shared<MeshDataContents>()) { }
-	//std::string path;
 	hashed_string_64 path_hashed;
-	//uint64_t test;
-	//std::shared_ptr<MeshDataContents> mesh_data;
-	
 	std::shared_ptr<MeshDataContents> contents;
-
-	//glm::mat4 offset_matrix = glm::mat4(1);
-
-	//GLuint base_vertex = 0;
-	//bool is_copy = false;
-	//bool freed_mesh_data = false;
-	//MeshDataContents* mesh_data = new MeshDataContents();
-	//
-	//~MeshData()
-	//{
-	//	if (!freed_mesh_data && !is_copy)
-	//		delete mesh_data;
-	//}
-
-	//MeshData(const MeshData& other) // for copying
-	//	: path_hashed(other.path_hashed),
-	//	VAO(other.VAO),
-	//	ram_load_status(other.ram_load_status),
-	//	vao_load_status(other.vao_load_status),
-	//	is_copy(true),
-	//	freed_mesh_data(other.freed_mesh_data),
-	//	mesh_data(new MeshDataContents(*other.mesh_data)) {}
+	GLuint VAO = 0;
+	GLsizei num_indicies;
+	ELoadStatus ram_load_status = ELoadStatus::NotLoaded;
+	ELoadStatus vao_load_status = ELoadStatus::NotLoaded;
+	
 };
 
 struct TextureGenInfo
@@ -224,7 +200,7 @@ struct TextureGenInfo
 	ELoadStatus texture_gen_status;
 };
 
-struct TextureDataInfo
+struct TextureDataContents
 {
 	float border_color[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	uint64_t tex_hash;
@@ -238,40 +214,20 @@ struct TextureDataInfo
 	GLenum filtering_mag = GL_LINEAR;
 	GLenum mipmap_filtering = GL_LINEAR_MIPMAP_LINEAR;
 	bool generate_mipmap = true;
+
+	std::shared_ptr<stbi_uc> texture_data;
+	
 };
 
 struct TextureData
 {
-	TextureData() : texture_data_info(std::make_shared<TextureDataInfo>()) {}
+	TextureData() : contents(std::make_shared<TextureDataContents>()) {}
 	hashed_string_64 hashed_path;
-	//uint64_t test;
-	std::shared_ptr<TextureDataInfo> texture_data_info;
-	std::shared_ptr<stbi_uc> texture_data;
-	//std::string path = " ";
-
-
-
-	//bool freed_texture_data_info = true;
-	//TextureDataInfo* texture_data_info;
-	//
-	//bool freed_texture_data = true;
-	//stbi_uc* stbi_texture_data;
-	//
-
-	ELoadStatus texture_ram_status = ELoadStatus::NotLoaded;
-	ELoadStatus texture_gen_status = ELoadStatus::NotLoaded;
-
+	std::shared_ptr<TextureDataContents> contents;
 	GLuint texture_id = 0;
 	uint8_t bound_index = 0;
-	
-
-	//~TextureData()
-	//{
-	//	//if (!freed_texture_data)
-	//	//	stbi_image_free(stbi_texture_data);
-	//	//if (!freed_texture_data_info)
-	//	//	delete stbi_texture_data;
-	//}
+	ELoadStatus texture_ram_status = ELoadStatus::NotLoaded;
+	ELoadStatus texture_gen_status = ELoadStatus::NotLoaded;
 };
 
 struct VAOLoadRequest

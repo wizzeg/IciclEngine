@@ -26,12 +26,12 @@ MeshData ObjParser::load_mesh_from_filepath(const std::string& a_path)
     MeshData mesh;
     //mesh.started_load = true;
     mesh.path_hashed = hashed_string_64(a_path.c_str());
-    mesh.contents->ram_load_status = ELoadStatus::StartedLoad;
+    mesh.ram_load_status = ELoadStatus::StartedLoad;
     if (!file.is_open())
     {
         PRINTLN("failed open file at: {}", a_path);
         //mesh.bad_load = true;
-        mesh.contents->ram_load_status = ELoadStatus::FailedLoadOpen;
+        mesh.ram_load_status = ELoadStatus::FailedLoadOpen;
         return mesh;
     }
     file.seekg(0, std::ios::end);
@@ -43,7 +43,7 @@ MeshData ObjParser::load_mesh_from_filepath(const std::string& a_path)
         PRINTLN("not enough available memory (free: {}MB, model: {:.4f}MB) for path: {}",
             memory_checker::get_mb_left(), ((float)(model_size / (1024.0f * 1024.0f))), a_path);
         //mesh.bad_load = true;
-        mesh.contents->ram_load_status = ELoadStatus::FailedLoadNoSpace;
+        mesh.ram_load_status = ELoadStatus::FailedLoadNoSpace;
         return mesh;
     }
     bool has_color = false;
@@ -160,7 +160,7 @@ MeshData ObjParser::load_mesh_from_filepath(const std::string& a_path)
             {
                 PRINTLN("OBJ not triangulized");
                 //mesh.bad_load = true;
-                mesh.contents->ram_load_status = ELoadStatus::FailedLoadBadModel;
+                mesh.ram_load_status = ELoadStatus::FailedLoadBadModel;
                 return mesh;
             }
         }
@@ -189,6 +189,7 @@ MeshData ObjParser::load_mesh_from_filepath(const std::string& a_path)
     //mesh.path = a_path;
     PRINTLN("pos: {}, nrm: {}, uv: {}, face: {}", num_pos, num_nrm, num_uv, num_f);
     PRINTLN("time to load {}: {}ms", a_path, timer.get_time_ms());
-    mesh.contents->ram_load_status = ELoadStatus::Loaded;
+    mesh.ram_load_status = ELoadStatus::Loaded;
+    mesh.num_indicies = (GLsizei)mesh.contents->indices.size();
     return mesh;
 }

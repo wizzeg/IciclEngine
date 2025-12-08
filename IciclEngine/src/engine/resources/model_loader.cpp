@@ -21,12 +21,12 @@ MeshData ModelLoader::load_obj_mesh_from_file(const std::string a_path)
     MeshData mesh;
     //mesh.started_load = true;
     mesh.path_hashed = hashed_string_64(a_path.c_str());
-    mesh.contents->ram_load_status = ELoadStatus::StartedLoad;
+    mesh.ram_load_status = ELoadStatus::StartedLoad;
     if (!file.is_open())
     {
         PRINTLN("failed open file at: {}", a_path);
         //mesh.bad_load = true;
-        mesh.contents->ram_load_status = ELoadStatus::FailedLoadOpen;
+        mesh.ram_load_status = ELoadStatus::FailedLoadOpen;
         return mesh;
     }
     file.seekg(0, std::ios::end);
@@ -38,7 +38,7 @@ MeshData ModelLoader::load_obj_mesh_from_file(const std::string a_path)
         PRINTLN("not enough available memory (free: {}MB, model: {:.4f}MB) for path: {}",
             memory_checker::get_mb_left(), ((float)(model_size / (1024.0f * 1024.0f))), a_path);
         //mesh.bad_load = true;
-        mesh.contents->ram_load_status = ELoadStatus::FailedLoadNoSpace;
+        mesh.ram_load_status = ELoadStatus::FailedLoadNoSpace;
         return mesh;
     }
     bool has_color = false;
@@ -155,7 +155,7 @@ MeshData ModelLoader::load_obj_mesh_from_file(const std::string a_path)
             {
                 PRINTLN("OBJ not triangulized");
                 //mesh.bad_load = true;
-                mesh.contents->ram_load_status = ELoadStatus::FailedLoadBadModel;
+                mesh.ram_load_status = ELoadStatus::FailedLoadBadModel;
                 return mesh;
             }
         }
@@ -184,14 +184,15 @@ MeshData ModelLoader::load_obj_mesh_from_file(const std::string a_path)
     //mesh.path = a_path;
     PRINTLN("pos: {}, nrm: {}, uv: {}, face: {}", num_pos, num_nrm, num_uv, num_f);
     PRINTLN("time to load mesh {}: {}ms", a_path, timer.get_time_ms());
-    mesh.contents->ram_load_status = ELoadStatus::Loaded;
+    mesh.ram_load_status = ELoadStatus::Loaded;
+    mesh.num_indicies = (GLsizei)mesh.contents->indices.size();
     return mesh;
 }
 
 void ModelLoader::load_texture_from_file(TextureData& a_texture_data)
 {
     stbi_set_flip_vertically_on_load(true);
-    //a_texture_data.texture_data_info->path = a_texture_data.hashed_path.string;
+    //a_texture_data.contents->path = a_texture_data.hashed_path.string;
     if (a_texture_data.hashed_path.string == " ")
     {
         PRINTLN("No path assigned");
@@ -207,10 +208,10 @@ void ModelLoader::load_texture_from_file(TextureData& a_texture_data)
         a_texture_data.texture_ram_status = ELoadStatus::FailedLoadOpen;
         return;
     }
-    if (temp_num_comps == 1) a_texture_data.texture_data_info->color_format = GL_RED;
-    else if (temp_num_comps == 2) a_texture_data.texture_data_info->color_format = GL_RG;
-    else if (temp_num_comps == 3) a_texture_data.texture_data_info->color_format = GL_RGB;
-    else if (temp_num_comps == 4) a_texture_data.texture_data_info->color_format = GL_RGBA;
+    if (temp_num_comps == 1) a_texture_data.contents->color_format = GL_RED;
+    else if (temp_num_comps == 2) a_texture_data.contents->color_format = GL_RG;
+    else if (temp_num_comps == 3) a_texture_data.contents->color_format = GL_RGB;
+    else if (temp_num_comps == 4) a_texture_data.contents->color_format = GL_RGBA;
     else
     {
         std::println("Failed to load texture");
@@ -220,12 +221,12 @@ void ModelLoader::load_texture_from_file(TextureData& a_texture_data)
         return;
     }
     size_t data_size = static_cast<size_t>(temp_width) * temp_height * temp_num_comps;
-    a_texture_data.texture_data = std::shared_ptr<stbi_uc>(new stbi_uc[data_size]);
-    std::copy_n(raw_ptr, data_size, a_texture_data.texture_data.get());
+    a_texture_data.contents->texture_data = std::shared_ptr<stbi_uc>(new stbi_uc[data_size]);
+    std::copy_n(raw_ptr, data_size, a_texture_data.contents->texture_data.get());
     stbi_image_free(raw_ptr);
 
-    a_texture_data.texture_data_info->width = temp_width;
-    a_texture_data.texture_data_info->height = temp_height;
+    a_texture_data.contents->width = temp_width;
+    a_texture_data.contents->height = temp_height;
     a_texture_data.texture_ram_status = ELoadStatus::Loaded;
 }
 
@@ -246,7 +247,7 @@ TextureData ModelLoader::load_texture_from_file(const std::string a_path, bool a
     }
     texture_data.hashed_path = hashed_string_64(a_path.c_str());
     //texture_data.path = a_path;
-    texture_data.texture_data_info->generate_mipmap = a_mipmap;
+    texture_data.contents->generate_mipmap = a_mipmap;
     load_texture_from_file(texture_data);
     time_now.print_time(title);
     timer.stop();
@@ -270,10 +271,10 @@ TextureData ModelLoader::load_texture_from_file(const std::string a_path, const 
         return texture_data;
     }
     texture_data.hashed_path = hashed_string_64(a_path.c_str());
-    //texture_data.texture_data_info->path = a_path;
-    texture_data.texture_data_info->wrap_x = a_wrap_x;
-    texture_data.texture_data_info->wrap_y = a_wrap_y;
-    texture_data.texture_data_info->generate_mipmap = a_mipmap;
+    //texture_data.contents->path = a_path;
+    texture_data.contents->wrap_x = a_wrap_x;
+    texture_data.contents->wrap_y = a_wrap_y;
+    texture_data.contents->generate_mipmap = a_mipmap;
     load_texture_from_file(texture_data);
     title = a_path + " - texture finished started at";
     time_now.print_time(title);
@@ -299,11 +300,11 @@ TextureData ModelLoader::load_texture_from_file(const std::string a_path, const 
     }
     texture_data.hashed_path = hashed_string_64(a_path.c_str());
     //texture_data.path = a_path;
-    texture_data.texture_data_info->wrap_x = a_wrap_x;
-    texture_data.texture_data_info->wrap_y = a_wrap_y;
-    texture_data.texture_data_info->generate_mipmap = a_mipmap;
-    texture_data.texture_data_info->filtering_min = a_filtering_min;
-    texture_data.texture_data_info->filtering_mag = a_fintering_mag;
+    texture_data.contents->wrap_x = a_wrap_x;
+    texture_data.contents->wrap_y = a_wrap_y;
+    texture_data.contents->generate_mipmap = a_mipmap;
+    texture_data.contents->filtering_min = a_filtering_min;
+    texture_data.contents->filtering_mag = a_fintering_mag;
     load_texture_from_file(texture_data);
     title = a_path + " - texture finished started at";
     time_now.print_time(title);
@@ -329,12 +330,12 @@ TextureData ModelLoader::load_texture_from_file(const std::string a_path, const 
     }
     texture_data.hashed_path = hashed_string_64(a_path.c_str());
     //texture_data.path = a_path;
-    texture_data.texture_data_info->wrap_x = a_wrap_x;
-    texture_data.texture_data_info->wrap_y = a_wrap_y;
-    texture_data.texture_data_info->generate_mipmap = a_mipmap;
-    texture_data.texture_data_info->filtering_min = a_filtering_min;
-    texture_data.texture_data_info->filtering_mag = a_fintering_mag;
-    texture_data.texture_data_info->mipmap_filtering = a_mipmap_filtering;
+    texture_data.contents->wrap_x = a_wrap_x;
+    texture_data.contents->wrap_y = a_wrap_y;
+    texture_data.contents->generate_mipmap = a_mipmap;
+    texture_data.contents->filtering_min = a_filtering_min;
+    texture_data.contents->filtering_mag = a_fintering_mag;
+    texture_data.contents->mipmap_filtering = a_mipmap_filtering;
     load_texture_from_file(texture_data);
     title = a_path + " - texture finished started at";
     time_now.print_time(title);

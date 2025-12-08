@@ -12,17 +12,17 @@ TextureGenInfo TextureLoader::generate_texture(TextureData& a_texture_data)
     glGenTextures(1, &a_texture_data.texture_id);
     glBindTexture(GL_TEXTURE_2D, a_texture_data.texture_id);
     // set the texture wrapping/filtering options (on the currently bound texture object)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, a_texture_data.texture_data_info->wrap_x);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, a_texture_data.texture_data_info->wrap_y);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, a_texture_data.texture_data_info->filtering_min);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, a_texture_data.texture_data_info->filtering_mag);
-    glTexImage2D(GL_TEXTURE_2D, 0, a_texture_data.texture_data_info->color_format, a_texture_data.texture_data_info->width,
-        a_texture_data.texture_data_info->height, 0, a_texture_data.texture_data_info->color_format,
-        GL_UNSIGNED_BYTE, a_texture_data.texture_data.get());
-    if (a_texture_data.texture_data_info->generate_mipmap)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, a_texture_data.contents->wrap_x);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, a_texture_data.contents->wrap_y);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, a_texture_data.contents->filtering_min);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, a_texture_data.contents->filtering_mag);
+    glTexImage2D(GL_TEXTURE_2D, 0, a_texture_data.contents->color_format, a_texture_data.contents->width,
+        a_texture_data.contents->height, 0, a_texture_data.contents->color_format,
+        GL_UNSIGNED_BYTE, a_texture_data.contents->texture_data.get());
+    if (a_texture_data.contents->generate_mipmap)
     {
         glGenerateMipmap(GL_TEXTURE_2D);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, a_texture_data.texture_data_info->mipmap_filtering);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, a_texture_data.contents->mipmap_filtering);
     }
     a_texture_data.texture_gen_status = ELoadStatus::Loaded;
     texture_info.texture_gen_status = ELoadStatus::Loaded;

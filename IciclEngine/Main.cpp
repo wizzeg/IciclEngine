@@ -73,7 +73,8 @@ int main(void)
 		if (auto c = camera.lock())
 		{
 			hashed_string_64 buffer_name("main_camera_buffer");
-			c->add_component_data<WorldPositionComponentData, WorldPositionComponent>(WorldPositionComponent{ glm::vec3(0.0f, 0.0f, 10.0f) });
+			c->add_component_data<WorldPositionComponentData, WorldPositionComponent>
+				(WorldPositionComponent{ glm::vec3(0.0f, 0.0f, 10.0f) });
 			c->add_component_data<CameraComponentData, CameraComponent>
 				(CameraComponent{});
 		}
@@ -143,7 +144,7 @@ int main(void)
 	std::shared_ptr<UIManager> ui_mananger  = std::make_shared<UIManager>();
 	ui_mananger->set_scene(scene);
 
-	ObjParser obj_parser;
+	//ObjParser obj_parser;
 	VAOLoader vao_loader;
 	std::shared_ptr<ShaderProgram> shader_program = std::make_shared<ShaderProgram>("./assets/shaders/vertex/vert.glsl", "./assets/shaders/fragment/frag.glsl");
 	Renderer renderer;
@@ -209,7 +210,7 @@ int main(void)
 		auto& render_requests = engine_context->render_requests[std::size_t(!engine_context->write_pos)];
 
 		// do for each camera.
-		renderer.rotation += 0.07f * engine_context->delta_time * 0.01;
+		renderer.rotation += (float)(0.07 * engine_context->delta_time * 0.01);
 		glfw_context->bind_framebuffer("editor_frame_buffer");
 		glfw_context->clear();
 		renderer.set_proj_view_matrix(engine_context->editor_camera.get_proj_matrix(), engine_context->editor_camera.get_view_matrix());
@@ -250,7 +251,7 @@ int main(void)
 			{
 				PRINTLN("Render sending the new form of vao upate request message");
 				LoadJob load_job = std::move(
-					VAOLoadInfo{ mesh_data.contents->VAO, mesh_data.contents->EBO, (mesh_data.contents->vao_load_status == ELoadStatus::Loaded), mesh_data.contents->VBOs,  mesh_data.path_hashed });
+					VAOLoadInfo{ mesh_data.VAO, mesh_data.contents->EBO, (mesh_data.vao_load_status == ELoadStatus::Loaded), mesh_data.contents->VBOs,  mesh_data.path_hashed });
 				engine_context->model_storage->add_job(load_job);
 			}
 		}

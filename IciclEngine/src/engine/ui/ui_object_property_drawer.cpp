@@ -10,7 +10,7 @@ void UIObjectPropertyDrawer::draw_object_properties(std::shared_ptr<SceneObject>
 	
 	//if (std::shared_ptr<SceneObject> scene_object = a_scene_object.lock())
 	//{
-		std::srand(std::time(0));
+		std::srand((unsigned int)std::time(0));
 		ImGui::BeginGroup();
 		bool drawn_anything = false;
 		const auto& component_datas = a_scene_object->get_component_datas();

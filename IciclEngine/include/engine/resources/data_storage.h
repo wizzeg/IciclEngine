@@ -126,7 +126,7 @@ protected:
 	bool start = false;
 	std::condition_variable cv_start_threads;
 	std::vector<std::thread> threads;
-	int num_threads;
+	size_t num_threads;
 };
 
 struct ModelGenStorage : GenStorageThreadPool // this will have more job processors, but only one genstoragethreadpool
