@@ -25,7 +25,7 @@ MeshData ObjParser::load_mesh_from_filepath(const std::string& a_path)
 
     MeshData mesh;
     //mesh.started_load = true;
-    mesh.path_hashed = hashed_string_64(a_path.c_str());
+    mesh.contents->hashed_path = hashed_string_64(a_path.c_str());
     mesh.ram_load_status = ELoadStatus::StartedLoad;
     if (!file.is_open())
     {
@@ -191,5 +191,6 @@ MeshData ObjParser::load_mesh_from_filepath(const std::string& a_path)
     PRINTLN("time to load {}: {}ms", a_path, timer.get_time_ms());
     mesh.ram_load_status = ELoadStatus::Loaded;
     mesh.num_indicies = (GLsizei)mesh.contents->indices.size();
+    mesh.hash = mesh.contents->hashed_path.hash;
     return mesh;
 }

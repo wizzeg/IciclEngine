@@ -15,7 +15,7 @@ void MeshJobProcessor::process_job(MeshDataJob& a_job)
 			// look if data already exists
 			for (size_t i = 0; i < datas.size(); i++)
 			{
-				if (a_job.path_hashed == datas[i].path_hashed)
+				if (a_job.path_hashed.hash == datas[i].hash)
 				{
 					found_data = true;
 					auto& data = datas[i];
@@ -39,7 +39,8 @@ void MeshJobProcessor::process_job(MeshDataJob& a_job)
 			{
 				meshjob_gen_storage.mesh_datas.emplace_back();
 				auto& data = meshjob_gen_storage.mesh_datas.back();
-				data.path_hashed = a_job.path_hashed;
+				data.contents->hashed_path = a_job.path_hashed;
+				data.hash = a_job.path_hashed.hash;
 				//data.path = data.path_hashed.string;
 				data.ram_load_status = ELoadStatus::StartedLoad;
 				start_load = true;
@@ -60,7 +61,7 @@ void MeshJobProcessor::process_job(MeshDataJob& a_job)
 				bool found_data = false;       // Make sure that we add it, this should always exist, but safety check
 				for (size_t i = 0; i < datas.size(); i++)
 				{
-					if (a_job.path_hashed == datas[i].path_hashed)
+					if (a_job.path_hashed.hash == datas[i].hash)
 					{
 						datas[i] = data;
 						found_data = true;
@@ -84,7 +85,7 @@ void MeshJobProcessor::sort_data(std::unique_lock<std::mutex>& a_lock)
 	{
 		std::sort(meshjob_gen_storage.mesh_datas.begin(), meshjob_gen_storage.mesh_datas.end(), [](const MeshData& mesh_a, const MeshData& mesh_b)
 			{
-				return mesh_a.path_hashed < mesh_b.path_hashed;
+				return mesh_a.hash < mesh_b.hash;
 			});
 	}
 }
@@ -100,7 +101,7 @@ void VAOInfoProcessor::process_job(VAOLoadInfo& a_job)
 		bool found_data = false;
 		for (size_t i = 0; i < datas.size(); i++)
 		{
-			if (a_job.hashed_path == datas[i].path_hashed)
+			if (a_job.hashed_path.hash == datas[i].hash)
 			{
 				auto& data = datas[i];
 				found_data = true;
@@ -129,7 +130,7 @@ void VAOInfoProcessor::process_job(VAOLoadInfo& a_job)
 		bool found_data = false;
 		for (size_t i = 0; i < datas.size(); i++)
 		{
-			if (a_job.hashed_path == datas[i].path_hashed)
+			if (a_job.hashed_path.hash == datas[i].hash)
 			{
 				found_data = true;
 				datas[i].vao_load_status = ELoadStatus::NotLoaded; /// I need the actual data too...
@@ -139,8 +140,8 @@ void VAOInfoProcessor::process_job(VAOLoadInfo& a_job)
 		if (!found_data)
 		{
 			MeshData new_mesh;
-			new_mesh.path_hashed = a_job.hashed_path;
-			//new_mesh.path = a_job.hashed_path.string;
+			new_mesh.contents->hashed_path = a_job.hashed_path;
+			new_mesh.hash = a_job.hashed_path.hash;
 			new_mesh.vao_load_status = ELoadStatus::NotLoaded;
 			datas.push_back(new_mesh);
 			sort_data(data_lock);
@@ -154,7 +155,7 @@ void VAOInfoProcessor::sort_data(std::unique_lock<std::mutex>& a_lock)
 	{
 		std::sort(vaoinfo_gen_storage.mesh_datas.begin(), vaoinfo_gen_storage.mesh_datas.end(), [](const MeshData& mesh_a, const MeshData& mesh_b)
 			{
-				return mesh_a.path_hashed < mesh_b.path_hashed;
+				return mesh_a.hash < mesh_b.hash;
 			});
 	}
 }
@@ -170,7 +171,7 @@ void TexGenInfoProcessor::process_job(TextureGenInfo& a_job)
 		bool found_data = false;
 		for (size_t i = 0; i < datas.size(); i++)
 		{
-			if (a_job.hashed_path == datas[i].hashed_path)
+			if (a_job.hashed_path.hash == datas[i].hash)
 			{
 				auto& data = datas[i];
 				found_data = true;
@@ -184,7 +185,7 @@ void TexGenInfoProcessor::process_job(TextureGenInfo& a_job)
 			TextureData new_texture;
 			new_texture.texture_gen_status = a_job.texture_gen_status;
 			new_texture.texture_id = a_job.texture_id;
-			new_texture.hashed_path = a_job.hashed_path;
+			new_texture.contents->hashed_path = a_job.hashed_path;
 			datas.push_back(new_texture);
 			sort_data(texture_lock);
 		}
@@ -198,7 +199,7 @@ void TexGenInfoProcessor::sort_data(std::unique_lock<std::mutex>& a_lock)
 		std::sort(texgeninfo_gen_storage.texuture_datas.begin(), texgeninfo_gen_storage.texuture_datas.end(),
 			[](const TextureData& tex_a, const TextureData& tex_b)
 			{
-				return tex_a.hashed_path < tex_b.hashed_path;
+				return tex_a.hash < tex_b.hash;
 			});
 	}
 }
@@ -220,7 +221,7 @@ void TextureDataProcessor::process_job(TextureDataJob& a_job)
 			for (size_t i = 0; i < datas.size(); i++)
 			{
 				auto& data = datas[i];
-				if (a_job.path_hashed == data.hashed_path)
+				if (a_job.path_hashed.hash == data.hash)
 				{
 					// found a match
 					if (data.texture_ram_status == ELoadStatus::RequestedLoad || data.texture_ram_status == ELoadStatus::NotLoaded)
@@ -243,7 +244,7 @@ void TextureDataProcessor::process_job(TextureDataJob& a_job)
 				datas.emplace_back();
 				auto& data = datas.back();
 				data.texture_ram_status = ELoadStatus::StartedLoad;
-				data.hashed_path = a_job.path_hashed;
+				data.contents->hashed_path = a_job.path_hashed;
 				//data.path = a_job.path_hashed.string;
 				load_texture = true;
 				start_index = datas.size() - 1;
@@ -263,26 +264,26 @@ void TextureDataProcessor::process_job(TextureDataJob& a_job)
 				for (; start_index < datas.size();)
 				{
 					auto& data = datas[start_index];
-					if (new_data.hashed_path == data.hashed_path)
+					if (new_data.contents->hashed_path == data.contents->hashed_path)
 					{
 						data = new_data;
 						data_inserted = true;
 						break;
 					}
-					else if (direction == EDirection::None && new_data.hashed_path > data.hashed_path)
+					else if (direction == EDirection::None && new_data.hash > data.hash)
 					{
 						direction = EDirection::Down;
 						start_index--;
 					}
-					else if (direction == EDirection::None && new_data.hashed_path < data.hashed_path)
+					else if (direction == EDirection::None && new_data.hash < data.hash)
 					{
 						direction = EDirection::Up;
 						start_index++;
 					}
-					else if (direction == EDirection::Down && new_data.hashed_path > data.hashed_path) start_index--;
-					else if (direction == EDirection::Up && new_data.hashed_path < data.hashed_path) start_index++;
-					else if (direction == EDirection::Up && new_data.hashed_path > data.hashed_path) break; // it's not in here
-					else if (direction == EDirection::Down && new_data.hashed_path < data.hashed_path) break; // it's not in here
+					else if (direction == EDirection::Down && new_data.hash > data.hash) start_index--;
+					else if (direction == EDirection::Up && new_data.hash < data.hash) start_index++;
+					else if (direction == EDirection::Up && new_data.hash > data.hash) break; // it's not in here
+					else if (direction == EDirection::Down && new_data.hash < data.hash) break; // it's not in here
 					else
 					{
 						PRINTLN("BROKE");
@@ -312,7 +313,7 @@ void TextureDataProcessor::sort_data(std::unique_lock<std::mutex>& a_lock)
 	{
 		std::sort(texturedata_gen_storage.texuture_datas.begin(), texturedata_gen_storage.texuture_datas.end(), [](const TextureData& tex_a, const TextureData& tex_b)
 			{
-				return tex_a.hashed_path < tex_b.hashed_path;
+				return tex_a.hash < tex_b.hash;
 			});
 	}
 }
@@ -458,7 +459,7 @@ std::optional<RenderRequest> RenderRequestReturner::return_request(const PreRend
 			auto& datas = renderreqret_gen_storage.mesh_datas;
 			for (size_t i = 0; i < datas.size(); i++)
 			{
-				if (a_request.mesh_hash == datas[i].path_hashed.hash)
+				if (a_request.mesh_hash == datas[i].hash)
 				{
 					render_request = RenderRequest
 						(glm::mat4(1), a_request.mesh_hash, a_request.tex_hash, datas[i].VAO, (GLsizei)datas[i].num_indicies, 0, 0);
@@ -473,7 +474,7 @@ std::optional<RenderRequest> RenderRequestReturner::return_request(const PreRend
 			auto& datas = renderreqret_gen_storage.texuture_datas;
 			for (size_t i = 0; i < datas.size(); i++)
 			{
-				if (a_request.tex_hash == datas[i].hashed_path.hash)
+				if (a_request.tex_hash == datas[i].hash)
 				{
 					render_request.material_id = datas[i].texture_id;
 					return render_request;
@@ -513,7 +514,7 @@ std::optional<std::vector<RenderRequest>> RenderRequestReturner::return_requests
 			for (;mesh_index < mesh_datas.size(); mesh_index++)
 			{
 				auto& data = mesh_datas[mesh_index];
-				if (request.mesh_hash == data.path_hashed.hash)
+				if (request.mesh_hash == data.hash)
 				{
 					render_requests.emplace_back
 						(request.model_matrix, request.mesh_hash, request.tex_hash, data.VAO, (GLsizei)data.num_indicies, 0, 0);
@@ -546,7 +547,7 @@ std::optional<std::vector<RenderRequest>> RenderRequestReturner::return_requests
 			for (; tex_index < tex_datas.size(); tex_index++)
 			{
 				auto& data = tex_datas[tex_index];
-				if (request.tex_hash == data.hashed_path.hash)
+				if (request.tex_hash == data.hash)
 				{
 					request.material_id = data.texture_id;
 					tex_start_index = tex_index;

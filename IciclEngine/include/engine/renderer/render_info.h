@@ -78,8 +78,8 @@ struct PreRenderRequest
 	//hashed_string_64 mesh_hashed_path = hashed_string_64("invalidhash");
 	
 	glm::mat4 model_matrix = glm::mat4(1); 
-	uint64_t mesh_hash;
-	uint64_t tex_hash;
+	uint64_t mesh_hash = 12638117931323064703; // hash of " "
+	uint64_t tex_hash = 12638117931323064703; // hash of " "
 	//hashed_string_64 texture_hashed_path = hashed_string_64("invalidhash");
 };
 
@@ -103,8 +103,8 @@ struct RenderRequest
 {
 	//hashed_string_64 mesh_hashed_path; // change to just the hash
 	glm::mat4 model_matrix = glm::mat4(0);
-	uint64_t mesh_hash;
-	uint64_t tex_hash;
+	uint64_t mesh_hash = 12638117931323064703; // hash of " "
+	uint64_t tex_hash = 12638117931323064703; // hash of " "
 	GLuint vao = 0;
 	GLsizei indices_size = 0;
 	GLuint shader_program = 0;
@@ -164,7 +164,7 @@ struct CameraData
 
 struct MeshDataContents
 {
-
+	hashed_string_64 hashed_path;
 	std::vector<glm::vec3> positions;
 	std::vector<glm::vec3> normals;
 	std::vector<glm::vec3> tangets;
@@ -184,7 +184,7 @@ struct MeshDataContents
 struct MeshData
 {
 	MeshData() : contents(std::make_shared<MeshDataContents>()) { }
-	hashed_string_64 path_hashed;
+	uint64_t hash = 12638117931323064703; // hash of " "
 	std::shared_ptr<MeshDataContents> contents;
 	GLuint VAO = 0;
 	GLsizei num_indicies = 0;
@@ -202,11 +202,10 @@ struct TextureGenInfo
 
 struct TextureDataContents
 {
+	hashed_string_64 hashed_path;
 	float border_color[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	uint64_t tex_hash;
 	GLsizei width = 0;
 	GLsizei height = 0;
-
 	GLenum color_format = GL_RGB;
 	GLenum wrap_x = GL_REPEAT;
 	GLenum wrap_y = GL_REPEAT;
@@ -222,7 +221,8 @@ struct TextureDataContents
 struct TextureData
 {
 	TextureData() : contents(std::make_shared<TextureDataContents>()) {}
-	hashed_string_64 hashed_path;
+	//hashed_string_64 hashed_path;
+	uint64_t hash = 12638117931323064703; // hash of " "
 	std::shared_ptr<TextureDataContents> contents;
 	GLuint texture_id = 0;
 	uint8_t bound_index = 0;

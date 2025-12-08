@@ -49,7 +49,7 @@
 int main(void)
 {
 	GLFWwindow* window;
-
+	PRINTLN("default hash = {}", (hashed_string_64()).hash);
 	///* Initialize the library */
 	if (!glfwInit())
 		return -1;
@@ -251,7 +251,7 @@ int main(void)
 			{
 				PRINTLN("Render sending the new form of vao upate request message");
 				LoadJob load_job = std::move(
-					VAOLoadInfo{ mesh_data.VAO, mesh_data.contents->EBO, (mesh_data.vao_load_status == ELoadStatus::Loaded), mesh_data.contents->VBOs,  mesh_data.path_hashed });
+					VAOLoadInfo{ mesh_data.VAO, mesh_data.contents->EBO, (mesh_data.vao_load_status == ELoadStatus::Loaded), mesh_data.contents->VBOs,  mesh_data.contents->hashed_path });
 				engine_context->model_storage->add_job(load_job);
 			}
 		}

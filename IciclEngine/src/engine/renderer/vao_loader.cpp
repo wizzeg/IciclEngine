@@ -32,7 +32,7 @@ bool VAOLoader::load_vao(MeshData& a_mesh)
 		a_mesh.ram_load_status = ELoadStatus::NotLoaded;
 		//a_mesh.contents->VAO_loaded = false;
 	}
-	PRINTLN("loading vao for mesh: {}", a_mesh.path_hashed.string);
+	PRINTLN("loading vao for mesh: {}", a_mesh.contents->hashed_path.string);
 	glGenVertexArrays(1, &a_mesh.VAO);
 	glBindVertexArray(a_mesh.VAO);
 

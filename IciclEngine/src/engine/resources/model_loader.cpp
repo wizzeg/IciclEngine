@@ -20,7 +20,7 @@ MeshData ModelLoader::load_obj_mesh_from_file(const std::string a_path)
 
     MeshData mesh;
     //mesh.started_load = true;
-    mesh.path_hashed = hashed_string_64(a_path.c_str());
+    mesh.contents->hashed_path = hashed_string_64(a_path.c_str());
     mesh.ram_load_status = ELoadStatus::StartedLoad;
     if (!file.is_open())
     {
@@ -186,6 +186,7 @@ MeshData ModelLoader::load_obj_mesh_from_file(const std::string a_path)
     PRINTLN("time to load mesh {}: {}ms", a_path, timer.get_time_ms());
     mesh.ram_load_status = ELoadStatus::Loaded;
     mesh.num_indicies = (GLsizei)mesh.contents->indices.size();
+    mesh.hash = mesh.contents->hashed_path.hash;
     return mesh;
 }
 
@@ -193,7 +194,7 @@ void ModelLoader::load_texture_from_file(TextureData& a_texture_data)
 {
     stbi_set_flip_vertically_on_load(true);
     //a_texture_data.contents->path = a_texture_data.hashed_path.string;
-    if (a_texture_data.hashed_path.string == " ")
+    if (a_texture_data.contents->hashed_path.string == " ")
     {
         PRINTLN("No path assigned");
         a_texture_data.texture_ram_status = ELoadStatus::NotLoaded;
@@ -201,7 +202,7 @@ void ModelLoader::load_texture_from_file(TextureData& a_texture_data)
     }
     // load and generate the texture
     int temp_width, temp_height, temp_num_comps;
-    stbi_uc* raw_ptr = stbi_load(a_texture_data.hashed_path.string.c_str(), &temp_width, &temp_height, &temp_num_comps, 0);
+    stbi_uc* raw_ptr = stbi_load(a_texture_data.contents->hashed_path.string.c_str(), &temp_width, &temp_height, &temp_num_comps, 0);
     if (raw_ptr == nullptr)
     {
         PRINTLN("Failed Generate STBI data");
@@ -227,6 +228,7 @@ void ModelLoader::load_texture_from_file(TextureData& a_texture_data)
 
     a_texture_data.contents->width = temp_width;
     a_texture_data.contents->height = temp_height;
+    a_texture_data.hash = a_texture_data.contents->hashed_path.hash;
     a_texture_data.texture_ram_status = ELoadStatus::Loaded;
 }
 
@@ -245,7 +247,7 @@ TextureData ModelLoader::load_texture_from_file(const std::string a_path, bool a
         texture_data.texture_ram_status = ELoadStatus::FailedLoadNoSpace;
         return texture_data;
     }
-    texture_data.hashed_path = hashed_string_64(a_path.c_str());
+    texture_data.contents->hashed_path = hashed_string_64(a_path.c_str());
     //texture_data.path = a_path;
     texture_data.contents->generate_mipmap = a_mipmap;
     load_texture_from_file(texture_data);
@@ -270,7 +272,7 @@ TextureData ModelLoader::load_texture_from_file(const std::string a_path, const 
         texture_data.texture_ram_status = ELoadStatus::FailedLoadNoSpace;
         return texture_data;
     }
-    texture_data.hashed_path = hashed_string_64(a_path.c_str());
+    texture_data.contents->hashed_path = hashed_string_64(a_path.c_str());
     //texture_data.contents->path = a_path;
     texture_data.contents->wrap_x = a_wrap_x;
     texture_data.contents->wrap_y = a_wrap_y;
@@ -298,7 +300,7 @@ TextureData ModelLoader::load_texture_from_file(const std::string a_path, const 
         texture_data.texture_ram_status = ELoadStatus::FailedLoadNoSpace;
         return texture_data;
     }
-    texture_data.hashed_path = hashed_string_64(a_path.c_str());
+    texture_data.contents->hashed_path = hashed_string_64(a_path.c_str());
     //texture_data.path = a_path;
     texture_data.contents->wrap_x = a_wrap_x;
     texture_data.contents->wrap_y = a_wrap_y;
@@ -328,7 +330,7 @@ TextureData ModelLoader::load_texture_from_file(const std::string a_path, const 
         texture_data.texture_ram_status = ELoadStatus::FailedLoadNoSpace;
         return texture_data;
     }
-    texture_data.hashed_path = hashed_string_64(a_path.c_str());
+    texture_data.contents->hashed_path = hashed_string_64(a_path.c_str());
     //texture_data.path = a_path;
     texture_data.contents->wrap_x = a_wrap_x;
     texture_data.contents->wrap_y = a_wrap_y;
