@@ -249,7 +249,8 @@ int main(void)
 			if (vao_loader.load_vao(mesh_data))
 			{
 				PRINTLN("Render sending the new form of vao upate request message");
-				LoadJob load_job = std::move(VAOLoadInfo{ mesh_data.path_hashed, mesh_data.VAO_loaded, mesh_data.VAO, mesh_data.VBOs, mesh_data.EBO });
+				LoadJob load_job = std::move(
+					VAOLoadInfo{ mesh_data.contents->VAO, mesh_data.contents->EBO, (mesh_data.contents->vao_load_status == ELoadStatus::Loaded), mesh_data.contents->VBOs,  mesh_data.path_hashed });
 				engine_context->model_storage->add_job(load_job);
 			}
 		}

@@ -5,90 +5,98 @@
 
 bool VAOLoader::load_vao(MeshData& a_mesh)
 {
-	if (a_mesh.bad_load)
+	//if (a_mesh.bad_load)
+	//{
+	//	PRINTLN("mesh has had a bad load");
+	//	return false;
+	//}
+	if (a_mesh.contents->ram_load_status != ELoadStatus::Loaded)
 	{
-		PRINTLN("mesh has had a bad load");
+		// does not have mesh data
+		a_mesh.contents->ram_load_status = ELoadStatus::NotLoaded; 
 		return false;
 	}
 
-	if (a_mesh.VAO != 0)
+	if (a_mesh.contents->VAO != 0)
 	{
 		PRINTLN("VAO taken, clearing");
-		for (size_t i = 0; i < a_mesh.VBOs.size(); i++)
+		for (size_t i = 0; i < a_mesh.contents->VBOs.size(); i++)
 		{
-			glDeleteBuffers(1, &a_mesh.VBOs[i]);
+			glDeleteBuffers(1, &a_mesh.contents->VBOs[i]);
 		}
-		a_mesh.VBOs.clear();
-		glDeleteBuffers(1, &a_mesh.EBO);
-		a_mesh.EBO = 0;
-		glDeleteBuffers(1, &a_mesh.VAO);
-		a_mesh.VAO = 0;
-		a_mesh.VAO_loaded = false;
+		a_mesh.contents->VBOs.clear();
+		glDeleteBuffers(1, &a_mesh.contents->EBO);
+		a_mesh.contents->EBO = 0;
+		glDeleteBuffers(1, &a_mesh.contents->VAO);
+		a_mesh.contents->VAO = 0;
+		a_mesh.contents->ram_load_status = ELoadStatus::NotLoaded;
+		//a_mesh.contents->VAO_loaded = false;
 	}
-	PRINTLN("loading vao for mesh: {}", a_mesh.path);
-	glGenVertexArrays(1, &a_mesh.VAO);
-	glBindVertexArray(a_mesh.VAO);
+	PRINTLN("loading vao for mesh: {}", a_mesh.path_hashed.string);
+	glGenVertexArrays(1, &a_mesh.contents->VAO);
+	glBindVertexArray(a_mesh.contents->VAO);
 
-	glGenBuffers(1, &a_mesh.EBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, a_mesh.EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, SIZEOF_ELEMENTS_IN_VECTOR(a_mesh.indices), a_mesh.indices.data(), GL_STATIC_DRAW);
+	glGenBuffers(1, &a_mesh.contents->EBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, a_mesh.contents->EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, SIZEOF_ELEMENTS_IN_VECTOR(a_mesh.contents->indices), a_mesh.contents->indices.data(), GL_STATIC_DRAW);
 
-	glGenBuffers(1, &a_mesh.VBOs.emplace_back(0));
-	glBindBuffer(GL_ARRAY_BUFFER, a_mesh.VBOs[a_mesh.VBOs.size() - 1]);
-	glBufferData(GL_ARRAY_BUFFER, SIZEOF_ELEMENTS_IN_VECTOR(a_mesh.positions), a_mesh.positions.data(), GL_STATIC_DRAW);
+	glGenBuffers(1, &a_mesh.contents->VBOs.emplace_back(0));
+	glBindBuffer(GL_ARRAY_BUFFER, a_mesh.contents->VBOs[a_mesh.contents->VBOs.size() - 1]);
+	glBufferData(GL_ARRAY_BUFFER, SIZEOF_ELEMENTS_IN_VECTOR(a_mesh.contents->positions), a_mesh.contents->positions.data(), GL_STATIC_DRAW);
 	glVertexAttribPointer(BufferAttributeLocation::Position, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 	glEnableVertexAttribArray(BufferAttributeLocation::Position);
 	
-	if (!a_mesh.normals.empty())
+	if (!a_mesh.contents->normals.empty())
 	{
-		glGenBuffers(1, &a_mesh.VBOs.emplace_back(0));
-		glBindBuffer(GL_ARRAY_BUFFER, a_mesh.VBOs[a_mesh.VBOs.size() - 1]);
-		glBufferData(GL_ARRAY_BUFFER, SIZEOF_ELEMENTS_IN_VECTOR(a_mesh.normals), a_mesh.normals.data(), GL_STATIC_DRAW);
+		glGenBuffers(1, &a_mesh.contents->VBOs.emplace_back(0));
+		glBindBuffer(GL_ARRAY_BUFFER, a_mesh.contents->VBOs[a_mesh.contents->VBOs.size() - 1]);
+		glBufferData(GL_ARRAY_BUFFER, SIZEOF_ELEMENTS_IN_VECTOR(a_mesh.contents->normals), a_mesh.contents->normals.data(), GL_STATIC_DRAW);
 		glVertexAttribPointer(BufferAttributeLocation::Normal, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 		glEnableVertexAttribArray(BufferAttributeLocation::Normal);
 
 	}
-	if (!a_mesh.tangets.empty())
+	if (!a_mesh.contents->tangets.empty())
 	{
-		glGenBuffers(1, &a_mesh.VBOs.emplace_back(0));
-		glBindBuffer(GL_ARRAY_BUFFER, a_mesh.VBOs[a_mesh.VBOs.size() - 1]);
-		glBufferData(GL_ARRAY_BUFFER, SIZEOF_ELEMENTS_IN_VECTOR(a_mesh.tangets), a_mesh.tangets.data(), GL_STATIC_DRAW);
+		glGenBuffers(1, &a_mesh.contents->VBOs.emplace_back(0));
+		glBindBuffer(GL_ARRAY_BUFFER, a_mesh.contents->VBOs[a_mesh.contents->VBOs.size() - 1]);
+		glBufferData(GL_ARRAY_BUFFER, SIZEOF_ELEMENTS_IN_VECTOR(a_mesh.contents->tangets), a_mesh.contents->tangets.data(), GL_STATIC_DRAW);
 		glVertexAttribPointer(BufferAttributeLocation::Tangent, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 		glEnableVertexAttribArray(BufferAttributeLocation::Tangent);
 	}
-	if (!a_mesh.bitangents.empty())
+	if (!a_mesh.contents->bitangents.empty())
 	{
-		glGenBuffers(1, &a_mesh.VBOs.emplace_back(0));
-		glBindBuffer(GL_ARRAY_BUFFER, a_mesh.VBOs[a_mesh.VBOs.size() - 1]);
-		glBufferData(GL_ARRAY_BUFFER, SIZEOF_ELEMENTS_IN_VECTOR(a_mesh.bitangents), a_mesh.bitangents.data(), GL_STATIC_DRAW);
+		glGenBuffers(1, &a_mesh.contents->VBOs.emplace_back(0));
+		glBindBuffer(GL_ARRAY_BUFFER, a_mesh.contents->VBOs[a_mesh.contents->VBOs.size() - 1]);
+		glBufferData(GL_ARRAY_BUFFER, SIZEOF_ELEMENTS_IN_VECTOR(a_mesh.contents->bitangents), a_mesh.contents->bitangents.data(), GL_STATIC_DRAW);
 		glVertexAttribPointer(BufferAttributeLocation::Bitangent, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 		glEnableVertexAttribArray(BufferAttributeLocation::Bitangent);
 	}
 
 	size_t num_colors = 0;
-	for (; num_colors < a_mesh.colors.size(); num_colors++)
+	for (; num_colors < a_mesh.contents->colors.size(); num_colors++)
 	{
-		if (!a_mesh.colors[num_colors].empty())
+		if (!a_mesh.contents->colors[num_colors].empty())
 		{
-			glGenBuffers(1, &a_mesh.VBOs.emplace_back(0));
-			glBindBuffer(GL_ARRAY_BUFFER, a_mesh.VBOs[a_mesh.VBOs.size() - 1]);
-			glBufferData(GL_ARRAY_BUFFER, SIZEOF_ELEMENTS_IN_VECTOR(a_mesh.colors[num_colors]), a_mesh.colors[num_colors].data(), GL_STATIC_DRAW);
+			glGenBuffers(1, &a_mesh.contents->VBOs.emplace_back(0));
+			glBindBuffer(GL_ARRAY_BUFFER, a_mesh.contents->VBOs[a_mesh.contents->VBOs.size() - 1]);
+			glBufferData(GL_ARRAY_BUFFER, SIZEOF_ELEMENTS_IN_VECTOR(a_mesh.contents->colors[num_colors]), a_mesh.contents->colors[num_colors].data(), GL_STATIC_DRAW);
 			glVertexAttribPointer(BufferAttributeLocation::Color0 + num_colors, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
 			glEnableVertexAttribArray(BufferAttributeLocation::Color0 + num_colors);
 		}
 	}
 	size_t num_uvs = 0;
-	for (; num_uvs < a_mesh.uvs.size(); num_uvs++)
+	for (; num_uvs < a_mesh.contents->uvs.size(); num_uvs++)
 	{
-		if (!a_mesh.uvs[num_uvs].empty())
+		if (!a_mesh.contents->uvs[num_uvs].empty())
 		{
-			glGenBuffers(1, &a_mesh.VBOs.emplace_back(0));
-			glBindBuffer(GL_ARRAY_BUFFER, a_mesh.VBOs[a_mesh.VBOs.size() - 1]);
-			glBufferData(GL_ARRAY_BUFFER, SIZEOF_ELEMENTS_IN_VECTOR(a_mesh.uvs[num_uvs]), a_mesh.uvs[num_uvs].data(), GL_STATIC_DRAW);
+			glGenBuffers(1, &a_mesh.contents->VBOs.emplace_back(0));
+			glBindBuffer(GL_ARRAY_BUFFER, a_mesh.contents->VBOs[a_mesh.contents->VBOs.size() - 1]);
+			glBufferData(GL_ARRAY_BUFFER, SIZEOF_ELEMENTS_IN_VECTOR(a_mesh.contents->uvs[num_uvs]), a_mesh.contents->uvs[num_uvs].data(), GL_STATIC_DRAW);
 			glVertexAttribPointer(BufferAttributeLocation::UV0 + num_uvs, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 			glEnableVertexAttribArray(BufferAttributeLocation::UV0 + num_uvs);
 		}
 	}
-	a_mesh.VAO_loaded = true;
+	a_mesh.contents->vao_load_status = ELoadStatus::Loaded;
+	//a_mesh.VAO_loaded = true;
 	return true;
 }

@@ -24,14 +24,14 @@ MeshData ObjParser::load_mesh_from_filepath(const std::string& a_path)
     std::string line;
 
     MeshData mesh;
-    mesh.started_load = true;
+    //mesh.started_load = true;
     mesh.path_hashed = hashed_string_64(a_path.c_str());
-    mesh.ram_load_status = ELoadStatus::StartedLoad;
+    mesh.contents->ram_load_status = ELoadStatus::StartedLoad;
     if (!file.is_open())
     {
         PRINTLN("failed open file at: {}", a_path);
-        mesh.bad_load = true;
-        mesh.ram_load_status = ELoadStatus::FailedLoadOpen;
+        //mesh.bad_load = true;
+        mesh.contents->ram_load_status = ELoadStatus::FailedLoadOpen;
         return mesh;
     }
     file.seekg(0, std::ios::end);
@@ -42,14 +42,14 @@ MeshData ObjParser::load_mesh_from_filepath(const std::string& a_path)
     {
         PRINTLN("not enough available memory (free: {}MB, model: {:.4f}MB) for path: {}",
             memory_checker::get_mb_left(), ((float)(model_size / (1024.0f * 1024.0f))), a_path);
-        mesh.bad_load = true;
-        mesh.ram_load_status = ELoadStatus::FailedLoadNoSpace;
+        //mesh.bad_load = true;
+        mesh.contents->ram_load_status = ELoadStatus::FailedLoadNoSpace;
         return mesh;
     }
     bool has_color = false;
     bool has_3d_uvs = false;
-    mesh.colors.emplace_back(std::vector<glm::vec4>());
-    mesh.uvs.emplace_back(std::vector<glm::vec3>());
+    mesh.contents->colors.emplace_back(std::vector<glm::vec4>());
+    mesh.contents->uvs.emplace_back(std::vector<glm::vec3>());
     size_t num_pos = 0;
     size_t num_nrm = 0;
     size_t num_uv = 0;
@@ -139,28 +139,28 @@ MeshData ObjParser::load_mesh_from_filepath(const std::string& a_path)
                 {
                     unique_index = it->second;
                 }
-                mesh.indices.push_back(unique_index);
+                mesh.contents->indices.push_back(unique_index);
 
-                if (unique_index == mesh.positions.size())
+                if (unique_index == mesh.contents->positions.size())
                 {
 
-                    mesh.positions.push_back(v_pos[obj_face_vert.pos - 1]);
+                    mesh.contents->positions.push_back(v_pos[obj_face_vert.pos - 1]);
                     if (has_color)
                     {
-                        mesh.colors[0].push_back(v_col[obj_face_vert.pos - 1]);
+                        mesh.contents->colors[0].push_back(v_col[obj_face_vert.pos - 1]);
                     }
                     if (v_nrm.size() > 0)
-                        mesh.normals.push_back(v_nrm[obj_face_vert.nrm - 1]);
+                        mesh.contents->normals.push_back(v_nrm[obj_face_vert.nrm - 1]);
                     if (v_uv.size() > 0)
-                        mesh.uvs[0].push_back(v_uv[obj_face_vert.uv - 1]);
+                        mesh.contents->uvs[0].push_back(v_uv[obj_face_vert.uv - 1]);
                 }
 
             }
             if (num_indices > 3)
             {
                 PRINTLN("OBJ not triangulized");
-                mesh.bad_load = true;
-                mesh.ram_load_status = ELoadStatus::FailedLoadBadModel;
+                //mesh.bad_load = true;
+                mesh.contents->ram_load_status = ELoadStatus::FailedLoadBadModel;
                 return mesh;
             }
         }
@@ -168,27 +168,27 @@ MeshData ObjParser::load_mesh_from_filepath(const std::string& a_path)
 
     if (has_color)
     {
-        mesh.colors_dimensions.emplace_back(std::vector<uint8_t>().emplace_back(3));
+        mesh.contents->colors_dimensions.emplace_back(std::vector<uint8_t>().emplace_back(3));
     }
     else
     {
-        mesh.colors[0].clear();
-        mesh.colors.clear();
+        mesh.contents->colors[0].clear();
+        mesh.contents->colors.clear();
     }
-    if (mesh.uvs[0].size() > 0)
+    if (mesh.contents->uvs[0].size() > 0)
     {
-        mesh.uvs_dimensions.emplace_back(has_3d_uvs ? 3 : 2);
+        mesh.contents->uvs_dimensions.emplace_back(has_3d_uvs ? 3 : 2);
     }
     else
     {
-        mesh.uvs.clear();
+        mesh.contents->uvs.clear();
     }
     title = a_path + " finished started at";
     time_now.print_time(title);
     timer.stop();
-    mesh.path = a_path;
+    //mesh.path = a_path;
     PRINTLN("pos: {}, nrm: {}, uv: {}, face: {}", num_pos, num_nrm, num_uv, num_f);
     PRINTLN("time to load {}: {}ms", a_path, timer.get_time_ms());
-    mesh.ram_load_status = ELoadStatus::Loaded;
+    mesh.contents->ram_load_status = ELoadStatus::Loaded;
     return mesh;
 }

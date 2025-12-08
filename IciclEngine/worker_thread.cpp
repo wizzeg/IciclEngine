@@ -15,7 +15,7 @@ void GameThread::execute()
 	size_t previous_total_render_requests = 10;
 	size_t previous_unique_meshes = 10;
 	size_t previous_unique_cameras = 2;
-	hashed_string_64 invalid_hash("invalidhash");
+	hashed_string_64 invalid_hash(" ");
 	while (true)
 	{
 		//PRINTLN("game thread going to sleep: {}", runs++);
@@ -48,9 +48,9 @@ void GameThread::execute()
 		// Editor camera moving
 		glm::vec3 camera_move;
 		{
-			camera_move.x = engine_context->editor_camera.get_camera_speed() * (engine_context->input_manager.is_key_held(EKey::D) - engine_context->input_manager.is_key_held(EKey::A)) * (float)(engine_context->delta_time * 0.001);
-			camera_move.z = engine_context->editor_camera.get_camera_speed() * (engine_context->input_manager.is_key_held(EKey::S) - engine_context->input_manager.is_key_held(EKey::W)) * (float)(engine_context->delta_time * 0.001);
-			camera_move.y = engine_context->editor_camera.get_camera_speed() * (engine_context->input_manager.is_key_held(EKey::LeftShift) - engine_context->input_manager.is_key_held(EKey::LeftControl)) * (float)(engine_context->delta_time * 0.001);
+			camera_move.x = engine_context->editor_camera.get_camera_speed() * (engine_context->input_manager.is_key_held(EKey::D) - engine_context->input_manager.is_key_held(EKey::A)) * (float)(engine_context->delta_time);
+			camera_move.z = engine_context->editor_camera.get_camera_speed() * (engine_context->input_manager.is_key_held(EKey::S) - engine_context->input_manager.is_key_held(EKey::W)) * (float)(engine_context->delta_time);
+			camera_move.y = engine_context->editor_camera.get_camera_speed() * (engine_context->input_manager.is_key_held(EKey::LeftShift) - engine_context->input_manager.is_key_held(EKey::LeftControl)) * (float)(engine_context->delta_time);
 		}
 		if (std::abs(camera_move.x) > 0.0 || std::abs(camera_move.y) > 0.0 || std::abs(camera_move.z) > 0.0) engine_context->editor_camera.move(camera_move);
 
@@ -119,12 +119,13 @@ void GameThread::execute()
 					}
 					else
 					{
-						glm::mat4 rotation_matrix = glm::mat4_cast(world_pos.rotation_quat);
 						glm::mat4 translation_matrix = glm::translate(glm::mat4(1.0f), -world_pos.position);
+						glm::mat4 rotation_matrix = glm::mat4_cast(world_pos.rotation_quat);
 						camera_comp.view_matrix = glm::transpose(rotation_matrix) * translation_matrix;
 					}
+					
 					camera_comp.projection_matrix = glm::perspective(glm::radians(camera_comp.fied_of_view), camera_comp.aspect_ratio, 0.1f, 300.0f);
-					cameras.emplace_back(true, true, camera_comp.render_priority, camera_comp.view_matrix, camera_comp.projection_matrix, camera_comp.frame_buffer_target);
+					cameras.emplace_back(camera_comp.view_matrix, camera_comp.projection_matrix, camera_comp.frame_buffer_target, camera_comp.render_priority, true, true );
 				}
 			}
 			if (!cameras.empty())
@@ -236,20 +237,20 @@ void GameThread::execute()
 				engine_context->model_storage->add_jobs(load_jobs);
 			}
 
-
+			
 			/////////////////////////////////////////////////////
 			//// start creating render requests
 			/// This must change, it must take in mesh path and texture path ... later material path instead of texture path
 			for (auto [entity, world_position, mesh_comoponent,texture_component]
 				: registry.view<WorldPositionComponent, MeshComponent, TextureComponent>().each())
 			{
-				pre_render_requests.emplace_back(mesh_comoponent.hashed_path, world_position.model_matrix, texture_component.hashed_path);
+				pre_render_requests.emplace_back(world_position.model_matrix, mesh_comoponent.hashed_path.hash, texture_component.hashed_path.hash);
 			}
 			hashed_string_64 invalid_hash("invalidhash");
 			for (auto [entity, world_position, mesh_comoponent]
 				: registry.view<WorldPositionComponent, MeshComponent>(entt::exclude<TextureComponent>).each())
 			{
-				pre_render_requests.emplace_back(mesh_comoponent.hashed_path, world_position.model_matrix, invalid_hash);
+				pre_render_requests.emplace_back(world_position.model_matrix, mesh_comoponent.hashed_path.hash, invalid_hash.hash);
 			}
 			if (auto opt_render_requests = engine_context->model_storage->render_request_returner.return_requests(pre_render_requests))
 			{

@@ -6,7 +6,7 @@
 
 void Renderer::temp_render(MeshData& a_mesh, WorldPositionComponent& a_world_pos)
 {
-	if (a_mesh.VAO_loaded)
+	if (a_mesh.contents->vao_load_status = ELoadStatus::Loaded)
 	{
 		if (auto shader = shader_program.lock())
 		{
@@ -22,8 +22,8 @@ void Renderer::temp_render(MeshData& a_mesh, WorldPositionComponent& a_world_pos
 
 			model = glm::rotate(model, rotation, glm::vec3(0, 1, 0));
 			shader->set_mat4fv(model, "model");
-			glBindVertexArray(a_mesh.VAO);
-			glDrawElements(GL_TRIANGLES, a_mesh.indices.size(), GL_UNSIGNED_INT, 0);
+			glBindVertexArray(a_mesh.contents->VAO);
+			glDrawElements(GL_TRIANGLES, a_mesh.contents->indices.size(), GL_UNSIGNED_INT, 0);
 			shader->unbind();
 		}
 
