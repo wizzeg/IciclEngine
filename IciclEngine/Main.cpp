@@ -54,7 +54,7 @@ int main(void)
 	if (!glfwInit())
 		return -1;
 
-	std::shared_ptr<GLFWContext> glfw_context = std::make_shared<GLFWContext>(450, 1, "Icicl engine", true, true);
+	std::shared_ptr<GLFWContext> glfw_context = std::make_shared<GLFWContext>(450, 1, "Icicl engine", false, true);
 	glfw_context->deactivate();
 	std::shared_ptr<ImGuiManager> imgui_manager = std::make_shared<ImGuiManager>(glfw_context);
 	glfw_context->activate();
@@ -253,6 +253,20 @@ int main(void)
 				engine_context->model_storage->add_job(load_job);
 			}
 		}
+
+		/////////////////////////////////////////
+		// Loading Texture to GPU
+		if (auto gen_request = engine_context->model_storage->texgen_returner.return_request())
+		{
+			TextureData& tex_data = gen_request.value().texture_data;
+			PRINTLN("Got texture gen request");
+			TextureGenInfo ret_val = engine_context->texture_loader->generate_texture(tex_data);
+			if (ret_val.texture_gen_status == ELoadStatus::Loaded)
+			{
+				LoadJob load_job = std::move(TextureGenInfo{ret_val.hashed_path, ret_val.texture_id, ret_val.texture_gen_status});
+				engine_context->model_storage->add_job(load_job);
+			}
+		}
 		
 		{
 			glfw_context->unbind_framebuffer();
@@ -263,12 +277,12 @@ int main(void)
 		glfwPollEvents();
 		frames++;
 		timer.stop();
-		engine_context->delta_time = timer.get_time_ms();
+		engine_context->delta_time = timer.get_time_s();
 		timer.start();
 		total_time += engine_context->delta_time; // this should be on game thread too: stop at start of frame -> record dt -> immedietly into start
-		if (total_time > 1000)
+		if (total_time > 1)
 		{
-			title = "Icicl engine - FPS: " + std::to_string(frames / (1000.0 / total_time));
+			title = "Icicl engine - FPS: " + std::to_string(frames / (1.0 / total_time));
 			//title = "Icicl engine - frame time: " + std::to_string(total_time);
 			glfwSetWindowTitle(window, title.c_str());
 			total_time = 0;

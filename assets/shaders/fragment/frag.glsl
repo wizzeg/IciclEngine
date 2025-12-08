@@ -5,9 +5,19 @@ in vec4 vCol;
 in vec3 vTexCoord;
 
 uniform sampler2D uTexture;
+uniform int has_texture;
 
 void main()
 {
-	FragColor = clamp(vCol + texture(uTexture, vTexCoord.xy), 0, 1);
+	if (has_texture > 0.001)
+	{
+		FragColor = texture(uTexture, vTexCoord.xy);
+	}
+	else
+	{
+		FragColor = vCol;
+	}
+	//FragColor = vCol;
+	
 	//FragColor = texture(uTexture, vTexCoord);
 }

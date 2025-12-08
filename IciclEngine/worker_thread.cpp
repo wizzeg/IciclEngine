@@ -15,6 +15,7 @@ void GameThread::execute()
 	size_t previous_total_render_requests = 10;
 	size_t previous_unique_meshes = 10;
 	size_t previous_unique_cameras = 2;
+	hashed_string_64 invalid_hash("invalidhash");
 	while (true)
 	{
 		//PRINTLN("game thread going to sleep: {}", runs++);
@@ -38,8 +39,11 @@ void GameThread::execute()
 		std::vector<PreRenderRequest> pre_render_requests;
 		pre_render_requests.reserve(previous_total_render_requests);
 
-		std::vector<hashed_string_64> hashed_loads;
-		hashed_loads.reserve(previous_total_render_requests);
+		std::vector<hashed_string_64> hashed_mesh_loads;
+		hashed_mesh_loads.reserve(10);
+
+		std::vector<hashed_string_64> hashed_texture_loads;
+		hashed_texture_loads.reserve(10);
 
 		// Editor camera moving
 		glm::vec3 camera_move;
@@ -50,7 +54,7 @@ void GameThread::execute()
 		}
 		if (std::abs(camera_move.x) > 0.0 || std::abs(camera_move.y) > 0.0 || std::abs(camera_move.z) > 0.0) engine_context->editor_camera.move(camera_move);
 
-
+		double delta_time = engine_context->delta_time;
 		if (engine_context->game_playing)
 		{
 			auto& registry = scene->get_registry(); // get registry from the scene
@@ -58,8 +62,8 @@ void GameThread::execute()
 			for (auto [entity, name, worldpos] 
 				: registry.view<NameComponent, WorldPositionComponent>(entt::exclude<CameraComponent>).each())
 			{
-				worldpos.position.x += 0.0001f;
-				worldpos.rotation_quat *= glm::quat(glm::radians(glm::vec3(0.1, 0.1, 0.1)));
+				worldpos.position.x += 0.1f * (float)delta_time;
+				worldpos.rotation_quat *= glm::quat(glm::radians(glm::vec3(0.1, 0.1, 0.1) * 50.f * (float)delta_time));
 			}
 
 			//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -81,8 +85,8 @@ void GameThread::execute()
 				if (world_pos.get_euler_angles)
 				{
 					world_pos.rotation_euler_do_not_use = glm::degrees(glm::eulerAngles(world_pos.rotation_quat));
-					if (world_pos.overide_quaternion)
-						world_pos.get_euler_angles = false;
+					//if (world_pos.overide_quaternion)
+					//	world_pos.get_euler_angles = false;
 				}
 
 				world_pos.model_matrix = glm::translate(glm::mat4(1.0f), world_pos.position);
@@ -150,84 +154,134 @@ void GameThread::execute()
 
 			for (auto [entity, mesh_component] : registry.view<MeshComponent>().each())
 			{
-				if (mesh_component.loaded == false)
+				if (!mesh_component.loaded)
 				{
 					// fecthing all entities with a mesh
 					hashed_string_64 temp(mesh_component.hashed_path);
 					mesh_component.hashed_path = temp;
-					hashed_loads.push_back(temp);
+					hashed_mesh_loads.push_back(temp);
 					mesh_component.loaded = true;
 				}
 			}
 
 			///////////////////////////////////////////////////////
 			// filter meshes to only those that are unique... send then to load, but they might already be loaded
-			if (!hashed_loads.empty())
+			if (!hashed_mesh_loads.empty())
 			{
 				// all load requests
-				std::sort(hashed_loads.begin(), hashed_loads.end(), std::less<>{});
+				std::sort(hashed_mesh_loads.begin(), hashed_mesh_loads.end(), std::less<>{});
 				std::vector<hashed_string_64> load_requests;
 				load_requests.reserve(previous_unique_meshes);
 
 				// unique load requests
-				hashed_string_64 previous_value = hashed_loads[0];
+				hashed_string_64 previous_value = hashed_mesh_loads[0];
 				load_requests.push_back(previous_value);
 				size_t i = 1;
-				for (; i < hashed_loads.size(); i++)
+				for (; i < hashed_mesh_loads.size(); i++)
 				{
-					if (previous_value < hashed_loads[i])
+					if (previous_value < hashed_mesh_loads[i])
 					{
-						load_requests.push_back(hashed_loads[i]);
-						previous_value = hashed_loads[i];
+						load_requests.push_back(hashed_mesh_loads[i]);
+						previous_value = hashed_mesh_loads[i];
 					}
 				}
-				// NEW MODEL LOADING SYSTEM
+
 				std::vector<LoadJob> load_jobs;
 				load_jobs.reserve(previous_unique_meshes);
 				for (size_t j = 0; j < load_requests.size(); j++)
 				{
-					MeshDataJob job(load_requests[j], EMeshDataRequest::LoadMeshFromFile);
+					MeshDataJob job(load_requests[j], ERequestType::LoadFromFile);
 					load_jobs.emplace_back(std::move(job));
 				}
 				previous_unique_meshes = i;
 				engine_context->model_storage->add_jobs(load_jobs);
 			}
 			///////////////////////////////////////////////////////
+			// Do texture lodas now
+			for (auto [entity, texture_component] : registry.view<TextureComponent>().each())
+			{
+				if (!texture_component.loaded)
+				{
+					texture_component.loaded = true;
+					hashed_texture_loads.push_back(texture_component.hashed_path);
+				}
+			}
+			if (!hashed_texture_loads.empty())
+			{
+				// all load requests
+				std::sort(hashed_texture_loads.begin(), hashed_texture_loads.end(), std::less<>{});
+				std::vector<hashed_string_64> load_requests;
+				load_requests.reserve(previous_unique_meshes);
+
+				// unique load requests
+				hashed_string_64 previous_value = hashed_texture_loads[0];
+				load_requests.push_back(previous_value);
+				size_t i = 1;
+				for (; i < hashed_texture_loads.size(); i++)
+				{
+					if (previous_value < hashed_texture_loads[i])
+					{
+						load_requests.push_back(hashed_texture_loads[i]);
+						previous_value = hashed_texture_loads[i];
+					}
+				}
+
+				std::vector<LoadJob> load_jobs;
+				load_jobs.reserve(previous_unique_meshes);
+				for (size_t j = 0; j < load_requests.size(); j++)
+				{
+					TextureDataJob job(load_requests[j], ERequestType::LoadFromFile);
+					load_jobs.emplace_back(std::move(job));
+				}
+				engine_context->model_storage->add_jobs(load_jobs);
+			}
 
 
 			/////////////////////////////////////////////////////
 			//// start creating render requests
-			for (auto [entity, world_position, mesh_comoponent]
-				: registry.view<WorldPositionComponent, MeshComponent>().each())
+			/// This must change, it must take in mesh path and texture path ... later material path instead of texture path
+			for (auto [entity, world_position, mesh_comoponent,texture_component]
+				: registry.view<WorldPositionComponent, MeshComponent, TextureComponent>().each())
 			{
-				pre_render_requests.emplace_back(mesh_comoponent.hashed_path, world_position.model_matrix);
+				pre_render_requests.emplace_back(mesh_comoponent.hashed_path, world_position.model_matrix, texture_component.hashed_path);
 			}
-			// Only use unique meshes to obtain render info
-			std::sort(pre_render_requests.begin(), pre_render_requests.end(),
-				[](const PreRenderRequest req_a, const PreRenderRequest req_b)
-				{
-					return req_a.hashed_path < req_b.hashed_path;
-				});
-			if (!pre_render_requests.empty())
+			hashed_string_64 invalid_hash("invalidhash");
+			for (auto [entity, world_position, mesh_comoponent]
+				: registry.view<WorldPositionComponent, MeshComponent>(entt::exclude<TextureComponent>).each())
 			{
-				std::vector<hashed_string_64> unique_render_paths;
-				hashed_string_64 previous_value = pre_render_requests[0].hashed_path;
-				unique_render_paths.push_back(previous_value);
-				size_t i = 1;
-				for (; i < pre_render_requests.size(); i++)
-				{
-					if (previous_value < pre_render_requests[i].hashed_path)
-					{
-						unique_render_paths.push_back(pre_render_requests[i].hashed_path);
-						previous_value = pre_render_requests[i].hashed_path;
-					}
-				}
-				previous_unique_meshes = i;
+				pre_render_requests.emplace_back(mesh_comoponent.hashed_path, world_position.model_matrix, invalid_hash);
+			}
+			if (auto opt_render_requests = engine_context->model_storage->render_request_returner.return_requests(pre_render_requests))
+			{
+				render_requests = std::move(opt_render_requests.value());
+			}
+			/////////////////////////////////////////////////////// OLD now we're doing all of them at once instead.
+			// Only use unique meshes to obtain render info
+			//std::sort(pre_render_requests.begin(), pre_render_requests.end(),
+			//	[](const PreRenderRequest req_a, const PreRenderRequest req_b)
+			//	{
+			//		return req_a.mesh_hashed_path < req_b.mesh_hashed_path;
+			//	});
+			//if (!pre_render_requests.empty())
+			//{
+			//	std::vector<hashed_string_64> unique_render_paths;
+			//	hashed_string_64 previous_value = pre_render_requests[0].mesh_hashed_path;
+			//	unique_render_paths.push_back(previous_value);
+			//	size_t i = 1;
+			//	for (; i < pre_render_requests.size(); i++)
+			//	{
+			//		if (previous_value < pre_render_requests[i].mesh_hashed_path)
+			//		{
+			//			unique_render_paths.push_back(pre_render_requests[i].mesh_hashed_path);
+			//			previous_value = pre_render_requests[i].mesh_hashed_path;
+			//		}
+			//	}
+			//	previous_unique_meshes = i;
 
 				/////////////////////////////////////////////////////////
 				// NEW MODEL LOADING SYSTEM
 				// for each mesh object and unique render request create a render request by combinging model matrix and vao etc
-				if (auto unique_render_requests_opt = engine_context->model_storage->render_request_returner.return_requests(unique_render_paths))
+				/*if (auto unique_render_requests_opt = engine_context->model_storage->render_request_returner.return_requests(unique_render_paths))
 				{
 					auto& unique_render_requests = unique_render_requests_opt.value();
 					previous_unique_meshes = unique_render_paths.size();
@@ -240,10 +294,10 @@ void GameThread::execute()
 						start_index = unique_index;
 						for (; unique_index < unique_render_requests.size(); unique_index++)
 						{
-							if (render_request.hashed_path == unique_render_requests[unique_index].hashed_path)
+							if (render_request.mesh_hashed_path == unique_render_requests[unique_index].mesh_hashed_path)
 							{
 								render_requests.emplace_back(
-									render_request.hashed_path, unique_render_requests[unique_index].vao,
+									render_request.mesh_hashed_path, unique_render_requests[unique_index].vao,
 									unique_render_requests[unique_index].indices_size, render_request.model_matrix, 0, 0);
 								none_found = false;
 								break;
@@ -255,9 +309,12 @@ void GameThread::execute()
 							unique_index = start_index;
 						}
 					}
-				}
+				}*/
+
+
+
 				previous_total_render_requests = render_requests.size();
-			}
+		
 		}
 		//PRINTLN("game thread running {}", runs++);
 	}

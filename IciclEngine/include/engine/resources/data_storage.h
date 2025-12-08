@@ -14,42 +14,53 @@
 #include <map>
 #include <variant>
 #include <engine/resources/job_info.h>
+#include <engine/resources/model_loader.h>
 
 struct ModelGenStorage;
 struct GenStorageThreadPool;
 
-using LoadJob = std::variant<MeshDataJob, VAOLoadInfo, TextureDataJob>;
+using LoadJob = std::variant<MeshDataJob, VAOLoadInfo, TextureDataJob, TextureGenInfo>;
 
 template <typename TReturn, typename TRequest>
-struct JobRequestReturner
+struct JobRequestTyped
 {
 	virtual std::optional<TReturn> return_request(const TRequest& a_request) = 0;
 	virtual std::optional<std::vector<TReturn>> return_requests(std::vector<TRequest>& a_requests, bool sorted = false) = 0;
 };
 template <typename TReturn>
-struct JobReturner
+struct JobRequest
 {
 	virtual std::optional<TReturn> return_request() = 0;
 	virtual std::optional<std::vector<TReturn>> return_requests() = 0;
 };
 
-struct RenderRequestReturner : JobRequestReturner<RenderRequest, hashed_string_64>
+struct RenderRequestReturner : JobRequestTyped<RenderRequest, PreRenderRequest>
 {
 	RenderRequestReturner(ModelGenStorage& a_gen_storage);
-	std::optional<RenderRequest> return_request(const hashed_string_64& a_request) override;
-	std::optional<std::vector<RenderRequest>> return_requests(std::vector<hashed_string_64>& a_request, bool sorted = false) override;
+	std::optional<RenderRequest> return_request(const PreRenderRequest& a_request) override;
+	std::optional<std::vector<RenderRequest>> return_requests(std::vector<PreRenderRequest>& a_request, bool sorted = false) override;
 protected:
 	ModelGenStorage& renderreqret_gen_storage;
 };
 
-struct VAOLoadReturner : JobReturner<VAOLoadRequest>
+struct VAOLoadRequester : JobRequest<VAOLoadRequest>
 {
-	VAOLoadReturner(ModelGenStorage& a_gen_storage);
+	VAOLoadRequester(ModelGenStorage& a_gen_storage);
 	std::optional<VAOLoadRequest> return_request() override;
 	std::optional<std::vector<VAOLoadRequest>> return_requests() override;
 protected:
-	ModelGenStorage& vaoreturner_gen_storage;
+	ModelGenStorage& vaoload_gen_storage;
 };
+
+struct TexGenRequester : JobRequest<TexGenRequest> // I could make these inherit a MessageQueue... but eh, not really
+{
+	TexGenRequester(ModelGenStorage& a_gen_storage);
+	std::optional<TexGenRequest> return_request() override;
+	std::optional<std::vector<TexGenRequest>> return_requests() override;
+protected:
+	ModelGenStorage& texgen_gen_storage;
+};
+
 
 
 template <typename TJob>
@@ -87,11 +98,21 @@ protected:
 	ModelGenStorage& texturedata_gen_storage;
 };
 
+
+struct TexGenInfoProcessor : JobProcessor<TextureGenInfo>
+{
+	TexGenInfoProcessor(ModelGenStorage& a_gen_storage);
+	void process_job(TextureGenInfo& a_job) override;
+protected:
+	void sort_data(std::unique_lock<std::mutex>& a_lock); /// make sure you have locked it first
+	ModelGenStorage& texgeninfo_gen_storage;
+};
+
 struct GenStorageThreadPool // this is abstract, must be inherited, this one holds jobs and adds jobs
 {
 	GenStorageThreadPool(size_t num_threads = 2);
 	~GenStorageThreadPool();
-	void start_threads();
+	void start_threads(); // allowing to pass in a function and Args... args here could remove some coupling of modelgenstorage and processors
 	void add_job(LoadJob& a_job);
 	void add_jobs(std::vector<LoadJob>& a_jobs);
 	void clear_jobs();
@@ -115,22 +136,31 @@ struct ModelGenStorage : GenStorageThreadPool // this will have more job process
 	friend struct MeshJobProcessor;
 	friend struct VAOInfoProcessor;
 	friend struct RenderRequestReturner;
-	friend struct VAOLoadReturner;
+	friend struct VAOLoadRequester;
+	friend struct TextureDataProcessor;
+	friend struct TexGenRequester;
+	friend struct TexGenInfoProcessor;
 protected:
-	void worker_loop(size_t a_thread_id) override;
+	void worker_loop(size_t a_thread_id) override; 
 	bool worker_wait_condition();
 	std::mutex mesh_mutex;
 	std::vector<MeshData> mesh_datas;
 	std::mutex texture_mutex;
+	std::vector<TextureData> texuture_datas;
 	MessageQueue<VAOLoadRequest> vaoload_requests;
+	MessageQueue<TexGenRequest> texgen_requests;
 	MeshJobProcessor mesh_job_processor;
 	VAOInfoProcessor vaoinfo_job_processor;
+	TextureDataProcessor tex_job_processor; /// need one texgeninfo_job_processor too...
+	TexGenInfoProcessor tex_geninfo_processor;
+	ModelLoader model_loader;
 public:
 	RenderRequestReturner render_request_returner;
-	VAOLoadReturner vaoload_returner;
-
+	VAOLoadRequester vaoload_returner;
+	TexGenRequester texgen_returner;
 };
 
+/////////////////////////////////////////////////////////////////////////////////////
 // OLD
 struct MeshDataGenStorage // this now needs to be able to handle texture load requests.... How can I structure this?
 {

@@ -186,7 +186,7 @@ struct MeshComponentData : ComponentData<MeshComponent>
 		return
 		{
 			{EEditMode::Editable, "mesh loaded: ", typeid(bool), &a_component.loaded },
-			{EEditMode::Editable, "mesh: ", typeid(hashed_string_64), &a_component.hashed_path, 2.25 }
+			{EEditMode::Editable, "mesh path: ", typeid(hashed_string_64), &a_component.hashed_path, 2.25 }
 			//{EEditMode::Editable, "mesh path: ", typeid(std::string), &a_component.hashed_path.string },
 			//{EEditMode::Uneditable, "hashed path: ", typeid(uint64_t),& a_component.hashed_path.hash }
 		};
@@ -201,7 +201,7 @@ struct TextureComponentData : ComponentData<TextureComponent>
 		return
 		{
 			{EEditMode::Editable, "texture loaded: ", typeid(bool), &a_component.loaded },
-			{EEditMode::Editable, "texture: ", typeid(hashed_string_64), &a_component.hashed_path, 2.25 }
+			{EEditMode::Editable, "texture path: ", typeid(hashed_string_64), &a_component.hashed_path, 2.25 }
 			//{EEditMode::Editable, "mesh path: ", typeid(std::string), &a_component.hashed_path.string },
 			//{EEditMode::Uneditable, "hashed path: ", typeid(uint64_t),& a_component.hashed_path.hash }
 		};

@@ -1,31 +1,32 @@
 #pragma once
 #include <engine/utilities/hashed_string_64.h>
-
-enum EMeshDataRequest : uint8_t
+enum EDirection : uint8_t
 {
-	LoadMeshFromFile,
-	ReloadMeshFromFile,
-	GenerateVAORequest,
-	VAODataLoaded,
-	DeleteVAORequest,
-	UnloadMeshData
+	None,
+	Up,
+	Down
 };
-enum ETextureDataRequest : uint8_t
+
+enum ERequestType :uint8_t
 {
-	LoadTextureFromFile,
-	ReloadTextureFromFile,
-	GenerateTextureRequest,
-	UpdateTextureBindID
+	LoadFromFile,
+	ReloadFromFile,
+	DeleteFromRam,
+	DeleteFromGPU,
+	LoadToGPU,
+	UpdateGPUInfo,
+	UpdateRAMInfo,
+	BindToGPU
 };
 
 struct MeshDataJob // will have a texture data job too....
 {
 	hashed_string_64 path_hashed;
-	EMeshDataRequest request_type;
+	ERequestType request_type;
 };
 
 struct TextureDataJob
 {
 	hashed_string_64 path_hashed;
-	ETextureDataRequest request_type;
+	ERequestType request_type;
 };

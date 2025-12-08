@@ -39,7 +39,13 @@ void Renderer::temp_render(RenderRequest& a_render_request)
 			shader->bind();
 			//rotation += glm::radians(0.07f);
 			//glm::mat4 temp = glm::rotate(a_render_request.model_matrix, rotation, glm::vec3(0, 1, 0));
-
+			bool has_texture = (a_render_request.material_id != 0);
+			if (has_texture)
+			{
+				glActiveTexture((GLenum)(GL_TEXTURE0));
+				glBindTexture(GL_TEXTURE_2D, a_render_request.material_id);
+			}
+			shader->set_vec1i((int)has_texture, "has_texture");
 			shader->set_mat4fv(proj, "proj");
 			shader->set_mat4fv(view, "view");
 			shader->set_mat4fv(a_render_request.model_matrix, "model");

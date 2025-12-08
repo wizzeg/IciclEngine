@@ -2,52 +2,7 @@
 
 #include <engine/renderer/render_info.h>
 
-struct ObjPosition
-{
-	glm::vec3 vec3;
-	float x, y, z;
-};
 
-struct ObjColor
-{
-	glm::vec3 vec3;
-	float r, g, b;
-};
-
-struct ObjNormal
-{
-	glm::vec3 vec3;
-	float x, y, z;
-};
-struct ObjUVs
-{
-	glm::vec3 vec3;
-	float x, y, z;
-};
-
-struct ObjFaceVertex
-{
-	glm::uvec3 vec3;
-	GLuint pos, nrm, uv;
-};
-
-struct ObjFace
-{
-	std::vector<ObjFaceVertex> indicies;
-};
-
-struct ObjVertex
-{
-	unsigned int VAO;
-	unsigned int VBOs[4]; // position, color, normal, uv
-	unsigned int EBO;
-
-	ObjPosition position;
-	ObjNormal normal;
-	ObjUVs uv;
-	ObjFace face;
-	bool filled;
-};
 
 struct ModelLoader
 {

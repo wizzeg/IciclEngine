@@ -11,7 +11,7 @@ MeshData ModelLoader::load_obj_mesh_from_file(const std::string a_path)
 {
     HighResolutionTimer timer;
     TimeNow time_now;
-    std::string title = a_path + " loading started at";
+    std::string title = a_path + " - mesh loading started at";
     timer.start();
     time_now.print_time(title);
     std::vector<ObjVertex> vertices;
@@ -178,18 +178,20 @@ MeshData ModelLoader::load_obj_mesh_from_file(const std::string a_path)
     {
         mesh.uvs.clear();
     }
-    title = a_path + " finished started at";
+    title = a_path + " - mesh finished started at";
     time_now.print_time(title);
     timer.stop();
     mesh.path = a_path;
     PRINTLN("pos: {}, nrm: {}, uv: {}, face: {}", num_pos, num_nrm, num_uv, num_f);
-    PRINTLN("time to load {}: {}ms", a_path, timer.get_time_ms());
+    PRINTLN("time to load mesh {}: {}ms", a_path, timer.get_time_ms());
     mesh.ram_load_status = ELoadStatus::Loaded;
     return mesh;
 }
 
 void ModelLoader::load_texture_from_file(TextureData& a_texture_data)
 {
+    stbi_set_flip_vertically_on_load(true);
+    a_texture_data.path = a_texture_data.hashed_path.string;
     if (a_texture_data.path == "")
     {
         PRINTLN("No path assigned");
@@ -229,29 +231,72 @@ void ModelLoader::load_texture_from_file(TextureData& a_texture_data)
 
 TextureData ModelLoader::load_texture_from_file(const std::string a_path, bool a_mipmap)
 {
+    HighResolutionTimer timer;
+    TimeNow time_now;
+    std::string title = a_path + " - texture loading started at";
+    timer.start();
+    time_now.print_time(title);
     TextureData texture_data;
+    if (((float)(256) + 200) > memory_checker::get_mb_left())
+    {
+        PRINTLN("not enough available memory (free: {}MB, model: {:.4f}MB) for path: {}",
+            memory_checker::get_mb_left(), ((float)(256 / (1024.0f * 1024.0f))), a_path);
+        texture_data.texture_ram_status = ELoadStatus::FailedLoadNoSpace;
+        return texture_data;
+    }
     texture_data.hashed_path = hashed_string_64(a_path.c_str());
     texture_data.path = a_path;
     texture_data.generate_mipmap = a_mipmap;
     load_texture_from_file(texture_data);
+    time_now.print_time(title);
+    timer.stop();
+    PRINTLN("time to load texture {}: {}ms", a_path, timer.get_time_ms());
     return texture_data;
 }
 
 TextureData ModelLoader::load_texture_from_file(const std::string a_path, const GLenum a_wrap_x, const GLenum a_wrap_y, bool a_mipmap)
 {
+    HighResolutionTimer timer;
+    TimeNow time_now;
+    std::string title = a_path + " - texture loading started at";
+    timer.start();
+    time_now.print_time(title);
     TextureData texture_data;
+    if (((float)(256) + 200) > memory_checker::get_mb_left())
+    {
+        PRINTLN("not enough available memory (free: {}MB, model: {:.4f}MB) for path: {}",
+            memory_checker::get_mb_left(), ((float)(256 / (1024.0f * 1024.0f))), a_path);
+        texture_data.texture_ram_status = ELoadStatus::FailedLoadNoSpace;
+        return texture_data;
+    }
     texture_data.hashed_path = hashed_string_64(a_path.c_str());
     texture_data.path = a_path;
     texture_data.wrap_x = a_wrap_x;
     texture_data.wrap_y = a_wrap_y;
     texture_data.generate_mipmap = a_mipmap;
     load_texture_from_file(texture_data);
+    title = a_path + " - texture finished started at";
+    time_now.print_time(title);
+    timer.stop();
+    PRINTLN("time to load texture {}: {}ms", a_path, timer.get_time_ms());
     return texture_data;
 }
 
 TextureData ModelLoader::load_texture_from_file(const std::string a_path, const GLenum a_wrap_x, const GLenum a_wrap_y, const GLenum a_filtering_min, const GLenum a_fintering_mag, bool a_mipmap)
 {
+    HighResolutionTimer timer;
+    TimeNow time_now;
+    std::string title = a_path + " - texture loading started at";
+    timer.start();
+    time_now.print_time(title);
     TextureData texture_data;
+    if (((float)(256) + 200) > memory_checker::get_mb_left())
+    {
+        PRINTLN("not enough available memory (free: {}MB, model: {:.4f}MB) for path: {}",
+            memory_checker::get_mb_left(), ((float)(256 / (1024.0f * 1024.0f))), a_path);
+        texture_data.texture_ram_status = ELoadStatus::FailedLoadNoSpace;
+        return texture_data;
+    }
     texture_data.hashed_path = hashed_string_64(a_path.c_str());
     texture_data.path = a_path;
     texture_data.wrap_x = a_wrap_x;
@@ -260,12 +305,28 @@ TextureData ModelLoader::load_texture_from_file(const std::string a_path, const 
     texture_data.filtering_min = a_filtering_min;
     texture_data.filtering_mag = a_fintering_mag;
     load_texture_from_file(texture_data);
+    title = a_path + " - texture finished started at";
+    time_now.print_time(title);
+    timer.stop();
+    PRINTLN("time to load texture {}: {}ms", a_path, timer.get_time_ms());
     return texture_data;
 }
 
 TextureData ModelLoader::load_texture_from_file(const std::string a_path, const GLenum a_wrap_x, const GLenum a_wrap_y, const GLenum a_filtering_min, const GLenum a_fintering_mag, const GLenum a_mipmap_filtering, bool a_mipmap)
 {
+    HighResolutionTimer timer;
+    TimeNow time_now;
+    std::string title = a_path + " - texture loading started at";
+    timer.start();
+    time_now.print_time(title);
     TextureData texture_data;
+    if (((float)(256) + 200) > memory_checker::get_mb_left())
+    {
+        PRINTLN("not enough available memory (free: {}MB, model: {:.4f}MB) for path: {}",
+            memory_checker::get_mb_left(), ((float)(256 / (1024.0f * 1024.0f))), a_path);
+        texture_data.texture_ram_status = ELoadStatus::FailedLoadNoSpace;
+        return texture_data;
+    }
     texture_data.hashed_path = hashed_string_64(a_path.c_str());
     texture_data.path = a_path;
     texture_data.wrap_x = a_wrap_x;
@@ -275,5 +336,9 @@ TextureData ModelLoader::load_texture_from_file(const std::string a_path, const 
     texture_data.filtering_mag = a_fintering_mag;
     texture_data.mipmap_filtering = a_mipmap_filtering;
     load_texture_from_file(texture_data);
+    title = a_path + " - texture finished started at";
+    time_now.print_time(title);
+    timer.stop();
+    PRINTLN("time to load texture {}: {}ms", a_path, timer.get_time_ms());
     return texture_data;
 }

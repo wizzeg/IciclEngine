@@ -10,10 +10,71 @@
 #include <stb_image/stb_image.h>
 #include <memory>
 
+enum ELoadStatus : uint8_t
+{
+	NotLoaded,
+	RequestedLoad,
+	StartedLoad,
+	Loaded,
+	FailedLoadBadPath,
+	FailedLoadNoAccess,
+	FailedLoadOpen,
+	FailedLoadBadModel,
+	FailedLoadNoSpace,
+	FailedUpload
+};
+
+struct ObjPosition
+{
+	glm::vec3 vec3;
+	float x, y, z;
+};
+
+struct ObjColor
+{
+	glm::vec3 vec3;
+	float r, g, b;
+};
+
+struct ObjNormal
+{
+	glm::vec3 vec3;
+	float x, y, z;
+};
+struct ObjUVs
+{
+	glm::vec3 vec3;
+	float x, y, z;
+};
+
+struct ObjFaceVertex
+{
+	glm::uvec3 vec3;
+	GLuint pos, nrm, uv;
+};
+
+struct ObjFace
+{
+	std::vector<ObjFaceVertex> indicies;
+};
+
+struct ObjVertex
+{
+	unsigned int VAO;
+	unsigned int VBOs[4]; // position, color, normal, uv
+	unsigned int EBO;
+
+	ObjPosition position;
+	ObjNormal normal;
+	ObjUVs uv;
+	ObjFace face;
+	bool filled;
+};
 struct PreRenderRequest
 {
-	hashed_string_64 hashed_path;
-	glm::mat4 model_matrix;
+	hashed_string_64 mesh_hashed_path = hashed_string_64("invalidhash");
+	glm::mat4 model_matrix = glm::mat4(1);
+	hashed_string_64 texture_hashed_path = hashed_string_64("invalidhash");
 };
 
 struct VAOLoadInfo
@@ -25,6 +86,7 @@ struct VAOLoadInfo
 	GLuint ebo;
 };
 
+
 struct LoadRequest
 {
 	std::string path;
@@ -33,13 +95,13 @@ struct LoadRequest
 
 struct RenderRequest
 {
-	hashed_string_64 hashed_path;
+	hashed_string_64 mesh_hashed_path;
 	GLuint vao = 0;
 	GLsizei indices_size = 0;
 	glm::mat4 model_matrix = glm::mat4(0);
 	GLuint shader_program = 0;
 	uint32_t material_id = 0; // I don't know
-
+	hashed_string_64 tex_hashed_path = hashed_string_64("invalidhash");
 };
 
 enum BufferAttributeLocation : uint8_t
@@ -92,19 +154,7 @@ struct CameraData
 	hashed_string_64 frame_buffer_hashed;
 };
 
-enum ELoadStatus : uint8_t
-{
-	NotLoaded,
-	RequestedLoad,
-	StartedLoad,
-	Loaded,
-	FailedLoadBadPath,
-	FailedLoadNoAccess,
-	FailedLoadOpen,
-	FailedLoadBadModel,
-	FailedLoadNoSpace,
-	FailedUpload
-};
+
 
 
 struct MeshData
@@ -138,10 +188,6 @@ struct MeshData
 	std::vector<std::vector<glm::vec3>> uvs;
 	std::vector<GLuint> indices;
 };
-struct VAOLoadRequest
-{
-	MeshData mesh_data;
-};
 
 struct TextureGenInfo
 {
@@ -172,4 +218,13 @@ struct TextureData
 
 	ELoadStatus texture_ram_status = ELoadStatus::NotLoaded;
 	ELoadStatus texture_gen_status = ELoadStatus::NotLoaded;
+};
+
+struct VAOLoadRequest
+{
+	MeshData mesh_data;
+};
+struct TexGenRequest
+{
+	TextureData texture_data;
 };

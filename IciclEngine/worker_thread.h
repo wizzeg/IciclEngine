@@ -22,6 +22,7 @@
 #include <engine/ui/ui_manager.h>
 #include <engine/game/camera.h>
 #include <engine/game/input_manager.h>
+#include <engine/renderer/texture_loader.h>
 
 struct EngineContext
 {
@@ -53,6 +54,7 @@ struct EngineContext
 	std::vector<CameraData> cameras_render[2];
 	//std::shared_ptr<MeshDataGenStorage> storage;
 	std::shared_ptr<ModelGenStorage> model_storage;
+	std::shared_ptr<TextureLoader> texture_loader;
 
 	Camera editor_camera = Camera("editor camera", 720, 480);
 	InputManager& input_manager;

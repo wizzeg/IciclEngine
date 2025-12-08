@@ -4,7 +4,7 @@
 MeshJobProcessor::MeshJobProcessor(ModelGenStorage& a_gen_storage) : meshjob_gen_storage(a_gen_storage) {}
 void MeshJobProcessor::process_job(MeshDataJob& a_job)
 {
-	if (a_job.request_type == EMeshDataRequest::LoadMeshFromFile || a_job.request_type == EMeshDataRequest::ReloadMeshFromFile)
+	if (a_job.request_type == ERequestType::LoadFromFile || a_job.request_type == ERequestType::ReloadFromFile)
 	{
 		bool found_data = false;
 		bool start_load = false;
@@ -50,12 +50,12 @@ void MeshJobProcessor::process_job(MeshDataJob& a_job)
 		{
 			MeshData data = obj_parser.load_mesh_from_filepath(a_job.path_hashed.string);
 			{
+				std::unique_lock<std::mutex> data_lock(meshjob_gen_storage.mesh_mutex);
 				if (data.ram_load_status == ELoadStatus::Loaded)
 				{
 					data.vao_load_status = ELoadStatus::RequestedLoad;
 					meshjob_gen_storage.vaoload_requests.add_message(VAOLoadRequest{ data }); // copying data for the VAOLoadRequest
 				}
-				std::unique_lock<std::mutex> data_lock(meshjob_gen_storage.mesh_mutex);
 				auto& datas = meshjob_gen_storage.mesh_datas;
 				bool found_data = false;       // Make sure that we add it, this should always exist, but safety check
 				for (size_t i = 0; i < datas.size(); i++)
@@ -108,6 +108,7 @@ void VAOInfoProcessor::process_job(VAOLoadInfo& a_job)
 				data.VAO = a_job.vao;
 				data.EBO = a_job.ebo;
 				data.VBOs = a_job.VBOs;
+				break;
 			}
 		}
 		if (!found_data)
@@ -132,24 +133,19 @@ void VAOInfoProcessor::process_job(VAOLoadInfo& a_job)
 			{
 				found_data = true;
 				datas[i].vao_load_status = ELoadStatus::NotLoaded; /// I need the actual data too...
+				break;
 			}
 		}
 		if (!found_data)
 		{
 			MeshData new_mesh;
+			new_mesh.path_hashed = a_job.hashed_path;
+			new_mesh.path = a_job.hashed_path.string;
 			new_mesh.vao_load_status = ELoadStatus::NotLoaded;
 			datas.push_back(new_mesh);
 			sort_data(data_lock);
 		}
 	}
-}
-
-TextureDataProcessor::TextureDataProcessor(ModelGenStorage& a_gen_storage) : texturedata_gen_storage(a_gen_storage)
-{
-}
-
-void TextureDataProcessor::process_job(TextureDataJob& a_job)
-{
 }
 
 void VAOInfoProcessor::sort_data(std::unique_lock<std::mutex>& a_lock)
@@ -159,6 +155,163 @@ void VAOInfoProcessor::sort_data(std::unique_lock<std::mutex>& a_lock)
 		std::sort(vaoinfo_gen_storage.mesh_datas.begin(), vaoinfo_gen_storage.mesh_datas.end(), [](const MeshData& mesh_a, const MeshData& mesh_b)
 			{
 				return mesh_a.path_hashed < mesh_b.path_hashed;
+			});
+	}
+}
+
+TexGenInfoProcessor::TexGenInfoProcessor(ModelGenStorage& a_gen_storage) : texgeninfo_gen_storage(a_gen_storage) {}
+
+void TexGenInfoProcessor::process_job(TextureGenInfo& a_job)
+{
+	if (a_job.texture_gen_status == ELoadStatus::Loaded)
+	{
+		std::unique_lock<std::mutex> texture_lock(texgeninfo_gen_storage.texture_mutex);
+		auto& datas = texgeninfo_gen_storage.texuture_datas;
+		bool found_data = false;
+		for (size_t i = 0; i < datas.size(); i++)
+		{
+			if (a_job.hashed_path == datas[i].hashed_path)
+			{
+				auto& data = datas[i];
+				found_data = true;
+				data.texture_gen_status = a_job.texture_gen_status; /// I need the actual data too...
+				data.texture_id = a_job.texture_id;
+				break;
+			}
+		}
+		if (!found_data)
+		{
+			TextureData new_texture;
+			new_texture.texture_gen_status = a_job.texture_gen_status;
+			new_texture.texture_id = a_job.texture_id;
+			new_texture.hashed_path = a_job.hashed_path;
+			new_texture.path = a_job.hashed_path.string;
+			datas.push_back(new_texture);
+			sort_data(texture_lock);
+		}
+	}
+}
+
+void TexGenInfoProcessor::sort_data(std::unique_lock<std::mutex>& a_lock)
+{
+	if (a_lock.owns_lock())
+	{
+		std::sort(texgeninfo_gen_storage.texuture_datas.begin(), texgeninfo_gen_storage.texuture_datas.end(),
+			[](const TextureData& tex_a, const TextureData& tex_b)
+			{
+				return tex_a.hashed_path < tex_b.hashed_path;
+			});
+	}
+}
+
+
+
+TextureDataProcessor::TextureDataProcessor(ModelGenStorage& a_gen_storage) : texturedata_gen_storage(a_gen_storage){}
+
+void TextureDataProcessor::process_job(TextureDataJob& a_job)
+{
+	if (a_job.request_type == ERequestType::LoadFromFile || a_job.request_type == ERequestType::ReloadFromFile)
+	{
+		bool found_texture = false;
+		bool load_texture = false;
+		size_t start_index = 0;
+		{
+			std::unique_lock<std::mutex> texture_lock(texturedata_gen_storage.texture_mutex);
+			auto& datas = texturedata_gen_storage.texuture_datas;
+			for (size_t i = 0; i < datas.size(); i++)
+			{
+				auto& data = datas[i];
+				if (a_job.path_hashed == data.hashed_path)
+				{
+					// found a match
+					if (data.texture_ram_status == ELoadStatus::RequestedLoad || data.texture_ram_status == ELoadStatus::NotLoaded)
+					{
+						data.texture_ram_status == ELoadStatus::StartedLoad;
+						start_index = i;
+						load_texture = true;
+						found_texture = true;
+						break;
+					}
+					else if (data.texture_ram_status == ELoadStatus::Loaded || data.texture_ram_status == ELoadStatus::StartedLoad)
+					{
+						found_texture = true;
+						break;
+					}
+				}
+			}
+			if (!found_texture)
+			{
+				datas.emplace_back();
+				auto& data = datas.back();
+				data.texture_ram_status = ELoadStatus::StartedLoad;
+				load_texture = true;
+				start_index = datas.size() - 1;
+				sort_data(texture_lock);
+				// handle generation of it
+			}
+		}
+		if (load_texture)
+		{
+			TextureData new_data = texturedata_gen_storage.model_loader.load_texture_from_file(a_job.path_hashed.string.c_str());
+			{
+				std::unique_lock<std::mutex> texture_lock(texturedata_gen_storage.texture_mutex);
+				auto& datas = texturedata_gen_storage.texuture_datas;
+				start_index = std::max((size_t)0, std::min(datas.size() - 1, start_index));
+				EDirection direction = EDirection::None;
+				bool data_inserted = false;
+				for (; start_index < datas.size();)
+				{
+					auto& data = datas[start_index];
+					if (new_data.hashed_path == data.hashed_path)
+					{
+						data = new_data;
+						data_inserted = true;
+						break;
+					}
+					else if (direction == EDirection::None && new_data.hashed_path > data.hashed_path)
+					{
+						direction = EDirection::Down;
+						start_index--;
+					}
+					else if (direction == EDirection::None && new_data.hashed_path < data.hashed_path)
+					{
+						direction = EDirection::Up;
+						start_index++;
+					}
+					else if (direction == EDirection::Down && new_data.hashed_path > data.hashed_path) start_index--;
+					else if (direction == EDirection::Up && new_data.hashed_path < data.hashed_path) start_index++;
+					else if (direction == EDirection::Up && new_data.hashed_path > data.hashed_path) break; // it's not in here
+					else if (direction == EDirection::Down && new_data.hashed_path < data.hashed_path) break; // it's not in here
+					else
+					{
+						PRINTLN("BROKE");
+						break;
+					}
+				}
+				if (!data_inserted)
+				{
+					datas.push_back(new_data);
+					sort_data(texture_lock);
+					data_inserted = true;
+					start_index = datas.size() - 1;
+				}
+				if (data_inserted)
+				{
+					new_data.texture_gen_status = ELoadStatus::RequestedLoad;
+					texturedata_gen_storage.texgen_requests.add_message(TexGenRequest{new_data});
+				}
+			}
+		}
+	}
+}
+
+void TextureDataProcessor::sort_data(std::unique_lock<std::mutex>& a_lock)
+{
+	if (a_lock.owns_lock())
+	{
+		std::sort(texturedata_gen_storage.texuture_datas.begin(), texturedata_gen_storage.texuture_datas.end(), [](const TextureData& tex_a, const TextureData& tex_b)
+			{
+				return tex_a.hashed_path < tex_b.hashed_path;
 			});
 	}
 }
@@ -211,7 +364,8 @@ void GenStorageThreadPool::clear_jobs()
 }
 
 ModelGenStorage::ModelGenStorage(size_t num_threads)
-	: GenStorageThreadPool(num_threads), mesh_job_processor(*this), vaoinfo_job_processor(*this), render_request_returner(*this), vaoload_returner(*this)
+	: GenStorageThreadPool(num_threads), mesh_job_processor(*this), vaoinfo_job_processor(*this), render_request_returner(*this), 
+	vaoload_returner(*this), tex_job_processor(*this), texgen_returner(*this), tex_geninfo_processor(*this)
 {
 	start_threads();
 	// Possible cause of crash. When GenSotrageThreadPool created threads in constructor, then "this" might point to an incomplete object
@@ -261,9 +415,21 @@ void ModelGenStorage::worker_loop(size_t a_thread_id)
 			}
 			else if (auto vao_job = std::get_if<VAOLoadInfo>(&job))
 			{
-				PRINTLN("loader thread: {} - got a VAO job", a_thread_id);
+				PRINTLN("loader thread: {} - got a VAO info job", a_thread_id);
 				assert(&vaoinfo_job_processor != nullptr);
 				vaoinfo_job_processor.process_job(*vao_job);
+			}
+			else if (auto tex_job = std::get_if<TextureDataJob>(&job))
+			{
+				PRINTLN("loader thread: {} - got a TEX job", a_thread_id);
+				assert(&tex_job_processor != nullptr);
+				tex_job_processor.process_job(*tex_job);
+			}
+			else if (auto texgen_job = std::get_if<TextureGenInfo>(&job))
+			{
+				PRINTLN("loader thread: {} - got a TEX gen info job", a_thread_id);
+				assert(&tex_geninfo_processor != nullptr);
+				tex_geninfo_processor.process_job(*texgen_job);
 			}
 			/// Now just add everything for textures to be processed and loaded etc...
 		}
@@ -281,69 +447,181 @@ bool ModelGenStorage::worker_wait_condition()
 
 RenderRequestReturner::RenderRequestReturner(ModelGenStorage& a_gen_storage) : renderreqret_gen_storage(a_gen_storage) {}
 
-std::optional<RenderRequest> RenderRequestReturner::return_request(const hashed_string_64& a_request)
+std::optional<RenderRequest> RenderRequestReturner::return_request(const PreRenderRequest& a_request)
 {
 	{
-		std::lock_guard<std::mutex> guard(renderreqret_gen_storage.mesh_mutex);
-		auto& datas = renderreqret_gen_storage.mesh_datas;
-		for (size_t i = 0; i < datas.size(); i++)
+		RenderRequest render_request;
+		bool found_mesh = false;
 		{
-			if (a_request == datas[i].path_hashed)
+			std::lock_guard<std::mutex> guard(renderreqret_gen_storage.mesh_mutex);
+			auto& datas = renderreqret_gen_storage.mesh_datas;
+			for (size_t i = 0; i < datas.size(); i++)
 			{
-				return RenderRequest(a_request, datas[i].VAO, (GLuint)datas[i].indices.size(), glm::mat4(1), 0, 0);
+				if (a_request.mesh_hashed_path == datas[i].path_hashed)
+				{
+					render_request = RenderRequest
+					(a_request.mesh_hashed_path, datas[i].VAO, (GLsizei)datas[i].indices.size(), glm::mat4(1), 0, 0, a_request.texture_hashed_path);
+					found_mesh = true;
+					break;
+				}
+			}
+		}
+		if (found_mesh)
+		{
+			std::lock_guard<std::mutex> guard(renderreqret_gen_storage.texture_mutex);
+			auto& datas = renderreqret_gen_storage.texuture_datas;
+			for (size_t i = 0; i < datas.size(); i++)
+			{
+				if (a_request.texture_hashed_path == datas[i].hashed_path)
+				{
+					render_request.material_id = datas[i].texture_id;
+					return render_request;
+				}
 			}
 		}
 	}
 	return std::nullopt;
 }
 
-std::optional<std::vector<RenderRequest>> RenderRequestReturner::return_requests(std::vector<hashed_string_64>& a_request, bool sorted) // does not require pre-sorting
+std::optional<std::vector<RenderRequest>> RenderRequestReturner::return_requests(std::vector<PreRenderRequest>& a_request, bool sorted) // does not require pre-sorting
 {
 	std::vector<RenderRequest> render_requests;
-	if (!sorted)
-		std::sort(a_request.begin(), a_request.end());
-
 	render_requests.reserve(a_request.size());
+	hashed_string_64 invalid_hash = hashed_string_64("invalidhash");
+	//if (!sorted)
+	//	std::sort(a_request.begin(), a_request.end(), []
+	//	(const PreRenderRequest& request_a, const PreRenderRequest& request_b)
+	//		{
+	//			return request_a.mesh_hashed_path < request_b.mesh_hashed_path;
+	//		});
+	//
+	//render_requests.reserve(a_request.size());
+	//{
+	//	auto& datas = renderreqret_gen_storage.mesh_datas;
+	//	size_t start_index = 0;
+	//	size_t mesh_index = 0;
+	//	bool found = false;
+	//	std::lock_guard<std::mutex> guard(renderreqret_gen_storage.mesh_mutex);
+	//	for (auto& request : a_request)
+	//	{
+	//		found = false;
+	//		for (; mesh_index < datas.size(); mesh_index++)
+	//		{
+	//			if (request.mesh_hashed_path == datas[mesh_index].path_hashed)
+	//			{
+	//				render_requests.emplace_back(request, datas[mesh_index].VAO, (GLuint)datas[mesh_index].indices.size(), glm::mat4(1), 0, 0);
+	//				found = true;
+	//				start_index = mesh_index;
+	//				break;
+	//			}
+	//		}
+	//		if (!found) mesh_index = start_index;
+	//	}
+
+
+	//}
+	//if (render_requests.empty())
+	//{
+	//	return std::nullopt;
+	//}
 	{
-		auto& datas = renderreqret_gen_storage.mesh_datas;
-		size_t start_index = 0;
+		//std::sort(a_request.begin(), a_request.end(),
+		//	[] (const PreRenderRequest& request_a, const PreRenderRequest& request_b)
+		//	{
+		//		if (request_a.texture_hashed_path == request_b.texture_hashed_path)
+		//		{
+		//			return request_a.mesh_hashed_path < request_b.mesh_hashed_path;
+		//		}
+		//		return request_a.texture_hashed_path < request_b.texture_hashed_path;
+		//		
+		//	}); // should now be sorted by texture then mesh (texture later replaced by mesh)
+
+		std::sort(a_request.begin(), a_request.end(), []
+		(const PreRenderRequest& request_a, const PreRenderRequest& request_b)
+			{
+				return request_a.mesh_hashed_path < request_b.mesh_hashed_path;
+			});
+		std::lock_guard<std::mutex> mesh_guard(renderreqret_gen_storage.mesh_mutex);
+		std::lock_guard<std::mutex> tex_guard(renderreqret_gen_storage.texture_mutex);
+		auto& tex_datas = renderreqret_gen_storage.texuture_datas;
+		auto& mesh_datas = renderreqret_gen_storage.mesh_datas;
 		size_t mesh_index = 0;
-		bool found = false;
-		std::lock_guard<std::mutex> guard(renderreqret_gen_storage.mesh_mutex);
+		size_t mesh_start_index = 0;
+		bool mesh_found = false;
 		for (auto& request : a_request)
 		{
-			found = false;
-			for (; mesh_index < datas.size(); mesh_index++)
+			mesh_found = false;
+			for (;mesh_index < mesh_datas.size(); mesh_index++)
 			{
-				if (request == datas[mesh_index].path_hashed)
+				auto& data = mesh_datas[mesh_index];
+				if (request.mesh_hashed_path == data.path_hashed)
 				{
-					render_requests.emplace_back(request, datas[mesh_index].VAO, (GLuint)datas[mesh_index].indices.size(), glm::mat4(1), 0, 0);
-					found = true;
-					start_index = mesh_index;
+					render_requests.emplace_back
+					(request.mesh_hashed_path, data.VAO, (GLsizei)data.indices.size(), request.model_matrix, 0, 0, request.texture_hashed_path);
+					mesh_start_index = mesh_index;
+					mesh_found = true;
 					break;
 				}
+				else if (request.mesh_hashed_path == invalid_hash) break;
 			}
-			if (!found) mesh_index = start_index;
+			if (!mesh_found)
+			{
+				mesh_index = mesh_start_index;
+			}
 		}
-
-
-	}
-	if (render_requests.empty())
-	{
-		return std::nullopt;
+		std::sort(render_requests.begin(), render_requests.end(), []
+		(const RenderRequest& request_a, const RenderRequest& request_b)
+			{
+				return request_a.tex_hashed_path < request_b.tex_hashed_path;
+			});
+		size_t tex_index = 0;
+		size_t tex_start_index = 0;
+		bool tex_found = false;
+		for (auto& request : render_requests)
+		{
+			tex_found = false;
+			for (; tex_index < tex_datas.size(); tex_index++)
+			{
+				auto& data = tex_datas[tex_index];
+				if (request.tex_hashed_path == data.hashed_path)
+				{
+					request.material_id = data.texture_id;
+					tex_start_index = tex_index;
+					tex_found = true;
+					break;
+				}
+				else if (request.tex_hashed_path == invalid_hash) break;
+			}
+			if (!mesh_found)
+			{
+				tex_index = tex_start_index;
+			}
+		}
 	}
 	return render_requests;
 	
 }
 
-VAOLoadReturner::VAOLoadReturner(ModelGenStorage& a_gen_storage) : vaoreturner_gen_storage(a_gen_storage) {}
+VAOLoadRequester::VAOLoadRequester(ModelGenStorage& a_gen_storage) : vaoload_gen_storage(a_gen_storage) {}
 
-std::optional<VAOLoadRequest> VAOLoadReturner::return_request()
+std::optional<VAOLoadRequest> VAOLoadRequester::return_request()
 {
-	return vaoreturner_gen_storage.vaoload_requests.get_message();
+	return vaoload_gen_storage.vaoload_requests.get_message();
 }
 
-std::optional<std::vector<VAOLoadRequest>> VAOLoadReturner::return_requests()
+std::optional<std::vector<VAOLoadRequest>> VAOLoadRequester::return_requests()
 {
-	return vaoreturner_gen_storage.vaoload_requests.get_messages();
+	return vaoload_gen_storage.vaoload_requests.get_messages();
+}
+
+TexGenRequester::TexGenRequester(ModelGenStorage& a_gen_storage) : texgen_gen_storage(a_gen_storage) {}
+
+std::optional<TexGenRequest> TexGenRequester::return_request()
+{
+	return texgen_gen_storage.texgen_requests.get_message();
+}
+
+std::optional<std::vector<TexGenRequest>> TexGenRequester::return_requests()
+{
+	return texgen_gen_storage.texgen_requests.get_messages();
 }
