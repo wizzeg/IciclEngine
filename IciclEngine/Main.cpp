@@ -117,6 +117,8 @@ int main(void)
 			else {
 				PRINTLN("failes");
 			}
+			hashed_string_64 texture("./assets/textures/wall.jpg");
+			parent->add_component_data<TextureComponentData>(TextureComponent{ false, texture });
 			parent->add_child(wChild);
 			parent->add_child(ChildwChild);
 			if (auto shared = ChildwChild.lock())

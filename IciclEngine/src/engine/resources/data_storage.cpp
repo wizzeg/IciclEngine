@@ -485,12 +485,24 @@ std::optional<RenderRequest> RenderRequestReturner::return_request(const PreRend
 	return std::nullopt;
 }
 
+
+
 std::optional<std::vector<RenderRequest>> RenderRequestReturner::return_requests(std::vector<PreRenderRequest>& a_request, bool sorted) // does not require pre-sorting
 {
-	
+	// should add the linear search too, where I loop over mesh or material/texture for every hit on the request hit.
+	// but that's only reasonable if mesh and material/texture is small, otherwise it'll be terrible.
+	// (m + t) < n/2 or log n < (~15) * t -> so if n/t < 200? do the linear search, looping over material/mesh over and over for each request, one sort less
+	// (m + t) > n/2 or log n > (~15) * t -> so if n/t > 200? use the merge join with one extra sort.
+	// hmm, I think it'd be very very rare for extra sort to win out...or something, this is hard to think about
+	// I think so, sorting is extremely expensive after all...
+	// this should be faster in most situations I think?
+	// AI says t < 13 * log_2(n) ... which seems right I think.
+	// now I added another merge join... So should be a bit better now? so maybe say, t < 17 * log_2(n)?
+	// so basically this is pretty much always better, it'd require extreme situation for this to be worse I suppose.
+	// like if almost every model has it's own material or something.
 	std::vector<RenderRequest> render_requests;
 	render_requests.reserve(a_request.size());
-	hashed_string_64 invalid_hash = hashed_string_64(" ");
+	hashed_string_64 invalid_hash;
 	{
 		std::sort(a_request.begin(), a_request.end(), []
 		(const PreRenderRequest& request_a, const PreRenderRequest& request_b)
@@ -504,22 +516,57 @@ std::optional<std::vector<RenderRequest>> RenderRequestReturner::return_requests
 		size_t mesh_index = 0;
 		size_t mesh_start_index = 0;
 		bool mesh_found = false;
+		size_t tex_index = 0;
+		size_t tex_start_index = 0;
+		GLuint tex_id = 0;
+		GLuint vao = 0;
+		GLsizei size = 0;
+		bool tex_found = false;
+		uint64_t prev_mesh_hash = invalid_hash.hash;
 		for (auto& request : a_request)
 		{
+			tex_id = 0;
+			vao = 0;
+			size = 0;
 			mesh_found = false;
 			if (request.mesh_hash == invalid_hash.hash)
 			{
 				continue;
 			}
-			for (;mesh_index < mesh_datas.size(); mesh_index++)
+			if (prev_mesh_hash != request.mesh_hash)
 			{
-				auto& data = mesh_datas[mesh_index];
-				if (request.mesh_hash == data.hash)
+				tex_index = 0;
+			}
+			for (; mesh_index < mesh_datas.size(); mesh_index++)
+			{
+				auto& mesh_data = mesh_datas[mesh_index];
+				if (request.mesh_hash == mesh_data.hash)
 				{
-					render_requests.emplace_back
-						(request.model_matrix, request.mesh_hash, request.tex_hash, data.VAO, (GLsizei)data.num_indicies, 0, 0);
+					vao = mesh_data.VAO;
+					size = mesh_data.num_indicies;
 					mesh_start_index = mesh_index;
+					prev_mesh_hash = mesh_data.hash;
 					mesh_found = true;
+
+					tex_found = false;
+					if (!(request.tex_hash == invalid_hash.hash))
+					{
+						for (; tex_index < tex_datas.size(); tex_index++)
+						{
+							auto& tex_data = tex_datas[tex_index];
+							if (request.tex_hash == tex_data.hash)
+							{
+								tex_id = tex_data.texture_id;
+								tex_start_index = tex_index;
+								tex_found = true;
+								break;
+							}
+						}
+					}
+					if (tex_found)
+					{
+						tex_index = tex_start_index;
+					}
 					break;
 				}
 			}
@@ -527,38 +574,10 @@ std::optional<std::vector<RenderRequest>> RenderRequestReturner::return_requests
 			{
 				mesh_index = mesh_start_index;
 			}
-		}
-		std::sort(render_requests.begin(), render_requests.end(), []
-		(const RenderRequest& request_a, const RenderRequest& request_b)
+			else
 			{
-				return request_a.tex_hash < request_b.tex_hash;
-			});
-		size_t tex_index = 0;
-		size_t tex_start_index = 0;
-		bool tex_found = false;
-		for (auto& request : render_requests)
-		{
-			tex_found = false;
-			if (request.tex_hash == invalid_hash)
-			{
-				request.material_id = 0;
-				continue;
-			}
-			for (; tex_index < tex_datas.size(); tex_index++)
-			{
-				auto& data = tex_datas[tex_index];
-				if (request.tex_hash == data.hash)
-				{
-					request.material_id = data.texture_id;
-					tex_start_index = tex_index;
-					tex_found = true;
-					break;
-				}
-				
-			}
-			if (!tex_found)
-			{
-				tex_index = tex_start_index;
+				render_requests.emplace_back
+				(request.model_matrix, request.mesh_hash, request.tex_hash, vao, size, 0, tex_id);
 			}
 		}
 	}
@@ -572,8 +591,101 @@ std::optional<std::vector<RenderRequest>> RenderRequestReturner::return_requests
 		});
 	return render_requests;
 }
+//
+//std::optional<std::vector<RenderRequest>> RenderRequestReturner::return_requests(std::vector<PreRenderRequest>& a_request, bool sorted) // does not require pre-sorting
+//{
+//	// should add the linear search too, where I loop over mesh or material/texture for every hit on the request hit.
+//	// but that's only reasonable if mesh and material/texture is small, otherwise it'll be terrible.
+//	// (m + t) < n/2 or log n < (~15) * t -> so if n/t < 200? do the linear search, looping over material/mesh over and over for each request, one sort less
+//	// (m + t) > n/2 or log n > (~15) * t -> so if n/t > 200? use the merge join with one extra sort.
+//	// hmm, I think it'd be very very rare for extra sort to win out...or something, this is hard to think about
+//	// I think so, sorting is extremely expensive after all...
+//	std::vector<RenderRequest> render_requests;
+//	render_requests.reserve(a_request.size());
+//	hashed_string_64 invalid_hash = hashed_string_64(" ");
+//	{
+//		std::sort(a_request.begin(), a_request.end(), []
+//		(const PreRenderRequest& request_a, const PreRenderRequest& request_b)
+//			{
+//				return request_a.mesh_hash < request_b.mesh_hash;
+//			});
+//		std::lock_guard<std::mutex> mesh_guard(renderreqret_gen_storage.mesh_mutex);
+//		std::lock_guard<std::mutex> tex_guard(renderreqret_gen_storage.texture_mutex);
+//		auto& tex_datas = renderreqret_gen_storage.texuture_datas;
+//		auto& mesh_datas = renderreqret_gen_storage.mesh_datas;
+//		size_t mesh_index = 0;
+//		size_t mesh_start_index = 0;
+//		bool mesh_found = false;
+//		for (auto& request : a_request)
+//		{
+//			mesh_found = false;
+//			if (request.mesh_hash == invalid_hash.hash)
+//			{
+//				continue;
+//			}
+//			for (;mesh_index < mesh_datas.size(); mesh_index++)
+//			{
+//				auto& data = mesh_datas[mesh_index];
+//				if (request.mesh_hash == data.hash)
+//				{
+//					render_requests.emplace_back
+//						(request.model_matrix, request.mesh_hash, request.tex_hash, data.VAO, (GLsizei)data.num_indicies, 0, 0);
+//					mesh_start_index = mesh_index;
+//					mesh_found = true;
+//					break;
+//				}
+//			}
+//			if (!mesh_found)
+//			{
+//				mesh_index = mesh_start_index;
+//			}
+//		}
+//		std::sort(render_requests.begin(), render_requests.end(), []
+//		(const RenderRequest& request_a, const RenderRequest& request_b)
+//			{
+//				return request_a.tex_hash < request_b.tex_hash;
+//			});
+//		size_t tex_index = 0;
+//		size_t tex_start_index = 0;
+//		bool tex_found = false;
+//		for (auto& request : render_requests)
+//		{
+//			tex_found = false;
+//			if (request.tex_hash == invalid_hash)
+//			{
+//				request.material_id = 0;
+//				continue;
+//			}
+//			for (; tex_index < tex_datas.size(); tex_index++)
+//			{
+//				auto& data = tex_datas[tex_index];
+//				if (request.tex_hash == data.hash)
+//				{
+//					request.material_id = data.texture_id;
+//					tex_start_index = tex_index;
+//					tex_found = true;
+//					break;
+//				}
+//				
+//			}
+//			if (!tex_found)
+//			{
+//				tex_index = tex_start_index;
+//			}
+//		}
+//	}
+//	// sort for texture/material first, and then by mesh.. but later I need to sort by shader -> material -> mesh.
+//	std::sort(render_requests.begin(), render_requests.end(), []
+//	(const RenderRequest& request_a, const RenderRequest& request_b)
+//		{
+//			if (request_a.tex_hash != request_b.tex_hash)
+//				return request_a.tex_hash < request_b.tex_hash;
+//			return request_a.mesh_hash < request_b.mesh_hash;
+//		});
+//	return render_requests;
+//}
 
-// I don't remember what this copy did... I thing I changed something... just too scared to change it
+// I don't remember what this copy did... I thing I changed something... just too scared to remove it
 // this doesn't really need to be optional... but now it is.
 //std::optional<std::vector<RenderRequest>> RenderRequestReturner::return_requests(std::vector<PreRenderRequest>& a_request, bool sorted) // does not require pre-sorting
 //{

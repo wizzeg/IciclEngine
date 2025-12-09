@@ -15,7 +15,7 @@ void GameThread::execute()
 	size_t previous_total_render_requests = 10;
 	size_t previous_unique_meshes = 10;
 	size_t previous_unique_cameras = 2;
-	hashed_string_64 invalid_hash(" ");
+	hashed_string_64 invalid_hash;
 	while (true)
 	{
 		//PRINTLN("game thread going to sleep: {}", runs++);
@@ -246,7 +246,6 @@ void GameThread::execute()
 			{
 				pre_render_requests.emplace_back(world_position.model_matrix, mesh_comoponent.hashed_path.hash, texture_component.hashed_path.hash);
 			}
-			hashed_string_64 invalid_hash("invalidhash");
 			for (auto [entity, world_position, mesh_comoponent]
 				: registry.view<WorldPositionComponent, MeshComponent>(entt::exclude<TextureComponent>).each())
 			{

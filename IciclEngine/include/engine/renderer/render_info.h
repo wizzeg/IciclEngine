@@ -75,12 +75,9 @@ struct ObjVertex
 };
 struct PreRenderRequest
 {
-	//hashed_string_64 mesh_hashed_path = hashed_string_64("invalidhash");
-	
 	glm::mat4 model_matrix = glm::mat4(1); 
 	uint64_t mesh_hash = 12638117931323064703; // hash of " "
 	uint64_t tex_hash = 12638117931323064703; // hash of " "
-	//hashed_string_64 texture_hashed_path = hashed_string_64("invalidhash");
 };
 
 struct VAOLoadInfo
@@ -101,7 +98,6 @@ struct LoadRequest
 
 struct RenderRequest
 {
-	//hashed_string_64 mesh_hashed_path; // change to just the hash
 	glm::mat4 model_matrix = glm::mat4(0);
 	uint64_t mesh_hash = 12638117931323064703; // hash of " "
 	uint64_t tex_hash = 12638117931323064703; // hash of " "
@@ -109,7 +105,6 @@ struct RenderRequest
 	GLsizei indices_size = 0;
 	GLuint shader_program = 0;
 	uint32_t material_id = 0; // I don't know
-	//hashed_string_64 tex_hashed_path;
 };
 
 enum BufferAttributeLocation : uint8_t
@@ -177,19 +172,17 @@ struct MeshDataContents
 	
 	std::vector<GLuint> VBOs;
 	GLuint EBO = 0;
-
-
 };
 
 struct MeshData
 {
 	MeshData() : contents(std::make_shared<MeshDataContents>()) { }
 	uint64_t hash = 12638117931323064703; // hash of " "
-	std::shared_ptr<MeshDataContents> contents;
 	GLuint VAO = 0;
 	GLsizei num_indicies = 0;
 	ELoadStatus ram_load_status = ELoadStatus::NotLoaded;
 	ELoadStatus vao_load_status = ELoadStatus::NotLoaded;
+	std::shared_ptr<MeshDataContents> contents;
 	
 };
 
@@ -221,13 +214,12 @@ struct TextureDataContents
 struct TextureData
 {
 	TextureData() : contents(std::make_shared<TextureDataContents>()) {}
-	//hashed_string_64 hashed_path;
 	uint64_t hash = 12638117931323064703; // hash of " "
-	std::shared_ptr<TextureDataContents> contents;
 	GLuint texture_id = 0;
 	uint8_t bound_index = 0;
 	ELoadStatus texture_ram_status = ELoadStatus::NotLoaded;
 	ELoadStatus texture_gen_status = ELoadStatus::NotLoaded;
+	std::shared_ptr<TextureDataContents> contents;
 };
 
 struct VAOLoadRequest
