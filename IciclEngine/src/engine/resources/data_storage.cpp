@@ -507,7 +507,9 @@ std::optional<std::vector<RenderRequest>> RenderRequestReturner::return_requests
 		std::sort(a_request.begin(), a_request.end(), []
 		(const PreRenderRequest& request_a, const PreRenderRequest& request_b)
 			{
-				return request_a.mesh_hash < request_b.mesh_hash;
+				if (request_a.mesh_hash != request_b.mesh_hash)
+					return request_a.mesh_hash < request_b.mesh_hash;
+				return request_a.tex_hash < request_b.tex_hash;
 			});
 		std::lock_guard<std::mutex> mesh_guard(renderreqret_gen_storage.mesh_mutex);
 		std::lock_guard<std::mutex> tex_guard(renderreqret_gen_storage.texture_mutex);
