@@ -7,7 +7,7 @@
 
 class Scene;
 
-class SceneObject
+class SceneObject : public std::enable_shared_from_this<SceneObject>
 {
 
 private:
@@ -16,7 +16,7 @@ private:
 	std::weak_ptr<SceneObject> parent;
 	std::vector<std::weak_ptr<SceneObject>> children;
 	std::weak_ptr<Scene> scene;
-	
+
 	std::vector<std::unique_ptr<ComponentDataBase>> component_datas;
 	std::vector<std::type_index> component_types;
 
@@ -30,10 +30,12 @@ public:
 	SceneObject() { name = "none"; }
 	SceneObject(const std::string a_name, std::weak_ptr<Scene> a_scene); ///////////////////// REMOVE USAGE OF ENTITY (use entt::handle)
 	SceneObject(const std::string a_name, std::weak_ptr<SceneObject> a_parent, std::weak_ptr<Scene> a_scene);///////////////////// REMOVE USAGE OF ENTITY (use entt::handle)
-	~SceneObject() { PRINTLN("DECONSTRUCTOR CALLED"); }// if this has parent, add all children to it, otherwise I don't know... 
+	~SceneObject() { PRINTLN("Scene Object Destroyed: {}", name); }// if this has parent, add all children to it, otherwise I don't know... 
 	void scene_ended();
 	entt::entity get_entity() { return entity_handle.entity(); }
 	bool has_valid_entity() { return entity_handle.valid(); }
+
+	//void destroy_scene_object();
 
 	entt::handle get_entity_handle() const; ///////////////////// REMOVE USAGE OF ENTITY (use entt::handle)
 
@@ -56,6 +58,20 @@ public:
 		component_types.push_back(t_type);
 		component_datas.emplace_back(std::make_unique<TcomponentData>(std::forward<TComponent>(a_component)));
 		return true;
+	}
+
+	template <typename TComponent>
+	ComponentData<TComponent>* add_component()
+	{
+		bool unique_component = true;
+		for (const auto& comp_data : component_datas)
+		{
+			if (comp_data->get_type() == typeid(TComponent))
+			{
+				return nullptr;
+			}
+		}
+		return component_datas.emplace_back(std::make_unique<ComponentData<TComponent>>(TComponent{}));
 	}
 
 	template <typename TComponent>
@@ -140,6 +156,18 @@ public:
 		return false;
 	}
 
+	bool remove_component_data(size_t a_index)
+	{
+		if (a_index < component_datas.size())
+		{
+			auto& component_data = component_datas[a_index];
+			component_data->destroy_component();
+			component_datas.erase(component_datas.begin() + a_index);
+			return true;
+		}
+		return false;
+	}
+
 	template<typename TComponent>
 	bool remove_component_data()
 	{
@@ -193,7 +221,9 @@ public:
 
 	std::vector<std::weak_ptr<SceneObject>> get_children() { return children; };
 
-	const std::vector<std::unique_ptr<ComponentDataBase>>& get_component_datas() const { return component_datas; }
+	const std::vector<std::unique_ptr<ComponentDataBase>>& get_component_datas() const
+	{ return component_datas; }
 	bool is_runtime() const { return runtime; }
+	bool check_valid(size_t a_index);
 };
 

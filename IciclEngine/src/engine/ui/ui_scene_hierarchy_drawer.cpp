@@ -9,8 +9,6 @@ void UISceneHierarchyDrawer::draw_hierarchy_node(std::weak_ptr<SceneObject> a_sc
 	if (auto scene_object = a_scene_object.lock())
 	{
 		auto children = scene_object->get_children();
-
-
 		if (!(children.size() > 0))
 		{
 			flags |= ImGuiTreeNodeFlags_Bullet;

@@ -7,24 +7,10 @@
 #include <imgui-docking/imgui.h>
 #include <glm/glm.hpp>
 
+#include <functional>
 //#include "macros.h"
 #include <engine/utilities/macros.h>
-
-enum EEditMode
-{
-	Editable,
-	Uneditable,
-};
-
-struct FieldInfo /// perhaps make these into imgui drawcalls instead... but then caching becomes problem? unless just include the drawcall as extra?
-{
-	EEditMode edit_mode;
-	std::string name;
-	std::type_index type;
-	void* value_ptr;
-	float imgui_size = 1;
-	bool same_line = false;
-};
+#include <engine/editor/field_info.h>
 
 // problem is references to other entities... 
 // this needs a custom conversion -> 
@@ -36,6 +22,8 @@ struct ComponentDataBase
 	virtual void to_runtime(entt::handle a_handle) = 0;
 	virtual std::vector<FieldInfo> get_field_info() = 0;
 	virtual const char* get_name() const = 0;
+	virtual void destroy_component() = 0;
+	virtual bool is_valid() = 0;
 };
 
 template <typename TComponent>
@@ -99,15 +87,21 @@ struct ComponentData : ComponentDataBase
 			{
 				entt::entity entity = entity_handle.entity();
 				entt::registry* registry = entity_handle.registry();
-
-				if (TComponent* entity_component = registry->try_get<TComponent>(entity))
+				if (registry->valid(entity))
 				{
-					return get_field_info(*entity_component);
+					if (TComponent* entity_component = registry->try_get<TComponent>(entity))
+					{
+						return get_field_info(*entity_component);
+					}
+					else
+					{
+						PRINTLN("Component data attempted to retrieve entity component that doesn't exist");
+						return std::vector<FieldInfo>{};
+					}
 				}
 				else
 				{
-					PRINTLN("Component data attempted to retrieve entity component that doesn't exist");
-					return std::vector<FieldInfo>{};
+					std::vector<FieldInfo>{};
 				}
 			}
 			else
@@ -117,6 +111,43 @@ struct ComponentData : ComponentDataBase
 			}
 		}
 		return get_field_info(component);
+	}
+
+	void destroy_component() override
+	{
+		if (runtime)
+		{
+			if (entity_handle != entt::null)
+			{
+				entt::entity entity = entity_handle.entity();
+				entt::registry* registry = entity_handle.registry();
+
+				if (registry->valid(entity))
+				{
+					registry->remove<TComponent>(entity);
+				}
+			}
+		}
+	}
+	bool is_valid() override
+	{
+		if (runtime)
+		{
+			if (entity_handle != entt::null)
+			{
+				entt::entity entity = entity_handle.entity();
+				entt::registry* registry = entity_handle.registry();
+				if (registry->valid(entity))
+				{
+					if (auto comp = registry->try_get<TComponent>(entity))
+					{
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+		return true;
 	}
 
 protected:

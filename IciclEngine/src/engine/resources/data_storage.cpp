@@ -38,13 +38,13 @@ void MeshJobProcessor::process_job(MeshDataJob& a_job)
 			if (!found_data) // the mesh data doesn't exist, so we add and claim it for loading it
 			{
 				meshjob_gen_storage.mesh_datas.emplace_back();
-				auto& data = meshjob_gen_storage.mesh_datas.back();
+				MeshData& data = meshjob_gen_storage.mesh_datas.back();
 				data.contents->hashed_path = a_job.path_hashed;
 				data.hash = a_job.path_hashed.hash;
 				//data.path = data.path_hashed.string;
 				data.ram_load_status = ELoadStatus::StartedLoad;
 				start_load = true;
-				sort_data(data_lock);
+				sort_data(data_lock); /// don't use sort, just do this insertion manually!
 			}
 		}
 		if (start_load) // if we should load we load the mesh data from file
@@ -71,12 +71,11 @@ void MeshJobProcessor::process_job(MeshDataJob& a_job)
 				if (!found_data) // This should not happen, but we have to add it
 				{
 					datas.push_back(data);
-					sort_data(data_lock);
+					sort_data(data_lock); /// don't use sort, just do this insertion manually!
 				}
 			}
 		}
 	}
-	
 }
 
 void MeshJobProcessor::sort_data(std::unique_lock<std::mutex>& a_lock)
@@ -187,7 +186,7 @@ void TexGenInfoProcessor::process_job(TextureGenInfo& a_job)
 			new_texture.texture_id = a_job.texture_id;
 			new_texture.contents->hashed_path = a_job.hashed_path;
 			datas.push_back(new_texture);
-			sort_data(texture_lock);
+			sort_data(texture_lock); /// don't use sort, just do this insertion manually!
 		}
 	}
 }
@@ -248,7 +247,7 @@ void TextureDataProcessor::process_job(TextureDataJob& a_job)
 				//data.path = a_job.path_hashed.string;
 				load_texture = true;
 				start_index = datas.size() - 1;
-				sort_data(texture_lock);
+				sort_data(texture_lock); /// don't use sort, just do this insertion manually!
 				// handle generation of it
 			}
 		}
@@ -489,17 +488,17 @@ std::optional<RenderRequest> RenderRequestReturner::return_request(const PreRend
 
 std::optional<std::vector<RenderRequest>> RenderRequestReturner::return_requests(std::vector<PreRenderRequest>& a_request, bool sorted) // does not require pre-sorting
 {
-	// should add the linear search too, where I loop over mesh or material/texture for every hit on the request hit.
-	// but that's only reasonable if mesh and material/texture is small, otherwise it'll be terrible.
-	// (m + t) < n/2 or log n < (~15) * t -> so if n/t < 200? do the linear search, looping over material/mesh over and over for each request, one sort less
-	// (m + t) > n/2 or log n > (~15) * t -> so if n/t > 200? use the merge join with one extra sort.
-	// hmm, I think it'd be very very rare for extra sort to win out...or something, this is hard to think about
-	// I think so, sorting is extremely expensive after all...
-	// this should be faster in most situations I think?
-	// AI says t < 13 * log_2(n) ... which seems right I think.
-	// now I added another merge join... So should be a bit better now? so maybe say, t < 17 * log_2(n)?
-	// so basically this is pretty much always better, it'd require extreme situation for this to be worse I suppose.
-	// like if almost every model has it's own material or something.
+	// so the complexity is about tm < 5n log n.
+	// so if 5n log n is greater than tm, then use the current method... Otherwise use this one.
+	//
+	// n log n (30 cycles) + n (6 cycles) extra sort
+	// (t x m) (6 cycles)                 extra iterations
+	// feels like extra itterations should almost always win...
+
+	// perhaps something like... use extra sort if this holds (30 * n * log_2(n) < 6 * t* m) -> (5 * n * log_2(n) <  t * m)
+	// this really just needs testing I guess... it completely depends on how many cycles the extra sort is.
+
+	
 	std::vector<RenderRequest> render_requests;
 	render_requests.reserve(a_request.size());
 	hashed_string_64 invalid_hash;
@@ -532,20 +531,17 @@ std::optional<std::vector<RenderRequest>> RenderRequestReturner::return_requests
 			size = 0;
 			mesh_found = false;
 			if (request.mesh_hash == invalid_hash.hash)
-			{
 				continue;
-			}
 			if (prev_mesh_hash != request.mesh_hash)
-			{
 				tex_index = 0;
-			}
-			for (; mesh_index < mesh_datas.size(); mesh_index++)
+			for (; mesh_index < mesh_datas.size(); mesh_index++) // should check mesh/tex if it's loaded, if not, add it as load job.
 			{
 				auto& mesh_data = mesh_datas[mesh_index];
 				if (request.mesh_hash == mesh_data.hash)
 				{
 					vao = mesh_data.VAO;
 					size = mesh_data.num_indicies;
+
 					mesh_start_index = mesh_index;
 					prev_mesh_hash = mesh_data.hash;
 					mesh_found = true;
@@ -559,6 +555,7 @@ std::optional<std::vector<RenderRequest>> RenderRequestReturner::return_requests
 							if (request.tex_hash == tex_data.hash)
 							{
 								tex_id = tex_data.texture_id;
+
 								tex_start_index = tex_index;
 								tex_found = true;
 								break;
@@ -566,16 +563,12 @@ std::optional<std::vector<RenderRequest>> RenderRequestReturner::return_requests
 						}
 					}
 					if (tex_found)
-					{
 						tex_index = tex_start_index;
-					}
 					break;
 				}
 			}
 			if (!mesh_found)
-			{
 				mesh_index = mesh_start_index;
-			}
 			else
 			{
 				render_requests.emplace_back

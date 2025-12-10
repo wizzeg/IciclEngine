@@ -35,6 +35,52 @@ entt::handle Scene::create_entity(const std::string a_name)
 	return handle;
 }
 
+void Scene::destroy_entity(entt::entity a_entity)
+{
+	if (runtime)
+	{
+		uint32_t ent = (uint32_t)a_entity;
+		if (registry.valid(a_entity))
+		{
+			registry.destroy(a_entity);
+		}
+	}
+}
+
+void Scene::destroy_scene_object(std::weak_ptr<SceneObject> a_scene_object)
+{
+	if (auto scene_object = a_scene_object.lock())
+	{
+		if (runtime)
+		{
+			destroy_entity(scene_object->get_entity());
+		}
+		auto children = scene_object->get_children();
+		for (size_t i = 0; i < children.size(); i++)
+		{
+			destroy_scene_object(children[i]);
+		}
+		for (size_t i = 0; i < scene_objects.size(); i++)
+		{
+			if (scene_object.get() == scene_objects[i].get())
+			{
+				scene_objects.erase(scene_objects.begin() + i);
+				break;
+			}
+
+		}
+		for (size_t i = 0; i < root_scene_objects.size(); i++)
+		{
+			if (scene_object.get() == root_scene_objects[i].get())
+			{
+				root_scene_objects.erase(root_scene_objects.begin() + i);
+				break;
+			}
+		}
+	}
+
+}
+
 std::weak_ptr<SceneObject> Scene::new_scene_object(const std::string a_name, bool as_root_object)
 {
 	//auto scene_object = SceneObject(a_name, shared_from_this());
@@ -46,6 +92,10 @@ std::weak_ptr<SceneObject> Scene::new_scene_object(const std::string a_name, boo
 		root_scene_objects.push_back(scene_object);
 	}
 	scene_objects.push_back(scene_object);
+	if (runtime)
+	{
+		scene_object->to_runtime(shared_from_this());
+	}
 	return scene_object;
 }
 

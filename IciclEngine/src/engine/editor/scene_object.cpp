@@ -58,6 +58,14 @@ void SceneObject::add_child(std::weak_ptr<SceneObject> a_child) // need to add r
 //	}
 //}
 
+//void SceneObject::destroy_scene_object()
+//{
+//	if (auto shared_scene = scene.lock())
+//	{
+//		shared_scene->destroy_scene_object(shared_from_this());
+//	}
+//}
+
 entt::handle SceneObject::get_entity_handle() const
 {
 	return entity_handle;
@@ -76,6 +84,19 @@ entt::handle SceneObject::to_runtime(std::weak_ptr<Scene> a_scene)
 		}
 	}
 	return entity_handle;
+}
+
+bool SceneObject::check_valid(size_t a_index)
+{
+	if (runtime && component_datas.size() > a_index)
+	{
+		if (component_datas[a_index]->is_valid())
+			return true;
+
+		remove_component_data(a_index);
+		return false;
+	}
+	return true;
 }
 
 void SceneObject::scene_ended()

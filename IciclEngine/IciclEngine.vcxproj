@@ -199,6 +199,9 @@
     <ClInclude Include="..\vendor\KHR\khrplatform.h" />
     <ClInclude Include="..\vendor\stb_image\stb_image.h" />
     <ClInclude Include="game_engine.h" />
+    <ClInclude Include="include\engine\editor\component_factory.h" />
+    <ClInclude Include="include\engine\editor\component_registry.h" />
+    <ClInclude Include="include\engine\editor\field_info.h" />
     <ClInclude Include="include\engine\editor\scene.h" />
     <ClInclude Include="include\engine\editor\scene_object.h" />
     <ClInclude Include="include\engine\game\camera.h" />

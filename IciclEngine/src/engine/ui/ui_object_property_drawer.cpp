@@ -14,19 +14,38 @@ void UIObjectPropertyDrawer::draw_object_properties(std::shared_ptr<SceneObject>
 		ImGui::BeginGroup();
 		bool drawn_anything = false;
 		const auto& component_datas = a_scene_object->get_component_datas();
+		bool removed_component = false;
 		for (size_t i = 0; i < component_datas.size(); i++)
 		{
+			i -= (int)removed_component;
+			removed_component = false;
+
+
 			std::vector<FieldInfo> field_info = component_datas[i]->get_field_info();
 			float field_size = 1.33f;
-			//std::string id_salt = " ";
+			std::string id_salt = " ";
 			for (size_t i = 0; i < field_info.size(); i++)
 			{
-				//id_salt += field_info[i].name;
+				id_salt += field_info[i].name;
 				field_size += field_info[i].imgui_size;
 				drawn_anything = true;
 			}
 			ImVec2 child_size = ImVec2(0, ImGui::GetFrameHeightWithSpacing() * field_size);
-			ImGui::BeginChild((std::to_string((uint32_t)a_scene_object->get_entity() + std::rand())).c_str(), child_size, true, ImGuiChildFlags_AutoResizeY); // problem, it does not display name, it's an ID.. Need to make an ID system if I want to do this
+			ImGui::BeginChild((std::to_string((uint32_t)a_scene_object->get_entity()) + id_salt).c_str(), child_size, true, ImGuiChildFlags_AutoResizeY); // problem, it does not display name, it's an ID.. Need to make an ID system if I want to do this
+			if (ImGui::Button("Remove"))
+			{
+				a_scene_object->remove_component_data(i);
+				ImGui::EndChild();
+				removed_component = true;
+				continue;
+			}
+			else if (!a_scene_object->check_valid(i))
+			{
+				ImGui::EndChild();
+				removed_component = true;
+				continue;
+			}
+			ImGui::SameLine();
 			ImGui::SeparatorText(component_datas[i]->get_name());
 			draw_component_fields(field_info);
 			ImGui::EndChild();
@@ -36,6 +55,7 @@ void UIObjectPropertyDrawer::draw_object_properties(std::shared_ptr<SceneObject>
 			ImGui::Text("No properties found");
 			PRINTLN("Nothing drawn");
 		}
+		
 		ImGui::EndGroup();
 	//}
 }
@@ -125,7 +145,7 @@ void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_fie
 		{
 			ImGui::Text("empty field");
 		}
-
+		ImGui::SetItemAllowOverlap();
 		if (field.same_line)
 		{
 			ImGui::SameLine();

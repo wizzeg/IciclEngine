@@ -255,65 +255,20 @@ void GameThread::execute()
 			{
 				render_requests = std::move(opt_render_requests.value());
 			}
-			/////////////////////////////////////////////////////// OLD now we're doing all of them at once instead.
-			// Only use unique meshes to obtain render info
-			//std::sort(pre_render_requests.begin(), pre_render_requests.end(),
-			//	[](const PreRenderRequest req_a, const PreRenderRequest req_b)
-			//	{
-			//		return req_a.mesh_hashed_path < req_b.mesh_hashed_path;
-			//	});
-			//if (!pre_render_requests.empty())
-			//{
-			//	std::vector<hashed_string_64> unique_render_paths;
-			//	hashed_string_64 previous_value = pre_render_requests[0].mesh_hashed_path;
-			//	unique_render_paths.push_back(previous_value);
-			//	size_t i = 1;
-			//	for (; i < pre_render_requests.size(); i++)
-			//	{
-			//		if (previous_value < pre_render_requests[i].mesh_hashed_path)
-			//		{
-			//			unique_render_paths.push_back(pre_render_requests[i].mesh_hashed_path);
-			//			previous_value = pre_render_requests[i].mesh_hashed_path;
-			//		}
-			//	}
-			//	previous_unique_meshes = i;
-
-				/////////////////////////////////////////////////////////
-				// NEW MODEL LOADING SYSTEM
-				// for each mesh object and unique render request create a render request by combinging model matrix and vao etc
-				/*if (auto unique_render_requests_opt = engine_context->model_storage->render_request_returner.return_requests(unique_render_paths))
-				{
-					auto& unique_render_requests = unique_render_requests_opt.value();
-					previous_unique_meshes = unique_render_paths.size();
-					size_t unique_index = 0;
-					size_t start_index = 0;
-					bool none_found = true;
-					for (auto& render_request : pre_render_requests)
-					{
-						none_found = true;
-						start_index = unique_index;
-						for (; unique_index < unique_render_requests.size(); unique_index++)
-						{
-							if (render_request.mesh_hashed_path == unique_render_requests[unique_index].mesh_hashed_path)
-							{
-								render_requests.emplace_back(
-									render_request.mesh_hashed_path, unique_render_requests[unique_index].vao,
-									unique_render_requests[unique_index].indices_size, render_request.model_matrix, 0, 0);
-								none_found = false;
-								break;
-							}
-
-						}
-						if (none_found)
-						{
-							unique_index = start_index;
-						}
-					}
-				}*/
-
-
-
 				previous_total_render_requests = render_requests.size();
+				/////////////////////////////////////// BELOW is for testing when comopnents are suddenly destroyed.
+				//std::vector<entt::entity> entities;
+				//for (auto [entity, worldpos] : registry.view<WorldPositionComponent>().each())
+				//{
+				//	if (worldpos.position.x > 5)
+				//	{
+				//		entities.push_back(entity);
+				//	}
+				//}
+				//for (size_t i = 0; i < entities.size(); i++)
+				//{
+				//	registry.remove<WorldPositionComponent>(entities[i]);
+				//}
 		
 		}
 		//PRINTLN("game thread running {}", runs++);
