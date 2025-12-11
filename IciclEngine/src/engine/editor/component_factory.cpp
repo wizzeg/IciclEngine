@@ -1,0 +1,1 @@
+#include <engine/editor/component_factory.h>

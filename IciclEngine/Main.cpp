@@ -54,15 +54,19 @@ int main(void)
 	if (!glfwInit())
 		return -1;
 
-	std::shared_ptr<GLFWContext> glfw_context = std::make_shared<GLFWContext>(450, 1, "Icicl engine", false, true);
+	std::shared_ptr<GLFWContext> glfw_context = std::make_shared<GLFWContext>(1920, 1080, "Icicl engine", true, false, true);
 	glfw_context->deactivate();
 	std::shared_ptr<ImGuiManager> imgui_manager = std::make_shared<ImGuiManager>(glfw_context);
 	glfw_context->activate();
-	glfw_context->create_framebuffer("editor_frame_buffer", 720, 480);
+	glfw_context->create_framebuffer("editor_frame_buffer", 1920, 1080);
 	glfw_context->bind_framebuffer("editor_frame_buffer"); // Need to do this every frame really, when I'm changing framebuffers
+	//glEnable(GL_CULL_FACE);
 	glfw_context->unbind_framebuffer();
-	glfw_context->create_framebuffer("main_camera_buffer", 720, 480);
+	glfw_context->create_framebuffer("main_camera_buffer", 1920, 1080);
 	glfw_context->bind_framebuffer("editor_frame_buffer");
+	
+	//imgui_manager->setup_default_docking_layout();
+
 	//InputManager input_manager(glfw_context->get_window());
 
 	///////////
@@ -160,16 +164,7 @@ int main(void)
 	//EngineThread engine_thread(engine_context, imgui_manager, ui_mananger);
 
 	bool game_playing = false;
-	if (!game_playing)
-	{
-		{
-			std::lock_guard<std::mutex> guard(engine_context->mutex);
-			scene->to_runtime(); // deal with making a runtime copy later -------- runtime thing works at least, entities are created
-			// for now I need to be able to see changes to entities -> handle signaling
-			game_playing = true;
-			engine_context.get()->game_playing = true;
-		}
-	}
+
 
 	//std::thread enginer_thread(&EngineThread::execute, &engine_thread);
 	//std::thread renderer_thread(&RenderThread::execute, &render_thread);
@@ -187,8 +182,59 @@ int main(void)
 	InputManager& input_manager = InputManager::get();
 	bool captured_prev_frame = false;
 	ImVec2 mouse_pos;
+
+	uint64_t wait_time = 0;
 	while (engine_context->run())
 	{
+		
+		if (wait_time > 4500)
+		{
+			if (!game_playing)
+			{
+				{
+					
+					std::lock_guard<std::mutex> guard(engine_context->mutex);
+					scene->to_runtime(); // deal with making a runtime copy later -------- runtime thing works at least, entities are created
+					// for now I need to be able to see changes to entities -> handle signaling
+					game_playing = true;
+					engine_context.get()->game_playing = true;
+					std::srand(static_cast<unsigned>(std::time(nullptr)));
+					hashed_string_64 monkey_mesh = hashed_string_64("./assets/obj/triobjmonkey.obj");
+					hashed_string_64 tex = hashed_string_64("./assets/textures/awesomeface.png");
+
+					//entt::entity ent;
+					//entt::registry& reg = scene->get_registry();
+					//for (size_t i = 0; i < 5000; i++)
+					//{
+					//	ent = reg.create();
+					//	float x = -2.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 4.0f));
+					//	float y = 0.0f; // Or random if you want variety
+					//	float z = 0.0f; // Same here
+					//	reg.emplace<NameComponent>(ent, std::to_string(i));
+					//	reg.emplace<WorldPositionComponent>(ent, WorldPositionComponent{glm::vec3(x, y, z)});
+					//	reg.emplace<MeshComponent>(ent, MeshComponent{false, monkey_mesh });
+					//	reg.emplace<TextureComponent>(ent, TextureComponent{ false, tex });
+					//}
+
+
+					for (size_t i = 0; i < 1000; i++)
+					{
+						float x = -2.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 4.0f));
+						float y = 0.0f; // Or random if you want variety
+						float z = 0.0f; // Same here
+						auto obj = scene->new_scene_object(std::to_string(i), true);
+						auto lock = obj.lock();
+						lock->add_component(WorldPositionComponent{ glm::vec3(x, y, z) });
+						lock->add_component(MeshComponent{ false, monkey_mesh });
+						lock->add_component(TextureComponent{false, tex});
+					}
+				}
+			}
+		}
+		else
+		{
+			wait_time++;
+		}
 		////////////////////////////////////////////////////
 		// RENDERING 
 		glfw_context->swap_buffers();
@@ -215,6 +261,7 @@ int main(void)
 		renderer.rotation += (float)(0.07 * engine_context->delta_time * 0.01);
 		glfw_context->bind_framebuffer("editor_frame_buffer");
 		glfw_context->clear();
+		//shader_program->bind();
 		renderer.set_proj_view_matrix(engine_context->editor_camera.get_proj_matrix(), engine_context->editor_camera.get_view_matrix());
 		for (size_t i = 0; i < render_requests.size(); i++)
 		{
@@ -307,8 +354,35 @@ int main(void)
 
 			// do all ui drawing.
 			imgui_manager->new_frame();
+
+			imgui_manager->make_dockspace();
 			ImGui::Begin("editor_frame_buffer");
-			ImGui::Image(glfw_context->get_framebuffer_texture("editor_frame_buffer"), ImVec2(720, 480), ImVec2(0, 1), ImVec2(1, 0));
+			ImVec2 available_content = ImGui::GetContentRegionAvail() - ImVec2(5, 5);
+			ImVec2 image_size;
+			FrameBuffer* frame_buffer = glfw_context->get_framebuffer("editor_frame_buffer");
+			if (frame_buffer)
+			{
+				float fb_height = (float)frame_buffer->get_height();
+				float fb_width = (float)frame_buffer->get_width();
+				
+				float fb_aspect = (float)fb_height / (float)fb_width;
+				float avail_aspect = (float)available_content.x / (float)available_content.y;
+
+				if ((available_content.x / fb_width) < (available_content.y / fb_height))
+				{
+					image_size = ImVec2(available_content.x, available_content.x * fb_aspect);
+				}
+				else
+				{
+					image_size = ImVec2(available_content.y / fb_aspect, available_content.y);
+				}
+
+			}
+			else
+			{
+				image_size = ImVec2(720, 480);
+			}
+			ImGui::Image(glfw_context->get_framebuffer_texture("editor_frame_buffer"), image_size, ImVec2(0, 1), ImVec2(1, 0));
 			if (engine_context->input_manager.is_key_held(EKey::RightMouseButton) && ImGui::IsItemHovered()) // all of this should be put into camera
 			{
 				ImGui::SetMouseCursor(ImGuiMouseCursor_None);
@@ -333,15 +407,37 @@ int main(void)
 			ImGui::End();
 
 			ImGui::Begin("main_camera_buffer");
+			available_content = ImGui::GetContentRegionAvail() - ImVec2(5, 5);
+			frame_buffer = glfw_context->get_framebuffer("editor_frame_buffer");
+			if (frame_buffer)
+			{
+				float fb_height = (float)frame_buffer->get_height();
+				float fb_width = (float)frame_buffer->get_width();
 
-			ImGui::Image(glfw_context->get_framebuffer_texture("main_camera_buffer"), ImVec2(720, 480), ImVec2(0, 1), ImVec2(1, 0));
+				float fb_aspect = (float)fb_height / (float)fb_width;
+				float avail_aspect = (float)available_content.x / (float)available_content.y;
+
+				if ((available_content.x / fb_width) < (available_content.y / fb_height))
+				{
+					image_size = ImVec2(available_content.x, available_content.x * fb_aspect);
+				}
+				else
+				{
+					image_size = ImVec2(available_content.y / fb_aspect, available_content.y);
+				}
+			}
+			else
+			{
+				image_size = ImVec2(720, 480);
+			}
+			ImGui::Image(glfw_context->get_framebuffer_texture("main_camera_buffer"), image_size, ImVec2(0, 1), ImVec2(1, 0));
 
 			ImGui::End();
 
 			//ImGui::SetNextWindowSize(ImVec2(1280, 960));
 
 			bool demo = true;
-			ImGui::ShowDemoWindow(&demo);
+			//ImGui::ShowDemoWindow(&demo);
 
 			ui_mananger->draw_object_hierarchy();
 			ui_mananger->draw_object_properties();

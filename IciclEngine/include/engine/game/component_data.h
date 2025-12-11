@@ -11,6 +11,7 @@
 //#include "macros.h"
 #include <engine/utilities/macros.h>
 #include <engine/editor/field_info.h>
+#include <engine/editor/component_registry.h>
 
 // problem is references to other entities... 
 // this needs a custom conversion -> 
@@ -21,6 +22,7 @@ struct ComponentDataBase
 	virtual const std::type_info& get_type() = 0;
 	virtual void to_runtime(entt::handle a_handle) = 0;
 	virtual std::vector<FieldInfo> get_field_info() = 0;
+	virtual std::vector<FieldInfo> get_registered_field_info() = 0;
 	virtual const char* get_name() const = 0;
 	virtual void destroy_component() = 0;
 	virtual bool is_valid() = 0;
@@ -32,7 +34,7 @@ struct ComponentData : ComponentDataBase
 	ComponentData(TComponent a_component) : component(a_component) {};
 	TComponent& get_component()
 	{
-		if (entity_handle.entity() != entt::null && runtime)
+		if (runtime && entity_handle != entt::null && entity_handle.entity() != entt::null)
 		{
 			auto entity = entity_handle.entity();
 			auto registry = entity_handle.registry();
@@ -54,7 +56,7 @@ struct ComponentData : ComponentDataBase
 
 	void set_new_component_value(TComponent a_component)
 	{ 
-		if (entity_handle.entity() != entt::null && runtime)
+		if (runtime && entity_handle.entity() != entt::null)
 		{
 			auto entity = entity_handle.entity();
 			auto registry = entity_handle.registry();
@@ -66,7 +68,21 @@ struct ComponentData : ComponentDataBase
 		component = a_component;
 	} // might work at runtime
 
-	const char* get_name() const override { return typeid(TComponent).name(); }
+	const char* get_name() const override 
+	{
+		static const char* raw_name = typeid(TComponent).name();
+		static std::string clean_name = std::string(raw_name);
+		if (clean_name.rfind("struct ", 0) == 0) {
+			clean_name.erase(0, 7);
+		}
+		else if (clean_name.rfind("class ", 0) == 0) {
+			clean_name.erase(0, 6);
+		}
+		else if (clean_name.rfind("const ", 0) == 0) {
+			clean_name.erase(0, 6);
+		}
+		return clean_name.c_str();
+	}
 	virtual void to_runtime(entt::handle a_handle) override
 	{
 		if (a_handle != entt::null)
@@ -78,12 +94,17 @@ struct ComponentData : ComponentDataBase
 			registry->emplace<TComponent>(entity, component);
 		}
 	}
+	std::vector<FieldInfo> get_registered_field_info() override
+	{
+		TComponent& comp = get_component();
+		return ComponentRegistry::instance().get_field_info<TComponent>(comp);
+	}
 
 	std::vector<FieldInfo> get_field_info() override
 	{
 		if (runtime)
 		{
-			if (entity_handle != entt::null)
+			if (entity_handle != entt::null) // this is duplicate code...
 			{
 				entt::entity entity = entity_handle.entity();
 				entt::registry* registry = entity_handle.registry();
@@ -276,7 +297,7 @@ struct CameraComponentData : ComponentData<CameraComponent>
 			{ EEditMode::Editable, "orbital point: ", typeid(glm::vec3), &a_component.target_location, 2.0f },
 			{ EEditMode::Editable, "priority: ", typeid(uint16_t),&a_component.render_priority },
 			{ EEditMode::Editable, "buffer: ", typeid(hashed_string_64), &a_component.frame_buffer_target, 2.25 },
-			{ EEditMode::Editable, "field of view: ", typeid(float), &a_component.fied_of_view }
+			{ EEditMode::Editable, "field of view: ", typeid(float), &a_component.field_of_view }
 		};
 	}
 };

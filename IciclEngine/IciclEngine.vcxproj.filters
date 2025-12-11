@@ -216,6 +216,12 @@
     <ClCompile Include="src\engine\resources\model_loader.cpp">
       <Filter>Source Files\engine\resources</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\editor\component_factory.cpp">
+      <Filter>Source Files\engine\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\game\components.cpp">
+      <Filter>Source Files\engine\game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\imgui-docking\imconfig.h">
@@ -350,9 +356,6 @@
     <ClInclude Include="include\engine\game\camera.h">
       <Filter>Header Files\engine\game</Filter>
     </ClInclude>
-    <ClInclude Include="include\engine\renderer\frame_buffer.h">
-      <Filter>Header Files\engine\renderer</Filter>
-    </ClInclude>
     <ClInclude Include="include\engine\renderer\glfw_context.h">
       <Filter>Header Files\engine\renderer</Filter>
     </ClInclude>
@@ -380,6 +383,12 @@
     <ClInclude Include="include\engine\editor\field_info.h">
       <Filter>Header Files\engine\editor</Filter>
     </ClInclude>
+    <ClInclude Include="include\engine\editor\componentdata_macros.h">
+      <Filter>Header Files\engine\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\renderer\frame_buffer.h">
+      <Filter>Header Files\engine\renderer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\assets\shaders\fragment\frag.glsl">
@@ -397,5 +406,6 @@
     <None Include="..\assets\shaders\vertex\standard\standardunlit.glsl">
       <Filter>Shaders\vertex\standard</Filter>
     </None>
+    <None Include="cpp.hint" />
   </ItemGroup>
 </Project>

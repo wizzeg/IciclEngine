@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <typeindex>
+#include <vector>
 
 enum EEditMode
 {
@@ -14,6 +15,8 @@ struct FieldInfo /// perhaps make these into imgui drawcalls instead... but then
 	std::string name;
 	std::type_index type;
 	void* value_ptr;
-	float imgui_size = 1;
+	float imgui_size = 1.1f;
 	bool same_line = false;
+	bool is_enum = false;
+	std::vector<std::string> enum_names = {};
 };

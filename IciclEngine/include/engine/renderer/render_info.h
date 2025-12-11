@@ -76,8 +76,8 @@ struct ObjVertex
 struct PreRenderRequest
 {
 	glm::mat4 model_matrix = glm::mat4(1); 
-	uint64_t mesh_hash = 12638117931323064703; // hash of " "
-	uint64_t tex_hash = 12638117931323064703; // hash of " "
+	uint64_t mesh_hash;
+	uint64_t tex_hash;
 };
 
 struct VAOLoadInfo
@@ -99,8 +99,8 @@ struct LoadRequest
 struct RenderRequest
 {
 	glm::mat4 model_matrix = glm::mat4(0);
-	uint64_t mesh_hash = 12638117931323064703; // hash of " "
-	uint64_t tex_hash = 12638117931323064703; // hash of " "
+	uint64_t mesh_hash;
+	uint64_t tex_hash;
 	GLuint vao = 0;
 	GLsizei indices_size = 0;
 	GLuint shader_program = 0;
@@ -177,7 +177,7 @@ struct MeshDataContents
 struct MeshData
 {
 	MeshData() : contents(std::make_shared<MeshDataContents>()) { }
-	uint64_t hash = 12638117931323064703; // hash of " "
+	uint64_t hash = 14695981039346656037; // hash of ""
 	GLuint VAO = 0;
 	GLsizei num_indicies = 0;
 	ELoadStatus ram_load_status = ELoadStatus::NotLoaded;
@@ -214,7 +214,7 @@ struct TextureDataContents
 struct TextureData
 {
 	TextureData() : contents(std::make_shared<TextureDataContents>()) {}
-	uint64_t hash = 12638117931323064703; // hash of " "
+	uint64_t hash = 14695981039346656037; // hash of ""
 	GLuint texture_id = 0;
 	uint8_t bound_index = 0;
 	ELoadStatus texture_ram_status = ELoadStatus::NotLoaded;

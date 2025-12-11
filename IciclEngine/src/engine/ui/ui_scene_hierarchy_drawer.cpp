@@ -53,7 +53,7 @@ void UISceneHierarchyDrawer::draw_hierarchy_node(std::weak_ptr<SceneObject> a_sc
 //		if (ImGui::TreeNodeEx(node_name.c_str(), flags))
 //		{
 //			if (ImGui::IsItemClicked())
-//				selected_scene_object = a_scene_object;
+//				prev_selected_scene_object = a_scene_object;
 //
 //			for (size_t i = 0; i < children.size(); i++)
 //				if (auto child = children[i].lock())

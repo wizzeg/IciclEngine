@@ -7,13 +7,13 @@
 class Scene;
 class SceneObject;
 
-class UIManager
+class UIManager : UISceneHierarchyDrawer , UIObjectPropertyDrawer
 {
-	bool open = true;
+	bool should_draw_object_properties = true;
 	std::weak_ptr<Scene> scene;
-	std::weak_ptr<SceneObject> selected_scene_object;
-	UISceneHierarchyDrawer ui_hiearchy_drawer;
-	UIObjectPropertyDrawer ui_property_drawer;
+	std::weak_ptr<SceneObject> prev_selected_scene_object;
+	//UISceneHierarchyDrawer ui_hiearchy_drawer;
+	//UIObjectPropertyDrawer ui_property_drawer;
 public:
 	void draw_object_hierarchy();
 	void draw_object_properties();

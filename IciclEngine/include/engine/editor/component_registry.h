@@ -2,16 +2,17 @@
 #include <functional>
 #include <string>
 #include <typeindex>
-#include <engine/game/field_info.h>
+#include <vector>
+#include <engine/editor/field_info.h>
 #include <unordered_map>
 
 using FieldInfoGenerator = std::function<std::vector<FieldInfo>(void*)>;
 struct ComponentRegistryData
 {
-	std::string comp_name;
-	std::vector<std::string> categories;
-	std::type_index comp_type;
-	FieldInfoGenerator field_info_generator;
+	std::string comp_name = "";
+	std::vector<std::string> categories = {};
+	std::type_index comp_type = typeid(std::string); // there is no default initialization for type_index
+	FieldInfoGenerator field_info_generator = 0;	
 };
 
 struct ComponentRegistry
@@ -23,32 +24,44 @@ struct ComponentRegistry
 	}
 
 	template<typename TComponent>
-	void register_component(const std::string& a_name, const std::vector<std::string> a_categories, FieldInfoGenerator a_field_info_gen)
+	void register_component(const std::string& a_name, const std::vector<std::string>& a_categories, FieldInfoGenerator a_field_info_gen)
 	{
-		ComponentRegistryData comp_reg;
-		comp_reg.comp_name = a_name;
-		comp_reg.categories = a_categories;
-		comp_reg.comp_type = std::type_index(typeid(TComponent));
-		comp_reg.field_info_generator = a_field_info_gen;
+		ComponentRegistryData comp_reg(a_name, a_categories, std::type_index(typeid(TComponent)), a_field_info_gen);
 
-		components_by_name[comp_reg.comp_name] = comp_reg.comp_type;
+		{
+			auto it = components_by_name.find(comp_reg.comp_name);
+			if (it == components_by_name.end())
+			{
+				components_by_name.emplace(comp_reg.comp_name, comp_reg.comp_type); // must emplace, because type_index has no default constructor
+			}
+		}
 		component_registry_by_comp_type[comp_reg.comp_type] = comp_reg;
 
 		for (const auto& category : comp_reg.categories)
 		{
-			components_matching_category[category].push_back(comp_reg.comp_name);
+			component_names_matching_category[category].push_back(comp_reg.comp_name);
 		}
 			
 	}
 
+	//template <typename TComponent>
+	bool is_registered(const std::type_index& a_type)
+	{
+		auto it = component_registry_by_comp_type.find(a_type);
+		if (it == component_registry_by_comp_type.end())
+			return false;
+		return true;
+	}
+
 	template <typename TComponent>
-	std::vector<FieldInfo> get_field_info(TComponent* component)
+	std::vector<FieldInfo> get_field_info(TComponent& a_component)
 	{
 		auto it = component_registry_by_comp_type.find(std::type_index(typeid(TComponent)));
 		if (it != component_registry_by_comp_type.end() && it->second.field_info_generator)
 		{
-			return it->second.field_info_generator;
+			return it->second.field_info_generator(&a_component);
 		}
+		return {};
 	}
 
 	template <typename TComponent>
@@ -60,16 +73,7 @@ struct ComponentRegistry
 			return it->second.comp_name;
 		}
 	}
-	template <typename TComponent>
-	std::vector<FieldInfo> get_component_name(TComponent* component)
-	{
-		auto it = component_registry_by_comp_type.find(std::type_index(typeid(TComponent)));
-		if (it != component_registry_by_comp_type.end())
-		{
-			return it->second.comp_name;
-		}
-	}
-	template <typename TComponent>
+	//template <typename TComponent>
 	std::vector<std::string> get_all_component_names()
 	{
 		std::vector<std::string> names;

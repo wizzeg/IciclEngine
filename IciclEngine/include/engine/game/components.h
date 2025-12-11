@@ -75,7 +75,7 @@ struct CameraComponent
     entt::entity target_entity = entt::null;
 
     uint16_t render_priority = 5000;
-    float fied_of_view = 70.f;
+    float field_of_view = 70.f;
     float near_plane = 300.f;
     float far_plane = 0.1f;
     float aspect_ratio = 720.f / 480.f;
@@ -148,4 +148,9 @@ public:
         {typeid(NameComponent), []() { /* ui draw ... but I need the component data too... */ },
         }
     };
+};
+
+struct TestComponent
+{
+    uint64_t test = 0;
 };

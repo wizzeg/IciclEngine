@@ -156,9 +156,11 @@
     <ClCompile Include="..\vendor\stb_image\stb_image.cpp" />
     <ClCompile Include="game_engine.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="src\engine\editor\component_factory.cpp" />
     <ClCompile Include="src\engine\editor\scene.cpp" />
     <ClCompile Include="src\engine\editor\scene_object.cpp" />
     <ClCompile Include="src\engine\game\camera.cpp" />
+    <ClCompile Include="src\engine\game\components.cpp" />
     <ClCompile Include="src\engine\game\component_data.cpp" />
     <ClCompile Include="src\engine\game\input_manager.cpp" />
     <ClCompile Include="src\engine\renderer\frame_buffer.cpp" />
@@ -199,6 +201,7 @@
     <ClInclude Include="..\vendor\KHR\khrplatform.h" />
     <ClInclude Include="..\vendor\stb_image\stb_image.h" />
     <ClInclude Include="game_engine.h" />
+    <ClInclude Include="include\engine\editor\componentdata_macros.h" />
     <ClInclude Include="include\engine\editor\component_factory.h" />
     <ClInclude Include="include\engine\editor\component_registry.h" />
     <ClInclude Include="include\engine\editor\field_info.h" />
@@ -246,6 +249,7 @@
     <None Include="..\assets\shaders\vertex\standard\standardunlit.glsl" />
     <None Include="..\assets\shaders\vertex\vert.glsl" />
     <None Include="..\assets\shaders\vertex\vert2.glsl" />
+    <None Include="cpp.hint" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -37,8 +37,8 @@ void Renderer::temp_render(RenderRequest& a_render_request)
 		if (auto shader = shader_program.lock())
 		{
 			shader->bind();
-			//rotation += glm::radians(0.07f);
-			//glm::mat4 temp = glm::rotate(a_render_request.model_matrix, rotation, glm::vec3(0, 1, 0));
+			rotation += glm::radians(0.07f);
+			glm::mat4 temp = glm::rotate(a_render_request.model_matrix, rotation, glm::vec3(0, 1, 0));
 			bool has_texture = (a_render_request.material_id != 0);
 			if (has_texture)
 			{

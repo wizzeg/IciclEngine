@@ -5,6 +5,7 @@
 #include <imgui-docking/imgui.h>
 #include <imgui-docking/imgui_impl_glfw.h>
 #include <imgui-docking/imgui_impl_opengl3.h>
+#include <imgui-docking/imgui_internal.h>
 
 struct ImGuiManager
 {
@@ -122,25 +123,70 @@ struct ImGuiManager
 		}
 	}
 
-	void make_dockspace() // This doesn't work
+	void make_dockspace()
 	{
+		// Get the main viewport (covers the entire window)
 		ImGuiViewport* viewport = ImGui::GetMainViewport();
-		ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode;
-		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 
+		// Set up window flags - this window will be invisible and cover the entire viewport
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking
+			| ImGuiWindowFlags_NoTitleBar
+			| ImGuiWindowFlags_NoCollapse
+			| ImGuiWindowFlags_NoResize
+			| ImGuiWindowFlags_NoMove
+			| ImGuiWindowFlags_NoBringToFrontOnFocus
+			| ImGuiWindowFlags_NoNavFocus
+			| ImGuiWindowFlags_NoBackground;  // Important: makes the window transparent
+
+		// Dockspace flags
+		ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+		// Optional: ImGuiDockNodeFlags_PassthruCentralNode allows clicking through empty space
+
+		// Set the window to cover the entire viewport
 		ImGui::SetNextWindowPos(viewport->WorkPos);
 		ImGui::SetNextWindowSize(viewport->WorkSize);
 		ImGui::SetNextWindowViewport(viewport->ID);
+
+		// Remove padding and rounding
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
-		ImGui::Begin("DockSpace Demo", nullptr, window_flags);
+		// Create the invisible window that hosts the dockspace
+		ImGui::Begin("DockSpaceWindow", nullptr, window_flags);
+		ImGui::PopStyleVar(3);
+
+		// Create the dockspace
 		ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
 		ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+
 		ImGui::End();
-		ImGui::PopStyleVar(3);
+	}
+
+	// Optional: Call this once on first run to set up initial layout
+	void setup_default_docking_layout()
+	{
+		static bool first_time = true;
+		if (!first_time)
+			return;
+		first_time = false;
+
+		ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+
+		// Clear any existing layout
+		ImGui::DockBuilderRemoveNode(dockspace_id);
+		ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace);
+		ImGui::DockBuilderSetNodeSize(dockspace_id, ImGui::GetMainViewport()->Size);
+
+		// Split the dockspace into sections (example: left and right)
+		ImGuiID dock_left, dock_right;
+		ImGui::DockBuilderSplitNode(dockspace_id, ImGuiDir_Left, 0.3f, &dock_left, &dock_right);
+
+		// Dock windows to specific sections
+		ImGui::DockBuilderDockWindow("Left Panel", dock_left);
+		ImGui::DockBuilderDockWindow("Right Panel", dock_right);
+
+		ImGui::DockBuilderFinish(dockspace_id);
 	}
 
 	ImGuiIO* get_io() const { return io; }

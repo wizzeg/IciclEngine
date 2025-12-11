@@ -5,6 +5,8 @@
 #include <engine/utilities/macros.h>
 
 #include <imgui-docking/imgui.h>
+#include <engine/editor/component_registry.h>
+#include <engine/editor/component_factory.h>
 
 void UIManager::draw_object_hierarchy()
 {
@@ -15,6 +17,10 @@ void UIManager::draw_object_hierarchy()
 		ImGui::Begin("scene objects");
 		if (ImGui::Button("New Scene Object"))
 			scene_ptr->new_scene_object("scene object (" + std::to_string(scene_ptr->get_next_index()) + ")", true);
+		if (ImGui::Button("Save Scene"))
+		{
+
+		}
 
 		auto root_scene_objects = scene_ptr->get_root_scene_objects();
 		for (size_t i = 0; i < root_scene_objects.size(); i++)
@@ -25,7 +31,7 @@ void UIManager::draw_object_hierarchy()
 			}
 			else
 			{
-				ui_hiearchy_drawer.draw_hierarchy_node(root_scene_objects[i]);
+				draw_hierarchy_node(root_scene_objects[i]);
 			}
 			
 		}
@@ -38,40 +44,52 @@ void UIManager::draw_object_properties()
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	// BUG, if I double click on this window it breaks (but now I can't reproduce it again...)
 	// 
-	//if (auto scene_object = ui_hiearchy_drawer.selected_scene_object.lock())
+	//if (auto scene_object = ui_hiearchy_drawer.prev_selected_scene_object.lock())
 	//{
 		//ImGui::SetNextWindowSize(ImVec2(500, 400));
-	
-	if (!ui_hiearchy_drawer.selected_scene_object.expired())
+	should_draw_object_properties = !UISceneHierarchyDrawer::selected_scene_object.expired();
+	if (should_draw_object_properties)
 	{
-		open = true;
-	}
-	if (open)
-	{
-		ImGui::Begin("component properties", &open);
-		if (auto selected = ui_hiearchy_drawer.selected_scene_object.lock())
+		ImGui::Begin("component properties", &should_draw_object_properties);
+		if (auto selected = UISceneHierarchyDrawer::selected_scene_object.lock())
 		{
 			if (ImGui::Button("Add Component"))
 			{
+				ImGui::OpenPopup("Add Component");
+			}
+
+			if (ImGui::BeginPopup("Add Component"))
+			{
 				if (auto shared_scene = scene.lock())
 				{
-
+					const auto& components = ComponentRegistry::instance().get_all_component_names();
+					for (const auto& component_name : components)
+					{
+						if (ImGui::MenuItem(component_name.c_str()))
+						{
+							ComponentFactory::instance().create_component(component_name, selected.get());
+						}
+					}
 				}
+				ImGui::EndPopup();
 			}
+
+
 			ImGui::SameLine(0, 30);
 			if (ImGui::Button("Delete Scene Object"))
 			{
 				if (auto shared_scene = scene.lock())
 				{
 					shared_scene->destroy_scene_object(selected);
-					ui_hiearchy_drawer.selected_scene_object.reset();
+					UISceneHierarchyDrawer::selected_scene_object.reset();
+					prev_selected_scene_object.reset();
 					ImGui::End();
 					return;
 				}
 			}
 			else
 			{
-				ui_property_drawer.draw_object_properties(selected);
+				UIObjectPropertyDrawer::draw_object_properties(selected);
 			}
 			//if (auto shared_scene = scene.lock()) // This case is now fine. no problems
 			//{
@@ -85,10 +103,10 @@ void UIManager::draw_object_properties()
 		}
 		ImGui::End();
 	}
-	if (!open) ui_hiearchy_drawer.selected_scene_object.reset();
+	if (!should_draw_object_properties) UISceneHierarchyDrawer::selected_scene_object.reset();
 
 	//}
-	//ui_hiearchy_drawer.selected_scene_object.reset();
+	//ui_hiearchy_drawer.prev_selected_scene_object.reset();
 
 }
 

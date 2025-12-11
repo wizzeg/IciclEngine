@@ -71,7 +71,31 @@ public:
 				return nullptr;
 			}
 		}
-		return component_datas.emplace_back(std::make_unique<ComponentData<TComponent>>(TComponent{}));
+		component_datas.emplace_back(std::make_unique<ComponentData<TComponent>>(TComponent{}));
+		if (runtime)
+		{
+			component_datas.back()->to_runtime(entity_handle);
+		}
+		return static_cast<ComponentData<TComponent>*>(component_datas.back().get());
+	}
+
+	template <typename TComponent>
+	ComponentData<TComponent>* add_component(TComponent component)
+	{
+		bool unique_component = true;
+		for (const auto& comp_data : component_datas)
+		{
+			if (comp_data->get_type() == typeid(TComponent))
+			{
+				return nullptr;
+			}
+		}
+		component_datas.emplace_back(std::make_unique<ComponentData<TComponent>>(component));
+		if (runtime)
+		{
+			component_datas.back()->to_runtime(entity_handle);
+		}
+		return static_cast<ComponentData<TComponent>*>(component_datas.back().get());
 	}
 
 	template <typename TComponent>

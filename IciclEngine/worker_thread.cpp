@@ -11,6 +11,7 @@
 
 void GameThread::execute()
 {
+	uint64_t prev_test = 0;
 	int runs = 0;
 	size_t previous_total_render_requests = 10;
 	size_t previous_unique_meshes = 10;
@@ -124,7 +125,7 @@ void GameThread::execute()
 						camera_comp.view_matrix = glm::transpose(rotation_matrix) * translation_matrix;
 					}
 					
-					camera_comp.projection_matrix = glm::perspective(glm::radians(camera_comp.fied_of_view), camera_comp.aspect_ratio, 0.1f, 300.0f);
+					camera_comp.projection_matrix = glm::perspective(glm::radians(camera_comp.field_of_view), camera_comp.aspect_ratio, 0.1f, 300.0f);
 					cameras.emplace_back(camera_comp.view_matrix, camera_comp.projection_matrix, camera_comp.frame_buffer_target, camera_comp.render_priority, true, true );
 				}
 			}
@@ -269,6 +270,17 @@ void GameThread::execute()
 				//{
 				//	registry.remove<WorldPositionComponent>(entities[i]);
 				//}
+
+				for (auto [entity, testcomp] : registry.view<TestComponent>().each())
+				{
+					testcomp.test += 1;
+					if (testcomp.test == prev_test)
+					{
+						PRINTLN("entt entity component changed");
+					}
+					//PRINTLN("testcomp val: {}", testcomp.test);
+					prev_test = testcomp.test;  
+				}
 		
 		}
 		//PRINTLN("game thread running {}", runs++);

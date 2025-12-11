@@ -1,5 +1,4 @@
 #pragma once
-#include <engine/game/component_registry.h>
 #include <engine/editor/scene_object.h>
 
 struct ComponentFactory
@@ -11,7 +10,7 @@ struct ComponentFactory
 	}
 
 	template<typename TComponent>
-	void register_facotry(const std::string& a_comp_name)
+	void register_factory(const std::string& a_comp_name)
 	{
 		component_factories[a_comp_name] = [](SceneObject* a_scene_obj_ptr)
 			{

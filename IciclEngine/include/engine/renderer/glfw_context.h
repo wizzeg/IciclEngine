@@ -13,7 +13,7 @@
 struct GLFWContext
 {
 
-	GLFWContext(int a_width, int a_height, const char* a_title, bool a_vsync = false, bool a_depth_test = true) : width(a_width), height(a_height)
+	GLFWContext(int a_width, int a_height, const char* a_title, bool a_cull_backface = true, bool a_vsync = false, bool a_depth_test = true) : width(a_width), height(a_height)
 	{
 		/* Create a windowed mode window and its OpenGL context */
 		
@@ -35,6 +35,10 @@ struct GLFWContext
 		if (a_depth_test)
 		{
 			glEnable(GL_DEPTH_TEST);
+		}
+		if (a_cull_backface)
+		{
+			glEnable(GL_CULL_FACE);
 		}
 	}
 
@@ -94,6 +98,17 @@ struct GLFWContext
 			}
 		}
 		return 0;
+	}
+	FrameBuffer* get_framebuffer(const std::string a_name)
+	{
+		for (size_t i = 0; i < frame_buffers.size(); i++)
+		{
+			if (frame_buffers[i].get_name() == a_name)
+			{
+				return &frame_buffers[i];
+			}
+		}
+		return nullptr;
 	}
 private:
 	std::vector<FrameBuffer> frame_buffers;

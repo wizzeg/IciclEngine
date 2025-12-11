@@ -1,0 +1,4 @@
+// Hint files help the Visual Studio IDE interpret Visual C++ identifiers
+// such as names of functions and macros.
+// For more information see https://go.microsoft.com/fwlink/?linkid=865984
+#define FIELD_DEFAULT(edit_mode, label, component, field) { EEditMode::Editable, label, typeid(decltype(component.field)), &component.field, 1.0f, false, false, {} }

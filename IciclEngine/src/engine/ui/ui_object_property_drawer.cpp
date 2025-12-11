@@ -15,14 +15,21 @@ void UIObjectPropertyDrawer::draw_object_properties(std::shared_ptr<SceneObject>
 		bool drawn_anything = false;
 		const auto& component_datas = a_scene_object->get_component_datas();
 		bool removed_component = false;
+		std::vector<FieldInfo> field_info;
 		for (size_t i = 0; i < component_datas.size(); i++)
 		{
 			i -= (int)removed_component;
 			removed_component = false;
-
-
-			std::vector<FieldInfo> field_info = component_datas[i]->get_field_info();
-			float field_size = 1.33f;
+			if (ComponentRegistry::instance().is_registered(component_datas[i]->get_type()))
+			{
+				field_info = component_datas[i]->get_registered_field_info();
+			}
+			else
+			{
+				field_info = component_datas[i]->get_field_info();
+			}
+			
+			float field_size = 1.6f;
 			std::string id_salt = " ";
 			for (size_t i = 0; i < field_info.size(); i++)
 			{
@@ -32,13 +39,17 @@ void UIObjectPropertyDrawer::draw_object_properties(std::shared_ptr<SceneObject>
 			}
 			ImVec2 child_size = ImVec2(0, ImGui::GetFrameHeightWithSpacing() * field_size);
 			ImGui::BeginChild((std::to_string((uint32_t)a_scene_object->get_entity()) + id_salt).c_str(), child_size, true, ImGuiChildFlags_AutoResizeY); // problem, it does not display name, it's an ID.. Need to make an ID system if I want to do this
-			if (ImGui::Button("Remove"))
+			if (component_datas[i]->get_type() != typeid(NameComponent))
 			{
-				a_scene_object->remove_component_data(i);
-				ImGui::EndChild();
-				removed_component = true;
-				continue;
+				if (ImGui::Button("Remove"))
+				{
+					a_scene_object->remove_component_data(i);
+					ImGui::EndChild();
+					removed_component = true;
+					continue;
+				}
 			}
+
 			else if (!a_scene_object->check_valid(i))
 			{
 				ImGui::EndChild();
@@ -65,21 +76,23 @@ void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_fie
 	int i = 0;
 	for (const auto& field : a_field_info)
 	{
-		
 		if (field.type == typeid(float))
 		{
-			ImGui::DragFloat(field.name.c_str(), static_cast<float*>(field.value_ptr));
+			ImGui::Text(field.name.c_str());
+			std::string id = "##" + field.name + std::to_string(i++) + " " + field.name;
+			ImGui::DragFloat(id.c_str(), static_cast<float*>(field.value_ptr));
 		}
 		else if (field.type == typeid(bool))
 		{
+			std::string id = "##" + field.name + std::to_string(i++) + " " + field.name;
 			ImGui::Checkbox(field.name.c_str(), static_cast<bool*>(field.value_ptr));
 		}
 		else if (field.type == typeid(glm::vec3))
 		{
 			ImGui::Text(field.name.c_str());
 			//ImGui::SameLine();
-			std::string salt = "##" + field.name + std::to_string(i++);
-			ImGui::DragFloat3(salt.c_str(), &reinterpret_cast<glm::vec3*>(field.value_ptr)->x);
+			std::string id = "##" + field.name + std::to_string(i++);
+			ImGui::DragFloat3(id.c_str(), &reinterpret_cast<glm::vec3*>(field.value_ptr)->x);
 		}
 		else if (field.type == typeid(std::string))
 		{
@@ -89,7 +102,8 @@ void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_fie
 			ImGui::Text(field.name.c_str());
 			ImGui::SameLine();
 			strncpy_s(buffer, string_ptr->c_str(), 128);
-			if (ImGui::InputText(" ", buffer, 128))
+			std::string id = "##" + field.name + std::to_string(i++) + " " + field.name;
+			if (ImGui::InputText(id.c_str(), buffer, 128))
 			{
 				*string_ptr = buffer;
 			}
@@ -97,9 +111,12 @@ void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_fie
 		else if (field.type == typeid(uint32_t))
 		{
 			uint32_t* value = static_cast<uint32_t*>(field.value_ptr);
-			std::string final_string = field.name + std::to_string(*value);
+			std::string final_string = field.name;
 			int temp = static_cast<int>(*value);
-			if (ImGui::InputInt(final_string.c_str(), &temp, 1, 100, 0))
+			ImGui::Text(field.name.c_str());
+			ImGui::SameLine();
+			std::string id = "##" + field.name + std::to_string(i++) + " " + field.name;
+			if (ImGui::InputInt(id.c_str(), &temp, 1, 100, 0))
 			{
 				*value = ((uint32_t)temp);
 			}
@@ -107,9 +124,12 @@ void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_fie
 		else if (field.type == typeid(uint16_t))
 		{
 			uint16_t* value = static_cast<uint16_t*>(field.value_ptr);
-			std::string final_string = field.name + std::to_string(*value);
+			std::string final_string = field.name;
 			int temp = static_cast<int>(*value);
-			if (ImGui::InputInt(final_string.c_str(), &temp, 1, 100, 0))
+			ImGui::Text(field.name.c_str());
+			ImGui::SameLine();
+			std::string id = "##" + field.name + std::to_string(i++) + " " + field.name;
+			if (ImGui::InputInt(id.c_str(), &temp, 1, 100, 0))
 			{
 				*value = ((uint16_t)temp);
 			}
@@ -117,9 +137,12 @@ void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_fie
 		else if (field.type == typeid(uint64_t))
 		{
 			uint64_t* value = static_cast<uint64_t*>(field.value_ptr);
-			std::string final_string = field.name + std::to_string(*value);
+			std::string final_string = field.name;
 			int temp = static_cast<int>(*value);
-			if (ImGui::InputInt(final_string.c_str(), &temp, 1, 100, 0))
+			ImGui::Text(field.name.c_str());
+			ImGui::SameLine();
+			std::string id = "##" + field.name + std::to_string(i++) + " " + field.name;
+			if (ImGui::InputInt(id.c_str(), &temp, 1, 100, 0))
 			{
 				*value = ((uint64_t)temp);
 			}
@@ -133,11 +156,11 @@ void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_fie
 			ImGui::Text(field.name.c_str());
 			ImGui::SameLine();
 			strncpy_s(buffer, value->string.c_str(), 128);
-			if (ImGui::InputText(" ", buffer, 128))
+			std::string id = "##" + field.name + std::to_string(i++) + " " + field.name;
+			if (ImGui::InputText(id.c_str(), buffer, 128))
 			{
 				*value = hashed_string_64(buffer);
 			}
-
 			std::string text = "path hash: " + std::to_string(value->hash)/*+ " - path: " + value.data()*/;
 			ImGui::Text(text.c_str());
 		}
@@ -145,7 +168,6 @@ void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_fie
 		{
 			ImGui::Text("empty field");
 		}
-		ImGui::SetItemAllowOverlap();
 		if (field.same_line)
 		{
 			ImGui::SameLine();
