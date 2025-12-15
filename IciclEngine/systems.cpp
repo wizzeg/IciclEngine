@@ -16,7 +16,7 @@ void MeshRendererSystem::execute(std::weak_ptr<Scene> a_scene)
 	if (auto scene = a_scene.lock())
 	{
 		auto& registry = scene->get_registry();
-		for (auto [entity, worldpos, renderable] : registry.view<WorldPositionComponent, RenderableComponent>().each())
+		for (auto [entity, worldpos, renderable] : registry.view<TransformDynamicComponent, RenderableComponent>().each())
 		{
 			
 		}

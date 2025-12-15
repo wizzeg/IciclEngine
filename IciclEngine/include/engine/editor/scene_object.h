@@ -21,19 +21,25 @@ private:
 	std::vector<std::type_index> component_types;
 
 	entt::handle entity_handle;
+	uint32_t scene_object_id;
 
 	bool runtime = false;
 	bool ui_opened = false;
 	bool original = true;
-
 public:
-	SceneObject() { name = "none"; }
-	SceneObject(const std::string a_name, std::weak_ptr<Scene> a_scene); ///////////////////// REMOVE USAGE OF ENTITY (use entt::handle)
-	SceneObject(const std::string a_name, std::weak_ptr<SceneObject> a_parent, std::weak_ptr<Scene> a_scene);///////////////////// REMOVE USAGE OF ENTITY (use entt::handle)
+	SceneObject(SceneObject&&) = default;
+	SceneObject& operator=(SceneObject&&) = default;
+	//SceneObject() { name = "none"; }
+	SceneObject(const std::string a_name, std::weak_ptr<Scene> a_scene); 
+	SceneObject(const std::string a_name, std::weak_ptr<SceneObject> a_parent, std::weak_ptr<Scene> a_scene);
 	~SceneObject() { PRINTLN("Scene Object Destroyed: {}", name); }// if this has parent, add all children to it, otherwise I don't know... 
 	void scene_ended();
 	entt::entity get_entity() { return entity_handle.entity(); }
 	bool has_valid_entity() { return entity_handle.valid(); }
+	std::weak_ptr<Scene> get_scene();
+
+	json save();
+	static std::shared_ptr<SceneObject> load(const json& a_j, std::weak_ptr<Scene> a_scene);
 
 	//void destroy_scene_object();
 
@@ -42,7 +48,7 @@ public:
 	void add_child(std::weak_ptr<SceneObject> a_child);
 
 	template <typename TcomponentData, typename TComponent>
-	bool add_component_data(TComponent&& a_component)
+	bool add_component_data(TComponent&& a_component) // deprecated
 	{
 		static_assert(std::is_base_of<ComponentData<std::decay_t<TComponent>>, TcomponentData>::value, "TcomponentData must derive from ComponentData<T> with matching TComponent");
 		//static_assert(std::is_standard_layout<std::decay_t<TComponent>>::value, "TComponent must be a standard-layout type (e.g no inheritance)");
@@ -57,11 +63,10 @@ public:
 		}
 		component_types.push_back(t_type);
 		component_datas.emplace_back(std::make_unique<TcomponentData>(std::forward<TComponent>(a_component)));
-		return true;
 	}
 
 	template <typename TComponent>
-	ComponentData<TComponent>* add_component()
+	ComponentData<TComponent>* add_component() // new variant
 	{
 		bool unique_component = true;
 		for (const auto& comp_data : component_datas)
@@ -80,7 +85,7 @@ public:
 	}
 
 	template <typename TComponent>
-	ComponentData<TComponent>* add_component(TComponent component)
+	ComponentData<TComponent>* add_component(const TComponent& component)
 	{
 		bool unique_component = true;
 		for (const auto& comp_data : component_datas)
@@ -96,6 +101,36 @@ public:
 			component_datas.back()->to_runtime(entity_handle);
 		}
 		return static_cast<ComponentData<TComponent>*>(component_datas.back().get());
+	}
+
+	template <typename TComponent>
+	ComponentData<TComponent>* add_or_replace_component(const TComponent& component)
+	{
+		for (const auto& comp_data : component_datas)
+		{
+			if (comp_data->get_type() == typeid(TComponent))
+			{
+				ComponentData<TComponent>* comp = static_cast<ComponentData<TComponent>*>(comp_data.get());
+				comp->set_new_component_value(component);
+				return comp;
+			}
+		}
+		return add_component(component);
+	}
+
+	template <typename TComponent>
+	ComponentData<TComponent>* replace_component(const TComponent& component)
+	{
+		for (const auto& comp_data : component_datas)
+		{
+			if (comp_data->get_type() == typeid(TComponent))
+			{
+				ComponentData<TComponent>* comp = static_cast<ComponentData<TComponent>*>(comp_data);
+				comp->set_new_component_value(component);
+				return comp;
+			}
+		}
+		return nullptr;
 	}
 
 	template <typename TComponent>
@@ -238,7 +273,7 @@ public:
 	{
 		if (NameComponent* name_comp; get_component<NameComponent>(name_comp))
 		{
-			name = name_comp->name;
+			name = name_comp->hashed_name.string;
 		}
 		return name;
 	};

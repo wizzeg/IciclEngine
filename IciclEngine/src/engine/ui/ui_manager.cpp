@@ -10,33 +10,100 @@
 
 void UIManager::draw_object_hierarchy()
 {
-
-	if (auto scene_ptr = scene.lock())
+	if (shoud_draw_object_hierarchy)
 	{
-		//ImGui::SetNextWindowSize(ImVec2(500, 400));
-		ImGui::Begin("scene objects");
-		if (ImGui::Button("New Scene Object"))
-			scene_ptr->new_scene_object("scene object (" + std::to_string(scene_ptr->get_next_index()) + ")", true);
-		if (ImGui::Button("Save Scene"))
+		if (auto scene_ptr = scene.lock())
 		{
-
-		}
-
-		auto root_scene_objects = scene_ptr->get_root_scene_objects();
-		for (size_t i = 0; i < root_scene_objects.size(); i++)
-		{
-			if (root_scene_objects[i]->is_runtime() && !scene_ptr->get_registry().valid(root_scene_objects[i]->get_entity()))
+			//ImGui::SetNextWindowSize(ImVec2(500, 400));
+			ImGui::Begin("scene objects", &shoud_draw_object_hierarchy);
+			if (ImGui::Button("New Scene Object"))
+				scene_ptr->new_scene_object("scene object (" + std::to_string(scene_ptr->get_next_index()) + ")", true);
+			ImGui::SameLine();
+			static bool open_save_popup = false;
+			static bool open_load_popup = false;
+			static char path[260] = "";
+			if (ImGui::Button("Save Scene"))
 			{
-				scene_ptr->destroy_scene_object(root_scene_objects[i]);
+				open_save_popup = true;
+				ImGui::OpenPopup("Save Scene As ... ");
 			}
-			else
+			ImGui::SameLine();
+			if (ImGui::Button("Load Scene"))
 			{
-				draw_hierarchy_node(root_scene_objects[i]);
+				open_load_popup = true;
+				ImGui::OpenPopup("Load Scene at ...");
 			}
-			
+
+			if (open_load_popup && open_save_popup)
+			{
+				open_load_popup = false;
+				open_save_popup = false;
+			}
+
+			if (ImGui::BeginPopupModal("Save Scene As ... ", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+			{
+				ImGui::Text("path: ");
+				ImGui::SameLine();
+				ImGui::InputText("##Path", path, IM_ARRAYSIZE(path));
+				std::string full_path = "./assets/" + std::string(path) + ".scn";
+				ImGui::Text(full_path.c_str());
+				if (ImGui::Button("Save", ImVec2(120, 0)))
+				{
+					open_save_popup = false;
+					scene_ptr->save(full_path);
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Cancel", ImVec2(120, 0)))
+				{
+					open_save_popup = false;
+					ImGui::CloseCurrentPopup();
+				}
+
+				ImGui::EndPopup();
+			}
+
+			if (ImGui::BeginPopupModal("Load Scene at ...", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+			{
+				ImGui::Text("path: ");
+				ImGui::SameLine();
+				ImGui::InputText("##Path", path, IM_ARRAYSIZE(path));
+				std::string full_path = "./assets/" + std::string(path) + ".scn";
+				ImGui::Text(full_path.c_str());
+
+				if (ImGui::Button("Load", ImVec2(120, 0)))
+				{
+					open_load_popup = false;
+					scene_ptr->load(full_path, true);
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Cancel", ImVec2(120, 0)))
+				{
+					open_load_popup = false;
+					ImGui::CloseCurrentPopup();
+				}
+
+				ImGui::EndPopup();
+			}
+
+			auto root_scene_objects = scene_ptr->get_root_scene_objects();
+			for (size_t i = 0; i < root_scene_objects.size(); i++)
+			{
+				if (root_scene_objects[i]->is_runtime() && !scene_ptr->get_registry().valid(root_scene_objects[i]->get_entity()))
+				{
+					scene_ptr->destroy_scene_object(root_scene_objects[i]);
+				}
+				else
+				{
+					draw_hierarchy_node(root_scene_objects[i]);
+				}
+
+			}
+			ImGui::End();
 		}
-		ImGui::End();
 	}
+	
 }
 
 void UIManager::draw_object_properties()

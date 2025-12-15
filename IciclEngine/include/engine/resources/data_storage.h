@@ -15,6 +15,7 @@
 #include <variant>
 #include <engine/resources/job_info.h>
 #include <engine/resources/model_loader.h>
+#include <unordered_map>
 
 struct ModelGenStorage;
 struct GenStorageThreadPool;
@@ -145,8 +146,10 @@ protected:
 	bool worker_wait_condition();
 	std::mutex mesh_mutex;
 	std::vector<MeshData> mesh_datas;
+	std::unordered_map<uint64_t, MeshData> mesh_map;
 	std::mutex texture_mutex;
 	std::vector<TextureData> texuture_datas;
+	std::unordered_map<uint64_t, TextureData> tex_map;
 	MessageQueue<VAOLoadRequest> vaoload_requests;
 	MessageQueue<TexGenRequest> texgen_requests;
 	MeshJobProcessor mesh_job_processor;

@@ -12,6 +12,9 @@
 #include <engine/utilities/macros.h>
 #include <engine/editor/field_info.h>
 #include <engine/editor/component_registry.h>
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
+
 
 // problem is references to other entities... 
 // this needs a custom conversion -> 
@@ -70,18 +73,17 @@ struct ComponentData : ComponentDataBase
 
 	const char* get_name() const override 
 	{
-		static const char* raw_name = typeid(TComponent).name();
-		static std::string clean_name = std::string(raw_name);
-		if (clean_name.rfind("struct ", 0) == 0) {
-			clean_name.erase(0, 7);
+		static std::string name = std::string(typeid(TComponent).name());
+		if (name.rfind("struct ", 0) == 0) {
+			name.erase(0, 7);
 		}
-		else if (clean_name.rfind("class ", 0) == 0) {
-			clean_name.erase(0, 6);
+		else if (name.rfind("class ", 0) == 0) {
+			name.erase(0, 6);
 		}
-		else if (clean_name.rfind("const ", 0) == 0) {
-			clean_name.erase(0, 6);
+		else if (name.rfind("const ", 0) == 0) {
+			name.erase(0, 6);
 		}
-		return clean_name.c_str();
+		return name.c_str();
 	}
 	virtual void to_runtime(entt::handle a_handle) override
 	{
@@ -177,132 +179,132 @@ protected:
 	bool runtime = false;
 
 };
-
-struct NameComponentData : ComponentData<NameComponent>
-{
-	NameComponentData(NameComponent a_component) : ComponentData<NameComponent>(a_component) {}
-	std::vector<FieldInfo> get_field_info(NameComponent& a_component) override
-	{
-		return
-		{
-			{EEditMode::Editable, "entity name: ", typeid(std::string), &a_component.name, 1.25f }
-		};
-	}
-};
-
-struct WorldPositionComponentData : ComponentData<WorldPositionComponent>
-{
-	WorldPositionComponentData(WorldPositionComponent a_component) : ComponentData<WorldPositionComponent>(a_component){}
-	std::vector<FieldInfo> get_field_info(WorldPositionComponent& a_component) override
-	{
-		return
-		{
-			{EEditMode::Editable, "position: ", typeid(glm::vec3), &a_component.position, 2.f },
-			{EEditMode::Editable, "scale: ", typeid(glm::vec3), &a_component.scale, 2.f },
-			{EEditMode::Editable, "rotation: ", typeid(glm::vec3), &a_component.rotation_euler_do_not_use, 2.f },
-			{EEditMode::Editable, "update euler rotation: ", typeid(bool), &a_component.get_euler_angles, 1.1f, true},
-			{EEditMode::Editable, "overwrite quaternion rotation: ", typeid(bool), &a_component.overide_quaternion, 0.f }
-		};
-	}
-};
-
-struct MeshLoaderComponentData : ComponentData<MeshLoaderComponent>
-{
-	MeshLoaderComponentData(MeshLoaderComponent a_component) : ComponentData<MeshLoaderComponent>(a_component) {}
-	std::vector<FieldInfo> get_field_info(MeshLoaderComponent& a_component) override
-	{
-		return
-		{
-			{EEditMode::Editable, "mesh path: ", typeid(std::string), &a_component.path }
-		};
-	}
-};
-
-struct MaterialLoaderComponentData : ComponentData<MaterialLoaderComponent>
-{
-	MaterialLoaderComponentData(MaterialLoaderComponent a_component) : ComponentData<MaterialLoaderComponent>(a_component) {}
-	std::vector<FieldInfo> get_field_info(MaterialLoaderComponent& a_component) override
-	{
-		return
-		{
-			{EEditMode::Editable, "material path: ", typeid(std::string), &a_component.path }
-		};
-	}
-};
-
-struct MeshComponentData : ComponentData<MeshComponent>
-{
-	MeshComponentData(MeshComponent a_component) : ComponentData<MeshComponent>(a_component) {}
-	std::vector<FieldInfo> get_field_info(MeshComponent& a_component) override
-	{
-		return
-		{
-			{EEditMode::Editable, "mesh loaded: ", typeid(bool), &a_component.loaded },
-			{EEditMode::Editable, "mesh path: ", typeid(hashed_string_64), &a_component.hashed_path, 2.25 }
-			//{EEditMode::Editable, "mesh path: ", typeid(std::string), &a_component.hashed_path.string },
-			//{EEditMode::Uneditable, "hashed path: ", typeid(uint64_t),& a_component.hashed_path.hash }
-		};
-	}
-};
-
-struct TextureComponentData : ComponentData<TextureComponent>
-{
-	TextureComponentData(TextureComponent a_component) : ComponentData<TextureComponent>(a_component) {}
-	std::vector<FieldInfo> get_field_info(TextureComponent& a_component) override
-	{
-		return
-		{
-			{EEditMode::Editable, "texture loaded: ", typeid(bool), &a_component.loaded },
-			{EEditMode::Editable, "texture path: ", typeid(hashed_string_64), &a_component.hashed_path, 2.25 }
-			//{EEditMode::Editable, "mesh path: ", typeid(std::string), &a_component.hashed_path.string },
-			//{EEditMode::Uneditable, "hashed path: ", typeid(uint64_t),& a_component.hashed_path.hash }
-		};
-	}
-};
-
-struct MaterialComponentData : ComponentData<MaterialComponent>
-{
-	MaterialComponentData(MaterialComponent a_component) : ComponentData<MaterialComponent>(a_component) {}
-	std::vector<FieldInfo> get_field_info(MaterialComponent& a_component) override
-	{
-		return
-		{
-			{EEditMode::Editable, "material id: ", typeid(uint32_t), &a_component.id }
-		};
-	}
-};
-
-struct RenderableComponentData : ComponentData<RenderableComponent>
-{
-	RenderableComponentData(RenderableComponent a_component) : ComponentData<RenderableComponent>(a_component) {}
-	std::vector<FieldInfo> get_field_info(RenderableComponent& a_component) override
-	{
-		return
-		{
-			{EEditMode::Editable, "mesh id: ", typeid(uint32_t), &a_component.mesh_id },
-			{EEditMode::Editable, "material id: ", typeid(uint32_t), &a_component.mateiral_id }
-		};
-	}
-};
-
-struct CameraComponentData : ComponentData<CameraComponent>
-{
-	CameraComponentData(CameraComponent a_component) : ComponentData<CameraComponent>(a_component) {}
-	std::vector<FieldInfo> get_field_info(CameraComponent& a_component) override
-	{
-		return
-		{
-			{ EEditMode::Editable, "camera active: ", typeid(bool), &a_component.wants_to_render ,1.1f, true },
-			{ EEditMode::Editable, "orbital camera: ", typeid(bool), &a_component.orbit_camera , 0.f },
-			{ EEditMode::Editable, "orbital point: ", typeid(glm::vec3), &a_component.target_location, 2.0f },
-			{ EEditMode::Editable, "priority: ", typeid(uint16_t),&a_component.render_priority },
-			{ EEditMode::Editable, "buffer: ", typeid(hashed_string_64), &a_component.frame_buffer_target, 2.25 },
-			{ EEditMode::Editable, "field of view: ", typeid(float), &a_component.field_of_view }
-		};
-	}
-};
-
-
+//
+//struct NameComponentData : ComponentData<NameComponent>
+//{
+//	NameComponentData(NameComponent a_component) : ComponentData<NameComponent>(a_component) {}
+//	std::vector<FieldInfo> get_field_info(NameComponent& a_component) override
+//	{
+//		return
+//		{
+//			{EEditMode::Editable, "entity name: ", typeid(std::string), &a_component.hashed_name.string, 1.25f }
+//		};
+//	}
+//};
+//
+//struct WorldPositionComponentData : ComponentData<TransformDynamicComponent>
+//{
+//	WorldPositionComponentData(TransformDynamicComponent a_component) : ComponentData<TransformDynamicComponent>(a_component){}
+//	std::vector<FieldInfo> get_field_info(TransformDynamicComponent& a_component) override
+//	{
+//		return
+//		{
+//			{EEditMode::Editable, "position: ", typeid(glm::vec3), &a_component.position, 2.f },
+//			{EEditMode::Editable, "scale: ", typeid(glm::vec3), &a_component.scale, 2.f },
+//			{EEditMode::Editable, "rotation: ", typeid(glm::vec3), &a_component.rotation_euler_do_not_use, 2.f },
+//			{EEditMode::Editable, "update euler rotation: ", typeid(bool), &a_component.get_euler_angles, 1.1f, true},
+//			{EEditMode::Editable, "overwrite quaternion rotation: ", typeid(bool), &a_component.overide_quaternion, 0.f }
+//		};
+//	}
+//};
+//
+//struct MeshLoaderComponentData : ComponentData<MeshLoaderComponent>
+//{
+//	MeshLoaderComponentData(MeshLoaderComponent a_component) : ComponentData<MeshLoaderComponent>(a_component) {}
+//	std::vector<FieldInfo> get_field_info(MeshLoaderComponent& a_component) override
+//	{
+//		return
+//		{
+//			{EEditMode::Editable, "mesh path: ", typeid(std::string), &a_component.path }
+//		};
+//	}
+//};
+//
+//struct MaterialLoaderComponentData : ComponentData<MaterialLoaderComponent>
+//{
+//	MaterialLoaderComponentData(MaterialLoaderComponent a_component) : ComponentData<MaterialLoaderComponent>(a_component) {}
+//	std::vector<FieldInfo> get_field_info(MaterialLoaderComponent& a_component) override
+//	{
+//		return
+//		{
+//			{EEditMode::Editable, "material path: ", typeid(std::string), &a_component.path }
+//		};
+//	}
+//};
+//
+//struct MeshComponentData : ComponentData<MeshComponent>
+//{
+//	MeshComponentData(MeshComponent a_component) : ComponentData<MeshComponent>(a_component) {}
+//	std::vector<FieldInfo> get_field_info(MeshComponent& a_component) override
+//	{
+//		return
+//		{
+//			{EEditMode::Editable, "mesh loaded: ", typeid(bool), &a_component.loaded },
+//			{EEditMode::Editable, "mesh path: ", typeid(hashed_string_64), &a_component.hashed_path, 2.25 }
+//			//{EEditMode::Editable, "mesh path: ", typeid(std::string), &a_component.hashed_path.string },
+//			//{EEditMode::Uneditable, "hashed path: ", typeid(uint64_t),& a_component.hashed_path.hash }
+//		};
+//	}
+//};
+//
+//struct TextureComponentData : ComponentData<TextureComponent>
+//{
+//	TextureComponentData(TextureComponent a_component) : ComponentData<TextureComponent>(a_component) {}
+//	std::vector<FieldInfo> get_field_info(TextureComponent& a_component) override
+//	{
+//		return
+//		{
+//			{EEditMode::Editable, "texture loaded: ", typeid(bool), &a_component.loaded },
+//			{EEditMode::Editable, "texture path: ", typeid(hashed_string_64), &a_component.hashed_path, 2.25 }
+//			//{EEditMode::Editable, "mesh path: ", typeid(std::string), &a_component.hashed_path.string },
+//			//{EEditMode::Uneditable, "hashed path: ", typeid(uint64_t),& a_component.hashed_path.hash }
+//		};
+//	}
+//};
+//
+//struct MaterialComponentData : ComponentData<MaterialComponent>
+//{
+//	MaterialComponentData(MaterialComponent a_component) : ComponentData<MaterialComponent>(a_component) {}
+//	std::vector<FieldInfo> get_field_info(MaterialComponent& a_component) override
+//	{
+//		return
+//		{
+//			{EEditMode::Editable, "material id: ", typeid(uint32_t), &a_component.id }
+//		};
+//	}
+//};
+//
+//struct RenderableComponentData : ComponentData<RenderableComponent>
+//{
+//	RenderableComponentData(RenderableComponent a_component) : ComponentData<RenderableComponent>(a_component) {}
+//	std::vector<FieldInfo> get_field_info(RenderableComponent& a_component) override
+//	{
+//		return
+//		{
+//			{EEditMode::Editable, "mesh id: ", typeid(uint32_t), &a_component.mesh_id },
+//			{EEditMode::Editable, "material id: ", typeid(uint32_t), &a_component.mateiral_id }
+//		};
+//	}
+//};
+//
+//struct CameraComponentData : ComponentData<CameraComponent>
+//{
+//	CameraComponentData(CameraComponent a_component) : ComponentData<CameraComponent>(a_component) {}
+//	std::vector<FieldInfo> get_field_info(CameraComponent& a_component) override
+//	{
+//		return
+//		{
+//			{ EEditMode::Editable, "camera active: ", typeid(bool), &a_component.wants_to_render ,1.1f, true },
+//			{ EEditMode::Editable, "orbital camera: ", typeid(bool), &a_component.orbit_camera , 0.f },
+//			{ EEditMode::Editable, "orbital point: ", typeid(glm::vec3), &a_component.target_location, 2.0f },
+//			{ EEditMode::Editable, "priority: ", typeid(uint16_t),&a_component.render_priority },
+//			{ EEditMode::Editable, "buffer: ", typeid(hashed_string_64), &a_component.frame_buffer_target, 2.25 },
+//			{ EEditMode::Editable, "field of view: ", typeid(float), &a_component.field_of_view }
+//		};
+//	}
+//};
+//
+//
 
 
 
@@ -334,9 +336,9 @@ struct CameraComponentData : ComponentData<CameraComponent>
 //
 //struct WorldPositionComponentData : ComponentData
 //{
-//	WorldPositionComponent worldpos_component;
+//	TransformDynamicComponent worldpos_component;
 //	const std::string get_name() const override { return "world position component"; }
-//	WorldPositionComponentData(const WorldPositionComponent a_world_pos) { worldpos_component = a_world_pos; };
+//	WorldPositionComponentData(const TransformDynamicComponent a_world_pos) { worldpos_component = a_world_pos; };
 //	WorldPositionComponentData() : worldpos_component({glm::vec3(0,0 ,0)}) {};
 //
 //	// implementation in .cpp

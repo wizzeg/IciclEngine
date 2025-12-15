@@ -100,6 +100,9 @@
     <Filter Include="Source Files\engine\game">
       <UniqueIdentifier>{607850a4-2e07-473b-b48f-1fe89091dfbb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\vendor\nlohmann">
+      <UniqueIdentifier>{0e4d4fc5-d0f5-4dc4-b897-2d1979dbd0d6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -221,6 +224,12 @@
     </ClCompile>
     <ClCompile Include="src\engine\game\components.cpp">
       <Filter>Source Files\engine\game</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\editor\field_serialization_registry.cpp">
+      <Filter>Source Files\engine\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\editor\serialization.cpp">
+      <Filter>Source Files\engine\utilities</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -388,6 +397,27 @@
     </ClInclude>
     <ClInclude Include="include\engine\renderer\frame_buffer.h">
       <Filter>Header Files\engine\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\editor\field_serialization_registry.h">
+      <Filter>Header Files\engine\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\nlohmann\json.hpp">
+      <Filter>Header Files\vendor\nlohmann</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\editor\field_serialization_macro.h">
+      <Filter>Header Files\engine\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\utilities\serialization.h">
+      <Filter>Header Files\engine\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\utilities\base_serializers.h">
+      <Filter>Header Files\engine\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\editor\field_serialization_entires.h">
+      <Filter>Header Files\engine\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\editor\component_entries.h">
+      <Filter>Header Files\engine\editor</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

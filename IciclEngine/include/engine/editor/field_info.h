@@ -7,11 +7,13 @@ enum EEditMode
 {
 	Editable,
 	Uneditable,
+	Hidden,
 };
 
 struct FieldInfo /// perhaps make these into imgui drawcalls instead... but then caching becomes problem? unless just include the drawcall as extra?
 {
 	EEditMode edit_mode;
+	std::string field_id;
 	std::string name;
 	std::type_index type;
 	void* value_ptr;

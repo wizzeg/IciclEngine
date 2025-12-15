@@ -44,6 +44,8 @@
 #include <engine/game/camera.h>
 
 #include <engine/utilities/memory_checking.h>
+#include <engine/editor/field_serialization_entires.h>
+#include <engine/editor/component_entries.h>
 
 
 int main(void)
@@ -72,79 +74,92 @@ int main(void)
 	///////////
 	// Making scene and adding test scene_objects
 	std::shared_ptr<Scene> scene = std::make_shared<Scene>();
-	{
-		auto camera = scene->new_scene_object("Camera test", true);
-		if (auto c = camera.lock())
-		{
-			hashed_string_64 buffer_name("main_camera_buffer");
-			c->add_component_data<WorldPositionComponentData, WorldPositionComponent>
-				(WorldPositionComponent{ glm::vec3(0.0f, 0.0f, 10.0f) });
-			c->add_component_data<CameraComponentData, CameraComponent>
-				(CameraComponent{});
-		}
+	//{
+	//	auto sc = scene->new_scene_object("3d model", true);
+	//	sc.lock()->add_or_replace_component(TransformDynamicComponent{});
+	//	sc.lock()->add_or_replace_component(MeshComponent{false, "./assets/obj/triobjmonkey.obj"});
+	//	sc.lock()->add_or_replace_component(TextureComponent{false, "./assets/textures/awesomeface.png"});
+	//	auto c = scene->new_scene_object("camera", false);
+	//	if (auto child = c.lock())
+	//	{
+	//		child->add_or_replace_component(TransformDynamicComponent{ glm::vec3(0, 0, 6) });
+	//		child->add_or_replace_component(CameraComponent{});
+	//		sc.lock()->add_child(child);
+	//	}
+	//}
+	//{
+	//	auto camera = scene->new_scene_object("Camera test", true);
+	//	if (auto c = camera.lock())
+	//	{
+	//		hashed_string_64 buffer_name("main_camera_buffer");
+	//		c->add_component_data<WorldPositionComponentData, TransformDynamicComponent>
+	//			(TransformDynamicComponent{ glm::vec3(0.0f, 0.0f, 10.0f) });
+	//		c->add_component_data<CameraComponentData, CameraComponent>
+	//			(CameraComponent{});
+	//	}
 
-		auto camera2 = scene->new_scene_object("Camera test2", true);
-		if (auto c = camera2.lock())
-		{
-			hashed_string_64 buffer_name("main_camera_buffer");
-			c->add_component_data<WorldPositionComponentData, WorldPositionComponent>(WorldPositionComponent{ glm::vec3(5.0f, 5.0f, 10.0f) });
-			c->add_component_data<CameraComponentData, CameraComponent>
-				(CameraComponent{});
-		}
-		hashed_string_64 string("./assets/obj/triobjmonkey.obj");
-		std::weak_ptr<SceneObject> withtChild = scene->new_scene_object("with Child", true);
-		std::weak_ptr<SceneObject> withoutChild = scene->new_scene_object("without Child", true);
-		if (auto shared = withoutChild.lock())
-		{
-			shared->add_component_data<WorldPositionComponentData>(WorldPositionComponent{ glm::vec3(0.f,0.f,0.f) });
-			hashed_string_64 path("./assets/obj/sizanne.obj");
-			shared->add_component_data<MeshComponentData>(MeshComponent{ 0, path});
-			hashed_string_64 texture("./assets/textures/awesomeface.png");
-			shared->add_component_data<TextureComponentData>(TextureComponent{ false, texture});
-		}
-		std::weak_ptr<SceneObject> wChild = scene->new_scene_object("without Child", false);
-		std::weak_ptr<SceneObject> ChildwChild = scene->new_scene_object("Child with child", false);
-		std::weak_ptr<SceneObject> childofchild = scene->new_scene_object("Child of Child", false);
-		if (auto parent = withtChild.lock())
-		{
-			parent->add_component_data<WorldPositionComponentData>(WorldPositionComponent{glm::vec3(0,1,2)});
-			parent->replace_component_data(WorldPositionComponent{ glm::vec3(1,2,3) });
-			parent->add_or_replace_component_data<WorldPositionComponentData>(WorldPositionComponent{ glm::vec3(2,3,4) });
-			parent->add_component_data<MeshComponentData>(MeshComponent{0, string});
-			WorldPositionComponent* test;
-			if (parent->get_component(test))
-			{
-				PRINTLN("x value: {}", test->position.x);
-				test->position.x = 10;
-				PRINTLN("x value: {}", test->position.x);
-			}
-			else {
-				PRINTLN("failes");
-			}
-			hashed_string_64 texture("./assets/textures/wall.jpg");
-			parent->add_component_data<TextureComponentData>(TextureComponent{ false, texture });
-			parent->add_child(wChild);
-			parent->add_child(ChildwChild);
-			if (auto shared = ChildwChild.lock())
-			{
-				shared->add_child(childofchild);
-				if (auto shared = childofchild.lock())
-				{
-					
-					if (MaterialComponent* mat_test; shared->get_component<MaterialComponent>(mat_test))
-					{
-						PRINTLN("GOT MAT TEST SOMEHOW");
-					}
-					
-					shared->add_component_data<WorldPositionComponentData>(WorldPositionComponent{ glm::vec3(-1.f,0.f,0.f) });
-					shared->add_component_data<RenderableComponentData>(RenderableComponent{ 2,3 });
-					shared->remove_component_data<NameComponentData>();
-					hashed_string_64 string("./assets/obj/triobjmonkey.obj");
-					shared->add_component_data<MeshComponentData>(MeshComponent{0, string });
-				}
-			}
-		}
-	}
+	//	auto camera2 = scene->new_scene_object("Camera test2", true);
+	//	if (auto c = camera2.lock())
+	//	{
+	//		hashed_string_64 buffer_name("main_camera_buffer");
+	//		c->add_component_data<WorldPositionComponentData, TransformDynamicComponent>(TransformDynamicComponent{ glm::vec3(5.0f, 5.0f, 10.0f) });
+	//		c->add_component_data<CameraComponentData, CameraComponent>
+	//			(CameraComponent{});
+	//	}
+	//	hashed_string_64 string("./assets/obj/triobjmonkey.obj");
+	//	std::weak_ptr<SceneObject> withtChild = scene->new_scene_object("with Child", true);
+	//	std::weak_ptr<SceneObject> withoutChild = scene->new_scene_object("without Child", true);
+	//	if (auto shared = withoutChild.lock())
+	//	{
+	//		shared->add_component_data<WorldPositionComponentData>(TransformDynamicComponent{ glm::vec3(0.f,0.f,0.f) });
+	//		hashed_string_64 path("./assets/obj/sizanne.obj");
+	//		shared->add_component_data<MeshComponentData>(MeshComponent{ 0, path});
+	//		hashed_string_64 texture("./assets/textures/awesomeface.png");
+	//		shared->add_component_data<TextureComponentData>(TextureComponent{ false, texture});
+	//	}
+	//	std::weak_ptr<SceneObject> wChild = scene->new_scene_object("without Child", false);
+	//	std::weak_ptr<SceneObject> ChildwChild = scene->new_scene_object("Child with child", false);
+	//	std::weak_ptr<SceneObject> childofchild = scene->new_scene_object("Child of Child", false);
+	//	if (auto parent = withtChild.lock())
+	//	{
+	//		parent->add_component_data<WorldPositionComponentData>(TransformDynamicComponent{glm::vec3(0,1,2)});
+	//		parent->replace_component_data(TransformDynamicComponent{ glm::vec3(1,2,3) });
+	//		parent->add_or_replace_component_data<WorldPositionComponentData>(TransformDynamicComponent{ glm::vec3(2,3,4) });
+	//		parent->add_component_data<MeshComponentData>(MeshComponent{0, string});
+	//		TransformDynamicComponent* test;
+	//		if (parent->get_component(test))
+	//		{
+	//			PRINTLN("x value: {}", test->position.x);
+	//			test->position.x = 10;
+	//			PRINTLN("x value: {}", test->position.x);
+	//		}
+	//		else {
+	//			PRINTLN("failes");
+	//		}
+	//		hashed_string_64 texture("./assets/textures/wall.jpg");
+	//		parent->add_component_data<TextureComponentData>(TextureComponent{ false, texture });
+	//		parent->add_child(wChild);
+	//		parent->add_child(ChildwChild);
+	//		if (auto shared = ChildwChild.lock())
+	//		{
+	//			shared->add_child(childofchild);
+	//			if (auto shared = childofchild.lock())
+	//			{
+	//				
+	//				if (MaterialComponent* mat_test; shared->get_component<MaterialComponent>(mat_test))
+	//				{
+	//					PRINTLN("GOT MAT TEST SOMEHOW");
+	//				}
+	//				
+	//				shared->add_component_data<WorldPositionComponentData>(TransformDynamicComponent{ glm::vec3(-1.f,0.f,0.f) });
+	//				shared->add_component_data<RenderableComponentData>(RenderableComponent{ 2,3 });
+	//				shared->remove_component_data<NameComponentData>();
+	//				hashed_string_64 string("./assets/obj/triobjmonkey.obj");
+	//				shared->add_component_data<MeshComponentData>(MeshComponent{0, string });
+	//			}
+	//		}
+	//	}
+	//}
 
 
 	std::shared_ptr<UIManager> ui_mananger  = std::make_shared<UIManager>();
@@ -183,10 +198,15 @@ int main(void)
 	bool captured_prev_frame = false;
 	ImVec2 mouse_pos;
 
+	HighResolutionTimer timer2;
+	double render_thread_time = 0;
+	double ui_manager_time = 0;
+	int framies = 0;
+
 	uint64_t wait_time = 0;
 	while (engine_context->run())
 	{
-		
+		timer2.start();
 		if (wait_time > 4500)
 		{
 			if (!game_playing)
@@ -202,6 +222,8 @@ int main(void)
 					hashed_string_64 monkey_mesh = hashed_string_64("./assets/obj/triobjmonkey.obj");
 					hashed_string_64 tex = hashed_string_64("./assets/textures/awesomeface.png");
 
+					std::vector<hashed_string_64> meshes = { "./assets/obj/triobjmonkey.obj" , "./assets/obj/sizanne.obj", "./assets/obj/plane.obj" };
+					std::vector<hashed_string_64> texes = { "./assets/textures/awesomeface.png", "./assets/textures/wall.jpg", "./assets/textures/container.jpg" };
 					//entt::entity ent;
 					//entt::registry& reg = scene->get_registry();
 					//for (size_t i = 0; i < 5000; i++)
@@ -211,23 +233,50 @@ int main(void)
 					//	float y = 0.0f; // Or random if you want variety
 					//	float z = 0.0f; // Same here
 					//	reg.emplace<NameComponent>(ent, std::to_string(i));
-					//	reg.emplace<WorldPositionComponent>(ent, WorldPositionComponent{glm::vec3(x, y, z)});
+					//	reg.emplace<TransformDynamicComponent>(ent, TransformDynamicComponent{glm::vec3(x, y, z)});
 					//	reg.emplace<MeshComponent>(ent, MeshComponent{false, monkey_mesh });
 					//	reg.emplace<TextureComponent>(ent, TextureComponent{ false, tex });
 					//}
 
-
 					for (size_t i = 0; i < 1000; i++)
 					{
-						float x = -2.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 4.0f));
-						float y = 0.0f; // Or random if you want variety
-						float z = 0.0f; // Same here
+						float x = -10.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 20.0f));
+						float y = -10.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 20.0f));; // Or random if you want variety
+						float z = -10.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 20.0f));; // Same here
 						auto obj = scene->new_scene_object(std::to_string(i), true);
 						auto lock = obj.lock();
-						lock->add_component(WorldPositionComponent{ glm::vec3(x, y, z) });
-						lock->add_component(MeshComponent{ false, monkey_mesh });
-						lock->add_component(TextureComponent{false, tex});
+						size_t mesh_idx = std::rand() % meshes.size();
+						size_t tex_idx = std::rand() % texes.size();
+						lock->add_component(TransformDynamicComponent{ glm::vec3(x, y, z) });
+						lock->add_component(MeshComponent{ false, meshes[mesh_idx]});
+						lock->add_component(TextureComponent{ false, texes[tex_idx]});
 					}
+
+					//for (size_t i = 0; i < 2500; i++)
+					//{
+					//	float x = -10.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 20.0f));
+					//	float y = -10.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 20.0f));; // Or random if you want variety
+					//	float z = -10.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 20.0f));; // Same here
+					//	auto obj = scene->new_scene_object(std::to_string(i), true);
+					//	auto lock = obj.lock();
+					//	size_t mesh_idx = std::rand() % meshes.size();
+					//	size_t tex_idx = std::rand() % texes.size();
+					//	lock->add_component(TransformDynamicComponent{ glm::vec3(x, y, z) });
+					//	lock->add_component(MeshComponent{ false, meshes[mesh_idx] });
+					//	lock->add_component(TextureComponent{ false, texes[tex_idx] });
+					//}
+
+					//for (size_t i = 0; i < 10000; i++)
+					//{
+					//	float x = -10.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 20.0f));
+					//	float y = -10.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 20.0f));; // Or random if you want variety
+					//	float z = -10.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 20.0f));; // Same here
+					//	auto obj = scene->new_scene_object(std::to_string(i), true);
+					//	auto lock = obj.lock();
+					//	lock->add_component(TransformDynamicComponent{ glm::vec3(x, y, z) });
+					//	lock->add_component(MeshComponent{ false, monkey_mesh });
+					//	lock->add_component(TextureComponent{false, tex});
+					//}
 				}
 			}
 		}
@@ -319,6 +368,10 @@ int main(void)
 			}
 		}
 		
+		timer2.stop();
+		render_thread_time += timer2.get_time_ms();
+		
+
 		{
 			glfw_context->unbind_framebuffer();
 			std::unique_lock<std::mutex> lock(engine_context->mutex);
@@ -351,7 +404,7 @@ int main(void)
 			engine_context->swap_render_requests();
 			engine_context->render_thread = true;
 			engine_context->game_thread = true;
-
+			timer2.start();
 			// do all ui drawing.
 			imgui_manager->new_frame();
 
@@ -442,6 +495,8 @@ int main(void)
 			ui_mananger->draw_object_hierarchy();
 			ui_mananger->draw_object_properties();
 
+
+
 			//input_manager.update_input();
 			input_manager.update_input();
 			if (input_manager.is_key_held(EKey::A))
@@ -450,7 +505,18 @@ int main(void)
 			}
 
 			imgui_manager->render();
+			timer2.stop();
+			ui_manager_time += timer2.get_time_ms();
 		}
+		if (framies > 500)
+		{
+			PRINTLN("render thread timer: {}", render_thread_time / (double)framies);
+			PRINTLN("ui manager frametime: {}", ui_manager_time / (double)framies);
+			render_thread_time = 0;
+			ui_manager_time = 0;
+			framies = 0;
+		}
+		else framies++;
 		engine_context->cv_threads.notify_all();
 		//////////////////////////////////////////
 		//ImGui ends
@@ -488,12 +554,12 @@ int main(void)
 		//{
 		//	auto& registry = scene.get()->get_registry();
 
-		//	for (auto [entity, name, worldpos] : registry.view<NameComponent, WorldPositionComponent>().each())
+		//	for (auto [entity, name, worldpos] : registry.view<NameComponent, TransformDynamicComponent>().each())
 		//	{
 		//		worldpos.position.x += 0.0005f;
 		//	}
 
-		//	for (auto [entity, renderable, world_position] : registry.view<RenderableComponent, WorldPositionComponent>().each())
+		//	for (auto [entity, renderable, world_position] : registry.view<RenderableComponent, TransformDynamicComponent>().each())
 		//	{
 		//		renderer.temp_render(mesh, world_position);
 		//	}
@@ -505,7 +571,7 @@ int main(void)
 		//	{
 		//		if (RenderableComponent* renderable; scene_objects[i].get()->get_component(renderable))
 		//		{
-		//			if (WorldPositionComponent* world_pos; scene_objects[i].get()->get_component(world_pos))
+		//			if (TransformDynamicComponent* world_pos; scene_objects[i].get()->get_component(world_pos))
 		//			{
 		//				renderer.temp_render(mesh, *world_pos);
 		//			}

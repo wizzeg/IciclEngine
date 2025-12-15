@@ -1,29 +1,31 @@
 #include <engine/resources/scene_object_registry.h>
 #include <engine/editor/scene_object.h>
 
-uint32_t SceneObjectRegistry::add_scene_object(std::weak_ptr<SceneObject> a_scene_object_wptr)
+TrueID& SceneObjectRegistry::get_new_ID(entt::entity a_entity)
 {
-	scene_object_map[next_free] = SceneObjectWptr{ a_scene_object_wptr, (!a_scene_object_wptr.expired()) }; return next_free++;
+	TrueID id(get_next_id(), a_entity, (a_entity != entt::null));
+	IDs[id.true_id] = id;
+	return IDs[id.true_id];
 }
 
-void SceneObjectRegistry::remove_scene_object(uint32_t a_id)
+TrueID& SceneObjectRegistry::get_requested_ID(uint32_t a_requested_id, entt::entity a_entity)
 {
-	if (scene_object_map.find(a_id) != scene_object_map.end())
+	if (!IDs.contains(a_requested_id))
 	{
-		scene_object_map[a_id].is_valid = false;
+		TrueID id(a_requested_id, a_entity, (a_entity != entt::null));
+		IDs[id.true_id] = id;
+		return IDs[id.true_id];
 	}
+	TrueID no_id;
+	IDs[no_id.true_id] = no_id;
+	return IDs[no_id.true_id];
 }
 
-std::weak_ptr<SceneObject> SceneObjectRegistry::id_to_scene_object(uint32_t a_id, bool& exists)
+uint32_t SceneObjectRegistry::get_next_id()
 {
-	if (scene_object_map.find(a_id) != scene_object_map.end())
+	while (!IDs.contains(next_id))
 	{
-		exists = true;
-		return scene_object_map[a_id].scene_object;
+		next_id++;
 	}
-	else
-	{
-		exists = false;
-		return std::weak_ptr<SceneObject>();
-	}
-};
+	return next_id;
+}

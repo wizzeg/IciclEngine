@@ -1,0 +1,244 @@
+{
+    "name": "new scene",
+    "next index": 1,
+    "root objects": [
+        {
+            "children": [],
+            "components": [
+                {
+                    "fields": [
+                        {
+                            "name": "entity name: ",
+                            "type": "struct hashed_string_64",
+                            "value": "test save"
+                        },
+                        {
+                            "name": "entity id: ",
+                            "type": "enum entt::entity",
+                            "value": 0
+                        }
+                    ],
+                    "type": "NameComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "camera active: ",
+                            "type": "bool",
+                            "value": true
+                        },
+                        {
+                            "name": "orbital camera: ",
+                            "type": "bool",
+                            "value": false
+                        },
+                        {
+                            "name": "orbital point: ",
+                            "type": "struct glm::vec<3,float,0>",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "priority: ",
+                            "type": "unsigned short",
+                            "value": 5000
+                        },
+                        {
+                            "name": "buffer: ",
+                            "type": "struct hashed_string_64",
+                            "value": "main_camera_buffer2"
+                        },
+                        {
+                            "name": "field of view: ",
+                            "type": "float",
+                            "value": 70.0
+                        },
+                        {
+                            "name": "projection_matrix",
+                            "type": "struct glm::mat<4,4,float,0>",
+                            "value": [
+                                0.9520986676216125,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.4281480312347412,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                -1.0006669759750366,
+                                -1.0,
+                                0.0,
+                                0.0,
+                                -0.2000666856765747,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "view_matrix",
+                            "type": "struct glm::mat<4,4,float,0>",
+                            "value": [
+                                1.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0,
+                                0.0,
+                                -10.0,
+                                0.0,
+                                -34.0,
+                                1.0
+                            ]
+                        },
+                        {
+                            "name": "clear_color_buffer",
+                            "type": "bool",
+                            "value": true
+                        },
+                        {
+                            "name": "clear_depth_buffer",
+                            "type": "bool",
+                            "value": true
+                        },
+                        {
+                            "name": "target_entity",
+                            "type": "enum entt::entity",
+                            "value": 4294967295
+                        },
+                        {
+                            "name": "near_plane",
+                            "type": "float",
+                            "value": 300.0
+                        },
+                        {
+                            "name": "far_plane",
+                            "type": "float",
+                            "value": 0.10000000149011612
+                        },
+                        {
+                            "name": "aspect_ratio",
+                            "type": "float",
+                            "value": 1.5
+                        }
+                    ],
+                    "type": "CameraComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "mesh loaded: ",
+                            "type": "bool",
+                            "value": true
+                        },
+                        {
+                            "name": "mesh path: ",
+                            "type": "struct hashed_string_64",
+                            "value": "mest test"
+                        }
+                    ],
+                    "type": "MeshComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "texture loaded: ",
+                            "type": "bool",
+                            "value": true
+                        },
+                        {
+                            "name": "texture path: ",
+                            "type": "struct hashed_string_64",
+                            "value": "tex test"
+                        }
+                    ],
+                    "type": "TextureComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "position: ",
+                            "type": "struct glm::vec<3,float,0>",
+                            "value": [
+                                10.0,
+                                0.0,
+                                34.0
+                            ]
+                        },
+                        {
+                            "name": "scale: ",
+                            "type": "struct glm::vec<3,float,0>",
+                            "value": [
+                                1.0,
+                                1.0,
+                                1.0
+                            ]
+                        },
+                        {
+                            "name": "rotation: ",
+                            "type": "struct glm::vec<3,float,0>",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "update euler rotation: ",
+                            "type": "bool",
+                            "value": false
+                        },
+                        {
+                            "name": "overwrite quaternion rotation: ",
+                            "type": "bool",
+                            "value": false
+                        },
+                        {
+                            "name": "rotation_quat",
+                            "type": "struct glm::qua<float,0>",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0
+                            ]
+                        },
+                        {
+                            "name": "model_matrix",
+                            "type": "struct glm::mat<4,4,float,0>",
+                            "value": [
+                                1.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0,
+                                0.0,
+                                10.0,
+                                0.0,
+                                34.0,
+                                1.0
+                            ]
+                        }
+                    ],
+                    "type": "TransformDynamicComponent"
+                }
+            ],
+            "name": "test save"
+        }
+    ]
+}

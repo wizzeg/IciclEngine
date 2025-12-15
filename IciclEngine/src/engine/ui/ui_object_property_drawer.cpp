@@ -4,12 +4,14 @@
 #include <string>
 #include <engine/game/component_data.h>
 #include <random>
+#include <engine/editor/scene.h>
 
 void UIObjectPropertyDrawer::draw_object_properties(std::shared_ptr<SceneObject>& a_scene_object) /// need to cache the fields if they're selected
 {
 	
 	//if (std::shared_ptr<SceneObject> scene_object = a_scene_object.lock())
 	//{
+		entt::registry& registry = a_scene_object->get_scene().lock()->get_registry();
 		std::srand((unsigned int)std::time(0));
 		ImGui::BeginGroup();
 		bool drawn_anything = false;
@@ -58,7 +60,7 @@ void UIObjectPropertyDrawer::draw_object_properties(std::shared_ptr<SceneObject>
 			}
 			ImGui::SameLine();
 			ImGui::SeparatorText(component_datas[i]->get_name());
-			draw_component_fields(field_info);
+			draw_component_fields(field_info, registry);
 			ImGui::EndChild();
 		}
 		if (!drawn_anything)
@@ -71,12 +73,16 @@ void UIObjectPropertyDrawer::draw_object_properties(std::shared_ptr<SceneObject>
 	//}
 }
 
-void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_field_info)
+void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_field_info, entt::registry& a_registry)
 {
 	int i = 0;
 	for (const auto& field : a_field_info)
 	{
-		if (field.type == typeid(float))
+		if (field.edit_mode == EEditMode::Hidden)
+		{
+			continue;
+		}
+		else if (field.type == typeid(float))
 		{
 			ImGui::Text(field.name.c_str());
 			std::string id = "##" + field.name + std::to_string(i++) + " " + field.name;
@@ -161,8 +167,63 @@ void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_fie
 			{
 				*value = hashed_string_64(buffer);
 			}
-			std::string text = "path hash: " + std::to_string(value->hash)/*+ " - path: " + value.data()*/;
+			std::string text = "hash: " + std::to_string(value->hash)/*+ " - path: " + value.data()*/;
 			ImGui::Text(text.c_str());
+		}
+		else if (field.type == typeid(entt::entity))
+		{
+			uint32_t* value = static_cast<uint32_t*>(field.value_ptr);
+			std::string final_string = field.name + std::to_string(*value);
+			ImGui::Text(final_string.c_str());
+		}
+		else if (field.type == typeid(EntityReference))
+		{
+			EntityReference& value = *static_cast<EntityReference*>(field.value_ptr);
+			uint32_t entity_comp = (uint32_t)value.entity;
+			int scn_obj = ((int)value.scene_object);
+			int ent = (int)((uint32_t)value.entity);
+			std::string entity_string = "entity bla bla: " + std::to_string(ent);
+			std::string scnobj_string = "scene object: " + std::to_string(scn_obj);
+			if (ImGui::InputScalar(entity_string.c_str(), ImGuiDataType_U32, &value.entity))
+			{
+				//for (auto [entity, name_comp] : a_registry.view<NameComponent>().each())
+				//{
+				//	if (name_comp.entity.entity == value.entity)
+				//	{
+				//		value.scene_object = name_comp.entity.scene_object;
+				//		PRINTLN("found entity {}", (uint32_t)name_comp.entity.entity);
+				//		break;
+				//	}
+				//}
+				if (a_registry.valid(value.entity))
+				{
+					if (NameComponent* name = a_registry.try_get<NameComponent>(value.entity))
+					{
+						value.scene_object = name->entity.scene_object;
+					}
+
+				}
+				else
+				{
+					value.scene_object = 0;
+				}
+				
+			}
+			else if (ImGui::InputScalar(scnobj_string.c_str(), ImGuiDataType_U32, &value.scene_object))
+			{
+				bool set_entity = false;
+				for (auto [entity, name_comp] : a_registry.view<NameComponent>().each())
+				{
+					if (name_comp.entity.scene_object == value.scene_object)
+					{
+						value.entity = name_comp.entity.entity;
+						PRINTLN("Should not be here");
+						set_entity = true;
+						break;
+					}
+				}
+				if (!set_entity) value.entity = entt::null;
+			}
 		}
 		else
 		{

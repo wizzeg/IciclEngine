@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include <vector>
+#include <engine/utilities/entt_modified.h>
 
 struct FieldInfo;
 class SceneObject;
@@ -8,7 +9,7 @@ class SceneObject;
 struct UIObjectPropertyDrawer
 {
 	void draw_object_properties(std::shared_ptr<SceneObject>& a_scene_object);
-	void draw_component_fields(std::vector<FieldInfo>& a_field_info);
+	void draw_component_fields(std::vector<FieldInfo>& a_field_info, entt::registry& a_registry);
 private:
 	void draw_editable_field(FieldInfo& a_field_info);
 };

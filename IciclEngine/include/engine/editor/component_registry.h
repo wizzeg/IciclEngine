@@ -64,6 +64,26 @@ struct ComponentRegistry
 		return {};
 	}
 
+	std::optional<std::type_index> get_component_by_name(const std::string& a_name)
+	{
+		auto it = components_by_name.find(a_name);
+		if (it != components_by_name.end())
+		{
+			return it->second;
+		}
+		return std::nullopt;
+	}
+	
+	std::vector<FieldInfo> get_field_info_from_type(std::type_index a_type, void* a_component_ptr)
+	{
+		auto it = component_registry_by_comp_type.find(a_type);
+		if (it != component_registry_by_comp_type.end())
+		{
+			return it->second.field_info_generator(a_component_ptr);
+		}
+		return {};
+	}
+
 	template <typename TComponent>
 	std::vector<FieldInfo> get_component_name(TComponent* component)
 	{

@@ -14,6 +14,10 @@ void UISceneHierarchyDrawer::draw_hierarchy_node(std::weak_ptr<SceneObject> a_sc
 			flags |= ImGuiTreeNodeFlags_Bullet;
 		}
 		auto node_name = scene_object->get_name();
+		if (node_name == "")
+		{
+			node_name = " ";
+		}
 		bool is_open = ImGui::TreeNodeEx(node_name.c_str(), flags);
 
 		if (ImGui::IsItemClicked())

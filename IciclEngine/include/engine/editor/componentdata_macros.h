@@ -2,30 +2,33 @@
 #include <engine/editor/component_factory.h>
 #include <engine/editor/component_registry.h>
 #include <engine/game/components.h>
+//#include <engine/game/components.h>
 #include <engine/editor/field_info.h>
 #include <string>
 #include <vector>
 
 //#define FIELD(component, field) \
 //    { EEditMode::Editable, #field, typeid(decltype(component.field)), &component.field, 1.0f, false, false, {} }
+#define FIELD_HIDDEN(component, field) \
+    { EEditMode::Hidden, #field, #field, typeid(decltype(component.field)), &component.field, 0.0f, false, false, {} }
 
-#define  FIELD_READONLY_ENUM(label, component, field, ...) \
-    { EEditMode::Uneditable, label, typeid(decltype(component.field)), &component.field, 1.0f, false, true, {__VA_ARGS__} }
+#define  FIELD_READONLY_ENUM(name, component, field, ...) \
+    { EEditMode::Uneditable, #field, name, typeid(decltype(component.field)), &component.field, 1.0f, false, true, {__VA_ARGS__} }
 
-#define FIELD_ENUM(label, component, field, ...) \
-    { EEditMode::Editable, label, typeid(decltype(component.field)), &component.field, 1.0f, false, true, {__VA_ARGS__} }
+#define FIELD_ENUM(name, component, field, ...) \
+    { EEditMode::Editable, #field, name, typeid(decltype(component.field)), &component.field, 1.0f, false, true, {__VA_ARGS__} }
 
-#define  FIELD_READONLY_DEFAULT(label, component, field) \
-    { EEditMode::Uneditable, label, typeid(decltype(component.field)), &component.field, 1.0f, false, false, {} }
+#define  FIELD_READONLY_DEFAULT(name, component, field) \
+    { EEditMode::Uneditable, #field, name, typeid(decltype(component.field)), &component.field, 1.0f, false, false, {} }
 
-#define FIELD_DEFAULT(label, component, field) \
-    { EEditMode::Editable, label, typeid(decltype(component.field)), &component.field, 1.0f, false, false, {} }
+#define FIELD_DEFAULT(name, component, field) \
+    { EEditMode::Editable, #field, name, typeid(decltype(component.field)), &component.field, 1.0f, false, false, {} }
 
-#define  FIELD_READONLY_CUSTOM(label, component, field, size, sameline) \
-    { EEditMode::Uneditable, label, typeid(decltype(component.field)), &component.field, size, sameline, false, {} }
+#define  FIELD_READONLY_CUSTOM(name, component, field, size, sameline) \
+    { EEditMode::Uneditable, #field, name, typeid(decltype(component.field)), &component.field, size, sameline, false, {} }
 
-#define FIELD_CUSTOM(label, component, field, size, sameline) \
-    { EEditMode::Editable, label, typeid(decltype(component.field)), &component.field, size, sameline, false, {} }
+#define FIELD_CUSTOM(name, component, field, size, sameline) \
+    { EEditMode::Editable, #field, name, typeid(decltype(component.field)), &component.field, size, sameline, false, {} }
 
 // Helper macro to convert variadic args to vector
 #define MAKE_CATEGORY_VECTOR(...) std::vector<std::string>{__VA_ARGS__}

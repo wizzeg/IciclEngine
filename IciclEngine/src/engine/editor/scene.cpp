@@ -4,10 +4,11 @@
 #include <engine/game/components.h>
 #include <engine/editor/scene_object.h>
 #include <imgui-docking/imgui.h>
+#include <fstream>
 
 Scene::Scene()
 {
-	
+	name = "new scene";
 }
 Scene::Scene(std::shared_ptr<Scene> a_scene) // do I ever use this??
 {
@@ -25,6 +26,73 @@ Scene::~Scene()
 		scene_objects[i]->scene_ended();
 	}
 	
+}
+
+bool Scene::save(std::string a_path)
+{
+	json j = json::object();
+	j["name"] = name;
+	j["next index"] = next_index;
+	j["root objects"] = json::array();
+	for (auto& scene_object : root_scene_objects)
+	{
+		j["root objects"].push_back(scene_object->save());
+	}
+
+	std::ofstream file(a_path);
+	if (!file)
+	{
+		PRINTLN("Failed to save at: {}", a_path);
+		return false;
+	}
+
+	file << j.dump(4);  // Pretty-print with 4-space indent
+	return true;
+}
+
+bool Scene::load(std::string a_path, bool clear_registry)
+{
+	std::ifstream file(a_path);
+	if (!file)
+	{
+		PRINTLN("Failed to load at: {}", a_path);
+		return false;
+	}
+
+	if (clear_registry)
+	{
+		registry.clear();
+		for (auto [entity, name_comp] : registry.view<NameComponent>().each())
+		{
+			PRINTLN("ENTITIES STILL HERE");
+		}
+	}
+
+	json j;
+	file >> j;
+	root_scene_objects.clear();
+	scene_objects.clear();
+	j["name"] = name;
+	j["next index"] = next_index;
+
+	if (j["root objects"].is_array())
+	{
+		for (auto& root_obj : j["root objects"])
+		{
+			root_scene_objects.push_back(SceneObject::load(root_obj, shared_from_this()));
+			//scene_objects.push_back(root_scene_objects.back());
+		}
+	}
+
+	if (runtime)
+	{
+		for (auto& scene_object : scene_objects)
+		{
+			scene_object->to_runtime(shared_from_this());
+		}
+	}
+
+	return true;
 }
 
 entt::handle Scene::create_entity(const std::string a_name)
@@ -67,7 +135,6 @@ void Scene::destroy_scene_object(std::weak_ptr<SceneObject> a_scene_object)
 				scene_objects.erase(scene_objects.begin() + i);
 				break;
 			}
-
 		}
 		for (size_t i = 0; i < root_scene_objects.size(); i++)
 		{
@@ -79,6 +146,11 @@ void Scene::destroy_scene_object(std::weak_ptr<SceneObject> a_scene_object)
 		}
 	}
 
+}
+
+void Scene::add_scene_object(std::shared_ptr<SceneObject> a_scene_object)
+{
+	scene_objects.push_back(a_scene_object);
 }
 
 std::weak_ptr<SceneObject> Scene::new_scene_object(const std::string a_name, bool as_root_object)
@@ -136,10 +208,14 @@ const std::vector<std::shared_ptr<SceneObject>> Scene::get_root_scene_objects()
 void Scene::to_runtime()
 {
 	runtime = true;
-	for (size_t i = 0; i < scene_objects.size(); i++)
+	for (auto scene_object : root_scene_objects)
 	{
-		scene_objects[i]->to_runtime(shared_from_this());
+		scene_object->to_runtime(shared_from_this());
 	}
+	//for (size_t i = 0; i < scene_objects.size(); i++)
+	//{
+	//	scene_objects[i]->to_runtime(shared_from_this());
+	//}
 }
 
 void Scene::stop_scene()

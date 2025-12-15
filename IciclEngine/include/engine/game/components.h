@@ -14,21 +14,103 @@
 #include <engine/resources/obj_parser.h>
 #include <engine/utilities/entt_modified.h>
 
-struct NameComponent
+struct EntityReference
 {
-	std::string name;
+    entt::entity entity = entt::null;
+    uint32_t scene_object = 0;
 };
 
-struct WorldPositionComponent
+struct NameComponent
+{
+    hashed_string_64 hashed_name;
+	//std::string name;
+    EntityReference entity;
+};
+
+struct ToStatic
+{
+    // to convert Dynamic to static ... Basically check for this, if it has Dynamic, copy model matrix and add TransformStatic with model matrix
+    // or alternatively a tag that just removes the Transform component
+};
+
+struct TransformDynamicComponent
 {
     glm::vec3 position = glm::vec3(0.0f);
     glm::vec3 scale = glm::vec3(1.0f);
     glm::vec3 rotation_euler_do_not_use = glm::vec3(0.0f);
     glm::quat rotation_quat = glm::quat(1.0f, 0.f, 0.f, 0.f);
-    bool get_euler_angles = true;
+    bool get_euler_angles = false;
     bool overide_quaternion = false;
     glm::mat4 model_matrix = glm::mat4(1);
 };
+
+struct TransformComponent
+{
+    glm::vec3 position = glm::vec3(0.0f);
+    glm::vec3 scale = glm::vec3(1.0f);
+    glm::vec3 rotation_euler_do_not_use = glm::vec3(0.0f);
+    glm::quat rotation_quat = glm::quat(1.0f, 0.f, 0.f, 0.f);
+    bool get_euler_angles = false;
+    bool overide_quaternion = false;
+};
+
+struct TransformNoRotationComponent
+{
+    glm::vec3 position = glm::vec3(0.0f);
+    glm::vec3 scale = glm::vec3(1.0f);
+};
+
+struct ModelMatrixComponent // or use this, and remove from TransformDynamicComponent, then this is basically a static transform
+{
+    glm::mat4 model_matrix = glm::mat4(1);
+    void compute_model_matrix(glm::vec3 a_pos, glm::vec3 a_scale = glm::vec3(1), glm::quat a_rot = glm::vec3(0))
+    {
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, a_pos);
+        model *= glm::mat4_cast(a_rot);
+        model = glm::scale(model, a_scale);
+        //model_matrix = model;
+    }
+    void compute_model_matrix(glm::vec3 a_pos, glm::vec3 a_scale = glm::vec3(1), glm::vec3 a_rot = glm::vec3(0))
+    {
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, a_pos);
+        model = glm::rotate(model, glm::radians(a_rot.z), glm::vec3(0.0f, 0.0f, 1.0f));
+        model = glm::rotate(model, glm::radians(a_rot.y), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(a_rot.x), glm::vec3(1.0f, 0.0f, 0.0f));
+        model = glm::scale(model, a_scale);
+        //model_matrix = model;
+    }
+};
+
+//struct TransformStaticComponent
+//{
+//    glm::mat4 model_matrix = glm::mat4(1.f);
+//    void compute_model_matrix(glm::vec3 a_pos, glm::vec3 a_scale = glm::vec3(1), glm::vec3 a_rot = glm::vec3(0))
+//    {
+//        glm::mat4 model = glm::mat4(1.0f);
+//        model = glm::scale(model, a_scale);
+//        model = glm::rotate(model, glm::radians(a_rot.z), glm::vec3(0.0f, 0.0f, 1.0f));
+//        model = glm::rotate(model, glm::radians(a_rot.y), glm::vec3(0.0f, 1.0f, 0.0f));
+//        model = glm::rotate(model, glm::radians(a_rot.x), glm::vec3(1.0f, 0.0f, 0.0f));
+//        model = glm::translate(model, a_pos);
+//        model_matrix = model;
+//    }
+//};
+//
+//struct DeltaMovement // later for optimization, use these + static.
+//{
+//    glm::vec3 delta_position;
+//};
+//struct DeltaScale
+//{
+//    glm::vec3 delta_scale;
+//};
+//struct DeltaRotation
+//{
+//    glm::vec3 rotation_euler = glm::vec3(0.0f);
+//    glm::quat rotation_quat = glm::quat(1.0f, 0.f, 0.f, 0.f);
+//};
 
 struct MeshLoaderComponent
 {
@@ -72,7 +154,8 @@ struct CameraComponent
 
     hashed_string_64 frame_buffer_target = hashed_string_64("main_camera_buffer");
     glm::vec3 target_location = glm::vec3(0);
-    entt::entity target_entity = entt::null;
+    //entt::entity target_entity = entt::null;
+    EntityReference target_entity = EntityReference(entt::null, 0);
 
     uint16_t render_priority = 5000;
     float field_of_view = 70.f;
@@ -109,10 +192,14 @@ struct ChildComponent
 
 struct HierarchyComponent
 {
-    entt::entity parent = entt::null;
-    entt::entity next_sibling = entt::null;
-    entt::entity previous_sibling = entt::null;
-    entt::entity child = entt::null;
+    EntityReference parent;
+    EntityReference next_sibling;
+    EntityReference previous_sibling;
+    EntityReference child;
+    //entt::entity parent = entt::null;
+    //entt::entity next_sibling = entt::null;
+    //entt::entity previous_sibling = entt::null;
+    //entt::entity child = entt::null;
     uint8_t depth;
 };
 
