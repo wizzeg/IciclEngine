@@ -30,7 +30,7 @@ void Renderer::temp_render(MeshData& a_mesh, TransformDynamicComponent& a_world_
 	}
 }
 
-void Renderer::temp_render(RenderRequest& a_render_request)
+void Renderer::temp_render(RenderRequest& a_render_request, glm::vec3 a_camera_position)
 {
 	if (a_render_request.vao != 0)
 	{
@@ -50,6 +50,7 @@ void Renderer::temp_render(RenderRequest& a_render_request)
 				glActiveTexture((GLenum)(GL_TEXTURE0));
 				glBindTexture(GL_TEXTURE_2D, a_render_request.material_id);
 			}
+			shader->set_vec3f(glm::value_ptr(a_camera_position), "camera_position");
 			shader->set_vec1i((int)has_texture, "has_texture");
 			shader->set_mat4fv(proj, "proj");
 			shader->set_mat4fv(view, "view");

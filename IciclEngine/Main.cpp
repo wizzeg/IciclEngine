@@ -238,19 +238,19 @@ int main(void)
 					//	reg.emplace<TextureComponent>(ent, TextureComponent{ false, tex });
 					//}
 
-					for (size_t i = 0; i < 1000; i++)
-					{
-						float x = -10.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 20.0f));
-						float y = -10.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 20.0f));; // Or random if you want variety
-						float z = -10.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 20.0f));; // Same here
-						auto obj = scene->new_scene_object(std::to_string(i), true);
-						auto lock = obj.lock();
-						size_t mesh_idx = std::rand() % meshes.size();
-						size_t tex_idx = std::rand() % texes.size();
-						lock->add_component(TransformDynamicComponent{ glm::vec3(x, y, z) });
-						lock->add_component(MeshComponent{ false, meshes[mesh_idx]});
-						lock->add_component(TextureComponent{ false, texes[tex_idx]});
-					}
+					//for (size_t i = 0; i < 1000; i++)
+					//{
+					//	float x = -10.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 20.0f));
+					//	float y = -10.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 20.0f));; // Or random if you want variety
+					//	float z = -10.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 20.0f));; // Same here
+					//	auto obj = scene->new_scene_object(std::to_string(i), true);
+					//	auto lock = obj.lock();
+					//	size_t mesh_idx = std::rand() % meshes.size();
+					//	size_t tex_idx = std::rand() % texes.size();
+					//	lock->add_component(TransformDynamicComponent{ glm::vec3(x, y, z) });
+					//	lock->add_component(MeshComponent{ false, meshes[mesh_idx]});
+					//	lock->add_component(TextureComponent{ false, texes[tex_idx]});
+					//}
 
 					//for (size_t i = 0; i < 2500; i++)
 					//{
@@ -312,11 +312,12 @@ int main(void)
 		glfw_context->clear();
 		//shader_program->bind();
 		renderer.set_proj_view_matrix(engine_context->editor_camera.get_proj_matrix(), engine_context->editor_camera.get_view_matrix());
+		glm::vec3 camera_pos = engine_context->editor_camera.get_camera_positoin();
 		for (size_t i = 0; i < render_requests.size(); i++)
 		{
 			if (render_requests[i].vao != 0)
 			{
-				renderer.temp_render(render_requests[i]);
+				renderer.temp_render(render_requests[i], camera_pos);
 			}
 		}
 		glfw_context->bind_framebuffer("main_camera_buffer");
