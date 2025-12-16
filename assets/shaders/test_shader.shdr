@@ -1,0 +1,58 @@
+{
+    "frag_shader": "./assets/shaders/fragment/frag.glsl",
+    "name": "shader",
+    "uniforms": [
+        {
+            "dirty": true,
+            "location": "position",
+            "type": "vec3",
+            "value": [
+                5.0,
+                4.0,
+                3.0
+            ]
+        },
+        {
+            "dirty": true,
+            "location": "model",
+            "type": "mat4",
+            "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        {
+            "dirty": true,
+            "location": "edited vec3",
+            "type": "vec3",
+            "value": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        {
+            "dirty": true,
+            "location": "int",
+            "type": "ivec1",
+            "value": [
+                10
+            ]
+        }
+    ],
+    "vertex_shader": "./assets/shaders/vertex/vert.glsl"
+}

@@ -74,93 +74,6 @@ int main(void)
 	///////////
 	// Making scene and adding test scene_objects
 	std::shared_ptr<Scene> scene = std::make_shared<Scene>();
-	//{
-	//	auto sc = scene->new_scene_object("3d model", true);
-	//	sc.lock()->add_or_replace_component(TransformDynamicComponent{});
-	//	sc.lock()->add_or_replace_component(MeshComponent{false, "./assets/obj/triobjmonkey.obj"});
-	//	sc.lock()->add_or_replace_component(TextureComponent{false, "./assets/textures/awesomeface.png"});
-	//	auto c = scene->new_scene_object("camera", false);
-	//	if (auto child = c.lock())
-	//	{
-	//		child->add_or_replace_component(TransformDynamicComponent{ glm::vec3(0, 0, 6) });
-	//		child->add_or_replace_component(CameraComponent{});
-	//		sc.lock()->add_child(child);
-	//	}
-	//}
-	//{
-	//	auto camera = scene->new_scene_object("Camera test", true);
-	//	if (auto c = camera.lock())
-	//	{
-	//		hashed_string_64 buffer_name("main_camera_buffer");
-	//		c->add_component_data<WorldPositionComponentData, TransformDynamicComponent>
-	//			(TransformDynamicComponent{ glm::vec3(0.0f, 0.0f, 10.0f) });
-	//		c->add_component_data<CameraComponentData, CameraComponent>
-	//			(CameraComponent{});
-	//	}
-
-	//	auto camera2 = scene->new_scene_object("Camera test2", true);
-	//	if (auto c = camera2.lock())
-	//	{
-	//		hashed_string_64 buffer_name("main_camera_buffer");
-	//		c->add_component_data<WorldPositionComponentData, TransformDynamicComponent>(TransformDynamicComponent{ glm::vec3(5.0f, 5.0f, 10.0f) });
-	//		c->add_component_data<CameraComponentData, CameraComponent>
-	//			(CameraComponent{});
-	//	}
-	//	hashed_string_64 string("./assets/obj/triobjmonkey.obj");
-	//	std::weak_ptr<SceneObject> withtChild = scene->new_scene_object("with Child", true);
-	//	std::weak_ptr<SceneObject> withoutChild = scene->new_scene_object("without Child", true);
-	//	if (auto shared = withoutChild.lock())
-	//	{
-	//		shared->add_component_data<WorldPositionComponentData>(TransformDynamicComponent{ glm::vec3(0.f,0.f,0.f) });
-	//		hashed_string_64 path("./assets/obj/sizanne.obj");
-	//		shared->add_component_data<MeshComponentData>(MeshComponent{ 0, path});
-	//		hashed_string_64 texture("./assets/textures/awesomeface.png");
-	//		shared->add_component_data<TextureComponentData>(TextureComponent{ false, texture});
-	//	}
-	//	std::weak_ptr<SceneObject> wChild = scene->new_scene_object("without Child", false);
-	//	std::weak_ptr<SceneObject> ChildwChild = scene->new_scene_object("Child with child", false);
-	//	std::weak_ptr<SceneObject> childofchild = scene->new_scene_object("Child of Child", false);
-	//	if (auto parent = withtChild.lock())
-	//	{
-	//		parent->add_component_data<WorldPositionComponentData>(TransformDynamicComponent{glm::vec3(0,1,2)});
-	//		parent->replace_component_data(TransformDynamicComponent{ glm::vec3(1,2,3) });
-	//		parent->add_or_replace_component_data<WorldPositionComponentData>(TransformDynamicComponent{ glm::vec3(2,3,4) });
-	//		parent->add_component_data<MeshComponentData>(MeshComponent{0, string});
-	//		TransformDynamicComponent* test;
-	//		if (parent->get_component(test))
-	//		{
-	//			PRINTLN("x value: {}", test->position.x);
-	//			test->position.x = 10;
-	//			PRINTLN("x value: {}", test->position.x);
-	//		}
-	//		else {
-	//			PRINTLN("failes");
-	//		}
-	//		hashed_string_64 texture("./assets/textures/wall.jpg");
-	//		parent->add_component_data<TextureComponentData>(TextureComponent{ false, texture });
-	//		parent->add_child(wChild);
-	//		parent->add_child(ChildwChild);
-	//		if (auto shared = ChildwChild.lock())
-	//		{
-	//			shared->add_child(childofchild);
-	//			if (auto shared = childofchild.lock())
-	//			{
-	//				
-	//				if (MaterialComponent* mat_test; shared->get_component<MaterialComponent>(mat_test))
-	//				{
-	//					PRINTLN("GOT MAT TEST SOMEHOW");
-	//				}
-	//				
-	//				shared->add_component_data<WorldPositionComponentData>(TransformDynamicComponent{ glm::vec3(-1.f,0.f,0.f) });
-	//				shared->add_component_data<RenderableComponentData>(RenderableComponent{ 2,3 });
-	//				shared->remove_component_data<NameComponentData>();
-	//				hashed_string_64 string("./assets/obj/triobjmonkey.obj");
-	//				shared->add_component_data<MeshComponentData>(MeshComponent{0, string });
-	//			}
-	//		}
-	//	}
-	//}
-
 
 	std::shared_ptr<UIManager> ui_mananger  = std::make_shared<UIManager>();
 	ui_mananger->set_scene(scene);
@@ -170,7 +83,11 @@ int main(void)
 	std::shared_ptr<ShaderProgram> shader_program = std::make_shared<ShaderProgram>("./assets/shaders/vertex/vert.glsl", "./assets/shaders/fragment/frag.glsl");
 	Renderer renderer;
 	renderer.temp_set_shader(shader_program);
+	//shader_program->save("./assets/shaders/test_shader.shdr");
 
+	ShaderProgram shader_load;
+	shader_load.load("./assets/shaders/test_shader.shdr");
+	shader_load.save("./assets/shaders/test_shader2.shdr");
 	//std::shared_ptr<MeshDataGenStorage> storage = std::make_shared<MeshDataGenStorage>(2);
 	std::shared_ptr<EngineContext> engine_context = std::make_shared<EngineContext>(/*storage*/);
 	
@@ -238,19 +155,19 @@ int main(void)
 					//	reg.emplace<TextureComponent>(ent, TextureComponent{ false, tex });
 					//}
 
-					//for (size_t i = 0; i < 1000; i++)
-					//{
-					//	float x = -10.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 20.0f));
-					//	float y = -10.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 20.0f));; // Or random if you want variety
-					//	float z = -10.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 20.0f));; // Same here
-					//	auto obj = scene->new_scene_object(std::to_string(i), true);
-					//	auto lock = obj.lock();
-					//	size_t mesh_idx = std::rand() % meshes.size();
-					//	size_t tex_idx = std::rand() % texes.size();
-					//	lock->add_component(TransformDynamicComponent{ glm::vec3(x, y, z) });
-					//	lock->add_component(MeshComponent{ false, meshes[mesh_idx]});
-					//	lock->add_component(TextureComponent{ false, texes[tex_idx]});
-					//}
+					for (size_t i = 0; i < 1000; i++)
+					{
+						float x = -10.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 20.0f));
+						float y = -10.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 20.0f));; // Or random if you want variety
+						float z = -10.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 20.0f));; // Same here
+						auto obj = scene->new_scene_object(std::to_string(i), true);
+						auto lock = obj.lock();
+						size_t mesh_idx = std::rand() % meshes.size();
+						size_t tex_idx = std::rand() % texes.size();
+						lock->add_component(TransformDynamicComponent{ glm::vec3(x, y, z) });
+						lock->add_component(MeshComponent{ false, meshes[mesh_idx]});
+						lock->add_component(TextureComponent{ false, texes[tex_idx]});
+					}
 
 					//for (size_t i = 0; i < 2500; i++)
 					//{
@@ -495,7 +412,8 @@ int main(void)
 
 			ui_mananger->draw_object_hierarchy();
 			ui_mananger->draw_object_properties();
-
+			ui_mananger->draw_selected_icon(engine_context->editor_camera.get_view_matrix(),
+				engine_context->editor_camera.get_proj_matrix());
 
 
 			//input_manager.update_input();

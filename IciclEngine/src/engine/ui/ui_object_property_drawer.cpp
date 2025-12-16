@@ -186,15 +186,6 @@ void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_fie
 			std::string scnobj_string = "scene object: " + std::to_string(scn_obj);
 			if (ImGui::InputScalar(entity_string.c_str(), ImGuiDataType_U32, &value.entity))
 			{
-				//for (auto [entity, name_comp] : a_registry.view<NameComponent>().each())
-				//{
-				//	if (name_comp.entity.entity == value.entity)
-				//	{
-				//		value.scene_object = name_comp.entity.scene_object;
-				//		PRINTLN("found entity {}", (uint32_t)name_comp.entity.entity);
-				//		break;
-				//	}
-				//}
 				if (a_registry.valid(value.entity))
 				{
 					if (NameComponent* name = a_registry.try_get<NameComponent>(value.entity))
@@ -217,7 +208,6 @@ void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_fie
 					if (name_comp.entity.scene_object == value.scene_object)
 					{
 						value.entity = name_comp.entity.entity;
-						PRINTLN("Should not be here");
 						set_entity = true;
 						break;
 					}

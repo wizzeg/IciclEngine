@@ -3,6 +3,7 @@
 #include <engine/editor/componentdata_macros.h>
 
 REGISTER_COMPONENT(TestComponent, ("Test Category"), FIELD_DEFAULT("test: ", comp, test))
+
 REGISTER_COMPONENT(NameComponent, ("Default"),
 	FIELD_CUSTOM("entity name: ", comp, hashed_name, 2.0f, false),
 	FIELD_READONLY_CUSTOM("entity id: ", comp, entity, 1.25f, false)
@@ -45,3 +46,10 @@ REGISTER_COMPONENT(TransformDynamicComponent, ("Transform", "Rendering"),
 		FIELD_HIDDEN(comp, far_plane),
 		FIELD_HIDDEN(comp, aspect_ratio),
 		)
+
+	REGISTER_COMPONENT(ShadingLightComponent, ("Rendering"),
+		FIELD_CUSTOM("ambient: ", comp, light_ambient, 1.5f, false),
+		FIELD_CUSTOM("diffuse: ", comp, light_ambient, 1.5f, false),
+		FIELD_CUSTOM("specular: ", comp, light_ambient, 1.5f, false),
+		FIELD_CUSTOM("attenuation: ", comp, light_ambient, 1.5f, false)
+	)

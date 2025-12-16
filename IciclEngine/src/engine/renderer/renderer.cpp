@@ -50,11 +50,15 @@ void Renderer::temp_render(RenderRequest& a_render_request, glm::vec3 a_camera_p
 				glActiveTexture((GLenum)(GL_TEXTURE0));
 				glBindTexture(GL_TEXTURE_2D, a_render_request.material_id);
 			}
-			shader->set_vec3f(glm::value_ptr(a_camera_position), "camera_position");
+			//shader->set_vec3f(glm::value_ptr(a_camera_position), "camera_position");
+			shader->bind_uniform(typeid(glm::vec3), "camera_position", static_cast<void*>(glm::value_ptr(a_camera_position)));
 			shader->set_vec1i((int)has_texture, "has_texture");
-			shader->set_mat4fv(proj, "proj");
-			shader->set_mat4fv(view, "view");
-			shader->set_mat4fv(a_render_request.model_matrix, "model");
+			shader->bind_uniform(typeid(glm::mat4), "proj", static_cast<void*>(glm::value_ptr(proj)));
+			shader->bind_uniform(typeid(glm::mat4), "view", static_cast<void*>(glm::value_ptr(view)));
+			shader->bind_uniform(typeid(glm::mat4), "model", static_cast<void*>(glm::value_ptr(a_render_request.model_matrix)));
+			//shader->set_mat4fv(proj, "proj");
+			//shader->set_mat4fv(view, "view");
+			//shader->set_mat4fv(a_render_request.model_matrix, "model");
 			glBindVertexArray(a_render_request.vao);
 			glDrawElements(GL_TRIANGLES, a_render_request.indices_size, GL_UNSIGNED_INT, 0);
 			if ((count % 50 == 0) || true)

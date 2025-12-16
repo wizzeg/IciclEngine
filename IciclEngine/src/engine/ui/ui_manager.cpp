@@ -8,6 +8,7 @@
 #include <engine/editor/component_registry.h>
 #include <engine/editor/component_factory.h>
 
+
 void UIManager::draw_object_hierarchy()
 {
 	if (shoud_draw_object_hierarchy)
@@ -162,7 +163,6 @@ void UIManager::draw_object_properties()
 			//{
 			//	shared_scene->destroy_entity(selected->get_entity());
 			//}
-
 		}
 		else
 		{
@@ -177,7 +177,33 @@ void UIManager::draw_object_properties()
 
 }
 
+void UIManager::draw_selected_icon(glm::mat4 a_view, glm::mat4 a_proj)
+{
+	//if (auto selected = UISceneHierarchyDrawer::selected_scene_object.lock())
+	//{
+	//	if (auto world_pos = selected->try_get_component<TransformDynamicComponent>())
+	//	{
+	//		glm::vec4 clip_pos = a_proj * a_view * glm::vec4(world_pos->get_component().position, 1.0f);
+	//		glm::vec2 screen_pos((clip_pos.x / clip_pos.w + 1.0f) * 0.5f * 10.f,
+	//			(1.0f - clip_pos.y / clip_pos.w) * 0.5f * 10.f);
+
+	//		ImGui::Begin("ViewportOverlay", nullptr,
+	//			ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs |
+	//			ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus);
+	//		ImGui::SetCursorScreenPos(ImVec2(screen_pos.x - 5, screen_pos.y - 5));  // Center 10x10 icon
+	//		ImGui::Image((ImTextureID)1, ImVec2(10.f, 10.f));
+	//		ImGui::End();
+	//	}
+
+	//}
+}
+
 void UIManager::set_scene(std::weak_ptr<Scene> a_scene)
 {
 	scene = a_scene;
+}
+
+void UIManager::set_draw_texture(GLuint a_texture_id)
+{
+	texture_id = a_texture_id;
 }

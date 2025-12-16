@@ -103,6 +103,12 @@
     <Filter Include="Header Files\vendor\nlohmann">
       <UniqueIdentifier>{0e4d4fc5-d0f5-4dc4-b897-2d1979dbd0d6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\vendor\imguizmo">
+      <UniqueIdentifier>{4ea0ca21-475a-4ce4-9644-34d87e85dcdd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\vendor\imguizmo">
+      <UniqueIdentifier>{d61c7fae-bfca-452a-a532-b5aa3dd76fc6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -418,6 +424,12 @@
     </ClInclude>
     <ClInclude Include="include\engine\editor\component_entries.h">
       <Filter>Header Files\engine\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\resources\uniform_registry.h">
+      <Filter>Header Files\engine\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\resources\data_structs.h">
+      <Filter>Header Files\engine\resources</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

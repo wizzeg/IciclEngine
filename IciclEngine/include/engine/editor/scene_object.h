@@ -125,13 +125,30 @@ public:
 		{
 			if (comp_data->get_type() == typeid(TComponent))
 			{
-				ComponentData<TComponent>* comp = static_cast<ComponentData<TComponent>*>(comp_data);
+				ComponentData<TComponent>* comp = static_cast<ComponentData<TComponent>*>(comp_data.get());
 				comp->set_new_component_value(component);
 				return comp;
 			}
 		}
 		return nullptr;
 	}
+
+	template <typename TComponent>
+	ComponentData<TComponent>* try_get_component()
+	{
+		for (const auto& comp_data : component_datas)
+		{
+			if (comp_data->get_type() == typeid(TComponent))
+			{
+				ComponentData<TComponent>* comp = static_cast<ComponentData<TComponent>*>(comp_data.get());
+				return comp;
+			}
+		}
+		return nullptr;
+	}
+
+
+
 
 	template <typename TComponent>
 	bool replace_component_data(TComponent&& a_component)

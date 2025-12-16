@@ -556,8 +556,8 @@ std::optional<std::vector<RenderRequest>> RenderRequestReturner::return_requests
 	std::vector<RenderRequest> render_requests;
 	render_requests.reserve(a_request.size());
 	hashed_string_64 invalid_hash;
-	bool use_map = true;
-	bool sort_before_map = true;
+	bool use_map = false;
+	bool sort_before_map = false;
 	bool use_extra_sort = true;
 
 	if (!use_map)
@@ -743,13 +743,26 @@ std::optional<std::vector<RenderRequest>> RenderRequestReturner::return_requests
 		{
 			RenderRequest new_request;
 			MeshData& mesh = renderreqret_gen_storage.mesh_map[request.mesh_hash];
-			new_request.indices_size = mesh.num_indicies;
-			new_request.vao = mesh.VAO;
+			//new_request.indices_size = mesh.num_indicies;
+			//new_request.vao = mesh.VAO;
+			//new_request.tex_hash = request.tex_hash;
+			//new_request.mesh_hash = request.mesh_hash;
 			TextureData& tex = renderreqret_gen_storage.tex_map[request.tex_hash];
-			new_request.material_id = tex.texture_id;
-			new_request.model_matrix = request.model_matrix;
-			render_requests.push_back(new_request);
+			//new_request.material_id = tex.texture_id;
+			//new_request.model_matrix = request.model_matrix;
+			render_requests.emplace_back
+			(request.model_matrix, request.mesh_hash, request.tex_hash, mesh.VAO, mesh.num_indicies, 0 , tex.texture_id);
 		}
+		//for (auto& request : render_requests)
+		//{
+		//	//RenderRequest new_request;
+		//	//MeshData& mesh = renderreqret_gen_storage.mesh_map[request.mesh_hash];
+		//	//new_request.indices_size = mesh.num_indicies;
+		//	//new_request.vao = mesh.VAO;
+		//	TextureData& tex = renderreqret_gen_storage.tex_map[request.tex_hash];
+		//	request.material_id = tex.texture_id;
+		//	request.model_matrix = request.model_matrix;
+		//}
 	}
 	
 	// sort for texture/material first, and then by mesh.. but later I need to sort by shader -> material -> mesh.

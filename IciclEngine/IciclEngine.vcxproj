@@ -231,11 +231,13 @@
     <ClInclude Include="include\engine\resources\asset_loader.h" />
     <ClInclude Include="include\engine\resources\asset_manager.h" />
     <ClInclude Include="include\engine\resources\data_storage.h" />
+    <ClInclude Include="include\engine\resources\data_structs.h" />
     <ClInclude Include="include\engine\resources\job_info.h" />
     <ClInclude Include="include\engine\resources\message_queue.h" />
     <ClInclude Include="include\engine\resources\model_loader.h" />
     <ClInclude Include="include\engine\resources\obj_parser.h" />
     <ClInclude Include="include\engine\resources\scene_object_registry.h" />
+    <ClInclude Include="include\engine\resources\uniform_registry.h" />
     <ClInclude Include="include\engine\ui\imgui_manager.h" />
     <ClInclude Include="include\engine\ui\ui_component_drawer.h" />
     <ClInclude Include="include\engine\ui\ui_manager.h" />

@@ -30,7 +30,7 @@
 #define FIELD_CUSTOM(name, component, field, size, sameline) \
     { EEditMode::Editable, #field, name, typeid(decltype(component.field)), &component.field, size, sameline, false, {} }
 
-// Helper macro to convert variadic args to vector
+// helper macro to convert variadic args to vector
 #define MAKE_CATEGORY_VECTOR(...) std::vector<std::string>{__VA_ARGS__}
 
 #define REGISTER_COMPONENT(component, categories, ...) \

@@ -13,12 +13,7 @@
 #include <engine/renderer/render_info.h>
 #include <engine/resources/obj_parser.h>
 #include <engine/utilities/entt_modified.h>
-
-struct EntityReference
-{
-    entt::entity entity = entt::null;
-    uint32_t scene_object = 0;
-};
+#include <engine/resources/data_structs.h>
 
 struct NameComponent
 {
@@ -168,6 +163,13 @@ struct CameraComponent
     bool clear_depth_buffer = true;
 };
 
+struct ShadingLightComponent
+{
+    glm::vec4 light_ambient = glm::vec4(0.2, 0.2, 0.2, 1);
+    glm::vec4 light_diffuse = glm::vec4(1, 0.9, 0.8, 1);
+    glm::vec4 light_specular = glm::vec4(0.9, 0.8, 0.7, 1);
+    glm::vec3 light_attenuation = glm::vec3(1, 0.1, 0.001);
+};
 
 struct FrameBufferComponent
 {
