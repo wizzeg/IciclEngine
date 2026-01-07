@@ -16,10 +16,12 @@ struct Renderer
 	void temp_render(MeshData& a_mesh, TransformDynamicComponent& a_world_pos);
 	void temp_render(RenderRequest& a_render_request, glm::vec3 a_camera_positon = glm::vec3(0));
 	void temp_set_shader(std::weak_ptr<ShaderProgram> a_shader);
+	void set_camera_position(glm::vec3 a_position) { camera_position = a_position; };
 	void set_proj_view_matrix(glm::mat4 a_proj, glm::mat4 a_view);
 private:
 	bool not_bound = true;
 	unsigned int count = 0;
+	glm::vec3 camera_position;
 	glm::mat4 proj;
 	glm::mat4 view;
 };

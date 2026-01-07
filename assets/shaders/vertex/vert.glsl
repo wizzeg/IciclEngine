@@ -29,14 +29,14 @@ void main()
 	//int vertexIndex = gl_VertexID;
 	//projection * view * model *
 	gl_Position = proj * view * model * vec4(aPos, 1.0);
-	vec3 combined = aCol.rgb * 0.35 + (aNrm.rgb * 0.5 + 0.5) * 0.65;
-	vCol = vec4(combined, 1.0);
 	vTexCoord = aTexCoord.xyz;
 	test_thing = camera_position;
 	//vert_normal = (model * vec4(aNrm,1)).xyz;
-	vert_normal = mat3(model) * aNrm; // rotate normal
+	mat3 normalMatrix = transpose(inverse(mat3(model)));
+	vert_normal = normalize(normalMatrix * aNrm); // rotate normal
 	vert_pos = (model * vec4(aPos, 1)).xyz;
 	vert_to_camera = normalize(camera_position - vert_pos);
-
+	vec3 combined = aCol.rgb * 0.35 + (aNrm.rgb * 0.5 + 0.5) * 0.65;
+	vCol = vec4(vert_normal, 1.0);
 }
 	

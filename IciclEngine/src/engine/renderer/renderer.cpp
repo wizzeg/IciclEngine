@@ -51,7 +51,20 @@ void Renderer::temp_render(RenderRequest& a_render_request, glm::vec3 a_camera_p
 				glBindTexture(GL_TEXTURE_2D, a_render_request.material_id);
 			}
 			//shader->set_vec3f(glm::value_ptr(a_camera_position), "camera_position");
-			shader->bind_uniform(typeid(glm::vec3), "camera_position", static_cast<void*>(glm::value_ptr(a_camera_position)));
+
+			// set texture should have it's own thing, 
+			// the "random" slot number just has to be sent to the vec1i uniform to the sampler
+			// the random will just be in order that they are in the vector
+
+			// so I just need to store a path so I can load the texture
+			// then I also just need a string for the location (the uniform name for the sampler)
+
+			// so store those two things in a UniformSampler as the type, that is a struct
+			// then bind_uniform has it's way to handle that UniformSampler type
+
+			// so the textures are simply uniforms
+
+			shader->bind_uniform(typeid(glm::vec3), "camera_position", static_cast<void*>(glm::value_ptr(camera_position)));
 			shader->set_vec1i((int)has_texture, "has_texture");
 			shader->bind_uniform(typeid(glm::mat4), "proj", static_cast<void*>(glm::value_ptr(proj)));
 			shader->bind_uniform(typeid(glm::mat4), "view", static_cast<void*>(glm::value_ptr(view)));
@@ -61,7 +74,7 @@ void Renderer::temp_render(RenderRequest& a_render_request, glm::vec3 a_camera_p
 			//shader->set_mat4fv(a_render_request.model_matrix, "model");
 			glBindVertexArray(a_render_request.vao);
 			glDrawElements(GL_TRIANGLES, a_render_request.indices_size, GL_UNSIGNED_INT, 0);
-			if ((count % 50 == 0) || true)
+			if ((count % 1000 == 0))
 			{
 				shader->unbind();
 				not_bound = true;

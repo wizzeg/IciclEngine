@@ -46,6 +46,7 @@
 #include <engine/utilities/memory_checking.h>
 #include <engine/editor/field_serialization_entires.h>
 #include <engine/editor/component_entries.h>
+#include <engine/resources/asset_manager.h>
 
 
 int main(void)
@@ -74,7 +75,7 @@ int main(void)
 	///////////
 	// Making scene and adding test scene_objects
 	std::shared_ptr<Scene> scene = std::make_shared<Scene>();
-
+	//scene->load("./assets/scenes/scene.scn", true);
 	std::shared_ptr<UIManager> ui_mananger  = std::make_shared<UIManager>();
 	ui_mananger->set_scene(scene);
 
@@ -83,7 +84,7 @@ int main(void)
 	std::shared_ptr<ShaderProgram> shader_program = std::make_shared<ShaderProgram>("./assets/shaders/vertex/vert.glsl", "./assets/shaders/fragment/frag.glsl");
 	Renderer renderer;
 	renderer.temp_set_shader(shader_program);
-	//shader_program->save("./assets/shaders/test_shader.shdr");
+	shader_program->save("./assets/shaders/test_shader.shdr");
 
 	ShaderProgram shader_load;
 	shader_load.load("./assets/shaders/test_shader.shdr");
@@ -120,6 +121,11 @@ int main(void)
 	double ui_manager_time = 0;
 	int framies = 0;
 
+	//AssetManager asset_manager;
+	//MeshDataJob job("./assets/obj/triobjmonkey.obj", ERequestType::LoadFromFile);
+	////AssetJob asset_job = std::move(job);
+	//asset_manager.add_asset_job(std::move(job));
+
 	uint64_t wait_time = 0;
 	while (engine_context->run())
 	{
@@ -134,13 +140,14 @@ int main(void)
 					scene->to_runtime(); // deal with making a runtime copy later -------- runtime thing works at least, entities are created
 					// for now I need to be able to see changes to entities -> handle signaling
 					game_playing = true;
-					engine_context.get()->game_playing = true;
+					engine_context->game_playing = true;
 					std::srand(static_cast<unsigned>(std::time(nullptr)));
 					hashed_string_64 monkey_mesh = hashed_string_64("./assets/obj/triobjmonkey.obj");
 					hashed_string_64 tex = hashed_string_64("./assets/textures/awesomeface.png");
 
-					std::vector<hashed_string_64> meshes = { "./assets/obj/triobjmonkey.obj" , "./assets/obj/sizanne.obj", "./assets/obj/plane.obj" };
+					std::vector<hashed_string_64> meshes = { "./assets/obj/triobjmonkey.obj" , "./assets/obj/sizanne.obj", "./assets/obj/plane.obj", "./assets/obj/robot.obj" };
 					std::vector<hashed_string_64> texes = { "./assets/textures/awesomeface.png", "./assets/textures/wall.jpg", "./assets/textures/container.jpg" };
+					std::vector<hashed_string_64> mats;
 					//entt::entity ent;
 					//entt::registry& reg = scene->get_registry();
 					//for (size_t i = 0; i < 5000; i++)
@@ -155,7 +162,7 @@ int main(void)
 					//	reg.emplace<TextureComponent>(ent, TextureComponent{ false, tex });
 					//}
 
-					for (size_t i = 0; i < 1000; i++)
+					for (size_t i = 0; i < 10; i++)
 					{
 						float x = -10.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 20.0f));
 						float y = -10.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 20.0f));; // Or random if you want variety
@@ -166,6 +173,7 @@ int main(void)
 						size_t tex_idx = std::rand() % texes.size();
 						lock->add_component(TransformDynamicComponent{ glm::vec3(x, y, z) });
 						lock->add_component(MeshComponent{ false, meshes[mesh_idx]});
+						//lock->add_component(MaterialComponent{false, });
 						lock->add_component(TextureComponent{ false, texes[tex_idx]});
 					}
 
@@ -228,6 +236,7 @@ int main(void)
 		glfw_context->bind_framebuffer("editor_frame_buffer");
 		glfw_context->clear();
 		//shader_program->bind();
+		renderer.set_camera_position(engine_context->editor_camera.get_camera_positoin());
 		renderer.set_proj_view_matrix(engine_context->editor_camera.get_proj_matrix(), engine_context->editor_camera.get_view_matrix());
 		glm::vec3 camera_pos = engine_context->editor_camera.get_camera_positoin();
 		for (size_t i = 0; i < render_requests.size(); i++)
@@ -245,6 +254,7 @@ int main(void)
 			if (glfw_context->bind_framebuffer(engine_context->cameras_render[std::size_t(!engine_context->write_pos)][i].frame_buffer_hashed.string))
 			{
 				glfw_context->clear();
+				renderer.set_camera_position(engine_context->cameras_render[std::size_t(!engine_context->write_pos)][i].position);
 				renderer.set_proj_view_matrix(engine_context->cameras_render[std::size_t(!engine_context->write_pos)][i].proj_matrix,
 					engine_context->cameras_render[std::size_t(!engine_context->write_pos)][i].view_matrix);
 				for (size_t i = 0; i < render_requests.size(); i++)
@@ -256,7 +266,9 @@ int main(void)
 				}
 			}
 		}
-
+		auto now = std::chrono::system_clock::now();
+		uint64_t time = std::chrono::duration_cast<std::chrono::microseconds>(
+			now.time_since_epoch()).count();
 		/////////////////////////////////////////
 		// Loading a VAO request
 		if (auto vao_request = engine_context->model_storage->vaoload_returner.return_request())
@@ -267,7 +279,7 @@ int main(void)
 			{
 				PRINTLN("Render sending the new form of vao upate request message");
 				LoadJob load_job = std::move(
-					VAOLoadInfo{ mesh_data.VAO, mesh_data.contents->EBO, (mesh_data.vao_load_status == ELoadStatus::Loaded), mesh_data.contents->VBOs,  mesh_data.contents->hashed_path });
+					VAOLoadInfo{ mesh_data.contents->hashed_path, mesh_data.VAO, mesh_data.contents->EBO, time, mesh_data.contents->VBOs });
 				engine_context->model_storage->add_job(load_job);
 			}
 		}
@@ -283,6 +295,19 @@ int main(void)
 			{
 				LoadJob load_job = std::move(TextureGenInfo{ret_val.hashed_path, ret_val.texture_id, ret_val.texture_gen_status});
 				engine_context->model_storage->add_job(load_job);
+			}
+		}
+
+		if (auto vao_req = engine_context->asset_manager->get_vao_request())
+		{
+			MeshData& mesh_data = vao_req.value().mesh_data;
+			if (vao_loader.load_vao(mesh_data))
+			{
+				PRINTLN("Render sending the new form of vao upate request message");
+				AssetJob load_job = std::move(
+					VAOLoadInfo{ 
+						mesh_data.contents->hashed_path, mesh_data.VAO, mesh_data.contents->EBO, time, mesh_data.contents->VBOs,   });
+				engine_context->asset_manager->add_asset_job(load_job);
 			}
 		}
 		

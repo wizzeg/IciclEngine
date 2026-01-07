@@ -308,7 +308,7 @@
                         {
                             "name": "mesh loaded: ",
                             "type": "bool",
-                            "value": true
+                            "value": false
                         },
                         {
                             "name": "mesh path: ",
@@ -323,7 +323,7 @@
                         {
                             "name": "texture loaded: ",
                             "type": "bool",
-                            "value": true
+                            "value": false
                         },
                         {
                             "name": "texture path: ",
@@ -433,7 +433,7 @@
                         {
                             "name": "mesh loaded: ",
                             "type": "bool",
-                            "value": true
+                            "value": false
                         },
                         {
                             "name": "mesh path: ",
@@ -448,7 +448,7 @@
                         {
                             "name": "texture loaded: ",
                             "type": "bool",
-                            "value": true
+                            "value": false
                         },
                         {
                             "name": "texture path: ",

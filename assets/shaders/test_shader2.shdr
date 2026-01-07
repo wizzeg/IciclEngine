@@ -3,55 +3,47 @@
     "name": "shader",
     "uniforms": [
         {
-            "dirty": true,
-            "location": "position",
+            "location": "some value",
             "type": "vec3",
             "value": [
-                5.0,
-                4.0,
+                1.0,
+                2.0,
                 3.0
             ]
         },
         {
-            "dirty": true,
-            "location": "model",
+            "location": "some value",
             "type": "mat4",
             "value": [
                 1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
                 1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
                 1.0,
-                1.0,
-                1.0,
-                1.0,
-                1.0,
-                1.0,
-                1.0,
-                1.0,
-                1.0,
-                1.0,
-                1.0,
-                1.0,
-                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
                 1.0
             ]
         },
         {
-            "dirty": true,
-            "location": "edited vec3",
-            "type": "vec3",
-            "value": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        {
-            "dirty": true,
-            "location": "int",
+            "location": "some value",
             "type": "ivec1",
             "value": [
-                10
+                5
             ]
+        },
+        {
+            "location": "texture location",
+            "type": "texture",
+            "value": "texture path"
         }
     ],
     "vertex_shader": "./assets/shaders/vertex/vert.glsl"

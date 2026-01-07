@@ -116,7 +116,7 @@ VAOInfoProcessor::VAOInfoProcessor(ModelGenStorage& a_gen_storage) : vaoinfo_gen
 
 void VAOInfoProcessor::process_job(VAOLoadInfo& a_job)
 {
-	if (a_job.vao_loaded)
+	if (a_job.vao != 0)
 	{
 		std::unique_lock<std::mutex> data_lock(vaoinfo_gen_storage.mesh_mutex);
 		if (vaoinfo_gen_storage.mesh_map.contains(a_job.hashed_path.hash))
@@ -532,7 +532,6 @@ std::optional<RenderRequest> RenderRequestReturner::return_request(const PreRend
 	}
 	return std::nullopt;
 }
-
 
 
 std::optional<std::vector<RenderRequest>> RenderRequestReturner::return_requests(std::vector<PreRenderRequest>& a_request, bool sorted) // does not require pre-sorting

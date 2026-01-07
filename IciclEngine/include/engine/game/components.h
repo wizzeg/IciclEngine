@@ -131,8 +131,8 @@ struct TextureComponent
 
 struct MaterialComponent
 {
-    uint32_t id;
-    std::string path;
+    bool loaded;
+    hashed_string_64 hashed_path;
 };
 
 struct RenderableComponent

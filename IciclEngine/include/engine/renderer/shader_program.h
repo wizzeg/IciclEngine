@@ -13,11 +13,17 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/mat4x4.hpp>
+#include <engine/renderer/render_info.h>
 
 
 struct ShaderProgram
 {
-	ShaderProgram() {};
+	ShaderProgram() { 
+		for (size_t i = 0; i < uniform_calls.size(); i++)
+		{
+			bind_uniform(uniform_calls[i].type, uniform_calls[i].location.string, &uniform_calls[i].value);
+		}
+	};
 	ShaderProgram(const std::string& a_path) { load(a_path); };
 	ShaderProgram(const char* a_vertex_path, const char* a_frag_path);
 	~ShaderProgram();
@@ -54,15 +60,19 @@ struct ShaderProgram
 
 	void set_mat4fv(glm::mat4 value, const char* location) const;
 private:
+	hashed_string_64 name = hashed_string_64("shader");
 	std::string vertex_path = "vertex path";
 	std::string fragment_path = "fragment path";
-	hashed_string_64 name = hashed_string_64("shader");
 	glm::vec3 test = glm::vec3(1);
 	std::vector<UniformData> uniform_calls{ 
-		{UniformData{"some value", glm::vec3(1.0f, 2.0f, 3.f) }},
-		{UniformData{"some value", glm::mat4(1.0f) }},
-		{UniformData{"some value", glm::ivec1(5) }}
+		{UniformData{"some value", typeid(glm::vec3), glm::vec3(1.0f, 2.0f, 3.f)}},
+		{UniformData{"some value", typeid(glm::mat4), glm::mat4(1.0f)}},
+		{UniformData{"some value", typeid(glm::ivec1), glm::ivec1(5)}},
+		{UniformData{"texture location", typeid(std::string), std::string("texture path")}}
 	}; // sort this after loading, so that materials can be safety checked that they don't have any targets that don't exist.
+	// but how do I deal with a texture??
+
+	std::vector<TextureData> textures; // this should just be a hashed string and maybe some extras...
 	GLuint shader_program = 0;
 };
 

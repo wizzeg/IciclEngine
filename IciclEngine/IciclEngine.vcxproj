@@ -176,10 +176,12 @@
     <ClCompile Include="src\engine\resources\asset_loader.cpp" />
     <ClCompile Include="src\engine\resources\asset_manager.cpp" />
     <ClCompile Include="src\engine\resources\data_storage.cpp" />
+    <ClCompile Include="src\engine\resources\material_loader.cpp" />
     <ClCompile Include="src\engine\resources\message_queue.cpp" />
     <ClCompile Include="src\engine\resources\model_loader.cpp" />
     <ClCompile Include="src\engine\resources\obj_parser.cpp" />
     <ClCompile Include="src\engine\resources\scene_object_registry.cpp" />
+    <ClCompile Include="src\engine\resources\shader_loader.cpp" />
     <ClCompile Include="src\engine\ui\imgui_manager.cpp" />
     <ClCompile Include="src\engine\ui\ui_component_drawer.cpp" />
     <ClCompile Include="src\engine\ui\ui_manager.cpp" />
@@ -233,10 +235,12 @@
     <ClInclude Include="include\engine\resources\data_storage.h" />
     <ClInclude Include="include\engine\resources\data_structs.h" />
     <ClInclude Include="include\engine\resources\job_info.h" />
+    <ClInclude Include="include\engine\resources\material_loader.h" />
     <ClInclude Include="include\engine\resources\message_queue.h" />
     <ClInclude Include="include\engine\resources\model_loader.h" />
     <ClInclude Include="include\engine\resources\obj_parser.h" />
     <ClInclude Include="include\engine\resources\scene_object_registry.h" />
+    <ClInclude Include="include\engine\resources\shader_loader.h" />
     <ClInclude Include="include\engine\resources\uniform_registry.h" />
     <ClInclude Include="include\engine\ui\imgui_manager.h" />
     <ClInclude Include="include\engine\ui\ui_component_drawer.h" />
@@ -255,8 +259,10 @@
     <ClInclude Include="worker_thread.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\assets\shaders\fragment\color_frag.glsl" />
     <None Include="..\assets\shaders\fragment\frag.glsl" />
     <None Include="..\assets\shaders\fragment\standard\standardunlit.glsl" />
+    <None Include="..\assets\shaders\vertex\color_vert.glsl" />
     <None Include="..\assets\shaders\vertex\standard\standardunlit.glsl" />
     <None Include="..\assets\shaders\vertex\vert.glsl" />
     <None Include="..\assets\shaders\vertex\vert2.glsl" />

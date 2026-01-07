@@ -6,6 +6,6 @@
 
 struct ObjParser
 {
-	MeshData load_mesh_from_filepath(const std::string& a_path);
+	MeshData static load_mesh_from_filepath(const std::string& a_path);
 };
 

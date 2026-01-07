@@ -4,11 +4,30 @@
 #include <engine/utilities/hashed_string_64.h>
 #include <glm/glm.hpp>
 #include <glad/glad.h>
+#include <glm/mat4x4.hpp>
 #ifndef MAX_UVS_COLORS
 #define MAX_UVS_COLORS 6;
 #endif
 #include <stb_image/stb_image.h>
 #include <memory>
+#include <engine/resources/data_structs.h>
+#include <variant>
+
+//using UniformValue = std::variant<bool, int, float, double, glm::vec3, glm::vec4, glm::quat, glm::mat4, glm::ivec1, std::string>;
+
+namespace UniformTypes
+{
+	enum Type : uint8_t
+	{
+		vec1i,
+		vec1ui,
+		vec3f,
+		vec4f,
+		vec2f,
+		mat4f,
+		mat3f // I think I can add e.g. UBO mat4f later.
+	};
+}
 
 enum ELoadStatus : uint8_t
 {
@@ -24,7 +43,11 @@ enum ELoadStatus : uint8_t
 	FailedUpload,
 	MarkDestroyed,
 	Destroying,
-	Destroyed
+	Destroyed,
+	ShaderLoadedPath,
+	ShaderLoadedProgram,
+	ShaderProgramRequested,
+	MaterialDependenciesLoading,
 };
 
 struct ObjPosition
@@ -82,11 +105,11 @@ struct PreRenderRequest
 
 struct VAOLoadInfo
 {
+	hashed_string_64 hashed_path;
 	GLuint vao;
 	GLuint ebo;
-	bool vao_loaded;
+	uint64_t modified_time;
 	std::vector<GLuint> VBOs;
-	hashed_string_64 hashed_path;
 };
 
 
@@ -155,6 +178,7 @@ struct CameraData
 	uint32_t priority = 5000;
 	bool clear_color_buffer = true;
 	bool clear_depth_buffer = true;
+	glm::vec3 position;
 };
 
 struct MeshDataContents
@@ -180,10 +204,11 @@ struct MeshData
 	uint64_t hash = 14695981039346656037; // hash of ""
 	GLuint VAO = 0;
 	GLsizei num_indicies = 0;
+	std::shared_ptr<MeshDataContents> contents;
+	uint64_t modified_time;
 	ELoadStatus ram_load_status = ELoadStatus::NotLoaded;
 	ELoadStatus vao_load_status = ELoadStatus::NotLoaded;
-	std::shared_ptr<MeshDataContents> contents;
-	
+	ELoadStatus runtime_gen = ELoadStatus::NotLoaded;
 };
 
 struct TextureGenInfo
@@ -191,6 +216,30 @@ struct TextureGenInfo
 	hashed_string_64 hashed_path;
 	GLuint texture_id = 0;
 	ELoadStatus texture_gen_status = ELoadStatus::NotLoaded;
+	uint64_t modified_time;
+};
+
+struct ProgramLoadInfo
+{
+	hashed_string_64 hashed_path;
+	GLuint gl_program = 0;
+	ELoadStatus program_load_status = ELoadStatus::NotLoaded;
+	uint64_t job_time;
+};
+
+enum EDependecyType : uint8_t
+{
+	All,
+	Texture,
+	Shader
+};
+
+struct ValidateMatDependencies
+{
+	hashed_string_64 hashed_path;
+	EDependecyType dependency_check;
+	bool unloaded;
+	uint64_t job_time;
 };
 
 struct TextureDataContents
@@ -205,13 +254,12 @@ struct TextureDataContents
 	GLenum filtering_min = GL_NEAREST;
 	GLenum filtering_mag = GL_LINEAR;
 	GLenum mipmap_filtering = GL_LINEAR_MIPMAP_LINEAR;
-	bool generate_mipmap = true;
-
 	std::shared_ptr<stbi_uc> texture_data;
-	
+	uint16_t num_references = 0;
+	bool generate_mipmap = true;
 };
 
-struct TextureData
+struct TextureData // needs to store time aswell, to avoid race conditions
 {
 	TextureData() : contents(std::make_shared<TextureDataContents>()) {}
 	uint64_t hash = 14695981039346656037; // hash of ""
@@ -220,13 +268,164 @@ struct TextureData
 	ELoadStatus texture_ram_status = ELoadStatus::NotLoaded;
 	ELoadStatus texture_gen_status = ELoadStatus::NotLoaded;
 	std::shared_ptr<TextureDataContents> contents;
+	uint64_t modified_time;
+};
+
+struct TextureMiniData
+{
+	GLuint texture_id;
+	uint8_t bound_index;
 };
 
 struct VAOLoadRequest
 {
 	MeshData mesh_data;
 };
+
+
 struct TexGenRequest
 {
 	TextureData texture_data;
 };
+
+struct ShaderData
+{
+	hashed_string_64 hashed_path = "";
+	std::string frag_path;
+	std::string vert_path;
+	std::string frag_buffer;
+	std::string vert_buffer;
+	GLuint gl_program = 0;
+	ELoadStatus loading_status = ELoadStatus::NotLoaded;
+	uint64_t modified_time;
+};
+
+struct ProgramLoadRequest
+{
+	ShaderData shader_data;
+};
+
+struct UniformMeta
+{
+	hashed_string_64 name_location;
+	UniformTypes::Type type;
+	uint32_t count;
+	GLint location;
+};
+
+struct TextureMeta
+{
+	hashed_string_64 name_location;
+	uint8_t index;
+	GLenum target;
+};
+
+struct ShaderTemplate
+{
+	hashed_string_64 hashed_path;
+	std::string vertex_path = "vertex path";
+	std::string fragment_path = "fragment path";
+	GLuint gl_program;
+
+	std::vector<UniformMeta> uniform_slots; // sort by hash -> used only to validate material? Do it only check on material load?
+	std::vector<TextureMeta> texture_slots; // sort by index. -> verify material binds at right place...
+};
+
+struct MaterialUniform
+{
+	UniformMeta meta;
+	UniformValue data;
+};
+
+struct MaterialTexture
+{
+	TextureMeta meta;
+	hashed_string_64 hashed_path;
+	GLuint texture_id;
+};
+
+struct RuntimeUniform
+{
+	//alignas(16) uint8_t data[64]; // 16bit align for glm
+	UniformValue value = "";
+	std::string location = "";
+	//UniformTypes::Type type;
+	std::type_index type = typeid(std::string);
+	GLint texture_id = 0;
+};
+
+struct RuntimeTexture
+{
+	GLuint bind_index;
+	GLuint texture_id;
+};
+
+struct TexDependency
+{
+	uint64_t hash;
+	bool fulfilled = false;
+};
+
+struct MaterialData // this is fine to keep large...
+{
+	hashed_string_64 hashed_path;
+	hashed_string_64 shader_path;
+	//hashed_string_64 hashed_shader_path;
+	
+	std::vector<UniformData> uniforms;
+	std::vector<TexDependency> tex_deps;
+	uint64_t modified_time;
+	ELoadStatus load_status = ELoadStatus::NotLoaded;
+	GLuint gl_program; // get from shader
+	uint64_t program_modified_time;
+};
+//This is the path that's entered... this must then load the shader
+
+struct RuntimeMaterial // pushed to the Render thread, similar to vao load, but it now stores data aswell
+{
+	//uint64_t material_id;
+	uint64_t material_hash;
+	GLuint gl_program;
+	std::vector<RuntimeUniform> uniforms;
+	//std::vector<RuntimeTexture> textures;
+};
+
+struct RuntimeMesh
+{
+	uint64_t hash;
+	GLsizei num_indices;
+	GLuint vao;
+};
+
+struct RuntimePrerenderRequest
+{
+	glm::mat4 model_matrix;
+	uint64_t mesh_hash;
+	uint64_t material_hash;
+};
+
+struct RuntimeRenderCall
+{
+	glm::mat4 model_matrix;
+	uint64_t material_hash;
+	GLuint vao;
+	GLsizei index_count;
+};
+
+//struct ShaderMiniData6
+//{
+//	uint64_t hash;
+//	GLuint gl_program = 0;
+//	ELoadStatus load_status = ELoadStatus::NotLoaded;
+//	TextureMiniData textures[6]; // If a texture is marked for unload, this will know -> jobs for Updating TextureData has to be completed before jobs to unload data.
+//}; 
+// ideas for data storage... Primarily use an unordered map to manage the loading. When loaded, add them into sorted vector.
+// I think that makes it all easier to manage, the data storage 
+// this means, the jobs can be structured much more easily I think... The shader would request that certain textures are loaded etc
+
+
+// when gathering a shader, I get the shader, and a pointer to data... The problem is that the shader contents can be modified, I'm not getting a true copy
+// So... 
+
+// perhaps, during renderrequest gathering, only gather which shader/material it wishes to use. Then fetch another vector of those, with just one copy
+// then during rendering it just goes to next shader/material when it wants a new one.

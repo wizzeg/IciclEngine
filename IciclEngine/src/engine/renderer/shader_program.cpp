@@ -87,6 +87,7 @@ bool ShaderProgram::save(std::string a_path)
 
 void ShaderProgram::bind_uniform(std::type_index a_type, const std::string& a_location, void* a_value_ptr) // good enough, lowers complexity
 {
+	// instead do an immediate cast and have this by a type T thing for immediate call
 	if (a_type == typeid(glm::vec3))
 	{
 		set_vec3f(static_cast<const float*>(a_value_ptr), a_location.c_str());

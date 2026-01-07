@@ -5,6 +5,10 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <any>
+#include <variant>
+#include <string>
+using UniformValue = std::variant<bool, int, float, double, glm::vec3, glm::vec4, glm::quat, glm::mat4, glm::ivec1, std::string>;
+
 
 struct EntityReference
 {
@@ -12,20 +16,19 @@ struct EntityReference
     uint32_t scene_object = 0;
 };
 
-struct UniformCall
+struct UniformTexture
 {
-	hashed_string_64 name;
-	bool dirty = true;
-	std::type_index type = typeid(int);
-	void* value_ptr = 0;
+	std::string file_path;
+	std::string uniform_name;
 };
 
 struct UniformData
 {
 	hashed_string_64 location;
-	std::any value = (int)0;
-	std::type_index type = value.type();
-	bool dirty = true;
+	std::type_index type = typeid(bool);
+	UniformValue value = (bool)false;
+	GLint texture_id = 0;
+	uint64_t modified_time;
 };
 
 //struct UniformDataBase

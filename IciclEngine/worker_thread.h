@@ -23,10 +23,15 @@
 #include <engine/game/camera.h>
 #include <engine/game/input_manager.h>
 #include <engine/renderer/texture_loader.h>
+#include <engine/resources/asset_manager.h>
 
 struct EngineContext
 {
-	EngineContext(/*std::shared_ptr<MeshDataGenStorage> a_storage*/) : /*storage(a_storage), */ model_storage(std::make_shared<ModelGenStorage>()), editor_camera("editor camera", 1280, 960), input_manager(InputManager::get()) {};
+	EngineContext(/*std::shared_ptr<MeshDataGenStorage> a_storage*/) 
+		: /*storage(a_storage), */ model_storage(std::make_shared<ModelGenStorage>()), editor_camera("editor camera", 1280, 960),
+		input_manager(InputManager::get()), asset_manager(std::make_shared<AssetManager>())
+	{
+	};
 	void set_render_request(std::vector<RenderRequest>& a_render_requests)
 	{
 		render_requests[(std::size_t(write_pos))] = a_render_requests;
@@ -55,6 +60,7 @@ struct EngineContext
 	//std::shared_ptr<MeshDataGenStorage> storage;
 	std::shared_ptr<ModelGenStorage> model_storage;
 	std::shared_ptr<TextureLoader> texture_loader;
+	std::shared_ptr<AssetManager> asset_manager;
 
 	Camera editor_camera = Camera("editor camera", 720, 480);
 	InputManager& input_manager;

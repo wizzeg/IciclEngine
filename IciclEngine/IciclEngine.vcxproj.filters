@@ -237,6 +237,12 @@
     <ClCompile Include="src\engine\editor\serialization.cpp">
       <Filter>Source Files\engine\utilities</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\resources\material_loader.cpp">
+      <Filter>Source Files\engine\resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\resources\shader_loader.cpp">
+      <Filter>Source Files\engine\resources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\imgui-docking\imconfig.h">
@@ -431,6 +437,12 @@
     <ClInclude Include="include\engine\resources\data_structs.h">
       <Filter>Header Files\engine\resources</Filter>
     </ClInclude>
+    <ClInclude Include="include\engine\resources\material_loader.h">
+      <Filter>Header Files\engine\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\resources\shader_loader.h">
+      <Filter>Header Files\engine\resources</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\assets\shaders\fragment\frag.glsl">
@@ -449,5 +461,11 @@
       <Filter>Shaders\vertex\standard</Filter>
     </None>
     <None Include="cpp.hint" />
+    <None Include="..\assets\shaders\vertex\color_vert.glsl">
+      <Filter>Shaders\vertex</Filter>
+    </None>
+    <None Include="..\assets\shaders\fragment\color_frag.glsl">
+      <Filter>Shaders\fragment</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -24,7 +24,7 @@ struct ComponentDataBase
 	ComponentDataBase() {}
 	virtual const std::type_info& get_type() = 0;
 	virtual void to_runtime(entt::handle a_handle) = 0;
-	virtual std::vector<FieldInfo> get_field_info() = 0;
+	virtual std::vector<FieldInfo> get_field_info() = 0; // deprecated
 	virtual std::vector<FieldInfo> get_registered_field_info() = 0;
 	virtual const char* get_name() const = 0;
 	virtual void destroy_component() = 0;

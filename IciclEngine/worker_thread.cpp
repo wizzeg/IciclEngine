@@ -29,6 +29,12 @@ void GameThread::execute()
 	double renderrequests_time = 0;
 	double game_thread_time = 0;
 	static thread_local const glm::mat4 IDENTITY(1.0f);
+	auto transform_group = scene->get_registry().group<
+		TransformDynamicComponent
+	>();
+	auto render_group = scene->get_registry().group<
+		MeshComponent, TextureComponent
+	>(entt::get<TransformDynamicComponent>);
 	while (true)
 	{
 
@@ -100,12 +106,12 @@ void GameThread::execute()
 
 			ind_timer.start();
 			// this about 1ms
-			for (auto [entity, name, worldpos] 
-				: registry.view<NameComponent, TransformDynamicComponent>(entt::exclude<CameraComponent>).each())
-			{
-				worldpos.position.x += 0.1f * (float)delta_time;
-				worldpos.rotation_quat *= glm::quat(glm::radians(glm::vec3(0.1, 0.1, 0.1) * 50.f * (float)delta_time));
-			}
+			//for (auto [entity, name, worldpos] 
+			//	: registry.view<NameComponent, TransformDynamicComponent>(entt::exclude<CameraComponent>).each())
+			//{
+			//	worldpos.position.x += 0.1f * (float)delta_time;
+			//	worldpos.rotation_quat *= glm::quat(glm::radians(glm::vec3(0.1, 0.1, 0.1) * 50.f * (float)delta_time));
+			//}
 			ind_timer.stop();
 			movement += ind_timer.get_time_ms();
 
@@ -116,6 +122,8 @@ void GameThread::execute()
 			// need to be done only on root entities first, then do itterative to children and siblings
 			for (auto [entity, world_pos] : registry.view<TransformDynamicComponent>().each()) // this is very multi threadable
 			{
+			//for (auto [entity, world_pos] : transform_group.each()) // this is very multi threadable
+			//{
 				if (world_pos.overide_quaternion)
 				{
 					world_pos.rotation_euler_do_not_use.x = std::fmod(world_pos.rotation_euler_do_not_use.x, 360.0f);
@@ -172,9 +180,8 @@ void GameThread::execute()
 						glm::mat4 rotation_matrix = glm::mat4_cast(world_pos.rotation_quat);
 						camera_comp.view_matrix = glm::transpose(rotation_matrix) * translation_matrix;
 					}
-					
 					camera_comp.projection_matrix = glm::perspective(glm::radians(camera_comp.field_of_view), camera_comp.aspect_ratio, 0.1f, 300.0f);
-					cameras.emplace_back(camera_comp.view_matrix, camera_comp.projection_matrix, camera_comp.frame_buffer_target, camera_comp.render_priority, true, true );
+					cameras.emplace_back(camera_comp.view_matrix, camera_comp.projection_matrix, camera_comp.frame_buffer_target, camera_comp.render_priority, true, true, world_pos.position );
 				}
 			}
 			if (!cameras.empty())
@@ -241,7 +248,8 @@ void GameThread::execute()
 						}
 					}
 
-					std::vector<LoadJob> load_jobs;
+					//std::vector<LoadJob> load_jobs;
+					std::vector<AssetJob> load_jobs;
 					load_jobs.reserve(previous_unique_meshes);
 					for (size_t j = 0; j < load_requests.size(); j++)
 					{
@@ -249,7 +257,12 @@ void GameThread::execute()
 						load_jobs.emplace_back(std::move(job));
 					}
 					previous_unique_meshes = i;
-					engine_context->model_storage->add_jobs(load_jobs);
+					//engine_context->model_storage->add_jobs(load_jobs);
+					//for (size_t i = 0; i < load_jobs.size(); i++)
+					//{
+					//	engine_context->asset_manager->add_asset_job(load_jobs[i]);
+					//}
+					engine_context->asset_manager->add_asset_jobs(load_jobs);
 				}
 				///////////////////////////////////////////////////////
 				// Do texture lodas now
@@ -301,24 +314,35 @@ void GameThread::execute()
 			/////////////////////////////////////////////////////
 			//// start creating render requests
 			/// This must change, it must take in mesh path and texture path ... later material path instead of texture path
-			for (auto [entity, world_position, mesh_comoponent,texture_component]
-				: registry.view<TransformDynamicComponent, MeshComponent, TextureComponent>().each())
+			for (auto [entity, mesh_comoponent,texture_component, world_position]
+				: render_group.each())//: registry.view<TransformDynamicComponent, MeshComponent, TextureComponent>().each())
 			{
 				pre_render_requests.emplace_back(world_position.model_matrix, mesh_comoponent.hashed_path.hash, texture_component.hashed_path.hash);
 			}
 			for (auto [entity, world_position, mesh_comoponent]
 				: registry.view<TransformDynamicComponent, MeshComponent>(entt::exclude<TextureComponent>).each())
 			{
-				pre_render_requests.emplace_back(world_position.model_matrix, mesh_comoponent.hashed_path.hash, invalid_hash.hash);
+				//if (auto tex = registry.try_get<TextureComponent>(entity))
+				//{
+				//	pre_render_requests.emplace_back(world_position.model_matrix, mesh_comoponent.hashed_path.hash, tex->hashed_path.hash);
+				//}
+				//else
+				//{
+					pre_render_requests.emplace_back(world_position.model_matrix, mesh_comoponent.hashed_path.hash, invalid_hash.hash);
+				//}
+				
 			}
 			ind_timer.stop();
 			pre_render_requests_time += ind_timer.get_time_ms();
 
 			ind_timer.start();
-			if (auto opt_render_requests = engine_context->model_storage->render_request_returner.return_requests(pre_render_requests))
-			{
-				render_requests = std::move(opt_render_requests.value());
-			}
+			//if (auto opt_render_requests = 
+			//	engine_context->model_storage->render_request_returner.return_requests(pre_render_requests))
+			//	
+			//{
+			//	render_requests = std::move(opt_render_requests.value());
+			//}
+			render_requests = std::move(engine_context->asset_manager->retrieve_render_requests(pre_render_requests));
 			ind_timer.stop();
 			renderrequests_time += ind_timer.get_time_ms();
 			

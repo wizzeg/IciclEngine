@@ -182,8 +182,8 @@ void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_fie
 			uint32_t entity_comp = (uint32_t)value.entity;
 			int scn_obj = ((int)value.scene_object);
 			int ent = (int)((uint32_t)value.entity);
-			std::string entity_string = "entity bla bla: " + std::to_string(ent);
-			std::string scnobj_string = "scene object: " + std::to_string(scn_obj);
+			std::string entity_string = "entity: " + std::to_string(ent);
+			std::string scnobj_string = "true id: " + std::to_string(scn_obj);
 			if (ImGui::InputScalar(entity_string.c_str(), ImGuiDataType_U32, &value.entity))
 			{
 				if (a_registry.valid(value.entity))
