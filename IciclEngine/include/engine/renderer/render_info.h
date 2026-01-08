@@ -130,6 +130,34 @@ struct RenderRequest
 	uint32_t material_id = 0; // I don't know
 };
 
+struct PreRenderReq
+{
+	glm::mat4 model_matrix = glm::mat4(1);
+	uint64_t mesh_hash;
+	uint64_t mat_hash;
+	bool instanced;
+	bool mipmap;
+	bool transparent;
+	bool lit;
+	bool shadow_caster;
+	bool recieves_sahdows;
+};
+
+struct RenderReq
+{
+	glm::mat4 model_matrix = glm::mat4(0);
+	uint64_t mesh_hash;
+	uint64_t mat_hash;
+	GLuint vao = 0;
+	GLsizei indices_size = 0;
+	bool instanced;
+	bool mipmap;
+	bool transparent;
+	bool lit;
+	bool shadow_caster;
+	bool recieves_sahdows;
+};
+
 enum BufferAttributeLocation : uint8_t
 {
 	Position = 0,
@@ -222,7 +250,7 @@ struct TextureGenInfo
 struct ProgramLoadInfo
 {
 	hashed_string_64 hashed_path;
-	GLuint gl_program = 0;
+	GLint gl_program = 0;
 	ELoadStatus program_load_status = ELoadStatus::NotLoaded;
 	uint64_t job_time;
 };
@@ -378,6 +406,11 @@ struct MaterialData // this is fine to keep large...
 	ELoadStatus load_status = ELoadStatus::NotLoaded;
 	GLuint gl_program; // get from shader
 	uint64_t program_modified_time;
+	bool is_lit;
+	bool recieves_shadows;
+	bool casts_shadows;
+	bool instanced;
+	bool transparent;
 };
 //This is the path that's entered... this must then load the shader
 
@@ -388,6 +421,11 @@ struct RuntimeMaterial // pushed to the Render thread, similar to vao load, but 
 	GLuint gl_program;
 	std::vector<RuntimeUniform> uniforms;
 	//std::vector<RuntimeTexture> textures;
+	bool is_lit;
+	bool recieves_shadows;
+	bool casts_shadows;
+	bool instanceable;
+	bool transparent;
 };
 
 struct RuntimeMesh

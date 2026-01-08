@@ -47,6 +47,7 @@
 #include <engine/editor/field_serialization_entires.h>
 #include <engine/editor/component_entries.h>
 #include <engine/resources/asset_manager.h>
+#include <engine/renderer/shader_loader.h>
 
 
 int main(void)
@@ -271,33 +272,34 @@ int main(void)
 			now.time_since_epoch()).count();
 		/////////////////////////////////////////
 		// Loading a VAO request
-		if (auto vao_request = engine_context->model_storage->vaoload_returner.return_request())
-		{
-			MeshData& mesh_data = vao_request.value().mesh_data;
-			PRINTLN("got the new type of vao load request");
-			if (vao_loader.load_vao(mesh_data))
-			{
-				PRINTLN("Render sending the new form of vao upate request message");
-				LoadJob load_job = std::move(
-					VAOLoadInfo{ mesh_data.contents->hashed_path, mesh_data.VAO, mesh_data.contents->EBO, time, mesh_data.contents->VBOs });
-				engine_context->model_storage->add_job(load_job);
-			}
-		}
+		//if (auto vao_request = engine_context->model_storage->vaoload_returner.return_request())
+		//{
+		//	MeshData& mesh_data = vao_request.value().mesh_data;
+		//	PRINTLN("got the new type of vao load request");
+		//	if (vao_loader.load_vao(mesh_data))
+		//	{
+		//		PRINTLN("Render sending the new form of vao upate request message");
+		//		LoadJob load_job = std::move(
+		//			VAOLoadInfo{ mesh_data.contents->hashed_path, mesh_data.VAO, mesh_data.contents->EBO, time, mesh_data.contents->VBOs });
+		//		engine_context->model_storage->add_job(load_job);
+		//	}
+		//}
 
-		/////////////////////////////////////////
-		// Loading Texture to GPU
-		if (auto gen_request = engine_context->model_storage->texgen_returner.return_request())
-		{
-			TextureData& tex_data = gen_request.value().texture_data;
-			PRINTLN("Got texture gen request");
-			TextureGenInfo ret_val = engine_context->texture_loader->generate_texture(tex_data);
-			if (ret_val.texture_gen_status == ELoadStatus::Loaded)
-			{
-				LoadJob load_job = std::move(TextureGenInfo{ret_val.hashed_path, ret_val.texture_id, ret_val.texture_gen_status});
-				engine_context->model_storage->add_job(load_job);
-			}
-		}
-
+		///////////////////////////////////////////
+		//// Loading Texture to GPU
+		//if (auto gen_request = engine_context->model_storage->texgen_returner.return_request())
+		//{
+		//	TextureData& tex_data = gen_request.value().texture_data;
+		//	PRINTLN("Got texture gen request");
+		//	TextureGenInfo ret_val = engine_context->texture_loader->generate_texture(tex_data);
+		//	if (ret_val.texture_gen_status == ELoadStatus::Loaded)
+		//	{
+		//		LoadJob load_job = std::move(TextureGenInfo{ret_val.hashed_path, ret_val.texture_id, ret_val.texture_gen_status});
+		//		engine_context->model_storage->add_job(load_job);
+		//	}
+		//}
+		//////////////////////////////////////////////////////////////////////
+		// New graphics system
 		if (auto vao_req = engine_context->asset_manager->get_vao_request())
 		{
 			MeshData& mesh_data = vao_req.value().mesh_data;
@@ -307,6 +309,30 @@ int main(void)
 				AssetJob load_job = std::move(
 					VAOLoadInfo{ 
 						mesh_data.contents->hashed_path, mesh_data.VAO, mesh_data.contents->EBO, time, mesh_data.contents->VBOs,   });
+				engine_context->asset_manager->add_asset_job(load_job);
+			}
+		}
+		if (auto shader_req = engine_context->asset_manager->get_program_request())
+		{
+			auto& shader_data = shader_req.value().shader_data;
+			GLint shader_program = ShaderLoader::compile_shader(shader_data);
+			if (shader_program != 0)
+			{
+				PRINTLN("Render sending the new form of vao upate request message");
+				AssetJob load_job = std::move(
+					ProgramLoadInfo{
+						shader_data.hashed_path, shader_program, ELoadStatus::ShaderLoadedProgram, time });
+				engine_context->asset_manager->add_asset_job(load_job);
+			}
+		}
+		if (auto tex_req = engine_context->asset_manager->get_gen_request())
+		{
+			TextureData& tex_data = tex_req.value().texture_data;
+			PRINTLN("Got texture gen request");
+			TextureGenInfo ret_val = engine_context->texture_loader->generate_texture(tex_data);
+			if (ret_val.texture_gen_status == ELoadStatus::Loaded)
+			{
+				AssetJob load_job = std::move(TextureGenInfo{ ret_val.hashed_path, ret_val.texture_id, ret_val.texture_gen_status });
 				engine_context->asset_manager->add_asset_job(load_job);
 			}
 		}

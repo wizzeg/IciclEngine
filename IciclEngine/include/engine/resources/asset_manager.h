@@ -12,7 +12,7 @@
 #include <engine/resources/message_queue.h>
 #include "job_info.h"
 
-using AssetJob = std::variant<MeshDataJob, VAOLoadInfo, TextureDataJob, TextureGenInfo, ShaderDataJob, ValidateMatDependencies, ProgramLoadRequest>;
+using AssetJob = std::variant<MeshDataJob, VAOLoadInfo, TextureDataJob, TextureGenInfo, ShaderDataJob, ValidateMatDependencies, ProgramLoadRequest, ProgramLoadInfo>;
 
 
 struct AssetStorage
@@ -225,13 +225,9 @@ struct AssetManager
 
 	}
 
-	std::optional<VAOLoadRequest> get_vao_request() { return asset_messages.vao_queue.get_message(); };
-
-	void add_vao_load_job() {};
-	void add_vao_unload_job() {};
-
-	void add_tex_load_job() {};
-	void add_tex_unload_job() {};
+	std::optional<VAOLoadRequest> get_vao_request() { return asset_messages.vao_queue.get_message(); }
+	std::optional<ProgramLoadRequest> get_program_request() { return asset_messages.program_queue.get_message(); }
+	std::optional<TexGenRequest> get_gen_request() { return asset_messages.texgen_queue.get_message(); }
 
 	std::vector<RenderRequest> retrieve_render_requests(std::vector<PreRenderRequest>& a_pre_reqs);
 

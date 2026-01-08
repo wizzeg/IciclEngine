@@ -91,7 +91,9 @@ void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_fie
 		else if (field.type == typeid(bool))
 		{
 			std::string id = "##" + field.name + std::to_string(i++) + " " + field.name;
-			ImGui::Checkbox(field.name.c_str(), static_cast<bool*>(field.value_ptr));
+			ImGui::Text(field.name.c_str());
+			ImGui::SameLine();
+			ImGui::Checkbox(id.c_str(), static_cast<bool*>(field.value_ptr));
 		}
 		else if (field.type == typeid(glm::vec3))
 		{
@@ -99,6 +101,13 @@ void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_fie
 			//ImGui::SameLine();
 			std::string id = "##" + field.name + std::to_string(i++);
 			ImGui::DragFloat3(id.c_str(), &reinterpret_cast<glm::vec3*>(field.value_ptr)->x);
+		}
+		else if (field.type == typeid(glm::vec4))
+		{
+			ImGui::Text(field.name.c_str());
+			//ImGui::SameLine();
+			std::string id = "##" + field.name + std::to_string(i++);
+			ImGui::DragFloat4(id.c_str(), &reinterpret_cast<glm::vec4*>(field.value_ptr)->x);
 		}
 		else if (field.type == typeid(std::string))
 		{
@@ -184,6 +193,7 @@ void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_fie
 			int ent = (int)((uint32_t)value.entity);
 			std::string entity_string = "entity: " + std::to_string(ent);
 			std::string scnobj_string = "true id: " + std::to_string(scn_obj);
+			ImGui::Text("entity reference:");
 			if (ImGui::InputScalar(entity_string.c_str(), ImGuiDataType_U32, &value.entity))
 			{
 				if (a_registry.valid(value.entity))

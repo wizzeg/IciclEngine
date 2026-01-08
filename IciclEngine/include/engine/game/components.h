@@ -243,3 +243,12 @@ struct TestComponent
 {
     uint64_t test = 0;
 };
+
+struct RenderComponent
+{
+    hashed_string_64 mesh;
+    hashed_string_64 material;
+    bool instance;
+    bool mipmap;
+    bool load;
+};

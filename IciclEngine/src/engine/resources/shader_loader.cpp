@@ -75,3 +75,54 @@ MaterialData ShaderLoader::load_material_from_path(const std::string& a_path)
 	}
 	return MaterialData();
 }
+
+GLint ShaderLoader::compile_shader(ShaderData& a_shader)
+{
+	GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+	GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+	{
+		
+		const char* new_vert_buffer = a_shader.vert_buffer.c_str();
+		glShaderSource(vertex_shader, 1, &new_vert_buffer, NULL);
+		glCompileShader(vertex_shader);
+
+		int result;
+		glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &result);
+		if (!result)
+		{
+			char log[512];
+			glGetShaderInfoLog(vertex_shader, 512, NULL, log);
+			PRINTLN("Failed to compile vertex shader: {}", log);
+		}
+		const char* new_frag_buffer = a_shader.frag_buffer.c_str();
+		glShaderSource(fragment_shader, 1, &new_frag_buffer, NULL);
+		glCompileShader(fragment_shader);
+
+		glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &result);
+		if (!result)
+		{
+			char log[512];
+			glGetShaderInfoLog(fragment_shader, 512, NULL, log);
+			PRINTLN("Failed to compile vertex shader: {}", log);
+		}
+	}
+
+	GLint shader_program = glCreateProgram();
+
+	glAttachShader(shader_program, vertex_shader);
+	glAttachShader(shader_program, fragment_shader);
+	glLinkProgram(shader_program);
+
+	glDeleteShader(vertex_shader);
+	glDeleteShader(fragment_shader);
+
+	int result;
+	glGetProgramiv(shader_program, GL_LINK_STATUS, &result);
+	if (!result)
+	{
+		char log[512];
+		glGetProgramInfoLog(shader_program, 512, NULL, log);
+		PRINTLN("failed to load shader, {} {}", a_shader.vert_path, a_shader.frag_path);
+	}
+	return shader_program;
+}

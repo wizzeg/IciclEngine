@@ -75,21 +75,6 @@ struct EngineContext
 	
 };
 
-template <typename TMessage>
-struct MessageThreadContext
-{
-	std::mutex mutex;
-	std::condition_variable cv_message_queue;
-	MessageQueue<TMessage> message_queue;
-	bool exit = false;
-};
-
-struct MeshLoadThreadContext : MessageThreadContext<LoadRequest>
-{
-	//some asset manager
-};
-
-
 struct GameThread
 {
 	GameThread(std::shared_ptr<EngineContext> a_context, std::shared_ptr<Scene> a_scene)
@@ -102,61 +87,3 @@ private:
 
 	// worker threads
 };
-
-template <typename TMessage>
-struct MessageQueueThread
-{
-	MessageQueueThread(std::shared_ptr<MessageThreadContext<TMessage>> a_pool_context) 
-		: pool_context(a_pool_context) {};
-	void execute()
-	{
-		while (!pool_context->exit)
-		{
-			while (auto message = pool_context->message_queue.get_message())
-			{
-				handle_message(message.value());
-			}
-			{
-				std::unique_lock<std::mutex> lock(pool_context->mutex);
-				pool_context->cv_message_queue.wait(lock, [this] { return pool_context->message_queue.is_empty(); });
-			}
-		}
-	}
-	virtual void handle_message(TMessage& a_message) {};
-	std::shared_ptr<MessageThreadContext<TMessage>> pool_context;
-};
-
-struct RenderRequestThread : MessageQueueThread<LoadRequest>
-{
-	RenderRequestThread(std::shared_ptr<MeshLoadThreadContext> a_pool_context) 
-		: MessageQueueThread<LoadRequest>(static_cast<std::shared_ptr<MessageThreadContext<LoadRequest>>>(a_pool_context)) {}
-	void handle_message(RenderRequest& a_message)
-	{
-
-	}
-};
-
-
-
-//struct RenderThread
-//{
-//
-//	RenderThread(std::shared_ptr<EngineContext> a_context) : engine_context(a_context)
-//	{
-//		window = glfwGetCurrentContext();
-//		if (!window)
-//		{
-//			PRINTLN("Failed getting WINDOW for RENDER THREAD");
-//		}
-//		// then I need to create the standard shader program
-//		default_shader = std::make_unique<ShaderProgram>("./assets/shaders/vertex/vert.glsl", "./assets/shaders/fragment/frag.glsl");
-//	};
-//
-//	void execute();
-//
-//private:
-//	std::shared_ptr<EngineContext> engine_context;
-//	Renderer renderer;
-//	GLFWwindow* window;
-//	std::unique_ptr<ShaderProgram> default_shader;
-//};
