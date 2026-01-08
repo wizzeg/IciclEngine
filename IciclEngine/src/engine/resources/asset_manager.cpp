@@ -134,6 +134,7 @@ void AssetJobThread::process_tex_job(TextureDataJob& a_job)
 			if (start_load)
 			{
 				// ok we load mat.
+				PRINTLN("thread {} is starting texture load", id);
 				auto new_tex = std::make_shared<TextureData>();
 				new_tex->texture_ram_status = ELoadStatus::StartedLoad;
 				new_tex->hash = job_hash;
@@ -141,10 +142,13 @@ void AssetJobThread::process_tex_job(TextureDataJob& a_job)
 				new_tex->modified_time = a_job.job_time;
 				texs[job_hash] = new_tex;
 				tex_lock.unlock();
+				auto temp_tex = ModelLoader::load_texture_from_file(a_job.path_hashed.string);
+				new_tex = std::make_shared<TextureData>(temp_tex);
 
-				new_tex = std::make_shared<TextureData>(ModelLoader::load_texture_from_file(a_job.path_hashed.string));
-
+				TexGenRequest gen_req(temp_tex);
+				asset_messages.texgen_queue.add_message(gen_req);
 				tex_lock.lock();
+				fulfill_deps = true;
 			}
 		}
 
@@ -191,11 +195,12 @@ void AssetJobThread::process_shader_job(ShaderDataJob& a_job)
 		else start_load = true;
 		if (start_load)
 		{
+			PRINTLN("thread {} is starting shader load", id);
 			auto new_shader = std::make_shared<ShaderData>();
 			new_shader->hashed_path = a_job.path_hashed;
 			new_shader->loading_status = ELoadStatus::StartedLoad;
 			new_shader->modified_time = a_job.job_time;
-
+			shaders[job_hash] = new_shader;
 			shader_lock.unlock();
 
 			ShaderData temp_shader = ShaderLoader::load_shader_from_path(a_job.path_hashed.string);
@@ -219,7 +224,7 @@ void AssetJobThread::process_shader_job(ShaderDataJob& a_job)
 	}
 }
 
-void AssetJobThread::process_mat_job(MeshDataJob& a_job)
+void AssetJobThread::process_mat_job(MaterialDataJob& a_job)
 {
 	//TODO: check with the modified_time and job_time so that work isn't perforemd out of order.
 	//TODO: handle cases for different load statuses
@@ -634,7 +639,7 @@ void AssetJobThread::process_dependency(ValidateMatDependencies& a_job) // this 
 						}
 					}
 					uint8_t remaining_deps = 0;
-					remaining_deps += (uint8_t)(mats[tex_dep]->gl_program != 0);
+					remaining_deps += (uint8_t)(mats[tex_dep]->gl_program == 0);
 					for (TexDependency& dep : mats[tex_dep]->tex_deps)
 					{
 						if (dep.hash == job_hash)
@@ -644,7 +649,7 @@ void AssetJobThread::process_dependency(ValidateMatDependencies& a_job) // this 
 						}
 						remaining_deps += (uint8_t)!dep.fulfilled;
 					}
-
+					PRINTLN("material {} has {} remaining dependencies", mats[tex_dep]->hashed_path.string, remaining_deps);
 					if (remaining_deps == 0)
 					{
 						// generate runtime and mark loaded
@@ -670,6 +675,7 @@ void AssetJobThread::process_dependency(ValidateMatDependencies& a_job) // this 
 						}
 						if (!inserted)
 						{
+							PRINTLN("Thread {} inserts runtime material", id);
 							//make the uniforms
 							std::vector<RuntimeUniform> runtime_uniforms;
 							for (UniformData& uniform : mats[new_mat_hash]->uniforms)
@@ -687,12 +693,12 @@ void AssetJobThread::process_dependency(ValidateMatDependencies& a_job) // this 
 							if (insertion_index < runtime_mats.size())
 							{
 								runtime_mats.emplace(runtime_mats.begin() + insertion_index,
-									new_mat_hash, mats[new_mat_hash]->gl_program, runtime_uniforms);
+									new_mat_hash, mats[new_mat_hash]->gl_program, runtime_uniforms, mats[new_mat_hash]->is_lit, mats[new_mat_hash]->recieves_shadows, mats[new_mat_hash]->casts_shadows, mats[new_mat_hash]->transparent, mats[new_mat_hash]->transparent);
 							}
 							else
 							{
 								runtime_mats.emplace_back(
-									new_mat_hash, mats[new_mat_hash]->gl_program, runtime_uniforms);
+									new_mat_hash, mats[new_mat_hash]->gl_program, runtime_uniforms, mats[new_mat_hash]->is_lit, mats[new_mat_hash]->recieves_shadows, mats[new_mat_hash]->casts_shadows, mats[new_mat_hash]->transparent, mats[new_mat_hash]->transparent);
 							}
 						}
 					}
@@ -723,15 +729,16 @@ void AssetJobThread::process_dependency(ValidateMatDependencies& a_job) // this 
 						continue;
 
 					uint8_t remaining_deps = 0;
-					if (mats[shader_dep]->program_modified_time <= a_job.job_time)
-					{
+					//if (mats[shader_dep]->program_modified_time <= a_job.job_time)
+					//{
 						mats[shader_dep]->gl_program = shader->gl_program;
-					}
+					//}
 					remaining_deps = (int)mats[shader_dep]->gl_program == 0;
 					for (TexDependency dep : mats[shader_dep]->tex_deps)
 					{
 						remaining_deps += (uint8_t)!dep.fulfilled;
 					}
+					PRINTLN("material {} has {} remaining dependencies (from shader check)", mats[shader_dep]->hashed_path.string, remaining_deps);
 					if (remaining_deps == 0)
 					{
 						// generate runtime and mark loaded
@@ -758,6 +765,7 @@ void AssetJobThread::process_dependency(ValidateMatDependencies& a_job) // this 
 						if (!inserted)
 						{
 							//make the uniforms
+							PRINTLN("Thread {} inserts runtime material", id);
 							std::vector<RuntimeUniform> runtime_uniforms;
 							for (UniformData& uniform : mats[new_mat_hash]->uniforms)
 							{
@@ -770,12 +778,12 @@ void AssetJobThread::process_dependency(ValidateMatDependencies& a_job) // this 
 							if (insertion_index < runtime_mats.size())
 							{
 								runtime_mats.emplace(runtime_mats.begin() + insertion_index,
-									new_mat_hash, mats[new_mat_hash]->gl_program, runtime_uniforms);
+									new_mat_hash, mats[new_mat_hash]->gl_program, runtime_uniforms, mats[new_mat_hash]->is_lit, mats[new_mat_hash]->recieves_shadows, mats[new_mat_hash]->casts_shadows, mats[new_mat_hash]->transparent ,mats[new_mat_hash]->transparent);
 							}
 							else
 							{
 								runtime_mats.emplace_back(
-									new_mat_hash, mats[new_mat_hash]->gl_program, runtime_uniforms);
+									new_mat_hash, mats[new_mat_hash]->gl_program, runtime_uniforms, mats[new_mat_hash]->is_lit, mats[new_mat_hash]->recieves_shadows, mats[new_mat_hash]->casts_shadows, mats[new_mat_hash]->transparent, mats[new_mat_hash]->transparent);
 							}
 						}
 					}
@@ -820,15 +828,43 @@ void AssetJobThread::job_loop()
 					invalid_job = false;
 				}
 			}
-				
+			else if (auto mat_job = std::get_if<MaterialDataJob>(&job))
+			{
+				if (mat_job->request_type == ERequestType::LoadFromFile)
+				{
+					process_mat_job(*mat_job);
+					invalid_job = false;
+				}
+			}
+			else if (auto shader_job = std::get_if<ShaderDataJob>(&job))
+			{
+				if (shader_job->request_type == ERequestType::LoadFromFile)
+				{
+					process_shader_job(*shader_job);
+					invalid_job = false;
+				}
+			}
 			else if (auto gen_job = std::get_if<TextureGenInfo>(&job))
+			{
 				process_tex_update(*gen_job);
+				invalid_job = false;
+			}
 			else if (auto vao_job = std::get_if<VAOLoadInfo>(&job))
 			{
 				process_mesh_update(*vao_job);
 				invalid_job = false;
 			}
-
+			else if (auto prog_job = std::get_if<ProgramLoadInfo>(&job))
+			{
+				process_program_update(*prog_job);
+				invalid_job = false;
+			}
+			else if (auto dep_job = std::get_if<ValidateMatDependencies>(&job))
+			{
+				process_dependency(*dep_job);
+				invalid_job = false;
+			}
+			
 			if (invalid_job)
 				PRINTLN("INVALID JOB");
 		}

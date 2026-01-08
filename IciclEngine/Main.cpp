@@ -478,7 +478,7 @@ int main(void)
 			timer2.stop();
 			ui_manager_time += timer2.get_time_ms();
 		}
-		if (framies > 500)
+		if (framies > 500 && false)
 		{
 			PRINTLN("render thread timer: {}", render_thread_time / (double)framies);
 			PRINTLN("ui manager frametime: {}", ui_manager_time / (double)framies);

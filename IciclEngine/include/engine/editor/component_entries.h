@@ -32,9 +32,12 @@ REGISTER_COMPONENT(TextureComponent, ("Rendering"),
 	FIELD_CUSTOM("texture path: ", comp, hashed_path, 1.75f, false)
 )
 
+
 REGISTER_COMPONENT(MaterialComponent, ("Rendering"),
-	FIELD_DEFAULT("material loaded: ", comp, loaded),
-	FIELD_CUSTOM("material path: ", comp, hashed_path, 1.75f, false)
+	FIELD_CUSTOM("material path: ", comp, hashed_path, 1.75f, false),
+	FIELD_CUSTOM("instanced: ", comp, instance, 0.75f, true),
+	FIELD_CUSTOM("use mipmaps: ", comp, mipmap, 0.0f, true),
+	FIELD_DEFAULT("load material: ", comp, load)
 )
 
 REGISTER_COMPONENT(CameraComponent, ("Rendering"),

@@ -4,7 +4,7 @@
 TextureGenInfo TextureLoader::generate_texture(TextureData& a_texture_data)
 {
     TextureGenInfo texture_info(a_texture_data.contents->hashed_path, 0, ELoadStatus::FailedLoadBadPath);
-    if (a_texture_data.texture_gen_status != ELoadStatus::RequestedLoad || a_texture_data.texture_ram_status != ELoadStatus::Loaded)
+    if (a_texture_data.texture_ram_status != ELoadStatus::Loaded)
     {
         a_texture_data.texture_gen_status = ELoadStatus::FailedLoadBadPath;
         return texture_info;

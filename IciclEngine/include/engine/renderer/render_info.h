@@ -108,7 +108,7 @@ struct VAOLoadInfo
 	hashed_string_64 hashed_path;
 	GLuint vao;
 	GLuint ebo;
-	uint64_t modified_time;
+	uint64_t modified_time = 0;
 	std::vector<GLuint> VBOs;
 };
 
@@ -233,7 +233,7 @@ struct MeshData
 	GLuint VAO = 0;
 	GLsizei num_indicies = 0;
 	std::shared_ptr<MeshDataContents> contents;
-	uint64_t modified_time;
+	uint64_t modified_time = 0;
 	ELoadStatus ram_load_status = ELoadStatus::NotLoaded;
 	ELoadStatus vao_load_status = ELoadStatus::NotLoaded;
 	ELoadStatus runtime_gen = ELoadStatus::NotLoaded;
@@ -244,7 +244,7 @@ struct TextureGenInfo
 	hashed_string_64 hashed_path;
 	GLuint texture_id = 0;
 	ELoadStatus texture_gen_status = ELoadStatus::NotLoaded;
-	uint64_t modified_time;
+	uint64_t modified_time = 0;
 };
 
 struct ProgramLoadInfo
@@ -296,7 +296,7 @@ struct TextureData // needs to store time aswell, to avoid race conditions
 	ELoadStatus texture_ram_status = ELoadStatus::NotLoaded;
 	ELoadStatus texture_gen_status = ELoadStatus::NotLoaded;
 	std::shared_ptr<TextureDataContents> contents;
-	uint64_t modified_time;
+	uint64_t modified_time = 0;
 };
 
 struct TextureMiniData
@@ -325,7 +325,7 @@ struct ShaderData
 	std::string vert_buffer;
 	GLuint gl_program = 0;
 	ELoadStatus loading_status = ELoadStatus::NotLoaded;
-	uint64_t modified_time;
+	uint64_t modified_time = 0;
 };
 
 struct ProgramLoadRequest
@@ -402,9 +402,9 @@ struct MaterialData // this is fine to keep large...
 	
 	std::vector<UniformData> uniforms;
 	std::vector<TexDependency> tex_deps;
-	uint64_t modified_time;
+	uint64_t modified_time = 0;
 	ELoadStatus load_status = ELoadStatus::NotLoaded;
-	GLuint gl_program; // get from shader
+	GLuint gl_program = 0; // get from shader
 	uint64_t program_modified_time;
 	bool is_lit;
 	bool recieves_shadows;

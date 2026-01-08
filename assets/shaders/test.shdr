@@ -1,0 +1,4 @@
+{
+    "frag_path": "./assets/shaders/fragment/frag.glsl",
+    "vert_path": "./assets/shaders/vertex/vert.glsl"
+}

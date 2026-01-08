@@ -46,6 +46,13 @@ struct MeshDataJob // will have a texture data job too....
 	uint64_t job_time;
 };
 
+struct MaterialDataJob
+{
+	hashed_string_64 path_hashed;
+	ERequestType request_type;
+	uint64_t job_time;
+};
+
 struct TextureDataJob
 {
 	hashed_string_64 path_hashed;

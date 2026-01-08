@@ -41,7 +41,7 @@ void GameThread::execute()
 		timer.stop();
 		game_thread_time += timer.get_time_ms();
 
-		if (runs > 500)
+		if (runs > 500 && false)
 		{
 			PRINTLN("time for moving: {}", movement / (double)runs);
 			PRINTLN("time for complex worldpos: {}", complex_movement / (double)runs);
@@ -90,6 +90,8 @@ void GameThread::execute()
 		std::vector<hashed_string_64> hashed_texture_loads;
 		hashed_texture_loads.reserve(10);
 
+		std::vector<hashed_string_64> hashed_material_loads;
+		hashed_material_loads.reserve(10);
 		// Editor camera moving
 		glm::vec3 camera_move;
 		{
@@ -302,6 +304,44 @@ void GameThread::execute()
 						load_jobs.emplace_back(std::move(job));
 					}
 					engine_context->model_storage->add_jobs(load_jobs);
+				}
+
+				for (auto [entity, material_component] : registry.view<MaterialComponent>().each())
+				{
+					if (material_component.load)
+					{
+						material_component.load = false;
+						hashed_material_loads.push_back(material_component.hashed_path);
+					}
+				}
+				if (!hashed_material_loads.empty())
+				{
+					// all load requests
+					std::sort(hashed_material_loads.begin(), hashed_material_loads.end(), std::less<>{});
+					std::vector<hashed_string_64> load_requests;
+					load_requests.reserve(previous_unique_meshes);
+
+					// unique load requests
+					hashed_string_64 previous_value = hashed_material_loads[0];
+					load_requests.push_back(previous_value);
+					size_t i = 1;
+					for (; i < hashed_material_loads.size(); i++)
+					{
+						if (previous_value < hashed_material_loads[i])
+						{
+							load_requests.push_back(hashed_material_loads[i]);
+							previous_value = hashed_material_loads[i];
+						}
+					}
+
+					std::vector<AssetJob> load_jobs;
+					load_jobs.reserve(previous_unique_meshes);
+					for (size_t j = 0; j < load_requests.size(); j++)
+					{
+						MaterialDataJob job(load_requests[j], ERequestType::LoadFromFile);
+						load_jobs.emplace_back(std::move(job));
+					}
+					engine_context->asset_manager->add_asset_jobs(load_jobs);
 				}
 			//	runs = 0;
 			//}

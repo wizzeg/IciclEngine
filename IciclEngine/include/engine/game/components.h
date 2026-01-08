@@ -131,8 +131,10 @@ struct TextureComponent
 
 struct MaterialComponent
 {
-    bool loaded;
     hashed_string_64 hashed_path;
+    bool instance;
+    bool mipmap;
+    bool load;
 };
 
 struct RenderableComponent

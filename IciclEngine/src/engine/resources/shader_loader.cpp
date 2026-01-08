@@ -13,6 +13,7 @@ ShaderData ShaderLoader::load_shader_from_path(const std::string& a_path)
 {
 	ShaderData shader;
 	shader.hashed_path = hashed_string_64(a_path.c_str());
+	shader.loading_status = ELoadStatus::StartedLoad;
 	std::ifstream file(a_path);
 	if (!file)
 	{
@@ -21,27 +22,41 @@ ShaderData ShaderLoader::load_shader_from_path(const std::string& a_path)
 		return shader;
 	}
 
-	json j;
+	json j = json::object();
 	file >> j;
 
-	shader.vert_path = j["vert_shader"].get<std::string>();
-
-
+	shader.vert_path = j["vert_path"].get<std::string>();
 	std::ifstream vert_file(shader.vert_path);
 	if (!vert_file.is_open())
 	{
 		PRINTLN("Failed to open vert file: {}", a_path);
+		shader.loading_status = ELoadStatus::FailedLoadBadPath;
 	}
+	else
 	{
 		std::stringstream buffer;
-		buffer << file.rdbuf();
-		shader.frag_buffer = buffer.str();
+		buffer << vert_file.rdbuf();
+		shader.vert_buffer = buffer.str();
 	}
 
-
-	shader.frag_path = j["frag_shader"].get<std::string>();
-	shader.loading_status = ELoadStatus::ShaderLoadedPath;
-    return ShaderData();
+	shader.frag_path = j["frag_path"].get<std::string>();
+	std::ifstream frag_file(shader.frag_path);
+	if (!frag_file.is_open())
+	{
+		PRINTLN("Failed to open vert file: {}", a_path);
+		shader.loading_status = ELoadStatus::FailedLoadBadPath;
+	}
+	else
+	{
+		std::stringstream buffer;
+		buffer << frag_file.rdbuf();
+		shader.frag_buffer = buffer.str();
+	}
+	if (shader.loading_status != ELoadStatus::FailedLoadBadPath)
+	{
+		shader.loading_status = ELoadStatus::ShaderLoadedPath;
+	}
+    return shader;
 }
 
 MaterialData ShaderLoader::load_material_from_path(const std::string& a_path)
@@ -56,10 +71,16 @@ MaterialData ShaderLoader::load_material_from_path(const std::string& a_path)
 		return material;
 	}
 
-	json j;
+	json j = json::object();
 	file >> j;
-	std::string shader_path = j["shader_path"].get<std::string>();
-
+	std::string shader_path = j.value("shader_path","");
+	material.shader_path = hashed_string_64(shader_path.c_str());
+	material.is_lit = j.value("lit", false);
+	material.instanced = j.value("instanced", false);
+	material.recieves_shadows = j.value("recieves_shadows", false);
+	material.casts_shadows = j.value("casts_shadows", false);
+	material.transparent = j.value("transparent", false);
+	material.gl_program = 0;
 	std::vector<UniformData> uniforms;
 	if (j.contains("uniforms") && j["uniforms"].is_array())
 	{
@@ -73,7 +94,8 @@ MaterialData ShaderLoader::load_material_from_path(const std::string& a_path)
 			}
 		}
 	}
-	return MaterialData();
+	material.uniforms = uniforms;
+	return material;
 }
 
 GLint ShaderLoader::compile_shader(ShaderData& a_shader)
@@ -122,7 +144,7 @@ GLint ShaderLoader::compile_shader(ShaderData& a_shader)
 	{
 		char log[512];
 		glGetProgramInfoLog(shader_program, 512, NULL, log);
-		PRINTLN("failed to load shader, {} {}", a_shader.vert_path, a_shader.frag_path);
+		PRINTLN("failed to load shader, {} {}, with log: {}", a_shader.vert_path, a_shader.frag_path, log);
 	}
 	return shader_program;
 }

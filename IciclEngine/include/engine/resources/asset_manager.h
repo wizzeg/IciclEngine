@@ -12,7 +12,7 @@
 #include <engine/resources/message_queue.h>
 #include "job_info.h"
 
-using AssetJob = std::variant<MeshDataJob, VAOLoadInfo, TextureDataJob, TextureGenInfo, ShaderDataJob, ValidateMatDependencies, ProgramLoadRequest, ProgramLoadInfo>;
+using AssetJob = std::variant<MeshDataJob, VAOLoadInfo, TextureDataJob, TextureGenInfo, ShaderDataJob, ValidateMatDependencies, ProgramLoadRequest, ProgramLoadInfo, MaterialDataJob>;
 
 
 struct AssetStorage
@@ -117,11 +117,13 @@ protected:
 	void process_load_mesh_job(MeshDataJob& a_job);
 	void process_tex_job(TextureDataJob& a_job);
 	void process_shader_job(ShaderDataJob& a_job);
-	void process_mat_job(MeshDataJob& a_job);
+	void process_mat_job(MaterialDataJob& a_job);
 	void process_mesh_update(VAOLoadInfo& a_job);
 	void process_tex_update(TextureGenInfo& a_job);
 	void process_program_update(ProgramLoadInfo& a_job);
 	void process_dependency(ValidateMatDependencies& a_job);
+
+	void insert_runtime_material(uint64_t a_mat_hash);
 	AssetStorage& asset_storage;
 	AssetMessages& asset_messages;
 };
