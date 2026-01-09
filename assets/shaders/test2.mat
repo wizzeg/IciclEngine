@@ -1,0 +1,16 @@
+{
+    "name": "test",
+    "shader_path": "./assets/shaders/test.shdr",
+    "lit": true,
+    "instanced": false,
+    "recieves_shadows": true,
+    "casts_shadows": true,
+    "transparent": true,
+    "uniforms": [
+        {
+            "location": "uTexture",
+            "type": "texture",
+            "value": "./assets/textures/robot/DefaultMaterial_Normal_OpenGL.png"
+        }
+    ]
+}

@@ -14,6 +14,7 @@ ShaderData ShaderLoader::load_shader_from_path(const std::string& a_path)
 	ShaderData shader;
 	shader.hashed_path = hashed_string_64(a_path.c_str());
 	shader.loading_status = ELoadStatus::StartedLoad;
+	
 	std::ifstream file(a_path);
 	if (!file)
 	{
@@ -21,11 +22,12 @@ ShaderData ShaderLoader::load_shader_from_path(const std::string& a_path)
 		shader.loading_status = ELoadStatus::FailedLoadBadPath;
 		return shader;
 	}
-
+	
 	json j = json::object();
 	file >> j;
 
-	shader.vert_path = j["vert_path"].get<std::string>();
+	shader.name = j.value("name", "");
+	shader.vert_path = j.value("vert_path", ""); // fix for hard crashes here
 	std::ifstream vert_file(shader.vert_path);
 	if (!vert_file.is_open())
 	{
@@ -39,7 +41,7 @@ ShaderData ShaderLoader::load_shader_from_path(const std::string& a_path)
 		shader.vert_buffer = buffer.str();
 	}
 
-	shader.frag_path = j["frag_path"].get<std::string>();
+	shader.frag_path = j.value("frag_path", "");
 	std::ifstream frag_file(shader.frag_path);
 	if (!frag_file.is_open())
 	{
@@ -74,6 +76,13 @@ MaterialData ShaderLoader::load_material_from_path(const std::string& a_path)
 	json j = json::object();
 	file >> j;
 	std::string shader_path = j.value("shader_path","");
+	if (shader_path == "")
+	{
+		PRINTLN("Failed to load material, no shader path found: {}", a_path);
+		material.load_status = ELoadStatus::FailedLoadOpen;
+		return material;
+	}
+	material.name = j.value("name", "");
 	material.shader_path = hashed_string_64(shader_path.c_str());
 	material.is_lit = j.value("lit", false);
 	material.instanced = j.value("instanced", false);
@@ -98,10 +107,11 @@ MaterialData ShaderLoader::load_material_from_path(const std::string& a_path)
 	return material;
 }
 
-GLint ShaderLoader::compile_shader(ShaderData& a_shader)
+GLuint ShaderLoader::compile_shader(ShaderData& a_shader)
 {
 	GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
 	GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+	bool failed = false;
 	{
 		
 		const char* new_vert_buffer = a_shader.vert_buffer.c_str();
@@ -115,6 +125,7 @@ GLint ShaderLoader::compile_shader(ShaderData& a_shader)
 			char log[512];
 			glGetShaderInfoLog(vertex_shader, 512, NULL, log);
 			PRINTLN("Failed to compile vertex shader: {}", log);
+			failed = true;
 		}
 		const char* new_frag_buffer = a_shader.frag_buffer.c_str();
 		glShaderSource(fragment_shader, 1, &new_frag_buffer, NULL);
@@ -126,10 +137,11 @@ GLint ShaderLoader::compile_shader(ShaderData& a_shader)
 			char log[512];
 			glGetShaderInfoLog(fragment_shader, 512, NULL, log);
 			PRINTLN("Failed to compile vertex shader: {}", log);
+			failed = true;
 		}
 	}
 
-	GLint shader_program = glCreateProgram();
+	GLuint shader_program = glCreateProgram();
 
 	glAttachShader(shader_program, vertex_shader);
 	glAttachShader(shader_program, fragment_shader);
@@ -145,6 +157,8 @@ GLint ShaderLoader::compile_shader(ShaderData& a_shader)
 		char log[512];
 		glGetProgramInfoLog(shader_program, 512, NULL, log);
 		PRINTLN("failed to load shader, {} {}, with log: {}", a_shader.vert_path, a_shader.frag_path, log);
+		failed = true;
 	}
+	if (failed) return 0;
 	return shader_program;
 }

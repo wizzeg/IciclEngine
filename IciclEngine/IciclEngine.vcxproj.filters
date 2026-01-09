@@ -467,5 +467,11 @@
     <None Include="..\assets\shaders\fragment\color_frag.glsl">
       <Filter>Shaders\fragment</Filter>
     </None>
+    <None Include="..\assets\shaders\fragment\test_frag.glsl">
+      <Filter>Shaders\fragment</Filter>
+    </None>
+    <None Include="..\assets\shaders\vertex\test_vert.glsl">
+      <Filter>Shaders\vertex</Filter>
+    </None>
   </ItemGroup>
 </Project>

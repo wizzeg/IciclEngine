@@ -137,10 +137,6 @@ struct PreRenderReq
 	uint64_t mat_hash;
 	bool instanced;
 	bool mipmap;
-	bool transparent;
-	bool lit;
-	bool shadow_caster;
-	bool recieves_sahdows;
 };
 
 struct RenderReq
@@ -152,10 +148,7 @@ struct RenderReq
 	GLsizei indices_size = 0;
 	bool instanced;
 	bool mipmap;
-	bool transparent;
-	bool lit;
-	bool shadow_caster;
-	bool recieves_sahdows;
+	GLuint gl_program;
 };
 
 enum BufferAttributeLocation : uint8_t
@@ -326,6 +319,7 @@ struct ShaderData
 	GLuint gl_program = 0;
 	ELoadStatus loading_status = ELoadStatus::NotLoaded;
 	uint64_t modified_time = 0;
+	std::string name;
 };
 
 struct ProgramLoadRequest
@@ -396,8 +390,8 @@ struct TexDependency
 
 struct MaterialData // this is fine to keep large...
 {
-	hashed_string_64 hashed_path;
-	hashed_string_64 shader_path;
+	hashed_string_64 hashed_path = hashed_string_64("");
+	hashed_string_64 shader_path = hashed_string_64("");
 	//hashed_string_64 hashed_shader_path;
 	
 	std::vector<UniformData> uniforms;
@@ -405,26 +399,27 @@ struct MaterialData // this is fine to keep large...
 	uint64_t modified_time = 0;
 	ELoadStatus load_status = ELoadStatus::NotLoaded;
 	GLuint gl_program = 0; // get from shader
-	uint64_t program_modified_time;
-	bool is_lit;
-	bool recieves_shadows;
-	bool casts_shadows;
-	bool instanced;
-	bool transparent;
+	uint64_t program_modified_time = 0;
+	bool is_lit = false;
+	bool recieves_shadows = false;
+	bool casts_shadows = false;
+	bool instanced = false;
+	bool transparent = false;
+	std::string name = "";
 };
 //This is the path that's entered... this must then load the shader
 
 struct RuntimeMaterial // pushed to the Render thread, similar to vao load, but it now stores data aswell
 {
 	//uint64_t material_id;
-	uint64_t material_hash;
-	GLuint gl_program;
+	uint64_t hash;
+	GLuint gl_program = 0;
 	std::vector<RuntimeUniform> uniforms;
 	//std::vector<RuntimeTexture> textures;
 	bool is_lit;
 	bool recieves_shadows;
 	bool casts_shadows;
-	bool instanceable;
+	bool instantiable;
 	bool transparent;
 };
 
@@ -448,6 +443,12 @@ struct RuntimeRenderCall
 	uint64_t material_hash;
 	GLuint vao;
 	GLsizei index_count;
+};
+
+struct RenderContext
+{
+	std::vector<RenderReq> render_requests;
+	std::vector<RuntimeMaterial> materials;
 };
 
 //struct ShaderMiniData6

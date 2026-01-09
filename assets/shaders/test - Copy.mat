@@ -1,0 +1,36 @@
+{
+    "name": "test",
+    "shader_path": "./assets/shaders/test.shdr",
+    "lit": true,
+    "instanced": false,
+    "recieves_shadows": true,
+    "casts_shadows": true,
+    "transparent": true,
+    "uniforms": [
+        {
+            "location": "uTexture",
+            "type": "texture",
+            "value": "./assets/textures/robot/DefaultMaterial_Base_Color.png"
+        },
+	{
+            "location": "pos",
+            "type": "vec3",
+            "value": [0.0, 0.0, 0.0]
+        },
+	{
+            "location": "dup",
+            "type": "vec3",
+            "value": [0.0, 0.0, 0.0]
+        },
+	{
+            "location": "pos2",
+            "type": "vec4",
+            "value": [1.0, 2.0, 3.0, 4.0]
+        },
+	{
+            "location": "test",
+            "type": "bool",
+            "value": true
+        }
+    ]
+}

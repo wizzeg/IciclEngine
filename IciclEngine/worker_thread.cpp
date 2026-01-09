@@ -78,10 +78,14 @@ void GameThread::execute()
 		std::vector<RenderRequest>& render_requests = engine_context->render_requests[std::size_t(engine_context->write_pos)];
 		render_requests.reserve(previous_total_render_requests);
 
+		auto& render_context = engine_context->render_contexts[std::size_t(engine_context->write_pos)];
+
 		std::vector<CameraData>& unique_cameras = engine_context->cameras_render[std::size_t(engine_context->write_pos)];
 		unique_cameras.reserve(previous_unique_cameras);
 
 		std::vector<PreRenderRequest> pre_render_requests;
+		pre_render_requests.reserve(previous_total_render_requests);
+		std::vector<PreRenderReq> pre_render_reqs;
 		pre_render_requests.reserve(previous_total_render_requests);
 
 		std::vector<hashed_string_64> hashed_mesh_loads;
@@ -372,6 +376,15 @@ void GameThread::execute()
 				//}
 				
 			}
+
+			for (auto [entity, world_position, mesh_component, material_component] 
+				: registry.view<TransformDynamicComponent, MeshComponent, MaterialComponent>().each())
+			{
+				PreRenderReq pre;
+				pre_render_reqs.emplace_back(world_position.model_matrix, mesh_component.hashed_path.hash,
+					material_component.hashed_path.hash, material_component.instance, material_component.mipmap);
+			}
+
 			ind_timer.stop();
 			pre_render_requests_time += ind_timer.get_time_ms();
 
@@ -383,6 +396,7 @@ void GameThread::execute()
 			//	render_requests = std::move(opt_render_requests.value());
 			//}
 			render_requests = std::move(engine_context->asset_manager->retrieve_render_requests(pre_render_requests));
+			render_context = std::move(engine_context->asset_manager->construct_render_context(pre_render_reqs));
 			ind_timer.stop();
 			renderrequests_time += ind_timer.get_time_ms();
 			

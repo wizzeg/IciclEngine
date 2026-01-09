@@ -112,6 +112,7 @@ void AssetJobThread::process_tex_job(TextureDataJob& a_job)
 				auto& tex = texs[job_hash];
 				if (tex->modified_time > a_job.job_time)
 				{
+					PRINTLN("tex job denied because of job_time");
 					return;
 				}
 				switch (tex->texture_ram_status)
@@ -126,6 +127,7 @@ void AssetJobThread::process_tex_job(TextureDataJob& a_job)
 					return;
 				default:
 					start_load = false;
+					fulfill_deps = true;
 					break;
 				}
 				// we got the hash, have to check what's up with it...
@@ -173,10 +175,11 @@ void AssetJobThread::process_shader_job(ShaderDataJob& a_job)
 		{
 			// has shader... now what?
 			auto& shader = shaders[job_hash];
-			if (shader->modified_time > a_job.job_time)
-			{
-				return;
-			}
+			//if (shader->modified_time > a_job.job_time)
+			//{
+			//	PRINTLN("shader job denied because of job_time");
+			//	return;
+			//}
 			switch (shader->loading_status)
 			{
 			case ELoadStatus::NotLoaded:
@@ -186,9 +189,10 @@ void AssetJobThread::process_shader_job(ShaderDataJob& a_job)
 			case ELoadStatus::ShaderLoadedProgram:
 				start_load = false;
 				fulfill_deps = true;
-				return;
+				break;
 			default:
 				start_load = false;
+				fulfill_deps = true;
 				break;
 			}
 		}
@@ -211,7 +215,7 @@ void AssetJobThread::process_shader_job(ShaderDataJob& a_job)
 			{
 				shaders[job_hash] = new_shader;
 			}
-			else return;
+			//else return;
 			ProgramLoadRequest shader_req(temp_shader);
 			asset_messages.program_queue.add_message(std::move(shader_req));
 			shader_lock.unlock();
@@ -315,6 +319,7 @@ void AssetJobThread::process_mat_job(MaterialDataJob& a_job)
 				{
 					// this should generally happen
 					deps.push_back(new_mat->hashed_path.hash);
+					registered = true;
 				}
 
 			}
@@ -649,7 +654,7 @@ void AssetJobThread::process_dependency(ValidateMatDependencies& a_job) // this 
 						}
 						remaining_deps += (uint8_t)!dep.fulfilled;
 					}
-					PRINTLN("material {} has {} remaining dependencies", mats[tex_dep]->hashed_path.string, remaining_deps);
+					PRINTLN("material {} has {} remaining dependencies (from texture check)", mats[tex_dep]->hashed_path.string, remaining_deps);
 					if (remaining_deps == 0)
 					{
 						// generate runtime and mark loaded
@@ -661,7 +666,7 @@ void AssetJobThread::process_dependency(ValidateMatDependencies& a_job) // this 
 						size_t insertion_index = 0;
 						for (size_t i = 0; i < runtime_mats.size(); i++)
 						{
-							uint64_t mat_hash = runtime_mats[i].material_hash;
+							uint64_t mat_hash = runtime_mats[i].hash;
 							if (mat_hash == new_mat_hash)
 							{
 								inserted = true;
@@ -675,7 +680,7 @@ void AssetJobThread::process_dependency(ValidateMatDependencies& a_job) // this 
 						}
 						if (!inserted)
 						{
-							PRINTLN("Thread {} inserts runtime material", id);
+							PRINTLN("Thread {} inserts runtime material (from texture check)", id);
 							//make the uniforms
 							std::vector<RuntimeUniform> runtime_uniforms;
 							for (UniformData& uniform : mats[new_mat_hash]->uniforms)
@@ -750,7 +755,7 @@ void AssetJobThread::process_dependency(ValidateMatDependencies& a_job) // this 
 						size_t insertion_index = 0;
 						for (size_t i = 0; i < runtime_mats.size(); i++)
 						{
-							uint64_t mat_hash = runtime_mats[i].material_hash;
+							uint64_t mat_hash = runtime_mats[i].hash;
 							if (mat_hash == new_mat_hash)
 							{
 								inserted = true;
@@ -765,7 +770,7 @@ void AssetJobThread::process_dependency(ValidateMatDependencies& a_job) // this 
 						if (!inserted)
 						{
 							//make the uniforms
-							PRINTLN("Thread {} inserts runtime material", id);
+							PRINTLN("Thread {} inserts runtime material (from shader check)", id);
 							std::vector<RuntimeUniform> runtime_uniforms;
 							for (UniformData& uniform : mats[new_mat_hash]->uniforms)
 							{
@@ -1054,4 +1059,135 @@ std::vector<RenderRequest> AssetManager::retrieve_render_requests(std::vector<Pr
 	//timer.stop();
 	//PRINTLN("render requests took: {}", timer.get_time_ms());
 	return render_requests;
+}
+
+RenderContext AssetManager::construct_render_context(std::vector<PreRenderReq>& a_pre_reqs)
+{
+	RenderContext render_context;
+	render_context.materials.reserve(asset_storage.runtime_materials.size());
+	render_context.render_requests.reserve(a_pre_reqs.size());
+
+	// order: material -> mesh -> mipmap -> instanced
+	std::sort(a_pre_reqs.begin(), a_pre_reqs.end(), []
+	(const PreRenderReq& request_a, const PreRenderReq& request_b)
+		{
+			if (request_a.mat_hash != request_b.mat_hash)
+				return request_a.mat_hash < request_b.mat_hash;
+
+			//if (request_a.mesh_hash != request_b.mesh_hash)
+				return request_a.mesh_hash < request_b.mesh_hash;
+
+			//if (request_a.mipmap != request_b.mipmap)
+			//	return (int)request_a.mipmap > (int)request_b.mipmap;
+
+			////if (request_a.instanced != request_b.instanced)
+			//	return (int)request_a.instanced > (int)request_b.instanced;
+		});
+		
+	std::lock_guard<std::mutex> mesh_guard(asset_storage.runtime_mesh_mutex);
+	std::lock_guard<std::mutex>	material_guard(asset_storage.runtime_mat_mutex);
+
+	auto& mats = asset_storage.runtime_materials;
+	auto& meshes = asset_storage.runtime_meshes;
+	uint64_t invalid_hash = hashed_string_64().hash;
+
+	size_t mat_index = 0;
+	size_t mat_start_index = 0;
+	bool mat_found = false;
+
+	uint64_t prev_mat_hash = invalid_hash;
+
+	size_t mesh_index = 0;
+	size_t mesh_start_index = 0;
+	bool mesh_found = false;
+
+	for (auto& request : a_pre_reqs)
+	{
+		mesh_found = false;
+
+		if (request.mat_hash == invalid_hash)
+			continue;
+
+		if (prev_mat_hash != request.mat_hash)
+		{
+			mat_index = 0;
+			mat_start_index = 0;
+		}
+
+		for (; mat_index < mats.size(); mat_index++) // should check mesh/tex if it's loaded, if not, add it as load job.
+		{
+			RuntimeMaterial& mat = mats[mat_index];
+			if (request.mat_hash == mat.hash)
+			{
+				mat_start_index = mesh_index;
+				mat_found = true;
+
+				mesh_index = 0;
+				mesh_found = false;
+				if (request.mesh_hash != invalid_hash)
+				{
+					for (; mesh_index < meshes.size(); mesh_index++)
+					{
+						RuntimeMesh& mesh = meshes[mesh_index];
+						if (request.mesh_hash == mesh.hash)
+						{
+							// we should have everything we need...
+							if (prev_mat_hash != mat.hash)
+							{
+								// add the material
+								render_context.materials.push_back(mat);
+								prev_mat_hash = mat.hash; // I think? Don't think we need to change this every time.
+							}
+
+							render_context.render_requests.emplace_back(
+								request.model_matrix, request.mesh_hash, request.mat_hash,
+								mesh.vao, mesh.num_indices, request.instanced, request.mipmap,
+								mat.gl_program
+							);
+
+							mesh_start_index = mesh_index;
+							mesh_found = true;
+							break;
+						}
+					}
+				}
+				if (!mesh_found)
+					mesh_index = mesh_start_index;
+
+				break;
+			}
+		}
+		if (!mat_found)
+			mat_index = mat_start_index;
+	}
+
+	auto& reqs = render_context.render_requests;
+	std::sort(reqs.begin(), reqs.end(), []
+	(const RenderReq& request_a, const RenderReq& request_b)
+		{
+			if (request_a.gl_program != request_b.gl_program)
+				return request_a.gl_program < request_b.gl_program;
+
+			if (request_a.mat_hash != request_b.mat_hash)
+				return request_a.mat_hash < request_b.mat_hash;
+
+			if (request_a.mesh_hash != request_b.mesh_hash)
+				return request_a.mesh_hash < request_b.mesh_hash;
+
+			if (request_a.mipmap != request_b.mipmap)
+				return (int)request_a.mipmap > (int)request_b.mipmap;
+
+			return (int)request_a.instanced > (int)request_b.instanced;
+		});
+	auto& ctx_mats = render_context.materials;
+	std::sort(ctx_mats.begin(), ctx_mats.end(), []
+	(const RuntimeMaterial& mat_a, const RuntimeMaterial& mat_b)
+		{
+			if (mat_a.gl_program != mat_b.gl_program)
+				return mat_a.gl_program < mat_b.gl_program;
+			return mat_a.hash < mat_b.hash;
+		});
+
+
+	return render_context;
 }

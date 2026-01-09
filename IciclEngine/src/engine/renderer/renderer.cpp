@@ -88,6 +88,105 @@ void Renderer::temp_render(RenderRequest& a_render_request, glm::vec3 a_camera_p
 
 	}
 }
+void Renderer::temp_render(RenderContext a_render_context)
+{
+	auto& mats = a_render_context.materials;
+	auto& reqs = a_render_context.render_requests;
+
+	uint64_t bound_mat = 0;
+	GLuint bound_vao = 0;
+
+	//GLuint current_gl_program = 0;
+
+	size_t req_index = 0;
+	size_t req_start_index = 0;
+	GLuint tex_num = 0;
+
+	// perhaps bind the first mat and mesh
+
+	for (auto& mat : mats)
+	{
+		req_index = req_start_index;
+		for (; req_index < reqs.size(); req_index++)
+		{
+			auto& req = reqs[req_index];
+			if (req.mat_hash == mat.hash)
+			{
+				if (bound_mat != mat.hash)
+				{
+					if (current_gl_program != mat.gl_program)
+					{
+						// bind program
+						current_gl_program = mat.gl_program;
+						glUseProgram(mat.gl_program);
+						set_mat4fv(proj, "proj");
+						set_mat4fv(view, "view");
+					}
+					// bind mat
+					bound_mat = mat.hash;
+					for (auto& uniform : mat.uniforms)
+					{
+						if (uniform.type == typeid(std::string)) // this means it's texture
+						{
+							glActiveTexture((GLenum)(GL_TEXTURE0));
+							glBindTexture(GL_TEXTURE_2D, uniform.texture_id);
+							set_vec1i(1, "has_texture");
+							break;
+						}
+					}
+				}
+				if (bound_vao != req.vao)
+				{
+					// bind vao
+					bound_vao = req.vao;
+					glBindVertexArray(req.vao);
+				}
+				//draw
+				//if (auto shader = shader_program.lock())
+				//{
+				//	shader->bind();
+				//	shader->bind_uniform(typeid(glm::mat4), "proj", static_cast<void*>(glm::value_ptr(proj)));
+				//	shader->bind_uniform(typeid(glm::mat4), "view", static_cast<void*>(glm::value_ptr(view)));
+				//	shader->bind_uniform(typeid(glm::mat4), "model", static_cast<void*>(glm::value_ptr(req.model_matrix)));
+				//	for (auto& uniform : mat.uniforms)
+				//	{
+				//		if (uniform.type == typeid(std::string)) // this means it's texture
+				//		{
+				//			glActiveTexture((GLenum)(GL_TEXTURE0));
+				//			glBindTexture(GL_TEXTURE_2D, uniform.texture_id);
+				//			shader->set_vec1i(1, "has_texture");
+				//			break;
+				//		}
+				//	}
+				//}
+				//else
+				//{
+				//	PRINTLN("something went really wrong");
+				//}
+				//glBindVertexArray(req.vao);
+				//bind_uniform(typeid(glm::mat4), "model", static_cast<UniformValue>(req.model_matrix));
+				set_mat4fv(req.model_matrix, "model");
+				glDrawElements(GL_TRIANGLES, req.indices_size, GL_UNSIGNED_INT, 0);
+
+			}
+			else if (req.mat_hash > mat.hash)
+			{
+				req_start_index = req_index;
+				break;
+			}
+			else
+			{
+				PRINTLN("material for the render request doesn't exist, or missorted");
+				req_start_index = req_index;
+				break;
+			}
+		}
+	}
+	glActiveTexture((GLenum)(GL_TEXTURE0));
+	glBindTexture(GL_TEXTURE_2D, 0);
+	current_gl_program = 0;
+	glUseProgram(current_gl_program);
+}
 void Renderer::temp_set_shader(std::weak_ptr<ShaderProgram> a_shader)
 {
 	shader_program = a_shader;
@@ -98,4 +197,80 @@ void Renderer::set_proj_view_matrix(glm::mat4 a_proj, glm::mat4 a_view)
 {
 	proj = a_proj;
 	view = a_view;
+}
+
+void Renderer::bind_uniform(std::type_index a_type, const std::string& a_location, UniformValue a_value) // good enough, lowers complexity
+{
+	// instead do an immediate cast and have this by a type T thing for immediate call
+	//if (a_type == typeid(glm::vec3))
+	//{
+	//	set_vec3f(std::get<const float*>(a_value), a_location.c_str());
+	//}
+	//else if (a_type == typeid(glm::vec4))
+	//{
+	//	set_vec4f(*std::get<const float*>(a_value), a_location.c_str());
+	//}
+	if (a_type == typeid(int))
+	{
+		set_vec1i(std::get<int>(a_value), a_location.c_str());
+	}
+	else if (a_type == typeid(glm::mat4))
+	{
+		set_mat4fv(std::get<glm::mat4>(a_value), a_location.c_str());
+	}
+}
+
+void Renderer::set_vec1f(const float a_value, const char* a_location) const
+{
+	glUniform1f(glGetUniformLocation(current_gl_program, a_location), a_value);
+}
+void Renderer::set_vec2f(const float a_value[2], const char* a_location) const
+{
+	glUniform2f(glGetUniformLocation(current_gl_program, a_location), a_value[0], a_value[1]);
+}
+void Renderer::set_vec3f(const float a_value[3], const char* a_location) const
+{
+	glUniform3f(glGetUniformLocation(current_gl_program, a_location), a_value[0], a_value[1], a_value[2]);
+}
+void Renderer::set_vec4f(const float a_value[4], const char* a_location) const
+{
+	glUniform4f(glGetUniformLocation(current_gl_program, a_location), a_value[0], a_value[1], a_value[2], a_value[3]);
+}
+
+void Renderer::set_vec1i(const int a_value, const char* a_location) const
+{
+	glUniform1i(glGetUniformLocation(current_gl_program, a_location), a_value);
+}
+void Renderer::set_vec2i(const int a_value[2], const char* a_location) const
+{
+	glUniform2i(glGetUniformLocation(current_gl_program, a_location), a_value[0], a_value[1]);
+}
+void Renderer::set_vec3i(const int a_value[3], const char* a_location) const
+{
+	glUniform3i(glGetUniformLocation(current_gl_program, a_location), a_value[0], a_value[1], a_value[2]);
+}
+void Renderer::set_vec4i(const int a_value[4], const char* a_location) const
+{
+	glUniform4i(glGetUniformLocation(current_gl_program, a_location), a_value[0], a_value[1], a_value[2], a_value[3]);
+}
+
+void Renderer::set_vec1ui(const unsigned int a_value, const char* a_location) const
+{
+	glUniform1ui(glGetUniformLocation(current_gl_program, a_location), a_value);
+}
+void Renderer::set_vec2ui(const unsigned int a_value[2], const char* location) const
+{
+	glUniform2ui(glGetUniformLocation(current_gl_program, location), a_value[0], a_value[1]);
+}
+void Renderer::set_vec3ui(const unsigned int a_value[3], const char* a_location) const
+{
+	glUniform3ui(glGetUniformLocation(current_gl_program, a_location), a_value[0], a_value[1], a_value[2]);
+}
+void Renderer::set_vec4ui(const unsigned int a_value[4], const char* a_location) const
+{
+	glUniform4ui(glGetUniformLocation(current_gl_program, a_location), a_value[0], a_value[1], a_value[2], a_value[3]);
+}
+void Renderer::set_mat4fv(const glm::mat4 a_value, const char* a_location) const
+{
+	glUniformMatrix4fv(glGetUniformLocation(current_gl_program, a_location), 1, GL_FALSE, glm::value_ptr(a_value));
 }

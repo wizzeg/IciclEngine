@@ -231,7 +231,7 @@ int main(void)
 		// Here this would be repeated for every camera ... Yes, I suppose so... Do they bind the frame buffer themselves, perhaps?
 		// Lets just start with a hardcoded editor camera.
 		auto& render_requests = engine_context->render_requests[std::size_t(!engine_context->write_pos)];
-
+		auto& render_context = engine_context->render_contexts[std::size_t(!engine_context->write_pos)];
 		// do for each camera.
 		renderer.rotation += (float)(0.07 * engine_context->delta_time * 0.01);
 		glfw_context->bind_framebuffer("editor_frame_buffer");
@@ -240,13 +240,15 @@ int main(void)
 		renderer.set_camera_position(engine_context->editor_camera.get_camera_positoin());
 		renderer.set_proj_view_matrix(engine_context->editor_camera.get_proj_matrix(), engine_context->editor_camera.get_view_matrix());
 		glm::vec3 camera_pos = engine_context->editor_camera.get_camera_positoin();
-		for (size_t i = 0; i < render_requests.size(); i++)
-		{
-			if (render_requests[i].vao != 0)
-			{
-				renderer.temp_render(render_requests[i], camera_pos);
-			}
-		}
+		//for (size_t i = 0; i < render_requests.size(); i++)
+		//{
+		//	if (render_requests[i].vao != 0)
+		//	{
+		//		renderer.temp_render(render_requests[i], camera_pos);
+		//	}
+		//}
+		renderer.temp_render(render_context);
+
 		glfw_context->bind_framebuffer("main_camera_buffer");
 		glfw_context->clear();
 		// render for each ingame camera
@@ -258,13 +260,14 @@ int main(void)
 				renderer.set_camera_position(engine_context->cameras_render[std::size_t(!engine_context->write_pos)][i].position);
 				renderer.set_proj_view_matrix(engine_context->cameras_render[std::size_t(!engine_context->write_pos)][i].proj_matrix,
 					engine_context->cameras_render[std::size_t(!engine_context->write_pos)][i].view_matrix);
-				for (size_t i = 0; i < render_requests.size(); i++)
-				{
-					if (render_requests[i].vao != 0)
-					{
-						renderer.temp_render(render_requests[i]);
-					}
-				}
+				//for (size_t i = 0; i < render_requests.size(); i++)
+				//{
+				//	if (render_requests[i].vao != 0)
+				//	{
+				//		renderer.temp_render(render_requests[i]);
+				//	}
+				//}
+				renderer.temp_render(render_context);
 			}
 		}
 		auto now = std::chrono::system_clock::now();
