@@ -450,21 +450,3 @@ struct RenderContext
 	std::vector<RenderReq> render_requests;
 	std::vector<RuntimeMaterial> materials;
 };
-
-//struct ShaderMiniData6
-//{
-//	uint64_t hash;
-//	GLuint gl_program = 0;
-//	ELoadStatus load_status = ELoadStatus::NotLoaded;
-//	TextureMiniData textures[6]; // If a texture is marked for unload, this will know -> jobs for Updating TextureData has to be completed before jobs to unload data.
-//}; 
-// ideas for data storage... Primarily use an unordered map to manage the loading. When loaded, add them into sorted vector.
-// I think that makes it all easier to manage, the data storage 
-// this means, the jobs can be structured much more easily I think... The shader would request that certain textures are loaded etc
-
-
-// when gathering a shader, I get the shader, and a pointer to data... The problem is that the shader contents can be modified, I'm not getting a true copy
-// So... 
-
-// perhaps, during renderrequest gathering, only gather which shader/material it wishes to use. Then fetch another vector of those, with just one copy
-// then during rendering it just goes to next shader/material when it wants a new one.

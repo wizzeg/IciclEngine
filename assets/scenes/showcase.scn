@@ -1,6 +1,6 @@
 {
     "name": "new scene",
-    "next index": 5,
+    "next index": 4,
     "root objects": [
         {
             "children": [],
@@ -10,7 +10,7 @@
                         {
                             "name": "entity name: ",
                             "type": "struct hashed_string_64",
-                            "value": "Camera 2"
+                            "value": "Robot 1"
                         },
                         {
                             "name": "entity id: ",
@@ -26,9 +26,9 @@
                             "name": "position: ",
                             "type": "struct glm::vec<3,float,0>",
                             "value": [
-                                3.431999921798706,
                                 0.0,
-                                5.0
+                                0.0,
+                                0.0
                             ]
                         },
                         {
@@ -44,10 +44,15 @@
                             "name": "rotation: ",
                             "type": "struct glm::vec<3,float,0>",
                             "value": [
-                                350.0,
-                                7.0,
-                                2.0
+                                0.0,
+                                0.0,
+                                0.0
                             ]
+                        },
+                        {
+                            "name": "overwrite quaternion rotation: ",
+                            "type": "bool",
+                            "value": false
                         },
                         {
                             "name": "update euler rotation: ",
@@ -55,44 +60,370 @@
                             "value": false
                         },
                         {
-                            "name": "overwrite quaternion rotation: ",
-                            "type": "bool",
-                            "value": true
-                        },
-                        {
                             "name": "rotation_quat",
                             "type": "struct glm::qua<float,0>",
                             "value": [
-                                0.08804145455360413,
-                                -0.05928872898221016,
-                                -0.02267349325120449,
-                                -0.9940922260284424
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0
                             ]
                         },
                         {
                             "name": "model_matrix",
                             "type": "struct glm::mat<4,4,float,0>",
                             "value": [
-                                0.991941511631012,
-                                0.034639354795217514,
-                                -0.12186934798955917,
+                                1.0,
                                 0.0,
-                                -0.05551881715655327,
-                                0.9834692478179932,
-                                -0.1723540723323822,
                                 0.0,
-                                0.11388451606035233,
-                                0.1777312159538269,
-                                0.9774671196937561,
                                 0.0,
-                                3.431999921798706,
                                 0.0,
-                                5.0,
+                                1.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
                                 1.0
                             ]
                         }
                     ],
                     "type": "TransformDynamicComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "mesh loaded: ",
+                            "type": "bool",
+                            "value": true
+                        },
+                        {
+                            "name": "mesh path: ",
+                            "type": "struct hashed_string_64",
+                            "value": "./assets/obj/robot.obj"
+                        }
+                    ],
+                    "type": "MeshComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "material path: ",
+                            "type": "struct hashed_string_64",
+                            "value": "./assets/shaders/test.mat"
+                        },
+                        {
+                            "name": "instanced: ",
+                            "type": "bool",
+                            "value": false
+                        },
+                        {
+                            "name": "use mipmaps: ",
+                            "type": "bool",
+                            "value": false
+                        },
+                        {
+                            "name": "load material: ",
+                            "type": "bool",
+                            "value": false
+                        }
+                    ],
+                    "type": "MaterialComponent"
+                }
+            ],
+            "name": "Robot 1"
+        },
+        {
+            "children": [],
+            "components": [
+                {
+                    "fields": [
+                        {
+                            "name": "entity name: ",
+                            "type": "struct hashed_string_64",
+                            "value": "Robot 2"
+                        },
+                        {
+                            "name": "entity id: ",
+                            "type": "struct EntityReference",
+                            "value": 3452816845
+                        }
+                    ],
+                    "type": "NameComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "mesh loaded: ",
+                            "type": "bool",
+                            "value": true
+                        },
+                        {
+                            "name": "mesh path: ",
+                            "type": "struct hashed_string_64",
+                            "value": "./assets/obj/robot.obj"
+                        }
+                    ],
+                    "type": "MeshComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "position: ",
+                            "type": "struct glm::vec<3,float,0>",
+                            "value": [
+                                7.0,
+                                -6.0,
+                                -4.0
+                            ]
+                        },
+                        {
+                            "name": "scale: ",
+                            "type": "struct glm::vec<3,float,0>",
+                            "value": [
+                                1.0,
+                                1.0,
+                                1.0
+                            ]
+                        },
+                        {
+                            "name": "rotation: ",
+                            "type": "struct glm::vec<3,float,0>",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "overwrite quaternion rotation: ",
+                            "type": "bool",
+                            "value": false
+                        },
+                        {
+                            "name": "update euler rotation: ",
+                            "type": "bool",
+                            "value": false
+                        },
+                        {
+                            "name": "rotation_quat",
+                            "type": "struct glm::qua<float,0>",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0
+                            ]
+                        },
+                        {
+                            "name": "model_matrix",
+                            "type": "struct glm::mat<4,4,float,0>",
+                            "value": [
+                                1.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0,
+                                0.0,
+                                7.0,
+                                -6.0,
+                                -4.0,
+                                1.0
+                            ]
+                        }
+                    ],
+                    "type": "TransformDynamicComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "material path: ",
+                            "type": "struct hashed_string_64",
+                            "value": "./assets/shaders/test.mat"
+                        },
+                        {
+                            "name": "instanced: ",
+                            "type": "bool",
+                            "value": false
+                        },
+                        {
+                            "name": "use mipmaps: ",
+                            "type": "bool",
+                            "value": false
+                        },
+                        {
+                            "name": "load material: ",
+                            "type": "bool",
+                            "value": false
+                        }
+                    ],
+                    "type": "MaterialComponent"
+                }
+            ],
+            "name": "Robot 2"
+        },
+        {
+            "children": [],
+            "components": [
+                {
+                    "fields": [
+                        {
+                            "name": "entity name: ",
+                            "type": "struct hashed_string_64",
+                            "value": "Robot w normalmap"
+                        },
+                        {
+                            "name": "entity id: ",
+                            "type": "struct EntityReference",
+                            "value": 3452816845
+                        }
+                    ],
+                    "type": "NameComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "material path: ",
+                            "type": "struct hashed_string_64",
+                            "value": "./assets/shaders/test2.mat"
+                        },
+                        {
+                            "name": "instanced: ",
+                            "type": "bool",
+                            "value": false
+                        },
+                        {
+                            "name": "use mipmaps: ",
+                            "type": "bool",
+                            "value": false
+                        },
+                        {
+                            "name": "load material: ",
+                            "type": "bool",
+                            "value": false
+                        }
+                    ],
+                    "type": "MaterialComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "mesh loaded: ",
+                            "type": "bool",
+                            "value": true
+                        },
+                        {
+                            "name": "mesh path: ",
+                            "type": "struct hashed_string_64",
+                            "value": "./assets/obj/robot.obj"
+                        }
+                    ],
+                    "type": "MeshComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "position: ",
+                            "type": "struct glm::vec<3,float,0>",
+                            "value": [
+                                0.0,
+                                -7.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "scale: ",
+                            "type": "struct glm::vec<3,float,0>",
+                            "value": [
+                                1.0,
+                                1.0,
+                                1.0
+                            ]
+                        },
+                        {
+                            "name": "rotation: ",
+                            "type": "struct glm::vec<3,float,0>",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "overwrite quaternion rotation: ",
+                            "type": "bool",
+                            "value": false
+                        },
+                        {
+                            "name": "update euler rotation: ",
+                            "type": "bool",
+                            "value": false
+                        },
+                        {
+                            "name": "rotation_quat",
+                            "type": "struct glm::qua<float,0>",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0
+                            ]
+                        },
+                        {
+                            "name": "model_matrix",
+                            "type": "struct glm::mat<4,4,float,0>",
+                            "value": [
+                                1.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0,
+                                0.0,
+                                0.0,
+                                -7.0,
+                                0.0,
+                                1.0
+                            ]
+                        }
+                    ],
+                    "type": "TransformDynamicComponent"
+                }
+            ],
+            "name": "Robot w normalmap"
+        },
+        {
+            "children": [],
+            "components": [
+                {
+                    "fields": [
+                        {
+                            "name": "entity name: ",
+                            "type": "struct hashed_string_64",
+                            "value": "Camera"
+                        },
+                        {
+                            "name": "entity id: ",
+                            "type": "struct EntityReference",
+                            "value": 3452816845
+                        }
+                    ],
+                    "type": "NameComponent"
                 },
                 {
                     "fields": [
@@ -104,7 +435,7 @@
                         {
                             "name": "orbital camera: ",
                             "type": "bool",
-                            "value": false
+                            "value": true
                         },
                         {
                             "name": "orbital point: ",
@@ -118,7 +449,7 @@
                         {
                             "name": "priority: ",
                             "type": "unsigned short",
-                            "value": 5002
+                            "value": 5000
                         },
                         {
                             "name": "buffer: ",
@@ -156,21 +487,21 @@
                             "name": "view_matrix",
                             "type": "struct glm::mat<4,4,float,0>",
                             "value": [
-                                0.991941511631012,
-                                -0.05551881715655327,
-                                0.11388451606035233,
+                                0.7071067690849304,
+                                -0.40824827551841736,
+                                0.5773502588272095,
                                 0.0,
-                                0.034639354795217514,
-                                0.9834692478179932,
-                                0.1777312159538269,
                                 0.0,
-                                -0.12186934798955917,
-                                -0.1723540723323822,
-                                0.9774671196937561,
+                                0.8164965510368347,
+                                0.5773502588272095,
                                 0.0,
-                                -2.7949962615966797,
-                                1.0523109436035156,
-                                -5.278187274932861,
+                                -0.7071067690849304,
+                                -0.40824827551841736,
+                                0.5773502588272095,
+                                0.0,
+                                -0.0,
+                                -0.0,
+                                -13.856406211853027,
                                 1.0
                             ]
                         },
@@ -206,27 +537,6 @@
                         }
                     ],
                     "type": "CameraComponent"
-                }
-            ],
-            "name": "Camera 2"
-        },
-        {
-            "children": [],
-            "components": [
-                {
-                    "fields": [
-                        {
-                            "name": "entity name: ",
-                            "type": "struct hashed_string_64",
-                            "value": "Mesh tex"
-                        },
-                        {
-                            "name": "entity id: ",
-                            "type": "struct EntityReference",
-                            "value": 3452816845
-                        }
-                    ],
-                    "type": "NameComponent"
                 },
                 {
                     "fields": [
@@ -234,9 +544,9 @@
                             "name": "position: ",
                             "type": "struct glm::vec<3,float,0>",
                             "value": [
-                                3.1571826934814453,
-                                0.0,
-                                0.0
+                                8.0,
+                                8.0,
+                                8.0
                             ]
                         },
                         {
@@ -258,12 +568,12 @@
                             ]
                         },
                         {
-                            "name": "update euler rotation: ",
+                            "name": "overwrite quaternion rotation: ",
                             "type": "bool",
                             "value": false
                         },
                         {
-                            "name": "overwrite quaternion rotation: ",
+                            "name": "update euler rotation: ",
                             "type": "bool",
                             "value": false
                         },
@@ -271,69 +581,39 @@
                             "name": "rotation_quat",
                             "type": "struct glm::qua<float,0>",
                             "value": [
-                                0.3959277272224426,
-                                0.39596623182296753,
-                                0.39592981338500977,
-                                -0.7279278635978699
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0
                             ]
                         },
                         {
                             "name": "model_matrix",
                             "type": "struct glm::mat<4,4,float,0>",
                             "value": [
-                                0.3729006052017212,
-                                -0.26286864280700684,
-                                0.889988899230957,
-                                0.0,
-                                0.8899646997451782,
-                                0.3729616403579712,
-                                -0.26286396384239197,
-                                0.0,
-                                -0.2629505395889282,
-                                0.8899632692337036,
-                                0.3729039430618286,
-                                0.0,
-                                3.1571826934814453,
+                                1.0,
                                 0.0,
                                 0.0,
+                                0.0,
+                                0.0,
+                                1.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0,
+                                0.0,
+                                8.0,
+                                8.0,
+                                8.0,
                                 1.0
                             ]
                         }
                     ],
                     "type": "TransformDynamicComponent"
-                },
-                {
-                    "fields": [
-                        {
-                            "name": "mesh loaded: ",
-                            "type": "bool",
-                            "value": true
-                        },
-                        {
-                            "name": "mesh path: ",
-                            "type": "struct hashed_string_64",
-                            "value": "./assets/obj/triobjmonkey.obj"
-                        }
-                    ],
-                    "type": "MeshComponent"
-                },
-                {
-                    "fields": [
-                        {
-                            "name": "texture loaded: ",
-                            "type": "bool",
-                            "value": true
-                        },
-                        {
-                            "name": "texture path: ",
-                            "type": "struct hashed_string_64",
-                            "value": "./assets/textures/wall.jpg"
-                        }
-                    ],
-                    "type": "TextureComponent"
                 }
             ],
-            "name": "Mesh tex"
+            "name": "Camera"
         }
     ]
 }
