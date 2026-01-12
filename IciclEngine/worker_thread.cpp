@@ -28,12 +28,13 @@ void GameThread::execute()
 	double pre_render_requests_time = 0;
 	double renderrequests_time = 0;
 	double game_thread_time = 0;
+	double lighting_time = 0;
 	static thread_local const glm::mat4 IDENTITY(1.0f);
 	auto transform_group = scene->get_registry().group<
 		TransformDynamicComponent
 	>();
 	auto render_group = scene->get_registry().group<
-		MeshComponent, TextureComponent
+		MeshComponent, MaterialComponent
 	>(entt::get<TransformDynamicComponent>);
 	while (true)
 	{
@@ -41,7 +42,7 @@ void GameThread::execute()
 		timer.stop();
 		game_thread_time += timer.get_time_ms();
 
-		if (runs > 500 && false)
+		if (runs > 500)
 		{
 			PRINTLN("time for moving: {}", movement / (double)runs);
 			PRINTLN("time for complex worldpos: {}", complex_movement / (double)runs);
@@ -49,6 +50,7 @@ void GameThread::execute()
 			PRINTLN("time for checking load jobs: {}", mesh_tex_jobs / (double)runs);
 			PRINTLN("time to gather renderrequests: {}", pre_render_requests_time / (double)runs);
 			PRINTLN("time for computing and moving render requests: {}", renderrequests_time / (double)runs);
+			PRINTLN("time for gathering lights: {}", lighting_time / (double)runs);
 			PRINTLN("time for game thread: {}", game_thread_time / (double)runs);
 			movement = 0;
 			complex_movement = 0;
@@ -57,6 +59,7 @@ void GameThread::execute()
 			pre_render_requests_time = 0;
 			renderrequests_time = 0;
 			game_thread_time = 0;
+			lighting_time = 0;
 			runs = 0;
 		}
 		else runs++;
@@ -174,6 +177,10 @@ void GameThread::execute()
 						{
 							if (auto target_world_pos = registry.try_get<TransformDynamicComponent>(camera_comp.target_entity.entity))
 								camera_comp.target_location = target_world_pos->position;
+							else
+							{
+								PRINTLN("Failed to get target loction, whaaaat.");
+							}
 						}
 						direction = glm::normalize(world_pos.position - camera_comp.target_location);
 						right = glm::normalize(glm::cross(direction, glm::vec3(0.f, 1.f, 0.f)));
@@ -212,7 +219,6 @@ void GameThread::execute()
 			previous_unique_cameras = unique_cameras.size();
 			ind_timer.stop();
 			cameras_db += ind_timer.get_time_ms();
-
 			
 			// all of this takes like 2ms
 			//if (runs == 1000)
@@ -358,27 +364,27 @@ void GameThread::execute()
 			/////////////////////////////////////////////////////
 			//// start creating render requests
 			/// This must change, it must take in mesh path and texture path ... later material path instead of texture path
-			for (auto [entity, mesh_comoponent,texture_component, world_position]
-				: render_group.each())//: registry.view<TransformDynamicComponent, MeshComponent, TextureComponent>().each())
-			{
-				pre_render_requests.emplace_back(world_position.model_matrix, mesh_comoponent.hashed_path.hash, texture_component.hashed_path.hash);
-			}
-			for (auto [entity, world_position, mesh_comoponent]
-				: registry.view<TransformDynamicComponent, MeshComponent>(entt::exclude<TextureComponent>).each())
-			{
-				//if (auto tex = registry.try_get<TextureComponent>(entity))
-				//{
-				//	pre_render_requests.emplace_back(world_position.model_matrix, mesh_comoponent.hashed_path.hash, tex->hashed_path.hash);
-				//}
-				//else
-				//{
-					pre_render_requests.emplace_back(world_position.model_matrix, mesh_comoponent.hashed_path.hash, invalid_hash.hash);
-				//}
-				
-			}
+			//for (auto [entity, mesh_comoponent,texture_component, world_position]
+			//	: render_group.each())//: registry.view<TransformDynamicComponent, MeshComponent, TextureComponent>().each())
+			//{
+			//	pre_render_requests.emplace_back(world_position.model_matrix, mesh_comoponent.hashed_path.hash, texture_component.hashed_path.hash);
+			//}
+			//for (auto [entity, world_position, mesh_comoponent]
+			//	: registry.view<TransformDynamicComponent, MeshComponent>(entt::exclude<TextureComponent>).each())
+			//{
+			//	//if (auto tex = registry.try_get<TextureComponent>(entity))
+			//	//{
+			//	//	pre_render_requests.emplace_back(world_position.model_matrix, mesh_comoponent.hashed_path.hash, tex->hashed_path.hash);
+			//	//}
+			//	//else
+			//	//{
+			//		pre_render_requests.emplace_back(world_position.model_matrix, mesh_comoponent.hashed_path.hash, invalid_hash.hash);
+			//	//}
+			//	
+			//}
 
-			for (auto [entity, world_position, mesh_component, material_component] 
-				: registry.view<TransformDynamicComponent, MeshComponent, MaterialComponent>().each())
+			for (auto [entity, mesh_component, material_component, world_position]
+				: render_group.each())//registry.view<MeshComponent, MaterialComponent, TransformDynamicComponent>().each())
 			{
 				PreRenderReq pre;
 				pre_render_reqs.emplace_back(world_position.model_matrix, mesh_component.hashed_path.hash,
@@ -399,8 +405,37 @@ void GameThread::execute()
 			render_context = std::move(engine_context->asset_manager->construct_render_context(pre_render_reqs));
 			ind_timer.stop();
 			renderrequests_time += ind_timer.get_time_ms();
+
+			ind_timer.start();
+
+			for (auto [entity, directional_light] : registry.view<DirectionalLightComponent>().each())
+			{
+				if (directional_light.shadow_map)
+				{
+					ShadowLight light;
+					light.color = directional_light.color;
+					light.intensity = directional_light.intensity;
+					light.model_matrix = glm::mat4(0);
+					light.model_matrix *= glm::mat4_cast(directional_light.rotation_quat);
+					render_context.shadow_lights.push_back(light);
+				}
+			}
+
+			for (auto [entity, point_light, transform] : registry.view<PointLightComponent, TransformDynamicComponent>().each())
+			{
+				if (!point_light.shadow_map)
+				{
+					Light light;
+					light.color = point_light.color;
+					light.intensity = point_light.intensity;
+					light.model_matrix = transform.model_matrix;
+					render_context.lights.push_back(light);
+				}
+			}
+			ind_timer.stop();
+			lighting_time += ind_timer.get_time_ms();
 			
-				previous_total_render_requests = render_requests.size();
+			previous_total_render_requests = render_requests.size();
 				/////////////////////////////////////// BELOW is for testing when comopnents are suddenly destroyed.
 				//std::vector<entt::entity> entities;
 				//for (auto [entity, worldpos] : registry.view<TransformDynamicComponent>().each())

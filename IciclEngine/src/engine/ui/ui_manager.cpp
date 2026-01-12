@@ -104,6 +104,13 @@ void UIManager::draw_object_hierarchy()
 			ImGui::End();
 		}
 	}
+	else
+	{
+		ImGui::Begin("ui manager");
+		ImGui::Checkbox("draw ui content: ", &shoud_draw_object_hierarchy);
+		ImGui::End();
+	}
+
 	
 }
 

@@ -89,6 +89,7 @@ MaterialData ShaderLoader::load_material_from_path(const std::string& a_path)
 	material.recieves_shadows = j.value("recieves_shadows", false);
 	material.casts_shadows = j.value("casts_shadows", false);
 	material.transparent = j.value("transparent", false);
+	material.is_deffered = j.value("deffered", false);
 	material.gl_program = 0;
 	std::vector<UniformData> uniforms;
 	if (j.contains("uniforms") && j["uniforms"].is_array())
@@ -136,7 +137,7 @@ GLuint ShaderLoader::compile_shader(ShaderData& a_shader)
 		{
 			char log[512];
 			glGetShaderInfoLog(fragment_shader, 512, NULL, log);
-			PRINTLN("Failed to compile vertex shader: {}", log);
+			PRINTLN("Failed to compile fragment shader: {}", log);
 			failed = true;
 		}
 	}

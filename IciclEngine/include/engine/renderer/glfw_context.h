@@ -42,22 +42,33 @@ struct GLFWContext
 		}
 	}
 
+	~GLFWContext()
+	{
+		for (size_t i = 0; i < frame_buffers.size(); i++)
+		{
+			frame_buffers[i].delete_buffers();
+		}
+		
+	}
+
 	void activate() { glfwMakeContextCurrent(window); }
 	void deactivate() { glfwMakeContextCurrent(nullptr); }
 	void swap_buffers() { glfwSwapBuffers(window); }
 	bool window_should_close() { return glfwWindowShouldClose(window); };
 	void clear()
 	{
+		glClearColor(0.45f, 0.55f, 0.75f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glClearColor(0.1f, 0.3f, 0.2f, 1.0f);
+		
 	};
 	GLFWwindow* get_window() { return window; }
 
 	bool bind_framebuffer(const std::string a_name)
 	{
+		hashed_string_64 hash(a_name.c_str());
 		for (size_t i = 0; i < frame_buffers.size(); i++)
 		{
-			if (frame_buffers[i].get_name() == a_name)
+			if (frame_buffers[i].get_hash() == hash)
 			{
 				frame_buffers[i].bind();
 				return true;
@@ -72,9 +83,10 @@ struct GLFWContext
 	}
 	void resize_framebuffer(const std::string a_name, int a_width, int a_height)
 	{
+		hashed_string_64 hash(a_name.c_str());
 		for (size_t i = 0; i < frame_buffers.size(); i++)
 		{
-			if (frame_buffers[i].get_name() == a_name)
+			if (frame_buffers[i].get_hash() == hash)
 			{
 				frame_buffers[i].resize(a_width, a_height);
 				break;
@@ -82,24 +94,24 @@ struct GLFWContext
 		}
 	}
 
-	void create_framebuffer(const std::string name, int a_width, int a_height)
+	void create_framebuffer(const std::string name, int a_width, int a_height, EFramebufferType a_type)
 	{
-		frame_buffers.emplace_back(name, a_width, a_height);
+		frame_buffers.emplace_back(name, a_width, a_height, a_type);
 	}
 
-	unsigned int get_framebuffer_texture(const std::string a_name)
+	std::vector<GLuint> get_framebuffer_buffers(const std::string& a_name)
 	{
 		hashed_string_64 target_hash(a_name.c_str());
 		for (size_t i = 0; i < frame_buffers.size(); i++)
 		{
 			if (frame_buffers[i].get_hashed_name() == target_hash)
 			{
-				return frame_buffers[i].get_texture();
+				return frame_buffers[i].get_textures();
 			}
 		}
-		return 0;
+		return {};
 	}
-	FrameBuffer* get_framebuffer(const std::string a_name)
+	FrameBuffer* get_framebuffer(const std::string& a_name)
 	{
 		for (size_t i = 0; i < frame_buffers.size(); i++)
 		{
@@ -110,6 +122,20 @@ struct GLFWContext
 		}
 		return nullptr;
 	}
+
+	void delete_framebuffer(const std::string& a_name)
+	{
+		for (size_t i = 0; i < frame_buffers.size(); i++)
+		{
+			if (frame_buffers[i].get_name() == a_name)
+			{
+				frame_buffers[i].delete_buffers();
+				frame_buffers.erase(frame_buffers.begin() + i);
+				break;
+			}
+		}
+	}
+
 private:
 	std::vector<FrameBuffer> frame_buffers;
 	GLFWwindow* window;

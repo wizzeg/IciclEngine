@@ -52,6 +52,9 @@ struct EngineContext
 		cameras_render[std::size_t(write_pos)].clear();
 	}
 	bool run() { return !kill_all; }
+
+	uint64_t get_job_time() { return job_time++; }
+
 	std::mutex mutex;
 	std::condition_variable cv_frame_coordinator;
 	std::condition_variable cv_threads;
@@ -73,6 +76,8 @@ struct EngineContext
 	bool render_thread = false;
 	bool next_frame = false;
 	bool game_playing = false;
+	bool spent_time = false;
+	std::atomic<uint64_t> job_time = 0;
 	std::mutex glfw_mutex;
 	
 };

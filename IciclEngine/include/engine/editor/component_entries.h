@@ -2,7 +2,7 @@
 #include <engine/game/component_data.h>
 #include <engine/editor/componentdata_macros.h>
 
-REGISTER_COMPONENT(TestComponent, ("Test Category"), 
+REGISTER_COMPONENT(TestComponent, ("Test Category"),
 	FIELD_DEFAULT("test: ", comp, test)
 )
 
@@ -18,8 +18,16 @@ REGISTER_COMPONENT(TransformDynamicComponent, ("Transform", "Rendering"),
 	FIELD_CUSTOM("overwrite quaternion rotation: ", comp, overide_quaternion, 1.1f, false),
 	FIELD_CUSTOM("update euler rotation: ", comp, get_euler_angles, 1.1f, false),
 	FIELD_HIDDEN(comp, rotation_quat),
-	FIELD_HIDDEN(comp, model_matrix),
-)
+	FIELD_HIDDEN(comp, model_matrix)
+	)
+
+	REGISTER_COMPONENT(TransformDynamicStaticComponent, ("Transform", "Rendering"),
+		FIELD_DEFAULT("dynamic: ", comp, dynamic)
+	)
+
+REGISTER_COMPONENT(TransformStaticComponent, ("Transform", "Rendering"),
+	FIELD_HIDDEN(comp, model_matrix)
+	)
 
 
 REGISTER_COMPONENT(MeshComponent, ("Rendering"),
@@ -71,3 +79,19 @@ REGISTER_COMPONENT(RenderComponent, ("Rendering"),
 	FIELD_CUSTOM("use mipmaps: ", comp, mipmap, 0.0f, true),
 	FIELD_CUSTOM("load component: ", comp, load, 0.0f, true)
 )
+
+REGISTER_COMPONENT(PointLightComponent, ("Rendering", "lighting"),
+	FIELD_CUSTOM("color: ", comp, color, 1.75f, false),
+	FIELD_CUSTOM("intensity: ", comp, intensity, 1.75f, false),
+	FIELD_CUSTOM("create shadow map: ", comp, shadow_map, 1.75f, false)
+)
+
+REGISTER_COMPONENT(DirectionalLightComponent, ("Rendering", "lighting"),
+	FIELD_CUSTOM("color: ", comp, color, 1.75f, false),
+	FIELD_CUSTOM("intensity: ", comp, intensity, 1.75f, false),
+	FIELD_CUSTOM("create shadow map: ", comp, shadow_map, 1.75f, false),
+	FIELD_CUSTOM("rotation: ", comp, rotation_euler_do_not_use, 1.75f, false),
+	FIELD_CUSTOM("overwrite quaternion rotation: ", comp, overide_quaternion, 1.1f, false),
+	FIELD_CUSTOM("update euler rotation: ", comp, get_euler_angles, 1.1f, false),
+	FIELD_HIDDEN(comp, rotation_quat),
+	)

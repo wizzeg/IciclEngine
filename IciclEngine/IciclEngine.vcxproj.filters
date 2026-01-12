@@ -109,6 +109,9 @@
     <Filter Include="Header Files\vendor\imguizmo">
       <UniqueIdentifier>{d61c7fae-bfca-452a-a532-b5aa3dd76fc6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\engine">
+      <UniqueIdentifier>{1cd15715-9e8c-44a9-b228-d1d4a2b90200}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -472,6 +475,24 @@
     </None>
     <None Include="..\assets\shaders\vertex\test_vert.glsl">
       <Filter>Shaders\vertex</Filter>
+    </None>
+    <None Include="..\assets\shaders\vertex\deffered_vert.glsl">
+      <Filter>Shaders\vertex</Filter>
+    </None>
+    <None Include="..\assets\shaders\fragment\deffered_frag.glsl">
+      <Filter>Shaders\fragment</Filter>
+    </None>
+    <None Include="..\assets\shaders\engine\shadow_vert.glsl">
+      <Filter>Shaders\engine</Filter>
+    </None>
+    <None Include="..\assets\shaders\engine\shadow_frag.glsl">
+      <Filter>Shaders\engine</Filter>
+    </None>
+    <None Include="..\assets\shaders\engine\lighting_frag.glsl">
+      <Filter>Shaders\engine</Filter>
+    </None>
+    <None Include="..\assets\shaders\engine\lighting_vert.glsl">
+      <Filter>Shaders\engine</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -1,16 +1,24 @@
 {
     "name": "test",
-    "shader_path": "./assets/shaders/test.shdr",
+    "shader_path": "./assets/shaders/deffered.shdr",
     "lit": true,
     "instanced": false,
     "recieves_shadows": true,
     "casts_shadows": true,
     "transparent": true,
+    "deffered": true,
     "uniforms": [
         {
             "location": "uTexture",
             "type": "texture",
             "value": "./assets/textures/robot/DefaultMaterial_Base_Color.png"
+        },
+	{
+            "location": "has_texture",
+            "type": "ivec1",
+            "value": [
+                1
+            ]
         }
     ]
 }

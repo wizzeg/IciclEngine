@@ -9,6 +9,32 @@
 #include <string>
 using UniformValue = std::variant<bool, int, float, double, glm::vec3, glm::vec4, glm::quat, glm::mat4, glm::ivec1, std::string>;
 
+namespace EShadowCasterType
+{
+	enum EShadowCasterType
+	{
+		DirectionalLight,
+		RectangularLight,
+		SpotLight,
+		PointLight
+	};
+};
+
+struct ShadowLight
+{
+	alignas(16)glm::mat4 model_matrix = glm::mat4(0);
+	glm::vec3 color = glm::vec3(0);
+	float intensity = 0.0f;
+	EShadowCasterType::EShadowCasterType type = EShadowCasterType::PointLight;
+};
+
+struct Light
+{
+	alignas(16)glm::mat4 model_matrix = glm::mat4(0);
+	glm::vec3 color = glm::vec3(0);
+	float intensity = 0;
+	EShadowCasterType::EShadowCasterType type = EShadowCasterType::PointLight;
+};
 
 struct EntityReference
 {

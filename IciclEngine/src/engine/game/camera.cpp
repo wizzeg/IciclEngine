@@ -27,6 +27,7 @@ void Camera::move(glm::vec3 input)
 	if (!movable) return;
 	glm::vec3 rotated_input = rotation_quaternion * input;
 	camera_pos += rotated_input;
+	//PRINTLN("camera position: {} {} {}", camera_pos.x, camera_pos.y, camera_pos.z);
 	//camera_target += input;
 	proj_view_unchanged = false;
 }

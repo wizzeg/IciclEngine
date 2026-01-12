@@ -1,0 +1,5 @@
+{
+    "name": "test deffered",
+    "frag_path": "./assets/shaders/fragment/deffered_frag.glsl",
+    "vert_path": "./assets/shaders/vertex/deffered_vert.glsl"
+}

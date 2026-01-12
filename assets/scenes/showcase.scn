@@ -1,6 +1,6 @@
 {
     "name": "new scene",
-    "next index": 4,
+    "next index": 0,
     "root objects": [
         {
             "children": [],
@@ -614,6 +614,125 @@
                 }
             ],
             "name": "Camera"
+        },
+        {
+            "children": [],
+            "components": [
+                {
+                    "fields": [
+                        {
+                            "name": "entity name: ",
+                            "type": "struct hashed_string_64",
+                            "value": "Point Light"
+                        },
+                        {
+                            "name": "entity id: ",
+                            "type": "struct EntityReference",
+                            "value": 3452816845
+                        }
+                    ],
+                    "type": "NameComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "position: ",
+                            "type": "struct glm::vec<3,float,0>",
+                            "value": [
+                                0.0,
+                                5.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "scale: ",
+                            "type": "struct glm::vec<3,float,0>",
+                            "value": [
+                                1.0,
+                                1.0,
+                                1.0
+                            ]
+                        },
+                        {
+                            "name": "rotation: ",
+                            "type": "struct glm::vec<3,float,0>",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "overwrite quaternion rotation: ",
+                            "type": "bool",
+                            "value": false
+                        },
+                        {
+                            "name": "update euler rotation: ",
+                            "type": "bool",
+                            "value": false
+                        },
+                        {
+                            "name": "rotation_quat",
+                            "type": "struct glm::qua<float,0>",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0
+                            ]
+                        },
+                        {
+                            "name": "model_matrix",
+                            "type": "struct glm::mat<4,4,float,0>",
+                            "value": [
+                                1.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0,
+                                0.0,
+                                0.0,
+                                5.0,
+                                0.0,
+                                1.0
+                            ]
+                        }
+                    ],
+                    "type": "TransformDynamicComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "color: ",
+                            "type": "struct glm::vec<3,float,0>",
+                            "value": [
+                                1.0,
+                                1.0,
+                                1.0
+                            ]
+                        },
+                        {
+                            "name": "intensity: ",
+                            "type": "float",
+                            "value": 1.0
+                        },
+                        {
+                            "name": "create shadow map: ",
+                            "type": "bool",
+                            "value": false
+                        }
+                    ],
+                    "type": "PointLightComponent"
+                }
+            ],
+            "name": "Point Light"
         }
     ]
 }

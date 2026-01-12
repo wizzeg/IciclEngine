@@ -1,0 +1,5 @@
+{
+    "name": "forced color",
+    "frag_path": "./assets/shaders/fragment/color_frag.glsl",
+    "vert_path": "./assets/shaders/vertex/color_vert.glsl"
+}

@@ -148,7 +148,9 @@ struct RenderReq
 	GLsizei indices_size = 0;
 	bool instanced;
 	bool mipmap;
+	//uint16_t material_version;
 	GLuint gl_program;
+	//std::vector<UniformData> uniforms;
 };
 
 enum BufferAttributeLocation : uint8_t
@@ -405,6 +407,7 @@ struct MaterialData // this is fine to keep large...
 	bool casts_shadows = false;
 	bool instanced = false;
 	bool transparent = false;
+	bool is_deffered = false;
 	std::string name = "";
 };
 //This is the path that's entered... this must then load the shader
@@ -421,6 +424,7 @@ struct RuntimeMaterial // pushed to the Render thread, similar to vao load, but 
 	bool casts_shadows;
 	bool instantiable;
 	bool transparent;
+	bool is_deffered;
 };
 
 struct RuntimeMesh
@@ -449,4 +453,6 @@ struct RenderContext
 {
 	std::vector<RenderReq> render_requests;
 	std::vector<RuntimeMaterial> materials;
+	std::vector<Light> lights;
+	std::vector<ShadowLight> shadow_lights;
 };

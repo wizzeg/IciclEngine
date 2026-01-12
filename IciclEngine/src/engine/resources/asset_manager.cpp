@@ -523,13 +523,14 @@ void AssetJobThread::process_mesh_update(VAOLoadInfo& a_job)
 				{
 					if (runtime_meshes[i].hash == hash)
 					{
+						added_mesh = true;
 						break;
 					}
 					else if (runtime_meshes[i].hash > hash)
 					{
-						if (i + 1 < runtime_meshes.size())
+						if (i < runtime_meshes.size())
 						{
-							runtime_meshes.emplace(runtime_meshes.begin() + i + 1,
+							runtime_meshes.emplace(runtime_meshes.begin() + i,
 								a_job.hashed_path.hash, num_indices, vao);
 							added_mesh = true;
 						}
@@ -672,14 +673,22 @@ void AssetJobThread::process_dependency(ValidateMatDependencies& a_job) // this 
 								inserted = true;
 								break;
 							}
-							else if (new_mat_hash > mat_hash)
+							else if (new_mat_hash < mat_hash)
 							{
-								insertion_index = i + 1;
+								insertion_index = i;
 								break;
 							}
 						}
 						if (!inserted)
 						{
+							if (runtime_mats.size() == 0)
+							{
+								insertion_index = 0;
+							}
+							else if (insertion_index == 0)
+							{
+								insertion_index = runtime_mats.size();
+							}
 							PRINTLN("Thread {} inserts runtime material (from texture check)", id);
 							//make the uniforms
 							std::vector<RuntimeUniform> runtime_uniforms;
@@ -698,12 +707,12 @@ void AssetJobThread::process_dependency(ValidateMatDependencies& a_job) // this 
 							if (insertion_index < runtime_mats.size())
 							{
 								runtime_mats.emplace(runtime_mats.begin() + insertion_index,
-									new_mat_hash, mats[new_mat_hash]->gl_program, runtime_uniforms, mats[new_mat_hash]->is_lit, mats[new_mat_hash]->recieves_shadows, mats[new_mat_hash]->casts_shadows, mats[new_mat_hash]->transparent, mats[new_mat_hash]->transparent);
+									new_mat_hash, mats[new_mat_hash]->gl_program, runtime_uniforms, mats[new_mat_hash]->is_lit, mats[new_mat_hash]->recieves_shadows, mats[new_mat_hash]->casts_shadows, mats[new_mat_hash]->transparent, mats[new_mat_hash]->transparent, mats[new_mat_hash]->is_deffered);
 							}
 							else
 							{
 								runtime_mats.emplace_back(
-									new_mat_hash, mats[new_mat_hash]->gl_program, runtime_uniforms, mats[new_mat_hash]->is_lit, mats[new_mat_hash]->recieves_shadows, mats[new_mat_hash]->casts_shadows, mats[new_mat_hash]->transparent, mats[new_mat_hash]->transparent);
+									new_mat_hash, mats[new_mat_hash]->gl_program, runtime_uniforms, mats[new_mat_hash]->is_lit, mats[new_mat_hash]->recieves_shadows, mats[new_mat_hash]->casts_shadows, mats[new_mat_hash]->transparent, mats[new_mat_hash]->transparent, mats[new_mat_hash]->is_deffered);
 							}
 						}
 					}
@@ -761,14 +770,22 @@ void AssetJobThread::process_dependency(ValidateMatDependencies& a_job) // this 
 								inserted = true;
 								break;
 							}
-							else if (new_mat_hash > mat_hash)
+							else if (new_mat_hash < mat_hash)
 							{
-								insertion_index = i + 1;
+								insertion_index = i;
 								break;
 							}
 						}
 						if (!inserted)
 						{
+							if (runtime_mats.size() == 0)
+							{
+								insertion_index = 0;
+							}
+							else if (insertion_index == 0)
+							{
+								insertion_index = runtime_mats.size();
+							}
 							//make the uniforms
 							PRINTLN("Thread {} inserts runtime material (from shader check)", id);
 							std::vector<RuntimeUniform> runtime_uniforms;
@@ -783,12 +800,12 @@ void AssetJobThread::process_dependency(ValidateMatDependencies& a_job) // this 
 							if (insertion_index < runtime_mats.size())
 							{
 								runtime_mats.emplace(runtime_mats.begin() + insertion_index,
-									new_mat_hash, mats[new_mat_hash]->gl_program, runtime_uniforms, mats[new_mat_hash]->is_lit, mats[new_mat_hash]->recieves_shadows, mats[new_mat_hash]->casts_shadows, mats[new_mat_hash]->transparent ,mats[new_mat_hash]->transparent);
+									new_mat_hash, mats[new_mat_hash]->gl_program, runtime_uniforms, mats[new_mat_hash]->is_lit, mats[new_mat_hash]->recieves_shadows, mats[new_mat_hash]->casts_shadows, mats[new_mat_hash]->transparent ,mats[new_mat_hash]->transparent, mats[new_mat_hash]->is_deffered);
 							}
 							else
 							{
 								runtime_mats.emplace_back(
-									new_mat_hash, mats[new_mat_hash]->gl_program, runtime_uniforms, mats[new_mat_hash]->is_lit, mats[new_mat_hash]->recieves_shadows, mats[new_mat_hash]->casts_shadows, mats[new_mat_hash]->transparent, mats[new_mat_hash]->transparent);
+									new_mat_hash, mats[new_mat_hash]->gl_program, runtime_uniforms, mats[new_mat_hash]->is_lit, mats[new_mat_hash]->recieves_shadows, mats[new_mat_hash]->casts_shadows, mats[new_mat_hash]->transparent, mats[new_mat_hash]->transparent, mats[new_mat_hash]->is_deffered);
 							}
 						}
 					}

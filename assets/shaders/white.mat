@@ -1,0 +1,29 @@
+{
+    "name": "test",
+    "shader_path": "./assets/shaders/color.shdr",
+    "lit": true,
+    "instanced": false,
+    "recieves_shadows": true,
+    "casts_shadows": true,
+    "transparent": true,
+    "deffered": true,
+    "uniforms": [
+        {
+            "location": "uTexture",
+            "type": "texture",
+            "value": "./assets/textures/white.png"
+        },
+	{
+            "location": "forced_color",
+            "type": "vec3",
+            "value": [1.0, 1.0, 1.0]
+        },
+	{
+            "location": "has_texture",
+            "type": "ivec1",
+            "value": [
+                1
+            ]
+        }
+    ]
+}

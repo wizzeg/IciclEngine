@@ -259,11 +259,17 @@
     <ClInclude Include="worker_thread.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\assets\shaders\engine\lighting_frag.glsl" />
+    <None Include="..\assets\shaders\engine\lighting_vert.glsl" />
+    <None Include="..\assets\shaders\engine\shadow_frag.glsl" />
+    <None Include="..\assets\shaders\engine\shadow_vert.glsl" />
     <None Include="..\assets\shaders\fragment\color_frag.glsl" />
+    <None Include="..\assets\shaders\fragment\deffered_frag.glsl" />
     <None Include="..\assets\shaders\fragment\frag.glsl" />
     <None Include="..\assets\shaders\fragment\standard\standardunlit.glsl" />
     <None Include="..\assets\shaders\fragment\test_frag.glsl" />
     <None Include="..\assets\shaders\vertex\color_vert.glsl" />
+    <None Include="..\assets\shaders\vertex\deffered_vert.glsl" />
     <None Include="..\assets\shaders\vertex\standard\standardunlit.glsl" />
     <None Include="..\assets\shaders\vertex\test_vert.glsl" />
     <None Include="..\assets\shaders\vertex\vert.glsl" />

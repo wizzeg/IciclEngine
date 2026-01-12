@@ -6,6 +6,7 @@
     "recieves_shadows": true,
     "casts_shadows": true,
     "transparent": true,
+    "deffered": false,
     "uniforms": [
         {
             "location": "uTexture",

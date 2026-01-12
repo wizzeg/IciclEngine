@@ -49,6 +49,8 @@
 #include <engine/resources/asset_manager.h>
 #include <engine/renderer/shader_loader.h>
 
+#include <algorithm>
+
 
 int main(void)
 {
@@ -62,13 +64,17 @@ int main(void)
 	glfw_context->deactivate();
 	std::shared_ptr<ImGuiManager> imgui_manager = std::make_shared<ImGuiManager>(glfw_context);
 	glfw_context->activate();
-	glfw_context->create_framebuffer("editor_frame_buffer", 1920, 1080);
+	glfw_context->create_framebuffer("editor_frame_buffer", 1920, 1080, Output);
 	glfw_context->bind_framebuffer("editor_frame_buffer"); // Need to do this every frame really, when I'm changing framebuffers
 	//glEnable(GL_CULL_FACE);
 	glfw_context->unbind_framebuffer();
-	glfw_context->create_framebuffer("main_camera_buffer", 1920, 1080);
+	glfw_context->create_framebuffer("main_camera_buffer", 1920, 1080, Output);
 	glfw_context->bind_framebuffer("editor_frame_buffer");
-	
+
+	glfw_context->unbind_framebuffer();
+	glfw_context->create_framebuffer("editor_camera_gbuffer", 1920, 1080, GBuffer);
+	glfw_context->bind_framebuffer("editor_frame_buffer");
+
 	//imgui_manager->setup_default_docking_layout();
 
 	//InputManager input_manager(glfw_context->get_window());
@@ -84,6 +90,7 @@ int main(void)
 	VAOLoader vao_loader;
 	std::shared_ptr<ShaderProgram> shader_program = std::make_shared<ShaderProgram>("./assets/shaders/vertex/vert.glsl", "./assets/shaders/fragment/frag.glsl");
 	Renderer renderer;
+	renderer.initialize();
 	renderer.temp_set_shader(shader_program);
 	shader_program->save("./assets/shaders/test_shader.shdr");
 
@@ -127,6 +134,10 @@ int main(void)
 	////AssetJob asset_job = std::move(job);
 	//asset_manager.add_asset_job(std::move(job));
 
+	DefferedBuffer deffered_buffer;
+	deffered_buffer.gbuffer = glfw_context->get_framebuffer("editor_camera_gbuffer");
+	deffered_buffer.output = glfw_context->get_framebuffer("editor_frame_buffer");
+
 	uint64_t wait_time = 0;
 	while (engine_context->run())
 	{
@@ -146,9 +157,12 @@ int main(void)
 					hashed_string_64 monkey_mesh = hashed_string_64("./assets/obj/triobjmonkey.obj");
 					hashed_string_64 tex = hashed_string_64("./assets/textures/awesomeface.png");
 
-					std::vector<hashed_string_64> meshes = { "./assets/obj/triobjmonkey.obj" , "./assets/obj/sizanne.obj", "./assets/obj/plane.obj", "./assets/obj/robot.obj" };
+					std::vector<hashed_string_64> meshes = {  "./assets/obj/robot.obj","./assets/obj/robot2.obj","./assets/obj/robot3.obj" }; //"./assets/obj/plane.obj","./assets/obj/triobjmonkey.obj" , "./assets/obj/sizanne.obj",
 					std::vector<hashed_string_64> texes = { "./assets/textures/awesomeface.png", "./assets/textures/wall.jpg", "./assets/textures/container.jpg" };
-					std::vector<hashed_string_64> mats;
+					std::vector<hashed_string_64> mats = {"./assets/shaders/test.mat" }; // , "./assets/shaders/test2.mat"
+					
+					scene->load("./assets/scenes/showcase.scn");
+					
 					//entt::entity ent;
 					//entt::registry& reg = scene->get_registry();
 					//for (size_t i = 0; i < 5000; i++)
@@ -163,19 +177,58 @@ int main(void)
 					//	reg.emplace<TextureComponent>(ent, TextureComponent{ false, tex });
 					//}
 
-					for (size_t i = 0; i < 10; i++)
+					for (size_t i = 0; i < 1000; i++)
 					{
-						float x = -10.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 20.0f));
-						float y = -10.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 20.0f));; // Or random if you want variety
-						float z = -10.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 20.0f));; // Same here
-						auto obj = scene->new_scene_object(std::to_string(i), true);
+						float x = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));
+						float y = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));; // Or random if you want variety
+						float z = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));; // Same here
+						auto obj = scene->new_scene_object(std::string("model: ") + std::to_string(i), true);
 						auto lock = obj.lock();
 						size_t mesh_idx = std::rand() % meshes.size();
 						size_t tex_idx = std::rand() % texes.size();
-						lock->add_component(TransformDynamicComponent{ glm::vec3(x, y, z) });
+						size_t mat_idx = std::rand() % mats.size();
+						lock->add_component(TransformDynamicComponent{ glm::vec3(x, y, z), glm::vec3(1.f)});
 						lock->add_component(MeshComponent{ false, meshes[mesh_idx]});
-						//lock->add_component(MaterialComponent{false, });
-						lock->add_component(TextureComponent{ false, texes[tex_idx]});
+						lock->add_component(MaterialComponent{mats[mat_idx], false, false, true});
+						//lock->add_component(TextureComponent{ false, texes[tex_idx]});
+					}
+
+					for (size_t i = 0; i < 250; i++)
+					{
+						float x = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));
+						float y = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));; // Or random if you want variety
+						float z = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));; // Same here
+						auto obj = scene->new_scene_object(std::string("light: ") + std::to_string(i), true);
+						auto lock = obj.lock();
+						int col = (std::rand() % 3);
+						glm::vec3 color(0);
+						std::string mat;
+						switch (col)
+						{
+						case 1:
+							color = glm::vec3(1,0,0);
+							mat = "./assets/shaders/red.mat";
+							break;
+						case 2:
+							color = glm::vec3(0, 1, 0);
+							mat = "./assets/shaders/green.mat";
+							break;
+						case 0:
+							color = glm::vec3(0, 0, 1);
+							mat = "./assets/shaders/blue.mat";
+							break;
+						default:
+							color = glm::vec3(1);
+							mat = "./assets/shaders/white.mat";
+							break;
+						}
+						//glm::vec3 color((std::rand() % 1000)* 0.001f, (std::rand() % 1000) * 0.001f, (std::rand() % 1000) * 0.001f);
+						float intensity = 0.5f;//0.33 * (std::rand() % 1000) * 0.001;
+						hashed_string_64 name(mat.c_str());
+						lock->add_component(TransformDynamicComponent{ glm::vec3(x, y, z), glm::vec3(0.5f)});
+						lock->add_component(PointLightComponent{color, intensity, false});
+						lock->add_component(MeshComponent{ false, "./assets/obj/triobjmonkey.obj" });
+						lock->add_component(MaterialComponent{ name, false, false, true});
 					}
 
 					//for (size_t i = 0; i < 2500; i++)
@@ -234,12 +287,12 @@ int main(void)
 		auto& render_context = engine_context->render_contexts[std::size_t(!engine_context->write_pos)];
 		// do for each camera.
 		renderer.rotation += (float)(0.07 * engine_context->delta_time * 0.01);
-		glfw_context->bind_framebuffer("editor_frame_buffer");
+		glfw_context->bind_framebuffer("editor_camera_gbuffer");
 		glfw_context->clear();
 		//shader_program->bind();
-		renderer.set_camera_position(engine_context->editor_camera.get_camera_positoin());
+		renderer.set_camera_position(engine_context->editor_camera.get_camera_position());
 		renderer.set_proj_view_matrix(engine_context->editor_camera.get_proj_matrix(), engine_context->editor_camera.get_view_matrix());
-		glm::vec3 camera_pos = engine_context->editor_camera.get_camera_positoin();
+		glm::vec3 camera_pos = engine_context->editor_camera.get_camera_position();
 		//for (size_t i = 0; i < render_requests.size(); i++)
 		//{
 		//	if (render_requests[i].vao != 0)
@@ -247,7 +300,8 @@ int main(void)
 		//		renderer.temp_render(render_requests[i], camera_pos);
 		//	}
 		//}
-		renderer.temp_render(render_context);
+		//renderer.temp_render(render_context);
+		renderer.deffered_render(render_context, deffered_buffer);
 
 		glfw_context->bind_framebuffer("main_camera_buffer");
 		glfw_context->clear();
@@ -342,7 +396,6 @@ int main(void)
 		
 		timer2.stop();
 		render_thread_time += timer2.get_time_ms();
-		
 
 		{
 			glfw_context->unbind_framebuffer();
@@ -384,7 +437,8 @@ int main(void)
 			ImGui::Begin("editor_frame_buffer");
 			ImVec2 available_content = ImGui::GetContentRegionAvail() - ImVec2(5, 5);
 			ImVec2 image_size;
-			FrameBuffer* frame_buffer = glfw_context->get_framebuffer("editor_frame_buffer");
+			//FrameBuffer* frame_buffer = glfw_context->get_framebuffer("editor_frame_buffer");
+			FrameBuffer* frame_buffer = deffered_buffer.output;
 			if (frame_buffer)
 			{
 				float fb_height = (float)frame_buffer->get_height();
@@ -407,7 +461,7 @@ int main(void)
 			{
 				image_size = ImVec2(720, 480);
 			}
-			ImGui::Image(glfw_context->get_framebuffer_texture("editor_frame_buffer"), image_size, ImVec2(0, 1), ImVec2(1, 0));
+			ImGui::Image(frame_buffer->get_color_texture(), image_size, ImVec2(0, 1), ImVec2(1, 0));
 			if (engine_context->input_manager.is_key_held(EKey::RightMouseButton) && ImGui::IsItemHovered()) // all of this should be put into camera
 			{
 				ImGui::SetMouseCursor(ImGuiMouseCursor_None);
@@ -433,7 +487,7 @@ int main(void)
 
 			ImGui::Begin("main_camera_buffer");
 			available_content = ImGui::GetContentRegionAvail() - ImVec2(5, 5);
-			frame_buffer = glfw_context->get_framebuffer("editor_frame_buffer");
+			frame_buffer = glfw_context->get_framebuffer("main_camera_buffer");
 			if (frame_buffer)
 			{
 				float fb_height = (float)frame_buffer->get_height();
@@ -455,8 +509,111 @@ int main(void)
 			{
 				image_size = ImVec2(720, 480);
 			}
-			ImGui::Image(glfw_context->get_framebuffer_texture("main_camera_buffer"), image_size, ImVec2(0, 1), ImVec2(1, 0));
+			ImGui::Image(frame_buffer->get_color_texture(), image_size, ImVec2(0, 1), ImVec2(1, 0));
+			
+			ImGui::End();
 
+
+			ImGui::Begin("editor_camera_gbuffer-albedo_spec_texture");
+			available_content = ImGui::GetContentRegionAvail() - ImVec2(5, 5);
+			frame_buffer = glfw_context->get_framebuffer("editor_camera_gbuffer");
+			if (frame_buffer)
+			{
+				float fb_height = (float)frame_buffer->get_height();
+				float fb_width = (float)frame_buffer->get_width();
+
+				float fb_aspect = (float)fb_height / (float)fb_width;
+				float avail_aspect = (float)available_content.x / (float)available_content.y;
+
+				if ((available_content.x / fb_width) < (available_content.y / fb_height))
+				{
+					image_size = ImVec2(available_content.x, available_content.x * fb_aspect);
+				}
+				else
+				{
+					image_size = ImVec2(available_content.y / fb_aspect, available_content.y);
+				}
+			}
+			else
+			{
+				image_size = ImVec2(720, 480);
+			}
+			image_size.x = std::max((float)image_size.x, 1.0f);
+			image_size.y = std::max((float)image_size.y, 1.0f);
+			GLuint texture = frame_buffer->get_albedo_spec_texture();
+			if (texture == 0)
+			{
+				PRINTLN("texture 0");
+			}
+			ImGui::Image(texture , image_size, ImVec2(0, 1), ImVec2(1, 0));
+			ImGui::End();
+
+			ImGui::Begin("editor_camera_gbuffer-normal_buffer");
+			available_content = ImGui::GetContentRegionAvail() - ImVec2(5, 5);
+			frame_buffer = glfw_context->get_framebuffer("editor_camera_gbuffer");
+			if (frame_buffer)
+			{
+				float fb_height = (float)frame_buffer->get_height();
+				float fb_width = (float)frame_buffer->get_width();
+
+				float fb_aspect = (float)fb_height / (float)fb_width;
+				float avail_aspect = (float)available_content.x / (float)available_content.y;
+
+				if ((available_content.x / fb_width) < (available_content.y / fb_height))
+				{
+					image_size = ImVec2(available_content.x, available_content.x * fb_aspect);
+				}
+				else
+				{
+					image_size = ImVec2(available_content.y / fb_aspect, available_content.y);
+				}
+			}
+			else
+			{
+				image_size = ImVec2(720, 480);
+			}
+			image_size.x = std::max((float)image_size.x, 1.0f);
+			image_size.y = std::max((float)image_size.y, 1.0f);
+			texture = frame_buffer->get_normal_texture();
+			if (texture == 0)
+			{
+				PRINTLN("texture 0");
+			}
+			ImGui::Image(texture, image_size, ImVec2(0, 1), ImVec2(1, 0));
+			ImGui::End();
+
+			ImGui::Begin("editor_camera_gbuffer-position_buffer");
+			available_content = ImGui::GetContentRegionAvail() - ImVec2(5, 5);
+			frame_buffer = glfw_context->get_framebuffer("editor_camera_gbuffer");
+			if (frame_buffer)
+			{
+				float fb_height = (float)frame_buffer->get_height();
+				float fb_width = (float)frame_buffer->get_width();
+
+				float fb_aspect = (float)fb_height / (float)fb_width;
+				float avail_aspect = (float)available_content.x / (float)available_content.y;
+
+				if ((available_content.x / fb_width) < (available_content.y / fb_height))
+				{
+					image_size = ImVec2(available_content.x, available_content.x * fb_aspect);
+				}
+				else
+				{
+					image_size = ImVec2(available_content.y / fb_aspect, available_content.y);
+				}
+			}
+			else
+			{
+				image_size = ImVec2(720, 480);
+			}
+			image_size.x = std::max((float)image_size.x, 1.0f);
+			image_size.y = std::max((float)image_size.y, 1.0f);
+			texture = frame_buffer->get_position_texture();
+			if (texture == 0)
+			{
+				PRINTLN("texture 0");
+			}
+			ImGui::Image(texture, image_size, ImVec2(0, 1), ImVec2(1, 0));
 			ImGui::End();
 
 			//ImGui::SetNextWindowSize(ImVec2(1280, 960));
@@ -481,7 +638,7 @@ int main(void)
 			timer2.stop();
 			ui_manager_time += timer2.get_time_ms();
 		}
-		if (framies > 500 && false)
+		if (framies > 500)
 		{
 			PRINTLN("render thread timer: {}", render_thread_time / (double)framies);
 			PRINTLN("ui manager frametime: {}", ui_manager_time / (double)framies);
@@ -624,6 +781,7 @@ int main(void)
 	/* Cleanup */
 	window = glfwGetCurrentContext(); // I might need this, shouldn't hurt. ... well now I certainly dont need it though?? what??
 	glfwMakeContextCurrent(window);
+	glfwDestroyWindow(window);
 	imgui_manager->destroy();
 	glfwTerminate();
 	return 0;

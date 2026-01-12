@@ -21,7 +21,7 @@ struct Camera
 	glm::mat4 get_proj_matrix();
 	void set_camera_movable(bool a_movable);
 	float get_camera_speed() const { return camera_speed; }
-	glm::vec3 get_camera_positoin() { return camera_pos; }
+	glm::vec3 get_camera_position() { return camera_pos; }
 private:
 	// final color output perhaps? Renderer would have all those other frame buffers, and only output final frame buffer to the camera..
 	// but renderer also has to generate all those other frame buffers from perspective of camera
@@ -39,9 +39,9 @@ private:
 
 	float rot_x = 0;
 	float rot_z = 0;
-	float field_of_view = 70.0f; 
+	float field_of_view = 55.0f; 
 	float camera_sensitivity = 0.1f;
-	float camera_speed = 2.f;
+	float camera_speed = 10.f;
 
 	bool movable = false;
 	bool proj_view_unchanged = false;

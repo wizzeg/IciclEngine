@@ -22,10 +22,16 @@ struct NameComponent
     EntityReference entity;
 };
 
-struct ToStatic
+struct TransformDynamicStaticComponent
 {
     // to convert Dynamic to static ... Basically check for this, if it has Dynamic, copy model matrix and add TransformStatic with model matrix
     // or alternatively a tag that just removes the Transform component
+    bool dynamic = false;
+};
+
+struct TransformStaticComponent
+{
+    glm::mat4 model_matrix = glm::mat4(1);
 };
 
 struct TransformDynamicComponent
@@ -53,6 +59,14 @@ struct TransformNoRotationComponent
 {
     glm::vec3 position = glm::vec3(0.0f);
     glm::vec3 scale = glm::vec3(1.0f);
+};
+
+struct TransformRotationComponent
+{
+    glm::vec3 rotation_euler_do_not_use = glm::vec3(0.0f);
+    glm::quat rotation_quat = glm::quat(1.0f, 0.f, 0.f, 0.f);
+    bool get_euler_angles = false;
+    bool overide_quaternion = false;
 };
 
 struct ModelMatrixComponent // or use this, and remove from TransformDynamicComponent, then this is basically a static transform
@@ -229,17 +243,6 @@ struct HierarchyDepthDeep // past predefined ... Do a slower method for the exce
 
 };
 
-// perhaps gonna use this after all, with some form of reflecaiton maybe, to still let users define how to draw, but hide the logic of choosing which component to modify
-// this no longer needed
-class StaticComponentUIDrawer // not used
-{
-public:
-    // add every drawable component here
-    inline static std::unordered_map<std::type_index, std::function<void()>> UI_drawers{  // input paramatern needs to be T... hm
-        {typeid(NameComponent), []() { /* ui draw ... but I need the component data too... */ },
-        }
-    };
-};
 
 struct TestComponent
 {
@@ -253,4 +256,22 @@ struct RenderComponent
     bool instance;
     bool mipmap;
     bool load;
+};
+
+struct PointLightComponent
+{
+    glm::vec3 color;
+    float intensity;
+    bool shadow_map = false;
+};
+
+struct DirectionalLightComponent // I don't know what else I need for these
+{
+    glm::vec3 color;
+    glm::vec3 rotation_euler_do_not_use = glm::vec3(0.0f);
+    glm::quat rotation_quat = glm::quat(1.0f, 0.f, 0.f, 0.f);
+    bool get_euler_angles = false;
+    bool overide_quaternion = false;
+    bool shadow_map = true;
+    float intensity;
 };
