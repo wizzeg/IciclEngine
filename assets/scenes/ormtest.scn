@@ -99,7 +99,7 @@
                         {
                             "name": "mesh loaded: ",
                             "type": "bool",
-                            "value": false
+                            "value": true
                         },
                         {
                             "name": "mesh path: ",
@@ -160,7 +160,7 @@
                         {
                             "name": "mesh loaded: ",
                             "type": "bool",
-                            "value": false
+                            "value": true
                         },
                         {
                             "name": "mesh path: ",
@@ -639,9 +639,9 @@
                             "name": "position: ",
                             "type": "struct glm::vec<3,float,0>",
                             "value": [
-                                0.0,
-                                5.0,
-                                0.0
+                                3.0,
+                                6.0,
+                                -1.0
                             ]
                         },
                         {
@@ -698,9 +698,9 @@
                                 0.0,
                                 1.0,
                                 0.0,
-                                0.0,
-                                5.0,
-                                0.0,
+                                3.0,
+                                6.0,
+                                -1.0,
                                 1.0
                             ]
                         }
@@ -730,6 +730,46 @@
                         }
                     ],
                     "type": "PointLightComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "material path: ",
+                            "type": "struct hashed_string_64",
+                            "value": "./assets/shaders/white.mat"
+                        },
+                        {
+                            "name": "instanced: ",
+                            "type": "bool",
+                            "value": false
+                        },
+                        {
+                            "name": "use mipmaps: ",
+                            "type": "bool",
+                            "value": false
+                        },
+                        {
+                            "name": "load material: ",
+                            "type": "bool",
+                            "value": false
+                        }
+                    ],
+                    "type": "MaterialComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "mesh loaded: ",
+                            "type": "bool",
+                            "value": true
+                        },
+                        {
+                            "name": "mesh path: ",
+                            "type": "struct hashed_string_64",
+                            "value": "./assets/obj/triobjmonkey.obj"
+                        }
+                    ],
+                    "type": "MeshComponent"
                 }
             ],
             "name": "Point Light"

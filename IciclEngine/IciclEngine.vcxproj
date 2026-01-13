@@ -261,6 +261,7 @@
   <ItemGroup>
     <None Include="..\assets\shaders\engine\lighting_frag.glsl" />
     <None Include="..\assets\shaders\engine\lighting_vert.glsl" />
+    <None Include="..\assets\shaders\engine\pbr_lighting_frag.glsl" />
     <None Include="..\assets\shaders\engine\shadow_frag.glsl" />
     <None Include="..\assets\shaders\engine\shadow_vert.glsl" />
     <None Include="..\assets\shaders\fragment\color_frag.glsl" />

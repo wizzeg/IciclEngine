@@ -142,7 +142,7 @@ int main(void)
 	while (engine_context->run())
 	{
 		timer2.start();
-		if (wait_time > 4500)
+		if (wait_time > 45)
 		{
 			if (!game_playing)
 			{
@@ -161,7 +161,7 @@ int main(void)
 					std::vector<hashed_string_64> texes = { "./assets/textures/awesomeface.png", "./assets/textures/wall.jpg", "./assets/textures/container.jpg" };
 					std::vector<hashed_string_64> mats = {"./assets/shaders/test.mat" }; // , "./assets/shaders/test2.mat"
 					
-					scene->load("./assets/scenes/showcase.scn");
+					scene->load("./assets/scenes/loader.scn");
 					
 					//entt::entity ent;
 					//entt::registry& reg = scene->get_registry();
@@ -177,29 +177,30 @@ int main(void)
 					//	reg.emplace<TextureComponent>(ent, TextureComponent{ false, tex });
 					//}
 
-					for (size_t i = 0; i < 1000; i++)
+					for (size_t i = 0; i < 1650; i++)
 					{
 						float x = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));
 						float y = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));; // Or random if you want variety
 						float z = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));; // Same here
 						auto obj = scene->new_scene_object(std::string("model: ") + std::to_string(i), true);
-						auto lock = obj.lock();
+						auto scene_object = obj.lock();
 						size_t mesh_idx = std::rand() % meshes.size();
 						size_t tex_idx = std::rand() % texes.size();
 						size_t mat_idx = std::rand() % mats.size();
-						lock->add_component(TransformDynamicComponent{ glm::vec3(x, y, z), glm::vec3(1.f)});
-						lock->add_component(MeshComponent{ false, meshes[mesh_idx]});
-						lock->add_component(MaterialComponent{mats[mat_idx], false, false, true});
-						//lock->add_component(TextureComponent{ false, texes[tex_idx]});
+						scene_object->add_component(TransformDynamicComponent{ glm::vec3(x, y, z), glm::vec3(1.f)});
+						//scene_object->add_component(MeshComponent{ false, meshes[mesh_idx]});
+						//scene_object->add_component(MaterialComponent{mats[mat_idx], false, false, true});
+						scene_object->add_component(RenderComponent{ meshes[mesh_idx], mats[mat_idx], false, true, true });
+						//scene_object->add_component(TextureComponent{ false, texes[tex_idx]});
 					}
 
-					for (size_t i = 0; i < 250; i++)
+					for (size_t i = 0; i < 220; i++)
 					{
 						float x = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));
 						float y = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));; // Or random if you want variety
 						float z = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));; // Same here
 						auto obj = scene->new_scene_object(std::string("light: ") + std::to_string(i), true);
-						auto lock = obj.lock();
+						auto scene_object = obj.lock();
 						int col = (std::rand() % 3);
 						glm::vec3 color(0);
 						std::string mat;
@@ -224,11 +225,13 @@ int main(void)
 						}
 						//glm::vec3 color((std::rand() % 1000)* 0.001f, (std::rand() % 1000) * 0.001f, (std::rand() % 1000) * 0.001f);
 						float intensity = 0.5f;//0.33 * (std::rand() % 1000) * 0.001;
+						glm::vec3 attenuation = glm::vec3(0.75f, 0.1f, 0.01f);
 						hashed_string_64 name(mat.c_str());
-						lock->add_component(TransformDynamicComponent{ glm::vec3(x, y, z), glm::vec3(0.5f)});
-						lock->add_component(PointLightComponent{color, intensity, false});
-						lock->add_component(MeshComponent{ false, "./assets/obj/triobjmonkey.obj" });
-						lock->add_component(MaterialComponent{ name, false, false, true});
+						scene_object->add_component(TransformDynamicComponent{ glm::vec3(x, y, z), glm::vec3(0.5f)});
+						scene_object->add_component(PointLightComponent{color, attenuation, intensity, false});
+						//scene_object->add_component(MeshComponent{ false, "./assets/obj/triobjmonkey.obj" });
+						//scene_object->add_component(MaterialComponent{ name, false, false, true});
+						scene_object->add_component(RenderComponent{ "./assets/obj/triobjmonkey.obj", name, false, true, true });
 					}
 
 					//for (size_t i = 0; i < 2500; i++)
@@ -287,8 +290,8 @@ int main(void)
 		auto& render_context = engine_context->render_contexts[std::size_t(!engine_context->write_pos)];
 		// do for each camera.
 		renderer.rotation += (float)(0.07 * engine_context->delta_time * 0.01);
-		glfw_context->bind_framebuffer("editor_camera_gbuffer");
-		glfw_context->clear();
+		//glfw_context->bind_framebuffer("editor_camera_gbuffer");
+		//glfw_context->clear();
 		//shader_program->bind();
 		renderer.set_camera_position(engine_context->editor_camera.get_camera_position());
 		renderer.set_proj_view_matrix(engine_context->editor_camera.get_proj_matrix(), engine_context->editor_camera.get_view_matrix());
@@ -426,10 +429,11 @@ int main(void)
 		//// ImGui starts
 		{
 			std::lock_guard<std::mutex> guard(engine_context->mutex);
+			timer2.start();
 			engine_context->swap_render_requests();
 			engine_context->render_thread = true;
 			engine_context->game_thread = true;
-			timer2.start();
+			
 			// do all ui drawing.
 			imgui_manager->new_frame();
 

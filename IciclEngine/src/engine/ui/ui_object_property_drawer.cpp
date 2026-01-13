@@ -86,7 +86,7 @@ void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_fie
 		{
 			ImGui::Text(field.name.c_str());
 			std::string id = "##" + field.name + std::to_string(i++) + " " + field.name;
-			ImGui::DragFloat(id.c_str(), static_cast<float*>(field.value_ptr));
+			ImGui::DragFloat(id.c_str(), static_cast<float*>(field.value_ptr), 0.01f);
 		}
 		else if (field.type == typeid(bool))
 		{
@@ -100,14 +100,14 @@ void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_fie
 			ImGui::Text(field.name.c_str());
 			//ImGui::SameLine();
 			std::string id = "##" + field.name + std::to_string(i++);
-			ImGui::DragFloat3(id.c_str(), &reinterpret_cast<glm::vec3*>(field.value_ptr)->x);
+			ImGui::DragFloat3(id.c_str(), &reinterpret_cast<glm::vec3*>(field.value_ptr)->x, 0.01f);
 		}
 		else if (field.type == typeid(glm::vec4))
 		{
 			ImGui::Text(field.name.c_str());
 			//ImGui::SameLine();
 			std::string id = "##" + field.name + std::to_string(i++);
-			ImGui::DragFloat4(id.c_str(), &reinterpret_cast<glm::vec4*>(field.value_ptr)->x);
+			ImGui::DragFloat4(id.c_str(), &reinterpret_cast<glm::vec4*>(field.value_ptr)->x, 0.01f);
 		}
 		else if (field.type == typeid(std::string))
 		{

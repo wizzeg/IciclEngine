@@ -183,6 +183,9 @@ void Renderer::deffered_render(RenderContext& a_render_context, const DefferedBu
 	auto& mats = a_render_context.materials;
 	auto& reqs = a_render_context.render_requests;
 
+	a_deffered_buffers.gbuffer->bind();
+	a_deffered_buffers.gbuffer->clear();
+
 	uint64_t bound_mat = 0;
 	GLuint bound_vao = 0;
 
@@ -191,9 +194,12 @@ void Renderer::deffered_render(RenderContext& a_render_context, const DefferedBu
 	GLuint tex_num = 0;
 
 	// perhaps bind the first mat and mesh
-
+	bool mipmaps_set = false;
+	bool mipmap = true;
+	bool set_mipmaps = false;
 	for (auto& mat : mats)
 	{
+		mipmaps_set = false;
 		req_index = req_start_index;
 		if (!mat.is_deffered)
 		{
@@ -204,7 +210,18 @@ void Renderer::deffered_render(RenderContext& a_render_context, const DefferedBu
 			RenderReq& req = reqs[req_index];
 			if (req.mat_hash == mat.hash)
 			{
-				if (bound_mat != mat.hash)
+				if (!mipmaps_set)
+				{
+					set_mipmaps = true;
+					mipmap = req.mipmap;
+					mipmaps_set = true;
+				}
+				else if (req.mipmap != mipmap)
+				{
+					set_mipmaps = true;
+					mipmap = req.mipmap;
+				}
+				if (bound_mat != mat.hash || set_mipmaps)
 				{
 					if (current_gl_program != mat.gl_program)
 					{
@@ -213,23 +230,38 @@ void Renderer::deffered_render(RenderContext& a_render_context, const DefferedBu
 						glUseProgram(mat.gl_program);
 						set_mat4fv(proj, "proj");
 						set_mat4fv(view, "view");
+						//set_vec3f(reinterpret_cast<const float*>(&camera_position), "camera_world_pos");
 					}
 					// bind mat
 					bound_mat = mat.hash;
-					int tex_index = 0;
+					GLint tex_index = 0;
 					for (RuntimeUniform& uniform : mat.uniforms)
 					{
 						if (uniform.type == typeid(std::string)) // this means it's texture
 						{
-							glActiveTexture((GLenum)(GL_TEXTURE0 + tex_index));
+							GLint combined = (GL_TEXTURE0 + tex_index);
+							glActiveTexture(combined);
 							glBindTexture(GL_TEXTURE_2D, uniform.texture_id);
+							if (set_mipmaps)
+							{
+								if (mipmap)
+								{
+									glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+								}
+								else
+								{
+									glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+								}
+							}
 							set_vec1i(tex_index, uniform.location.c_str());
+							tex_index++;
 						}
 						else
 						{
 							bind_uniform(uniform.type, uniform.location, uniform.value);
 						}
 					}
+					set_mipmaps = false;
 				}
 				if (bound_vao != req.vao)
 				{
@@ -262,6 +294,9 @@ void Renderer::deffered_render(RenderContext& a_render_context, const DefferedBu
 	}
 	else
 	{
+		////////////////////////////////////////////////////////////////////////////////
+		// lighting pass
+
 		current_gl_program = lighting_program;
 		glUseProgram(current_gl_program);
 		a_deffered_buffers.output->bind();
@@ -277,41 +312,46 @@ void Renderer::deffered_render(RenderContext& a_render_context, const DefferedBu
 		glActiveTexture(GL_TEXTURE2);
 		glBindTexture(GL_TEXTURE_2D, a_deffered_buffers.gbuffer->get_albedo_spec_texture());
 		set_vec1i(2, "albedo_spec_tex");
-	
-		std::vector<glm::vec3> light_poses; //{ glm::vec3(0, 0, 0), glm::vec3(10, 10, 10), glm::vec3(-10, -10, -10) };
-		std::vector<glm::vec3> light_colors; //{ glm::vec3(0, 1, 0), glm::vec3(1, 0, 0), glm::vec3(0, 0, 1) };
-		std::vector<glm::vec1> light_intensicies; //{glm::vec1(1), glm::vec1(1), glm::vec1(1)};
-		GLsizei num_lights = (GLsizei)a_render_context.lights.size(); // 3;
 
-		for (size_t i = 0; i < std::min((size_t)a_render_context.lights.size(), (size_t)256); i++)
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D, a_deffered_buffers.gbuffer->get_orms_texture());
+		set_vec1i(3, "orms_tex");
+		
+		GLsizei num_lights = (GLsizei)a_render_context.lights.size();
+		std::vector<glm::vec3> light_poses;
+		light_poses.reserve(num_lights);//{ glm::vec3(0, 0, 0), glm::vec3(10, 10, 10), glm::vec3(-10, -10, -10) };
+		std::vector<glm::vec3> light_colors;
+		light_colors.reserve(num_lights);//{ glm::vec3(0, 1, 0), glm::vec3(1, 0, 0), glm::vec3(0, 0, 1) };
+		std::vector<glm::vec1> light_intensicies;
+		light_intensicies.reserve(num_lights);//{glm::vec1(1), glm::vec1(1), glm::vec1(1)};
+		std::vector<glm::vec3> light_attenuations;
+		light_attenuations.reserve(num_lights);//{glm::vec1(1), glm::vec1(1), glm::vec1(1)};
+		 // 3;
+
+		for (size_t i = 0; i < std::min((size_t)a_render_context.lights.size(), (size_t)228); i++)
 		{
 			light_poses.emplace_back(glm::vec3(a_render_context.lights[i].model_matrix[3]));
-			//light_poses.emplace_back(glm::vec3(0));
-		}
-		for (size_t i = 0; i < std::min((size_t)a_render_context.lights.size(), (size_t)256); i++)
-		{
 			light_colors.emplace_back(a_render_context.lights[i].color);
-		}
-		for (size_t i = 0; i < std::min((size_t)a_render_context.lights.size(), (size_t)256); i++)
-		{
 			light_intensicies.emplace_back(a_render_context.lights[i].intensity);
+			light_attenuations.emplace_back(a_render_context.lights[i].attenuation);
 		}
 		if (num_lights > 0)
 		{
 			set_vec3fv(light_poses, num_lights, "light_positions");
 			set_vec3fv(light_colors, num_lights, "light_colors");
+			set_vec3fv(light_attenuations, num_lights, "light_attenuations");
 			set_vec1fv(light_intensicies, num_lights, "light_intensities");
 		}
 		set_vec1i(num_lights, "num_lights");
 
 		set_vec3f(static_cast<const float*>(&camera_position.x), "camera_position");
-		render_lighting_quad(a_deffered_buffers.output->get_color_texture());
+		render_lighting_quad();
 		a_deffered_buffers.output->unbind();
+
+		/// lighting pass end
+		//////////////////////////////////////////////////////////////////////////////////////////////////
 	}
 	
-
-	glActiveTexture((GLenum)(GL_TEXTURE0));
-	glBindTexture(GL_TEXTURE_2D, 0);
 	current_gl_program = 0;
 	glUseProgram(current_gl_program);
 }
@@ -364,13 +404,17 @@ void Renderer::bind_uniform(std::type_index a_type, const std::string& a_locatio
 	{
 		set_vec1i(std::get<glm::ivec1>(a_value).x, a_location.c_str());
 	}
+	else if (a_type == typeid(float))
+	{
+		set_vec1f(std::get<float>(a_value), a_location.c_str());
+	}
 	else if (a_type == typeid(std::string))
 	{
 		// we'd do something..
 	}
 }
 
-void Renderer::render_lighting_quad(GLuint a_output_tex)
+void Renderer::render_lighting_quad()
 {
 	generate_lighting_quad();
 	glBindVertexArray(lighting_quad_vao);
@@ -402,11 +446,11 @@ void Renderer::generate_lighting_quad()
 	glBindBuffer(GL_ARRAY_BUFFER, lighting_quad_vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
 
-	// Position attribute
+	// pos
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 
-	// Texture coordinate attribute
+	// tex coords
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 
@@ -452,7 +496,8 @@ void Renderer::set_vec4fv(const std::vector<glm::vec4>& a_value, GLsizei a_count
 }
 void Renderer::set_vec1i(const int a_value, const char* a_location) const
 {
-	glUniform1i(glGetUniformLocation(current_gl_program, a_location), a_value);
+	auto loc = glGetUniformLocation(current_gl_program, a_location);
+	glUniform1i(loc, a_value);
 }
 void Renderer::set_vec2i(const int a_value[2], const char* a_location) const
 {

@@ -32,6 +32,7 @@ struct Light
 {
 	alignas(16)glm::mat4 model_matrix = glm::mat4(0);
 	glm::vec3 color = glm::vec3(0);
+	glm::vec3 attenuation = glm::vec3(0);
 	float intensity = 0;
 	EShadowCasterType::EShadowCasterType type = EShadowCasterType::PointLight;
 };

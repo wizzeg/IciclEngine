@@ -82,6 +82,7 @@ REGISTER_COMPONENT(RenderComponent, ("Rendering"),
 
 REGISTER_COMPONENT(PointLightComponent, ("Rendering", "lighting"),
 	FIELD_CUSTOM("color: ", comp, color, 1.75f, false),
+	FIELD_CUSTOM("attenuation: ", comp, attenuation, 1.75f, false),
 	FIELD_CUSTOM("intensity: ", comp, intensity, 1.75f, false),
 	FIELD_CUSTOM("create shadow map: ", comp, shadow_map, 1.75f, false)
 )
@@ -94,4 +95,18 @@ REGISTER_COMPONENT(DirectionalLightComponent, ("Rendering", "lighting"),
 	FIELD_CUSTOM("overwrite quaternion rotation: ", comp, overide_quaternion, 1.1f, false),
 	FIELD_CUSTOM("update euler rotation: ", comp, get_euler_angles, 1.1f, false),
 	FIELD_HIDDEN(comp, rotation_quat),
+	)
+
+REGISTER_COMPONENT(MaterialFloatComponent, ("Rendering"),
+	FIELD_CUSTOM("material path: ", comp, material, 1.75f, false),
+	FIELD_CUSTOM("material location: ", comp, location, 1.75f, false),
+	FIELD_CUSTOM("float value: ", comp, value, 1.0f, false),
+	FIELD_CUSTOM("set value: ", comp, set, 1.0f, false),
+	)
+
+	REGISTER_COMPONENT(MaterialIntComponent, ("Rendering"),
+	FIELD_CUSTOM("material path: ", comp, material, 1.75f, false),
+	FIELD_CUSTOM("material location: ", comp, location, 1.75f, false),
+	FIELD_CUSTOM("float value: ", comp, value, 1.0f, false),
+	FIELD_CUSTOM("set value: ", comp, set, 1.0f, false),
 	)

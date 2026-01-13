@@ -55,12 +55,12 @@ bool VAOLoader::load_vao(MeshData& a_mesh)
 		glEnableVertexAttribArray(BufferAttributeLocation::Normal);
 
 	}
-	if (!a_mesh.contents->tangets.empty())
+	if (!a_mesh.contents->tangents.empty())
 	{
 		glGenBuffers(1, &a_mesh.contents->VBOs.emplace_back(0));
 		glBindBuffer(GL_ARRAY_BUFFER, a_mesh.contents->VBOs[a_mesh.contents->VBOs.size() - 1]);
-		glBufferData(GL_ARRAY_BUFFER, SIZEOF_ELEMENTS_IN_VECTOR(a_mesh.contents->tangets), a_mesh.contents->tangets.data(), GL_STATIC_DRAW);
-		glVertexAttribPointer(BufferAttributeLocation::Tangent, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		glBufferData(GL_ARRAY_BUFFER, SIZEOF_ELEMENTS_IN_VECTOR(a_mesh.contents->tangents), a_mesh.contents->tangents.data(), GL_STATIC_DRAW);
+		glVertexAttribPointer(BufferAttributeLocation::Tangent, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
 		glEnableVertexAttribArray(BufferAttributeLocation::Tangent);
 	}
 	if (!a_mesh.contents->bitangents.empty())

@@ -29,6 +29,7 @@ struct FrameBuffer
 		albedo_specular_buffer = 0;
 		depth_rb = 0;
 		shadow_depth_buffer = 0;
+		orms_buffer = 0;
 
 		glGenFramebuffers(1, &framebuffer_object);
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_object);
@@ -89,6 +90,7 @@ struct FrameBuffer
 		if (albedo_specular_buffer) { glDeleteTextures(1, &albedo_specular_buffer); albedo_specular_buffer = 0; }
 		if (color_buffer) { glDeleteTextures(1, &color_buffer); color_buffer = 0; }
 		if (shadow_depth_buffer) { glDeleteTextures(1, &shadow_depth_buffer); shadow_depth_buffer = 0; }
+		if (orms_buffer) { glDeleteTextures(1, &orms_buffer); orms_buffer = 0; }
 		if (depth_rb) { glDeleteRenderbuffers(1, &depth_rb); depth_rb = 0; }
 		
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_object);
@@ -188,13 +190,20 @@ struct FrameBuffer
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, albedo_specular_buffer, 0);
 
+		glGenTextures(1, &orms_buffer);
+		glBindTexture(GL_TEXTURE_2D, orms_buffer);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, orms_buffer, 0);
+
 		glGenRenderbuffers(1, &depth_rb);
 		glBindRenderbuffer(GL_RENDERBUFFER, depth_rb);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth_rb);
 
-		GLuint attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
-		glDrawBuffers(3, attachments);
+		GLuint attachments[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
+		glDrawBuffers(4, attachments);
 	}
 
 	void delete_buffers()
@@ -204,6 +213,7 @@ struct FrameBuffer
 		if (albedo_specular_buffer) { glDeleteTextures(1, &albedo_specular_buffer); albedo_specular_buffer = 0; }
 		if (color_buffer) { glDeleteTextures(1, &color_buffer); color_buffer = 0; }
 		if (shadow_depth_buffer) { glDeleteTextures(1, &shadow_depth_buffer); shadow_depth_buffer = 0; }
+		if (orms_buffer) { glDeleteTextures(1, &orms_buffer); orms_buffer = 0; }
 		if (depth_rb) { glDeleteRenderbuffers(1, &depth_rb); depth_rb = 0; }
 	}
 
@@ -217,6 +227,7 @@ struct FrameBuffer
 	GLuint get_position_texture() const { return position_buffer; }
 	GLuint get_normal_texture() const { return normal_buffer; }
 	GLuint get_albedo_spec_texture() const { return albedo_specular_buffer; }
+	GLuint get_orms_texture() const { return orms_buffer; }
 	GLuint get_shadow_depth_texture() const { return shadow_depth_buffer; }
 	GLuint get_color_texture() const { return color_buffer; }
 	std::vector<GLuint> get_textures() { return { position_buffer, normal_buffer, albedo_specular_buffer, shadow_depth_buffer, color_buffer }; }
@@ -235,6 +246,7 @@ private:
 	GLuint position_buffer = 0;
 	GLuint normal_buffer = 0;
 	GLuint albedo_specular_buffer = 0;
+	GLuint orms_buffer = 0;
 
 	// for deffered renderer, renderbuffer, just works for the depth test
 	GLuint depth_rb = 0;

@@ -1,0 +1,5 @@
+{
+    "name": "pbr lighting shader",
+    "frag_path": "./assets/shaders/engine/pbr_lighting_frag.glsl",
+    "vert_path": "./assets/shaders/engine/lighting_vert.glsl"
+}

@@ -145,9 +145,14 @@ MeshData ModelLoader::load_obj_mesh_from_file(const std::string a_path)
                         mesh.contents->colors[0].push_back(v_col[obj_face_vert.pos - 1]);
                     }
                     if (v_nrm.size() > 0)
+                    {
                         mesh.contents->normals.push_back(v_nrm[obj_face_vert.nrm - 1]);
+                    }
                     if (v_uv.size() > 0)
+                    {
                         mesh.contents->uvs[0].push_back(v_uv[obj_face_vert.uv - 1]);
+                    }
+                        
                 }
 
             }
@@ -178,6 +183,15 @@ MeshData ModelLoader::load_obj_mesh_from_file(const std::string a_path)
     {
         mesh.contents->uvs.clear();
     }
+
+
+    mesh.num_indicies = (GLsizei)mesh.contents->indices.size();
+    mesh.hash = mesh.contents->hashed_path.hash;
+
+    ///////////////////////////////////////
+    // create tangents and bitangets
+    create_tangent_bitangent(mesh);
+
     title = a_path + " - mesh finished started at";
     time_now.print_time(title);
     timer.stop();
@@ -185,8 +199,7 @@ MeshData ModelLoader::load_obj_mesh_from_file(const std::string a_path)
     PRINTLN("pos: {}, nrm: {}, uv: {}, face: {}", num_pos, num_nrm, num_uv, num_f);
     PRINTLN("time to load mesh {}: {}ms", a_path, timer.get_time_ms());
     mesh.ram_load_status = ELoadStatus::Loaded;
-    mesh.num_indicies = (GLsizei)mesh.contents->indices.size();
-    mesh.hash = mesh.contents->hashed_path.hash;
+
     return mesh;
 }
 
@@ -344,4 +357,63 @@ TextureData ModelLoader::load_texture_from_file(const std::string a_path, const 
     timer.stop();
     PRINTLN("time to load texture {}: {}ms", a_path, timer.get_time_ms());
     return texture_data;
+}
+
+void ModelLoader::create_tangent_bitangent(MeshData& a_mesh_data)
+{
+    auto& mesh_contents = a_mesh_data.contents;
+    size_t num_indices = (size_t)a_mesh_data.num_indicies;
+    size_t num_vertices = mesh_contents->positions.size();
+    
+    auto& indices = mesh_contents->indices;
+    auto& positions = mesh_contents->positions;
+    auto& normals = mesh_contents->normals;
+    auto& uvs = mesh_contents->uvs;
+    
+    // return checks
+    if (uvs.empty() || normals.empty()) return;
+    else if (uvs[0].empty()) return;
+
+    std::vector<glm::vec3> tangents(num_vertices, glm::vec3(0));
+    std::vector<glm::vec4> tangents_handed(num_vertices, glm::vec4(0));
+    std::vector<glm::vec3> bitangents(num_vertices, glm::vec3(0));
+
+    for (size_t i = 2; i < num_indices; i+=3)
+    {
+        // for each set of 3 indices, we use to vertexes for the face to determine the tangents and bitangents
+
+        // first face indices
+        auto index0 = indices[i-2];
+        auto index1 = indices[i-1];
+        auto index2 = indices[i];
+
+        glm::vec3 edge1 = positions[index1] - positions[index0];
+        glm::vec3 edge2 = positions[index2] - positions[index0];
+
+        glm::vec2 delta_uv1 = glm::vec2(uvs[0][index1].x, uvs[0][index1].y) - glm::vec2(uvs[0][index0].x, uvs[0][index0].y);
+        glm::vec2 delta_uv2 = glm::vec2(uvs[0][index2].x, uvs[0][index2].y) - glm::vec2(uvs[0][index0].x, uvs[0][index0].y);
+
+        float determinant = 1.0f / (delta_uv1.x * delta_uv2.y - delta_uv1.y * delta_uv2.x);
+
+        glm::vec3 tangent = determinant * (delta_uv2.y * edge1 - delta_uv1.y * edge2);
+        glm::vec3 bitanget = determinant * (-delta_uv2.x * edge1 + delta_uv1.x * edge2);
+
+        tangents[index0] += tangent;
+        tangents[index1] += tangent;
+        tangents[index2] += tangent;
+        bitangents[index0] += bitanget;
+        bitangents[index1] += bitanget;
+        bitangents[index2] += bitanget;
+    }
+    for (size_t i = 0; i < num_vertices; i++)
+    {
+        tangents[i] = glm::normalize(tangents[i] - normals[i] * glm::dot(normals[i], tangents[i]));
+        //bitangents[i] = glm::normalize(bitangents[i]);
+        glm::vec3 orthogonalization = glm::cross(normals[i], tangents[i]);
+        float handedness = glm::dot(bitangents[i], orthogonalization) < 0.0f? -1.0f : 1.0f;
+
+        tangents_handed[i] = glm::vec4(tangents[i], handedness);
+    }
+    mesh_contents->tangents = tangents_handed;
+    //mesh_contents->bitangents = bitangents;
 }

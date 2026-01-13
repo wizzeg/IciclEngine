@@ -53,6 +53,14 @@ struct MaterialDataJob
 	uint64_t job_time;
 };
 
+struct MaterialUniformJob
+{
+	hashed_string_64 material_path = "";
+	std::string location = "";
+	UniformValue value = 1.0f;
+	std::type_index type = typeid(float);
+};
+
 struct TextureDataJob
 {
 	hashed_string_64 path_hashed;

@@ -639,9 +639,15 @@ void AssetJobThread::process_dependency(ValidateMatDependencies& a_job) // this 
 					{
 						if (std::get_if<std::string>(&uniform.value))// it's a texture
 						{
-							uniform.texture_id = tex->texture_id;
-							uniform.modified_time = a_job.job_time;
-							break;
+							std::string path = std::get<std::string>(uniform.value);
+							hashed_string_64 test_hash(path.c_str());
+							if (test_hash == a_job.hashed_path.hash)
+							{
+								uniform.texture_id = tex->texture_id;
+								uniform.modified_time = a_job.job_time;
+							}
+							
+							//break;
 						}
 					}
 					uint8_t remaining_deps = 0;
@@ -815,6 +821,33 @@ void AssetJobThread::process_dependency(ValidateMatDependencies& a_job) // this 
 	}
 }
 
+void AssetJobThread::process_material_uniform(MaterialUniformJob& a_job)
+{
+	{
+		std::unique_lock<std::mutex> runtime_mat_lock(asset_storage.runtime_mat_mutex);
+		auto job_hash = a_job.material_path.hash;
+		auto& mats = asset_storage.runtime_materials;
+		for (size_t i = 0; i < mats.size(); i++)
+		{
+			if (job_hash == mats[i].hash)
+			{
+				auto& mat = mats[i];
+				for (auto& uniform : mat.uniforms)
+				{
+					if (uniform.type == a_job.type)
+					{
+						if (uniform.location == a_job.location)
+						{
+							uniform.value = a_job.value;
+							return;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 void AssetJobThread::job_loop()
 {
 	while (true)
@@ -884,6 +917,11 @@ void AssetJobThread::job_loop()
 			else if (auto dep_job = std::get_if<ValidateMatDependencies>(&job))
 			{
 				process_dependency(*dep_job);
+				invalid_job = false;
+			}
+			else if (auto uni_job = std::get_if<MaterialUniformJob>(&job))
+			{
+				process_material_uniform(*uni_job);
 				invalid_job = false;
 			}
 			

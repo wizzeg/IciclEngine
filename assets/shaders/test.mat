@@ -13,6 +13,31 @@
             "type": "texture",
             "value": "./assets/textures/robot/DefaultMaterial_Base_Color.png"
         },
+        {
+            "location": "uNormalMap",
+            "type": "texture",
+            "value": "./assets/textures/robot/DefaultMaterial_Normal_OpenGL.png"
+        },
+        {
+            "location": "uAO",
+            "type": "texture",
+            "value": "./assets/textures/robot/DefaultMaterial_Mixed_AO.png"
+        },
+        {
+            "location": "uRoughness",
+            "type": "texture",
+            "value": "./assets/textures/robot/DefaultMaterial_Roughness.png"
+        },
+        {
+            "location": "uMetallic",
+            "type": "texture",
+            "value": "./assets/textures/robot/DefaultMaterial_Metallic.png"
+        },
+        {
+            "location": "max_shininess",
+            "type": "float",
+            "value": 1.0
+        },
 	{
             "location": "has_texture",
             "type": "ivec1",

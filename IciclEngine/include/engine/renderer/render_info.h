@@ -209,7 +209,7 @@ struct MeshDataContents
 	hashed_string_64 hashed_path;
 	std::vector<glm::vec3> positions;
 	std::vector<glm::vec3> normals;
-	std::vector<glm::vec3> tangets;
+	std::vector<glm::vec4> tangents;
 	std::vector<glm::vec3> bitangents;
 	std::vector<std::vector<uint8_t> >colors_dimensions;
 	std::vector<std::vector<glm::vec4>> colors;
@@ -274,7 +274,7 @@ struct TextureDataContents
 	GLenum color_format = GL_RGB;
 	GLenum wrap_x = GL_REPEAT;
 	GLenum wrap_y = GL_REPEAT;
-	GLenum filtering_min = GL_NEAREST;
+	GLenum filtering_min = GL_LINEAR;
 	GLenum filtering_mag = GL_LINEAR;
 	GLenum mipmap_filtering = GL_LINEAR_MIPMAP_LINEAR;
 	std::shared_ptr<stbi_uc> texture_data;

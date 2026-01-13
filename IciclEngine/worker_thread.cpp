@@ -33,8 +33,11 @@ void GameThread::execute()
 	auto transform_group = scene->get_registry().group<
 		TransformDynamicComponent
 	>();
+	//auto render_group = scene->get_registry().group<
+	//	MeshComponent, MaterialComponent
+	//>(entt::get<TransformDynamicComponent>);
 	auto render_group = scene->get_registry().group<
-		MeshComponent, MaterialComponent
+		RenderComponent
 	>(entt::get<TransformDynamicComponent>);
 	while (true)
 	{
@@ -383,12 +386,20 @@ void GameThread::execute()
 			//	
 			//}
 
-			for (auto [entity, mesh_component, material_component, world_position]
-				: render_group.each())//registry.view<MeshComponent, MaterialComponent, TransformDynamicComponent>().each())
+			//for (auto [entity, mesh_component, material_component, world_position]
+			//	: render_group.each())//registry.view<MeshComponent, MaterialComponent, TransformDynamicComponent>().each())
+			//{
+			//	PreRenderReq pre;
+			//	pre_render_reqs.emplace_back(world_position.model_matrix, mesh_component.hashed_path.hash,
+			//		material_component.hashed_path.hash, material_component.instance, material_component.mipmap);
+			//}
+
+			for (auto [entity, render, transform] :
+				//registry.view<RenderComponent, TransformDynamicComponent>().each())
+				render_group.each())
 			{
-				PreRenderReq pre;
-				pre_render_reqs.emplace_back(world_position.model_matrix, mesh_component.hashed_path.hash,
-					material_component.hashed_path.hash, material_component.instance, material_component.mipmap);
+				pre_render_reqs.emplace_back(transform.model_matrix, render.mesh.hash,
+					render.material.hash, render.instance, render.mipmap);
 			}
 
 			ind_timer.stop();
@@ -427,6 +438,7 @@ void GameThread::execute()
 				{
 					Light light;
 					light.color = point_light.color;
+					light.attenuation = point_light.attenuation;
 					light.intensity = point_light.intensity;
 					light.model_matrix = transform.model_matrix;
 					render_context.lights.push_back(light);
@@ -434,6 +446,31 @@ void GameThread::execute()
 			}
 			ind_timer.stop();
 			lighting_time += ind_timer.get_time_ms();
+
+			for (auto [entity, mat_float] :
+				registry.view<MaterialFloatComponent>().each())
+			{
+				if (mat_float.set)
+				{
+					mat_float.set = false;
+					MaterialUniformJob new_uni_job{ mat_float.material, mat_float.location, mat_float.value, typeid(float) };
+					AssetJob new_job = std::move(new_uni_job);
+					engine_context->asset_manager->add_asset_job(new_job);
+				}
+			}
+
+			for (auto [entity, mat_float] :
+				registry.view<MaterialIntComponent>().each())
+			{
+				if (mat_float.set)
+				{
+					mat_float.set = false;
+					int val = (int)mat_float.value;
+					MaterialUniformJob new_uni_job{ mat_float.material, mat_float.location, val, typeid(int) };
+					AssetJob new_job = std::move(new_uni_job);
+					engine_context->asset_manager->add_asset_job(new_job);
+				}
+			}
 			
 			previous_total_render_requests = render_requests.size();
 				/////////////////////////////////////// BELOW is for testing when comopnents are suddenly destroyed.

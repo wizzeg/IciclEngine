@@ -147,7 +147,7 @@ struct MaterialComponent
 {
     hashed_string_64 hashed_path;
     bool instance;
-    bool mipmap;
+    bool mipmap = true;
     bool load;
 };
 
@@ -260,8 +260,9 @@ struct RenderComponent
 
 struct PointLightComponent
 {
-    glm::vec3 color;
-    float intensity;
+    glm::vec3 color = glm::vec3(1);
+    glm::vec3 attenuation = glm::vec3(0.75f, 0.1f, 0.01f);
+    float intensity = 0.5f;
     bool shadow_map = false;
 };
 
@@ -274,4 +275,20 @@ struct DirectionalLightComponent // I don't know what else I need for these
     bool overide_quaternion = false;
     bool shadow_map = true;
     float intensity;
+};
+
+struct MaterialFloatComponent
+{
+    hashed_string_64 material;
+    std::string location;
+    float value;
+    bool set;
+};
+
+struct MaterialIntComponent
+{
+    hashed_string_64 material;
+    std::string location;
+    uint32_t value;
+    bool set;
 };

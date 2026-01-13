@@ -479,9 +479,6 @@
     <None Include="..\assets\shaders\vertex\deffered_vert.glsl">
       <Filter>Shaders\vertex</Filter>
     </None>
-    <None Include="..\assets\shaders\fragment\deffered_frag.glsl">
-      <Filter>Shaders\fragment</Filter>
-    </None>
     <None Include="..\assets\shaders\engine\shadow_vert.glsl">
       <Filter>Shaders\engine</Filter>
     </None>
@@ -493,6 +490,12 @@
     </None>
     <None Include="..\assets\shaders\engine\lighting_vert.glsl">
       <Filter>Shaders\engine</Filter>
+    </None>
+    <None Include="..\assets\shaders\engine\pbr_lighting_frag.glsl">
+      <Filter>Shaders\engine</Filter>
+    </None>
+    <None Include="..\assets\shaders\fragment\deffered_frag.glsl">
+      <Filter>Shaders\fragment</Filter>
     </None>
   </ItemGroup>
 </Project>

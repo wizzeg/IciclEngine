@@ -57,7 +57,7 @@ private:
 
 
 	void bind_uniform(std::type_index a_type, const std::string& a_location, UniformValue a_value_ptr); // good enough, lowers complexity
-	void render_lighting_quad(GLuint a_output_tex);
+	void render_lighting_quad();
 	void generate_lighting_quad();
 	void generate_lighting_shader();
 

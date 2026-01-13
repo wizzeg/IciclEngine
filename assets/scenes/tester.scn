@@ -1,0 +1,573 @@
+{
+    "name": "new scene",
+    "next index": 2,
+    "root objects": [
+        {
+            "children": [],
+            "components": [
+                {
+                    "fields": [
+                        {
+                            "name": "entity name: ",
+                            "type": "struct hashed_string_64",
+                            "value": "mat mesh loader: test"
+                        },
+                        {
+                            "name": "entity id: ",
+                            "type": "struct EntityReference",
+                            "value": 3452816845
+                        }
+                    ],
+                    "type": "NameComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "material path: ",
+                            "type": "struct hashed_string_64",
+                            "value": "./assets/shaders/test.mat"
+                        },
+                        {
+                            "name": "instanced: ",
+                            "type": "bool",
+                            "value": false
+                        },
+                        {
+                            "name": "use mipmaps: ",
+                            "type": "bool",
+                            "value": true
+                        },
+                        {
+                            "name": "load material: ",
+                            "type": "bool",
+                            "value": false
+                        }
+                    ],
+                    "type": "MaterialComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "mesh loaded: ",
+                            "type": "bool",
+                            "value": true
+                        },
+                        {
+                            "name": "mesh path: ",
+                            "type": "struct hashed_string_64",
+                            "value": "./assets/obj/robot.obj"
+                        }
+                    ],
+                    "type": "MeshComponent"
+                }
+            ],
+            "name": "mat mesh loader: test"
+        },
+        {
+            "children": [],
+            "components": [
+                {
+                    "fields": [
+                        {
+                            "name": "entity name: ",
+                            "type": "struct hashed_string_64",
+                            "value": "mat mesh loader: green"
+                        },
+                        {
+                            "name": "entity id: ",
+                            "type": "struct EntityReference",
+                            "value": 3452816845
+                        }
+                    ],
+                    "type": "NameComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "material path: ",
+                            "type": "struct hashed_string_64",
+                            "value": "./assets/shaders/green.mat"
+                        },
+                        {
+                            "name": "instanced: ",
+                            "type": "bool",
+                            "value": false
+                        },
+                        {
+                            "name": "use mipmaps: ",
+                            "type": "bool",
+                            "value": true
+                        },
+                        {
+                            "name": "load material: ",
+                            "type": "bool",
+                            "value": false
+                        }
+                    ],
+                    "type": "MaterialComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "mesh loaded: ",
+                            "type": "bool",
+                            "value": true
+                        },
+                        {
+                            "name": "mesh path: ",
+                            "type": "struct hashed_string_64",
+                            "value": "./assets/obj/tribojmonkey.obj"
+                        }
+                    ],
+                    "type": "MeshComponent"
+                }
+            ],
+            "name": "mat mesh loader: green"
+        },
+        {
+            "children": [],
+            "components": [
+                {
+                    "fields": [
+                        {
+                            "name": "entity name: ",
+                            "type": "struct hashed_string_64",
+                            "value": "mat mesh loader: blue"
+                        },
+                        {
+                            "name": "entity id: ",
+                            "type": "struct EntityReference",
+                            "value": 3452816845
+                        }
+                    ],
+                    "type": "NameComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "mesh loaded: ",
+                            "type": "bool",
+                            "value": true
+                        },
+                        {
+                            "name": "mesh path: ",
+                            "type": "struct hashed_string_64",
+                            "value": "./assets/obj/robot2.obj"
+                        }
+                    ],
+                    "type": "MeshComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "material path: ",
+                            "type": "struct hashed_string_64",
+                            "value": "./assets/shaders/blue.mat"
+                        },
+                        {
+                            "name": "instanced: ",
+                            "type": "bool",
+                            "value": false
+                        },
+                        {
+                            "name": "use mipmaps: ",
+                            "type": "bool",
+                            "value": true
+                        },
+                        {
+                            "name": "load material: ",
+                            "type": "bool",
+                            "value": false
+                        }
+                    ],
+                    "type": "MaterialComponent"
+                }
+            ],
+            "name": "mat mesh loader: blue"
+        },
+        {
+            "children": [],
+            "components": [
+                {
+                    "fields": [
+                        {
+                            "name": "entity name: ",
+                            "type": "struct hashed_string_64",
+                            "value": "mat mesh loader: red"
+                        },
+                        {
+                            "name": "entity id: ",
+                            "type": "struct EntityReference",
+                            "value": 3452816845
+                        }
+                    ],
+                    "type": "NameComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "mesh loaded: ",
+                            "type": "bool",
+                            "value": true
+                        },
+                        {
+                            "name": "mesh path: ",
+                            "type": "struct hashed_string_64",
+                            "value": "./assets/obj/robot3.obj"
+                        }
+                    ],
+                    "type": "MeshComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "material path: ",
+                            "type": "struct hashed_string_64",
+                            "value": "./assets/shaders/red.mat"
+                        },
+                        {
+                            "name": "instanced: ",
+                            "type": "bool",
+                            "value": false
+                        },
+                        {
+                            "name": "use mipmaps: ",
+                            "type": "bool",
+                            "value": true
+                        },
+                        {
+                            "name": "load material: ",
+                            "type": "bool",
+                            "value": false
+                        }
+                    ],
+                    "type": "MaterialComponent"
+                }
+            ],
+            "name": "mat mesh loader: red"
+        },
+        {
+            "children": [],
+            "components": [
+                {
+                    "fields": [
+                        {
+                            "name": "entity name: ",
+                            "type": "struct hashed_string_64",
+                            "value": "Robot"
+                        },
+                        {
+                            "name": "entity id: ",
+                            "type": "struct EntityReference",
+                            "value": 3452816845
+                        }
+                    ],
+                    "type": "NameComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "position: ",
+                            "type": "struct glm::vec<3,float,0>",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "scale: ",
+                            "type": "struct glm::vec<3,float,0>",
+                            "value": [
+                                1.0,
+                                1.0,
+                                1.0
+                            ]
+                        },
+                        {
+                            "name": "rotation: ",
+                            "type": "struct glm::vec<3,float,0>",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "overwrite quaternion rotation: ",
+                            "type": "bool",
+                            "value": false
+                        },
+                        {
+                            "name": "update euler rotation: ",
+                            "type": "bool",
+                            "value": false
+                        },
+                        {
+                            "name": "rotation_quat",
+                            "type": "struct glm::qua<float,0>",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0
+                            ]
+                        },
+                        {
+                            "name": "model_matrix",
+                            "type": "struct glm::mat<4,4,float,0>",
+                            "value": [
+                                1.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0
+                            ]
+                        }
+                    ],
+                    "type": "TransformDynamicComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "mesh path: ",
+                            "type": "struct hashed_string_64",
+                            "value": "./assets/obj/robot.obj"
+                        },
+                        {
+                            "name": "material path: ",
+                            "type": "struct hashed_string_64",
+                            "value": "./assets/shaders/test.mat"
+                        },
+                        {
+                            "name": "instance draw: ",
+                            "type": "bool",
+                            "value": false
+                        },
+                        {
+                            "name": "use mipmaps: ",
+                            "type": "bool",
+                            "value": false
+                        },
+                        {
+                            "name": "load component: ",
+                            "type": "bool",
+                            "value": false
+                        }
+                    ],
+                    "type": "RenderComponent"
+                }
+            ],
+            "name": "Robot"
+        },
+        {
+            "children": [],
+            "components": [
+                {
+                    "fields": [
+                        {
+                            "name": "entity name: ",
+                            "type": "struct hashed_string_64",
+                            "value": "point light - and loader"
+                        },
+                        {
+                            "name": "entity id: ",
+                            "type": "struct EntityReference",
+                            "value": 3452816845
+                        }
+                    ],
+                    "type": "NameComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "position: ",
+                            "type": "struct glm::vec<3,float,0>",
+                            "value": [
+                                -0.20999999344348907,
+                                4.690000057220459,
+                                1.6100000143051147
+                            ]
+                        },
+                        {
+                            "name": "scale: ",
+                            "type": "struct glm::vec<3,float,0>",
+                            "value": [
+                                1.0,
+                                1.0,
+                                1.0
+                            ]
+                        },
+                        {
+                            "name": "rotation: ",
+                            "type": "struct glm::vec<3,float,0>",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "overwrite quaternion rotation: ",
+                            "type": "bool",
+                            "value": false
+                        },
+                        {
+                            "name": "update euler rotation: ",
+                            "type": "bool",
+                            "value": false
+                        },
+                        {
+                            "name": "rotation_quat",
+                            "type": "struct glm::qua<float,0>",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0
+                            ]
+                        },
+                        {
+                            "name": "model_matrix",
+                            "type": "struct glm::mat<4,4,float,0>",
+                            "value": [
+                                1.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0,
+                                0.0,
+                                -0.20999999344348907,
+                                4.690000057220459,
+                                1.6100000143051147,
+                                1.0
+                            ]
+                        }
+                    ],
+                    "type": "TransformDynamicComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "color: ",
+                            "type": "struct glm::vec<3,float,0>",
+                            "value": [
+                                1.0,
+                                1.0,
+                                1.0
+                            ]
+                        },
+                        {
+                            "name": "attenuation: ",
+                            "type": "struct glm::vec<3,float,0>",
+                            "value": [
+                                0.75,
+                                0.10000000149011612,
+                                0.009999999776482582
+                            ]
+                        },
+                        {
+                            "name": "intensity: ",
+                            "type": "float",
+                            "value": 0.5
+                        },
+                        {
+                            "name": "create shadow map: ",
+                            "type": "bool",
+                            "value": false
+                        }
+                    ],
+                    "type": "PointLightComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "mesh path: ",
+                            "type": "struct hashed_string_64",
+                            "value": "./assets/obj/triobjmonkey.obj"
+                        },
+                        {
+                            "name": "material path: ",
+                            "type": "struct hashed_string_64",
+                            "value": "./assets/shaders/white.mat"
+                        },
+                        {
+                            "name": "instance draw: ",
+                            "type": "bool",
+                            "value": false
+                        },
+                        {
+                            "name": "use mipmaps: ",
+                            "type": "bool",
+                            "value": false
+                        },
+                        {
+                            "name": "load component: ",
+                            "type": "bool",
+                            "value": true
+                        }
+                    ],
+                    "type": "RenderComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "material path: ",
+                            "type": "struct hashed_string_64",
+                            "value": "./assets/shaders/white.mat"
+                        },
+                        {
+                            "name": "instanced: ",
+                            "type": "bool",
+                            "value": false
+                        },
+                        {
+                            "name": "use mipmaps: ",
+                            "type": "bool",
+                            "value": true
+                        },
+                        {
+                            "name": "load material: ",
+                            "type": "bool",
+                            "value": false
+                        }
+                    ],
+                    "type": "MaterialComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "mesh loaded: ",
+                            "type": "bool",
+                            "value": true
+                        },
+                        {
+                            "name": "mesh path: ",
+                            "type": "struct hashed_string_64",
+                            "value": "./assets/obj/triobjmonkey.obj"
+                        }
+                    ],
+                    "type": "MeshComponent"
+                }
+            ],
+            "name": "point light - and loader"
+        }
+    ]
+}

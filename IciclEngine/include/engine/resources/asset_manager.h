@@ -12,7 +12,7 @@
 #include <engine/resources/message_queue.h>
 #include "job_info.h"
 
-using AssetJob = std::variant<MeshDataJob, VAOLoadInfo, TextureDataJob, TextureGenInfo, ShaderDataJob, ValidateMatDependencies, ProgramLoadRequest, ProgramLoadInfo, MaterialDataJob>;
+using AssetJob = std::variant<MeshDataJob, VAOLoadInfo, TextureDataJob, TextureGenInfo, ShaderDataJob, ValidateMatDependencies, ProgramLoadRequest, ProgramLoadInfo, MaterialDataJob, MaterialUniformJob>;
 
 
 struct AssetStorage
@@ -122,6 +122,7 @@ protected:
 	void process_tex_update(TextureGenInfo& a_job);
 	void process_program_update(ProgramLoadInfo& a_job);
 	void process_dependency(ValidateMatDependencies& a_job);
+	void process_material_uniform(MaterialUniformJob& a_job);
 
 	void insert_runtime_material(uint64_t a_mat_hash) {}; // to do use this one for clean up
 	// todo generally try to generalize the processing
