@@ -15,6 +15,18 @@
 #include <engine/utilities/entt_modified.h>
 #include <engine/resources/data_structs.h>
 
+/// <summary>
+/// 0 : int
+/// 1 : float
+/// 3 : ivec1
+/// 4 : vec2
+/// 5 : vec3
+/// 6 : vec4
+/// 7 : mat3
+/// 8 : mat4
+/// 
+/// </summary>
+
 struct NameComponent
 {
     hashed_string_64 hashed_name;
@@ -279,10 +291,12 @@ struct DirectionalLightComponent // I don't know what else I need for these
 
 struct MaterialFloatComponent
 {
-    hashed_string_64 material;
-    std::string location;
-    float value;
-    bool set;
+    hashed_string_64 material = "";
+    std::string location = "";
+    float value = 0;
+    float prev_value = 0;
+    bool set = false;
+    bool continous_update = true;
 };
 
 struct MaterialIntComponent
@@ -291,4 +305,13 @@ struct MaterialIntComponent
     std::string location;
     uint32_t value;
     bool set;
+};
+
+struct MaterialUniformComponent
+{
+    uint8_t type = 0;
+    hashed_string_64 material = "";
+    std::string location = "";
+    UniformValue value = (int)0;
+    bool set = false;
 };

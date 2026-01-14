@@ -281,43 +281,43 @@ void GameThread::execute()
 				}
 				///////////////////////////////////////////////////////
 				// Do texture lodas now
-				for (auto [entity, texture_component] : registry.view<TextureComponent>().each())
-				{
-					if (!texture_component.loaded)
-					{
-						texture_component.loaded = true;
-						hashed_texture_loads.push_back(texture_component.hashed_path);
-					}
-				}
-				if (!hashed_texture_loads.empty())
-				{
-					// all load requests
-					std::sort(hashed_texture_loads.begin(), hashed_texture_loads.end(), std::less<>{});
-					std::vector<hashed_string_64> load_requests;
-					load_requests.reserve(previous_unique_meshes);
+				//for (auto [entity, texture_component] : registry.view<TextureComponent>().each())
+				//{
+				//	if (!texture_component.loaded)
+				//	{
+				//		texture_component.loaded = true;
+				//		hashed_texture_loads.push_back(texture_component.hashed_path);
+				//	}
+				//}
+				//if (!hashed_texture_loads.empty())
+				//{
+				//	// all load requests
+				//	std::sort(hashed_texture_loads.begin(), hashed_texture_loads.end(), std::less<>{});
+				//	std::vector<hashed_string_64> load_requests;
+				//	load_requests.reserve(previous_unique_meshes);
 
-					// unique load requests
-					hashed_string_64 previous_value = hashed_texture_loads[0];
-					load_requests.push_back(previous_value);
-					size_t i = 1;
-					for (; i < hashed_texture_loads.size(); i++)
-					{
-						if (previous_value < hashed_texture_loads[i])
-						{
-							load_requests.push_back(hashed_texture_loads[i]);
-							previous_value = hashed_texture_loads[i];
-						}
-					}
+				//	// unique load requests
+				//	hashed_string_64 previous_value = hashed_texture_loads[0];
+				//	load_requests.push_back(previous_value);
+				//	size_t i = 1;
+				//	for (; i < hashed_texture_loads.size(); i++)
+				//	{
+				//		if (previous_value < hashed_texture_loads[i])
+				//		{
+				//			load_requests.push_back(hashed_texture_loads[i]);
+				//			previous_value = hashed_texture_loads[i];
+				//		}
+				//	}
 
-					std::vector<LoadJob> load_jobs;
-					load_jobs.reserve(previous_unique_meshes);
-					for (size_t j = 0; j < load_requests.size(); j++)
-					{
-						TextureDataJob job(load_requests[j], ERequestType::LoadFromFile);
-						load_jobs.emplace_back(std::move(job));
-					}
-					engine_context->model_storage->add_jobs(load_jobs);
-				}
+				//	std::vector<LoadJob> load_jobs;
+				//	load_jobs.reserve(previous_unique_meshes);
+				//	for (size_t j = 0; j < load_requests.size(); j++)
+				//	{
+				//		TextureDataJob job(load_requests[j], ERequestType::LoadFromFile);
+				//		load_jobs.emplace_back(std::move(job));
+				//	}
+				//	engine_context->model_storage->add_jobs(load_jobs);
+				//}
 
 				for (auto [entity, material_component] : registry.view<MaterialComponent>().each())
 				{
@@ -436,11 +436,10 @@ void GameThread::execute()
 			{
 				if (!point_light.shadow_map)
 				{
-					Light light;
-					light.color = point_light.color;
-					light.attenuation = point_light.attenuation;
-					light.intensity = point_light.intensity;
-					light.model_matrix = transform.model_matrix;
+					PointLightSSBO light;
+					light.light_color = glm::vec4(point_light.color, point_light.intensity);
+					light.light_attenuation = glm::vec4(point_light.attenuation, 0);
+					light.light_positoin = glm::vec4(transform.position, 0);
 					render_context.lights.push_back(light);
 				}
 			}
@@ -453,6 +452,12 @@ void GameThread::execute()
 				if (mat_float.set)
 				{
 					mat_float.set = false;
+					MaterialUniformJob new_uni_job{ mat_float.material, mat_float.location, mat_float.value, typeid(float) };
+					AssetJob new_job = std::move(new_uni_job);
+					engine_context->asset_manager->add_asset_job(new_job);
+				}
+				else if (mat_float.continous_update && (mat_float.prev_value != mat_float.value))
+				{
 					MaterialUniformJob new_uni_job{ mat_float.material, mat_float.location, mat_float.value, typeid(float) };
 					AssetJob new_job = std::move(new_uni_job);
 					engine_context->asset_manager->add_asset_job(new_job);

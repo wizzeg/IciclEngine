@@ -28,6 +28,13 @@ struct ShadowLight
 	EShadowCasterType::EShadowCasterType type = EShadowCasterType::PointLight;
 };
 
+struct alignas(16) PointLightSSBO
+{
+	alignas(16) glm::vec4 light_color;
+	alignas(16) glm::vec4 light_positoin;
+	alignas(16) glm::vec4 light_attenuation;
+};
+
 struct Light
 {
 	alignas(16)glm::mat4 model_matrix = glm::mat4(0);

@@ -60,6 +60,12 @@ private:
 	void render_lighting_quad();
 	void generate_lighting_quad();
 	void generate_lighting_shader();
+	void create_pointlight_SSBO();
+	void update_pointlight_SSBO(std::vector<PointLightSSBO>& a_point_lights);
+
+	void create_instance_SSBO();
+	void update_insance_SSBO(std::vector<glm::mat4>& a_model_matrices);
+	bool instance_half;
 
 	void set_vec1f(const float value, const char* location) const;
 	void set_vec2f(const float value[2], const char* location) const;
@@ -89,6 +95,9 @@ private:
 	GLuint lighting_quad_vbo = 0;
 
 	GLuint lighting_program = 0;
+
+	GLuint pointlight_ssbo = 0;
+	GLuint model_instance_ssbo = 0;
 
 	std::string lighting_shader_path = "./assets/shaders/engine/lighting.shdr";
 	unsigned int count = 0;

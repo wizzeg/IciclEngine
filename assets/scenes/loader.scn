@@ -116,7 +116,7 @@
                         {
                             "name": "mesh path: ",
                             "type": "struct hashed_string_64",
-                            "value": "./assets/obj/tribojmonkey.obj"
+                            "value": "./assets/obj/triobjmonkey.obj"
                         }
                     ],
                     "type": "MeshComponent"

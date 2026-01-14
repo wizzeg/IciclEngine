@@ -5,6 +5,9 @@
 #include <engine/game/components.h>
 #include <engine/renderer/shader_loader.h>
 #include <algorithm>
+constexpr auto MAX_POINT_LIGHTS = 512;
+constexpr auto MAX_MODEL_INSTANCES = 2048;
+constexpr auto HALF_MODEL_INSTANCES = 1024;
 
 void Renderer::temp_render(MeshData& a_mesh, TransformDynamicComponent& a_world_pos)
 {
@@ -116,6 +119,8 @@ void Renderer::temp_render(RenderContext& a_render_context)
 			RenderReq& req = reqs[req_index];
 			if (req.mat_hash == mat.hash)
 			{
+				// here do a check if the new req is not instanced, and if the instance batch > 0
+				// if it is, issue the previous batch before going futher.
 				if (bound_mat != mat.hash)
 				{
 					if (current_gl_program != mat.gl_program)
@@ -197,9 +202,22 @@ void Renderer::deffered_render(RenderContext& a_render_context, const DefferedBu
 	bool mipmaps_set = false;
 	bool mipmap = true;
 	bool set_mipmaps = false;
+	bool mat_instance = false;
+
+	std::vector<glm::mat4> instanced_models;
+	instanced_models.reserve(HALF_MODEL_INSTANCES);
+	bool started_instance_batch = false;
+	bool issued_instance_batch = false;
+	GLsizei batch_indices_count = 0;
+	bool set_instance_buffer_part = false;
+
+	int draw_calls = 0;
+
 	for (auto& mat : mats)
 	{
 		mipmaps_set = false;
+		mat_instance = mat.instantiable;
+
 		req_index = req_start_index;
 		if (!mat.is_deffered)
 		{
@@ -210,6 +228,46 @@ void Renderer::deffered_render(RenderContext& a_render_context, const DefferedBu
 			RenderReq& req = reqs[req_index];
 			if (req.mat_hash == mat.hash)
 			{
+
+
+				if (started_instance_batch && (!req.instanced || instanced_models.size() >= HALF_MODEL_INSTANCES)) //draw the instanced before drawing non instanced
+				{
+					// draw it before starting on new
+					update_insance_SSBO(instanced_models);
+					glDrawElementsInstanced(GL_TRIANGLES, batch_indices_count, GL_UNSIGNED_INT, 0, (GLsizei)instanced_models.size());
+					started_instance_batch = false;
+					issued_instance_batch = true;
+					set_instance_buffer_part = false;
+					instanced_models.clear();
+					set_vec1i(0, "instance_buffer");
+					draw_calls++;
+				}
+				else if (started_instance_batch && (bound_vao != req.vao || instanced_models.size() >= HALF_MODEL_INSTANCES)) //draw all of the instanced because new vao
+				{
+					update_insance_SSBO(instanced_models);
+					glDrawElementsInstanced(GL_TRIANGLES, batch_indices_count, GL_UNSIGNED_INT, 0, (GLsizei)instanced_models.size());
+					started_instance_batch = false;
+					issued_instance_batch = true;
+					set_instance_buffer_part = false;
+					instanced_models.clear();
+					set_vec1i(0, "instance_buffer");
+					draw_calls++;
+				}
+
+				if (req.instanced && mat_instance)
+				{
+					if (!set_instance_buffer_part)
+					{
+						//int start = (int)(!instance_half) + 1;
+						//set_vec1i(start, "instance_buffer");
+						set_instance_buffer_part = true;
+					}
+					instanced_models.push_back(req.model_matrix);
+					started_instance_batch = true;
+					issued_instance_batch = false;
+					batch_indices_count = req.indices_size;
+				}
+
 				if (!mipmaps_set)
 				{
 					set_mipmaps = true;
@@ -270,17 +328,44 @@ void Renderer::deffered_render(RenderContext& a_render_context, const DefferedBu
 					glBindVertexArray(req.vao);
 				}
 				//draw
-				set_mat4fv(req.model_matrix, "model");
-				glDrawElements(GL_TRIANGLES, req.indices_size, GL_UNSIGNED_INT, 0);
+				if (!req.instanced || !mat.instantiable)
+				{
+					set_mat4fv(req.model_matrix, "model");
+					glDrawElements(GL_TRIANGLES, req.indices_size, GL_UNSIGNED_INT, 0);
+					draw_calls++;
+				}
+
 
 			}
 			else if (req.mat_hash > mat.hash)
 			{
+				if (started_instance_batch && !issued_instance_batch)
+				{
+					update_insance_SSBO(instanced_models);
+					glDrawElementsInstanced(GL_TRIANGLES, batch_indices_count, GL_UNSIGNED_INT, 0, (GLsizei)instanced_models.size());
+					started_instance_batch = false;
+					issued_instance_batch = true;
+					set_instance_buffer_part = false;
+					instanced_models.clear();
+					set_vec1i(0, "instance_buffer");
+					draw_calls++;
+				}
 				req_start_index = req_index;
 				break;
 			}
 			else
 			{
+				if (started_instance_batch && !issued_instance_batch)
+				{
+					update_insance_SSBO(instanced_models);
+					glDrawElementsInstanced(GL_TRIANGLES, batch_indices_count, GL_UNSIGNED_INT, 0, (GLsizei)instanced_models.size());
+					started_instance_batch = false;
+					issued_instance_batch = true;
+					set_instance_buffer_part = false;
+					instanced_models.clear();
+					set_vec1i(0, "instance_buffer");
+					draw_calls++;
+				}
 				//PRINTLN("material for the render request doesn't exist, or missorted");
 				req_start_index = req_index;
 				break;
@@ -288,12 +373,23 @@ void Renderer::deffered_render(RenderContext& a_render_context, const DefferedBu
 		}
 	}
 
+	/// check so that there's no lingering batch
+	if (started_instance_batch && !issued_instance_batch)
+	{
+		update_insance_SSBO(instanced_models);
+		glDrawElementsInstanced(GL_TRIANGLES, batch_indices_count, GL_UNSIGNED_INT, 0, (GLsizei)instanced_models.size());
+		draw_calls++;
+		instanced_models.clear();
+	}
+	//PRINTLN("number of draw calls: {}", draw_calls);
 	if (lighting_program  == 0 || lighting_quad_vao == 0)
 	{
 		PRINTLN("lighting has not been initialized");
 	}
 	else
 	{
+
+		// if I want post procesing effects, like bloom or something for emissive, I'd do it here
 		////////////////////////////////////////////////////////////////////////////////
 		// lighting pass
 
@@ -317,6 +413,8 @@ void Renderer::deffered_render(RenderContext& a_render_context, const DefferedBu
 		glBindTexture(GL_TEXTURE_2D, a_deffered_buffers.gbuffer->get_orms_texture());
 		set_vec1i(3, "orms_tex");
 		
+		update_pointlight_SSBO(a_render_context.lights);
+
 		GLsizei num_lights = (GLsizei)a_render_context.lights.size();
 		std::vector<glm::vec3> light_poses;
 		light_poses.reserve(num_lights);//{ glm::vec3(0, 0, 0), glm::vec3(10, 10, 10), glm::vec3(-10, -10, -10) };
@@ -330,10 +428,10 @@ void Renderer::deffered_render(RenderContext& a_render_context, const DefferedBu
 
 		for (size_t i = 0; i < std::min((size_t)a_render_context.lights.size(), (size_t)228); i++)
 		{
-			light_poses.emplace_back(glm::vec3(a_render_context.lights[i].model_matrix[3]));
-			light_colors.emplace_back(a_render_context.lights[i].color);
-			light_intensicies.emplace_back(a_render_context.lights[i].intensity);
-			light_attenuations.emplace_back(a_render_context.lights[i].attenuation);
+			light_poses.emplace_back(a_render_context.lights[i].light_positoin); //glm::vec3(a_render_context.lights[i].model_matrix[3])
+			light_colors.emplace_back(a_render_context.lights[i].light_color);
+			light_intensicies.emplace_back(a_render_context.lights[i].light_color.w);
+			light_attenuations.emplace_back(a_render_context.lights[i].light_attenuation);
 		}
 		if (num_lights > 0)
 		{
@@ -379,6 +477,8 @@ void Renderer::initialize()
 		PRINTLN("failed loading lighting shader");
 	}
 	generate_lighting_quad();
+	create_pointlight_SSBO();
+	create_instance_SSBO();
 }
 
 void Renderer::bind_uniform(std::type_index a_type, const std::string& a_location, UniformValue a_value) // good enough, lowers complexity
@@ -459,6 +559,116 @@ void Renderer::generate_lighting_quad()
 
 void Renderer::generate_lighting_shader()
 {
+
+}
+
+// could quite easily make these dynamically, just make a request for an int and you get the slot.. but binding stuff to it is tricky
+void Renderer::create_pointlight_SSBO()
+{
+	if (pointlight_ssbo != 0) return;
+	// make the SSBO
+	glGenBuffers(1, &pointlight_ssbo);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, pointlight_ssbo);
+
+	// allocate the gpu space for the num_lights + buffer
+	glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(int) * 4 + sizeof(PointLightSSBO) * MAX_POINT_LIGHTS, nullptr, GL_DYNAMIC_DRAW);
+
+	// binding to binding point 0 (for now, probably always)
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, pointlight_ssbo);
+
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+}
+
+void Renderer::update_pointlight_SSBO(std::vector<PointLightSSBO>& a_point_lights) // maybe make this generic somehow
+{
+	if (pointlight_ssbo == 0) return;
+
+	// bind the ssbo
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, pointlight_ssbo);
+
+	// orphan buffer
+	glBufferData(GL_SHADER_STORAGE_BUFFER,
+		sizeof(int) * 4 + sizeof(PointLightSSBO) * MAX_POINT_LIGHTS, nullptr, GL_DYNAMIC_DRAW);
+
+	// set num lights
+	int num_lights = std::min(static_cast<int>(a_point_lights.size()), MAX_POINT_LIGHTS);
+	glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(int), &num_lights);
+
+	// check if we can upload data and update
+	if (num_lights > 0) {
+		if (a_point_lights.size() <= MAX_POINT_LIGHTS)
+		{
+			
+
+			glBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(int) * 4,
+				sizeof(PointLightSSBO) * num_lights, a_point_lights.data());
+		}
+		else
+		{
+			std::vector<PointLightSSBO> new_ssbo(MAX_POINT_LIGHTS);
+			std::memcpy(new_ssbo.data(), a_point_lights.data(),
+				MAX_POINT_LIGHTS * sizeof(PointLightSSBO));
+			int new_num_lights = static_cast<int>(new_ssbo.size());
+
+			glBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(int) * 4,
+				sizeof(PointLightSSBO) * new_num_lights, new_ssbo.data());
+			//PRINTLN("too many lights, does not fit allocation");
+		}
+
+	}
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+}
+
+void Renderer::create_instance_SSBO()
+{
+	if (model_instance_ssbo != 0) return;
+	// make the SSBO
+	glGenBuffers(1, &model_instance_ssbo);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, model_instance_ssbo);
+
+	// allocate the gpu space for the num_lights + buffer
+	glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(int) * 4 + sizeof(glm::mat4) * MAX_MODEL_INSTANCES, nullptr, GL_DYNAMIC_DRAW);
+
+	// binding to binding point 0 (for now, probably always)
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, model_instance_ssbo);
+
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+}
+
+void Renderer::update_insance_SSBO(std::vector<glm::mat4>& a_model_matrices)
+{
+	if (model_instance_ssbo == 0) return;
+
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, model_instance_ssbo);
+	// write to first half
+	std::vector<glm::mat4> model_matrices = a_model_matrices;
+	if (model_matrices.size() > HALF_MODEL_INSTANCES)
+	{
+		//std::vector<PointLightSSBO> new_model(MAX_POINT_LIGHTS);
+		//std::memcpy(new_model.data(), a_model_matrices.data(),
+		//	MAX_POINT_LIGHTS * sizeof(PointLightSSBO));
+		PRINTLN("too many in instance draw");
+		return;
+	}
+	int num_models = std::min(static_cast<int>(model_matrices.size()), HALF_MODEL_INSTANCES);
+	if (!instance_half)
+	{
+		glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(int), &num_models);
+
+		glBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(int) * 4,
+			sizeof(glm::mat4) * num_models, model_matrices.data());
+		instance_half = true;
+		set_vec1i(1, "instance_buffer");
+	}
+	else
+	{
+		glBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(int) * 1, sizeof(int), &num_models);
+
+		glBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(int) * 4 + HALF_MODEL_INSTANCES * sizeof(glm::mat4),
+			sizeof(glm::mat4) * num_models, model_matrices.data());
+		instance_half = false;
+		set_vec1i(2, "instance_buffer");
+	}
 
 }
 

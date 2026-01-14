@@ -190,11 +190,11 @@ int main(void)
 						scene_object->add_component(TransformDynamicComponent{ glm::vec3(x, y, z), glm::vec3(1.f)});
 						//scene_object->add_component(MeshComponent{ false, meshes[mesh_idx]});
 						//scene_object->add_component(MaterialComponent{mats[mat_idx], false, false, true});
-						scene_object->add_component(RenderComponent{ meshes[mesh_idx], mats[mat_idx], false, true, true });
+						scene_object->add_component(RenderComponent{ meshes[mesh_idx], mats[mat_idx], true, true, true });
 						//scene_object->add_component(TextureComponent{ false, texes[tex_idx]});
 					}
 
-					for (size_t i = 0; i < 220; i++)
+					for (size_t i = 0; i < 300; i++)
 					{
 						float x = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));
 						float y = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));; // Or random if you want variety

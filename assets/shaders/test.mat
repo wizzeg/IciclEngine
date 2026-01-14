@@ -2,7 +2,7 @@
     "name": "test",
     "shader_path": "./assets/shaders/deffered.shdr",
     "lit": true,
-    "instanced": false,
+    "instanced": true,
     "recieves_shadows": true,
     "casts_shadows": true,
     "transparent": true,
@@ -34,9 +34,14 @@
             "value": "./assets/textures/robot/DefaultMaterial_Metallic.png"
         },
         {
+            "location": "uEmissive",
+            "type": "texture",
+            "value": "./assets/textures/robot/DefaultMaterial_Emissive.png"
+        },
+        {
             "location": "max_shininess",
             "type": "float",
-            "value": 1.0
+            "value": 0.5
         },
 	{
             "location": "has_texture",

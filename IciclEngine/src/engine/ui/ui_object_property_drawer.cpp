@@ -76,6 +76,7 @@ void UIObjectPropertyDrawer::draw_object_properties(std::shared_ptr<SceneObject>
 void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_field_info, entt::registry& a_registry)
 {
 	int i = 0;
+	uint64_t variant_type = 0;
 	for (const auto& field : a_field_info)
 	{
 		if (field.edit_mode == EEditMode::Hidden)
@@ -135,6 +136,20 @@ void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_fie
 			{
 				*value = ((uint32_t)temp);
 			}
+		}
+		else if (field.type == typeid(uint8_t))
+		{
+			uint8_t* value = static_cast<uint8_t*>(field.value_ptr);
+			std::string final_string = field.name;
+			int temp = static_cast<int>(*value);
+			ImGui::Text(field.name.c_str());
+			ImGui::SameLine();
+			std::string id = "##" + field.name + std::to_string(i++) + " " + field.name;
+			if (ImGui::InputInt(id.c_str(), &temp, 1, 100, 0))
+			{
+				*value = ((uint8_t)temp);
+			}
+			variant_type = *value;
 		}
 		else if (field.type == typeid(uint16_t))
 		{
@@ -224,6 +239,25 @@ void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_fie
 				}
 				if (!set_entity) value.entity = entt::null;
 			}
+		}
+		else if (field.type == typeid(UniformValue))
+		{
+			if (auto val = std::get_if<int>(reinterpret_cast<UniformValue*>(field.value_ptr)))
+			{
+				if (variant_type == 0)
+				{
+					ImGui::Text("this is int");
+				}
+				else
+				{
+					ImGui::Text("this is not int");
+				}
+			}
+			else
+			{
+				ImGui::Text("Not implemented yer");
+			}
+			
 		}
 		else
 		{

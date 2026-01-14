@@ -15,6 +15,7 @@ uniform sampler2D uNormalMap;
 uniform sampler2D uAO;
 uniform sampler2D uRoughness;
 uniform sampler2D uMetallic;
+uniform sampler2D uEmissive;
 
 uniform float max_shininess = 1.0;
 uniform float heightScale = 0.0001;
@@ -29,6 +30,7 @@ void main()
     vec3 normal_map = texture(uNormalMap, tex_coords).rgb;
     normal_map = normalize(normal_map * 2.0 - 1.0);
     normal_map = normalize(mix(vec3(0, 0, 1), normal_map, 1.0f));
+    vec4 emissive = texture(uEmissive, tex_coords);
 
     float metallic = texture(uMetallic, tex_coords).r;
     float AO = texture(uAO, tex_coords).r;
@@ -36,7 +38,7 @@ void main()
     gORMS = vec4(AO, roughness, metallic, max_shininess);
 
     vec3 world_normal = normalize(TBN_matrix * normal_map);
-    gNormal = vec4(world_normal, 1.0f);
+    gNormal = vec4(world_normal, clamp(dot(emissive.rgb, emissive.rgb), 0.0, 1.0));
     //gNormal = texture(uNormalMap, tex_coords);
     
     vec3 albedo;
@@ -45,6 +47,6 @@ void main()
 //    } else {
 //        albedo = vert_color.rgb;
 //    }
-    gAlbedoSpec.rgb = albedo;
-    gAlbedoSpec.a = 1.0f; // mark pixel is active
+    gAlbedoSpec.rgb = clamp(albedo.rgb + emissive.rgb, 0.0, 1.0);
+    gAlbedoSpec.a = 1.0f; 
 }
