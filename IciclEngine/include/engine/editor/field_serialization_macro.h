@@ -25,7 +25,7 @@
 #define CONCAT_IMPL(a, b) a##b
 #define CONCAT(a, b) CONCAT_IMPL(a, b)
 
-
+// here is big problem!!! need to do typeid -> enum and back (line 34)
 #define REGISTER_TYPE_SERIALIZER(field_type, serializer, deserializer) \
 namespace { \
     const bool CONCAT(_serializer_registered_, __COUNTER__) = []() { \

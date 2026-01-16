@@ -12,7 +12,7 @@ class SceneObject : public std::enable_shared_from_this<SceneObject>
 
 private:
 
-	std::string name;
+	std::string name = "";
 	std::weak_ptr<SceneObject> parent;
 	std::vector<std::weak_ptr<SceneObject>> children;
 	std::weak_ptr<Scene> scene;
@@ -21,7 +21,7 @@ private:
 	std::vector<std::type_index> component_types;
 
 	entt::handle entity_handle;
-	uint32_t scene_object_id;
+	uint32_t scene_object_id = 0;
 
 	bool runtime = false;
 	bool ui_opened = false;
@@ -30,13 +30,22 @@ public:
 	SceneObject(SceneObject&&) = default;
 	SceneObject& operator=(SceneObject&&) = default;
 	//SceneObject() { name = "none"; }
-	SceneObject(const std::string a_name, std::weak_ptr<Scene> a_scene); 
-	SceneObject(const std::string a_name, std::weak_ptr<SceneObject> a_parent, std::weak_ptr<Scene> a_scene);
+	SceneObject(const std::string a_name, std::weak_ptr<Scene> a_scene, bool a_register_id = true);
+	SceneObject(const std::string a_name, std::weak_ptr<SceneObject> a_parent, std::weak_ptr<Scene> a_scene, bool a_register_id = true);
 	~SceneObject() { PRINTLN("Scene Object Destroyed: {}", name); }// if this has parent, add all children to it, otherwise I don't know... 
 	void scene_ended();
 	entt::entity get_entity() { return entity_handle.entity(); }
 	bool has_valid_entity() { return entity_handle.valid(); }
 	std::weak_ptr<Scene> get_scene();
+	bool try_set_id(uint32_t a_id)
+	{
+		if (scene_object_id == 0)
+		{
+			scene_object_id = a_id;
+			return true;
+		}
+		return false;
+	}
 
 	json save();
 	static std::shared_ptr<SceneObject> load(const json& a_j, std::weak_ptr<Scene> a_scene);

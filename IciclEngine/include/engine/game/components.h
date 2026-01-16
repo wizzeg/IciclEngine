@@ -230,7 +230,7 @@ struct HierarchyComponent
     //entt::entity next_sibling = entt::null;
     //entt::entity previous_sibling = entt::null;
     //entt::entity child = entt::null;
-    uint8_t depth;
+    //uint8_t depth;
 };
 
 // Perhaps use depth comopnents
@@ -314,4 +314,9 @@ struct MaterialUniformComponent
     std::string location = "";
     UniformValue value = (int)0;
     bool set = false;
+};
+
+struct TestReferenceComponent
+{
+    EntityReference reference;
 };

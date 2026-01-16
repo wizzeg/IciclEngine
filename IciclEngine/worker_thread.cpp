@@ -45,7 +45,7 @@ void GameThread::execute()
 		timer.stop();
 		game_thread_time += timer.get_time_ms();
 
-		if (runs > 500)
+		if (runs > 500 && false)
 		{
 			PRINTLN("time for moving: {}", movement / (double)runs);
 			PRINTLN("time for complex worldpos: {}", complex_movement / (double)runs);

@@ -119,3 +119,7 @@ REGISTER_COMPONENT(MaterialUniformComponent, ("Rendering"),
 	FIELD_CUSTOM("float value: ", comp, value, 1.0f, false),
 	FIELD_CUSTOM("set value: ", comp, set, 1.0f, false),
 	)
+
+REGISTER_COMPONENT(TestReferenceComponent, ("Default"),
+	FIELD_CUSTOM("reference: ", comp, reference, 3.5f, false),
+)

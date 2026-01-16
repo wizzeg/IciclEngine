@@ -159,23 +159,37 @@ int main(void)
 
 					std::vector<hashed_string_64> meshes = {  "./assets/obj/robot.obj","./assets/obj/robot2.obj","./assets/obj/robot3.obj" }; //"./assets/obj/plane.obj","./assets/obj/triobjmonkey.obj" , "./assets/obj/sizanne.obj",
 					std::vector<hashed_string_64> texes = { "./assets/textures/awesomeface.png", "./assets/textures/wall.jpg", "./assets/textures/container.jpg" };
-					std::vector<hashed_string_64> mats = {"./assets/shaders/test.mat" }; // , "./assets/shaders/test2.mat"
+					std::vector<hashed_string_64> mats = {"./assets/shaders/test.mat", "./assets/shaders/testcopy.mat" }; // , "./assets/shaders/test2.mat"
 					
-					scene->load("./assets/scenes/loader.scn");
-					
-					//entt::entity ent;
-					//entt::registry& reg = scene->get_registry();
-					//for (size_t i = 0; i < 5000; i++)
-					//{
-					//	ent = reg.create();
-					//	float x = -2.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 4.0f));
-					//	float y = 0.0f; // Or random if you want variety
-					//	float z = 0.0f; // Same here
-					//	reg.emplace<NameComponent>(ent, std::to_string(i));
-					//	reg.emplace<TransformDynamicComponent>(ent, TransformDynamicComponent{glm::vec3(x, y, z)});
-					//	reg.emplace<MeshComponent>(ent, MeshComponent{false, monkey_mesh });
-					//	reg.emplace<TextureComponent>(ent, TextureComponent{ false, tex });
-					//}
+					{
+						for (auto mesh : meshes)
+						{
+							auto obj = scene->new_scene_object(std::string("mesh loader for: ") + mesh.string, true);
+							auto scene_object = obj.lock();
+							scene_object->add_component(MeshComponent{false, mesh});
+						}
+						{
+							auto obj = scene->new_scene_object(std::string("mesh loader for: ") + "./assets/obj/triobjmonkey.obj", true);
+							auto scene_object = obj.lock();
+							scene_object->add_component(MeshComponent{ false, "./assets/obj/triobjmonkey.obj" });
+						}
+						
+						for (auto mat : mats)
+						{
+							auto obj = scene->new_scene_object(std::string("mat loader for: ") + mat.string, true);
+							auto scene_object = obj.lock();
+							scene_object->add_component(MaterialComponent{ mat, true, true, true });
+						}
+
+						std::vector<hashed_string_64> bleh({ "./assets/shaders/red.mat", "./assets/shaders/green.mat", "./assets/shaders/blue.mat", "./assets/shaders/white.mat" });
+						for (auto mat : bleh)
+						{
+							auto obj = scene->new_scene_object(std::string("mat loader for: ") + mat.string, true);
+							auto scene_object = obj.lock();
+							scene_object->add_component(MaterialComponent{ mat, true, true, true });
+						}
+					}
+
 
 					for (size_t i = 0; i < 1650; i++)
 					{
@@ -234,31 +248,6 @@ int main(void)
 						scene_object->add_component(RenderComponent{ "./assets/obj/triobjmonkey.obj", name, false, true, true });
 					}
 
-					//for (size_t i = 0; i < 2500; i++)
-					//{
-					//	float x = -10.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 20.0f));
-					//	float y = -10.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 20.0f));; // Or random if you want variety
-					//	float z = -10.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 20.0f));; // Same here
-					//	auto obj = scene->new_scene_object(std::to_string(i), true);
-					//	auto lock = obj.lock();
-					//	size_t mesh_idx = std::rand() % meshes.size();
-					//	size_t tex_idx = std::rand() % texes.size();
-					//	lock->add_component(TransformDynamicComponent{ glm::vec3(x, y, z) });
-					//	lock->add_component(MeshComponent{ false, meshes[mesh_idx] });
-					//	lock->add_component(TextureComponent{ false, texes[tex_idx] });
-					//}
-
-					//for (size_t i = 0; i < 10000; i++)
-					//{
-					//	float x = -10.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 20.0f));
-					//	float y = -10.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 20.0f));; // Or random if you want variety
-					//	float z = -10.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 20.0f));; // Same here
-					//	auto obj = scene->new_scene_object(std::to_string(i), true);
-					//	auto lock = obj.lock();
-					//	lock->add_component(TransformDynamicComponent{ glm::vec3(x, y, z) });
-					//	lock->add_component(MeshComponent{ false, monkey_mesh });
-					//	lock->add_component(TextureComponent{false, tex});
-					//}
 				}
 			}
 		}
@@ -647,7 +636,7 @@ int main(void)
 			timer2.stop();
 			ui_manager_time += timer2.get_time_ms();
 		}
-		if (framies > 500)
+		if (framies > 500 && false)
 		{
 			PRINTLN("render thread timer: {}", render_thread_time / (double)framies);
 			PRINTLN("ui manager frametime: {}", ui_manager_time / (double)framies);

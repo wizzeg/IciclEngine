@@ -124,7 +124,7 @@ void AssetJobThread::process_tex_job(TextureDataJob& a_job)
 				case ELoadStatus::Loaded:
 					start_load = false;
 					fulfill_deps = true;
-					return;
+					break;
 				default:
 					start_load = false;
 					fulfill_deps = true;
@@ -654,10 +654,18 @@ void AssetJobThread::process_dependency(ValidateMatDependencies& a_job) // this 
 					//{
 						mats[shader_dep]->gl_program = shader->gl_program;
 					//}
+						if (shader->gl_program == 0)
+						{
+							PRINTLN("missing shader dependency (from shader check)");
+						}
 					remaining_deps = (int)mats[shader_dep]->gl_program == 0;
 					for (TexDependency dep : mats[shader_dep]->tex_deps)
 					{
 						remaining_deps += (uint8_t)!dep.fulfilled;
+						if (!dep.fulfilled)
+						{
+							PRINTLN("missing texture dependency (from shader check)");
+						}
 					}
 					PRINTLN("material {} has {} remaining dependencies (from shader check)", mats[shader_dep]->hashed_path.string, remaining_deps);
 					if (remaining_deps == 0)

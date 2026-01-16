@@ -196,7 +196,7 @@ struct ThreadPool
 
 struct AssetManager
 {
-	AssetManager(uint8_t a_num_threads = 1)
+	AssetManager(uint8_t a_num_threads = 2)
 	{
 		for (uint8_t i = 0; i < a_num_threads; i++)
 		{

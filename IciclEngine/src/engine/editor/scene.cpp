@@ -5,6 +5,8 @@
 #include <engine/editor/scene_object.h>
 #include <imgui-docking/imgui.h>
 #include <fstream>
+#include <engine/resources/scene_object_registry.h>
+#include <unordered_map>
 
 Scene::Scene()
 {
@@ -46,7 +48,7 @@ bool Scene::save(std::string a_path)
 		return false;
 	}
 
-	file << j.dump(4);  // Pretty-print with 4-space indent
+	file << j.dump(4);
 	return true;
 }
 
@@ -58,7 +60,7 @@ bool Scene::load(std::string a_path, bool clear_registry)
 		PRINTLN("Failed to load at: {}", a_path);
 		return false;
 	}
-
+	SceneObjectRegistry& id_registry = SceneObjectRegistry::instance();
 	if (clear_registry)
 	{
 		registry.clear();
@@ -66,11 +68,13 @@ bool Scene::load(std::string a_path, bool clear_registry)
 		{
 			PRINTLN("ENTITIES STILL HERE");
 		}
+		id_registry.clear_registry();
 	}
+	//SceneObjectRegistry::instance().clear_registry();
 
 	json j;
 	file >> j;
-	root_scene_objects.clear();
+	root_scene_objects.clear(); // order is important here I think
 	scene_objects.clear();
 	j["name"] = name;
 	j["next index"] = next_index;
@@ -84,12 +88,85 @@ bool Scene::load(std::string a_path, bool clear_registry)
 		}
 	}
 
+	// we've loaded these ... now we need to register their IDs...
+	std::unordered_map<uint32_t, uint32_t> id_remapping; // old -> new
+	for (auto& scene_object : scene_objects)
+	{
+		auto& component_datas = scene_object->get_component_datas();
+		for (const auto& component : component_datas)
+		{
+			if (component->get_type() == typeid(NameComponent))
+			{
+				//now get the ids and stuff.
+				TrueID& id = id_registry.get_new_ID();
+				const auto& fields = component->get_registered_field_info();
+				for (auto& field : fields)
+				{
+					if (field.type == typeid(EntityReference))
+					{
+						EntityReference* ent_ref = static_cast<EntityReference*>(field.value_ptr);
+						id_remapping[ent_ref->scene_object] = id.true_id;
+						ent_ref->scene_object = id.true_id;
+						if (!scene_object->try_set_id(id.true_id))
+						{
+							PRINTLN("failed setting the scene object ID");
+						}
+						break;
+					}
+				}
+				break;
+			}
+		}
+	}
 	if (runtime)
 	{
 		for (auto& scene_object : scene_objects)
 		{
 			scene_object->to_runtime(shared_from_this());
 		}
+	}
+
+	/////////////////////////////////////////
+	// Now recalculate all references.
+	std::vector<EntityReference*> entity_references;
+	entity_references.reserve(scene_objects.size() * 2);
+	for (auto& scene_object : scene_objects)
+	{
+		auto& component_datas = scene_object->get_component_datas();
+		for (const auto& component : component_datas)
+		{
+			const auto& fields = component->get_registered_field_info();
+			if (component->get_type() == typeid(NameComponent))
+			{
+				continue;
+			}
+			for (auto& field : fields)
+			{
+				if (field.type == typeid(EntityReference))
+				{
+					EntityReference* ent_ref = static_cast<EntityReference*>(field.value_ptr);
+					if (id_remapping.contains(ent_ref->scene_object))
+					{
+						TrueID* true_id = id_registry.get_registred_ID(id_remapping[ent_ref->scene_object]);
+						if (true_id->true_id == 0)
+						{
+							PRINTLN("the true id was 0 when loading!!!");
+						}
+						ent_ref->scene_object = true_id->true_id;
+						ent_ref->entity = true_id->entity;
+					}
+					else
+					{
+						PRINTLN("loaded entity reference did not reference a valid entity");
+					}
+					//entity_references.push_back(static_cast<EntityReference*>(field.value_ptr));
+				}
+			}
+		}
+	}
+	for (auto reference : entity_references)
+	{
+		PRINTLN("test print {}", reference->scene_object);
 	}
 
 	return true;

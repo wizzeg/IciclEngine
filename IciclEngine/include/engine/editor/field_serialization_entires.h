@@ -30,6 +30,9 @@
 //        value.uniform_name = j["location"].get<std::string>();
 //    })
 
+// HUGE ISSUE!!!!!!!!!!!!! I use type_index, but this is not stable...
+// I should use a lookup map, another static registry...where I map typeid to a enum, and back
+
 REGISTER_TYPE_SERIALIZER(EntityReference,
     {
         j = value.scene_object;

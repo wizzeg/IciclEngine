@@ -43,7 +43,7 @@ uniform vec3 light_attenuation = vec3(0.75, 0.1, 0.01);
 uniform vec4 material_diffuse = vec4(1, 1, 1, 1);
 uniform vec4 material_ambient = vec4(1, 1, 1, 1);
 uniform vec4 material_specular = vec4(1, 1, 1, 1);
-uniform int material_shininess = 196;
+uniform int material_shininess = 500;
 
 
 
