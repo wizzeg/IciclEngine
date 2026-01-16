@@ -77,7 +77,7 @@ entt::handle SceneObject::get_entity_handle() const
 entt::handle SceneObject::to_runtime(std::weak_ptr<Scene> a_scene)
 {
 	runtime = true;
-	PRINTLN("runtime started");
+	//PRINTLN("runtime started");
 	if (auto scene = a_scene.lock())
 	{
 		entity_handle = scene->create_entity(name);

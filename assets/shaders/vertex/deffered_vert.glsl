@@ -11,11 +11,15 @@ out vec2 tex_coords;
 out vec4 vert_color;
 out mat3 TBN_matrix;
 
+
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 proj;
 
 uniform int instance_buffer = 0;
+
+uniform mat4 light_space_matrix;
+uniform int shadow_pass = 0;
 
 struct ModelMatrix {
     mat4 model_matrix;
@@ -38,8 +42,15 @@ void main()
             instanceID += 1024;
         }
         vec4 world_pos = model_matrices[instanceID].model_matrix * vec4(aPos, 1.0);
+
+        if (shadow_pass > 0)
+        {
+            gl_Position = light_space_matrix * world_pos;
+            return;
+        }
+
         frag_pos = vec4(world_pos.xyz, 1);
-    
+        
         // vertex normal + rotation
         mat3 rotation_matrix = transpose(inverse(mat3(model_matrices[instanceID].model_matrix)));
     
@@ -57,8 +68,17 @@ void main()
         gl_Position = proj * view * world_pos;
         return;
     }
+
+
+
     // vertex world space
     vec4 world_pos = model * vec4(aPos, 1.0);
+
+    if (shadow_pass > 0)
+    {
+        gl_Position = light_space_matrix * world_pos;
+        return;
+    }
     frag_pos = vec4(world_pos.xyz, 1);
     
     // vertex normal + rotation

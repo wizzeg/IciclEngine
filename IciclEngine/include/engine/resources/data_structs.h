@@ -22,9 +22,10 @@ namespace EShadowCasterType
 
 struct ShadowLight
 {
-	alignas(16)glm::mat4 model_matrix = glm::mat4(0);
-	glm::vec3 color = glm::vec3(0);
-	float intensity = 0.0f;
+	glm::mat4 lightspace_matrix = glm::mat4(0);
+	glm::vec3 rotation = glm::vec3(1.f);
+	glm::vec4 color = glm::vec4(0);
+	glm::vec4 attenuation = glm::vec4(0);
 	EShadowCasterType::EShadowCasterType type = EShadowCasterType::PointLight;
 };
 
@@ -62,7 +63,8 @@ struct UniformData
 	std::type_index type = typeid(bool);
 	UniformValue value = (bool)false;
 	GLint texture_id = 0;
-	uint64_t modified_time;
+	bool added_reference = false;
+	uint64_t modified_time; 
 };
 
 //struct UniformDataBase

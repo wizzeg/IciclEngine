@@ -5,6 +5,18 @@ uniform sampler2D position_tex;
 uniform sampler2D normal_tex;
 uniform sampler2D albedo_spec_tex;
 uniform sampler2D orms_tex;
+uniform sampler2D emissive_tex;
+uniform sampler2D spec_tex;
+
+uniform sampler2DArray shadow_maps;
+uniform mat4 light_space_matrix[10];
+uniform vec3 light_positions[10];
+uniform vec4 light_colors[10];
+uniform vec4 light_intencities[10];
+uniform vec3 light_attenuations[10];
+uniform int light_tex_id[10];
+uniform int num_shadow_maps;
+
 
 struct PointLight {
 	vec4 color;
@@ -33,11 +45,7 @@ uniform vec4 material_ambient = vec4(1, 1, 1, 1);
 uniform vec4 material_specular = vec4(1, 1, 1, 1);
 uniform int material_shininess = 196;
 
-uniform vec3 light_positions[228];
-uniform vec3 light_colors[228];
-uniform vec3 light_attenuations[228];
-uniform float light_intensities[228];
-uniform int num_lights;
+
 
 const float PI = 3.14159265359;
 
@@ -49,6 +57,26 @@ void main()
 	vec4 frag_pos = texture(position_tex, tex_coords.xy);
 	vec4 frag_normal = texture(normal_tex, tex_coords.xy);
 	vec4 orms = texture(orms_tex, tex_coords.xy);
+	vec4 specular = texture(spec_tex, tex_coords.xy);
+	vec4 emissive = texture(emissive_tex, tex_coords.xy);
+	float shadow_value = 1.0f;
+	float shadow_found = 0.0;
+	vec3 shadowed_light = vec3(0);
+	for (int i = 0; i < num_shadow_maps; i++)
+	{
+        vec4 light_space_pos = light_space_matrix[0] * vec4(frag_pos.xyz, 1.0);
+        vec3 proj_coords = light_space_pos.xyz / light_space_pos.w;
+        proj_coords = proj_coords * 0.5 + 0.5;
+        
+        // Sample shadow map at correct coordinates
+        shadow_value = texture(shadow_maps, vec3(proj_coords.xy, 0)).r;
+		if (shadow_value < 0.5f)
+		{
+			shadow_value = 0.0f;
+		}
+		shadowed_light = light_colors[0].rgb * shadow_value;
+		//shadow_value = pow(shadow_value, 100);
+	}
 
 	float roughness = orms.y;
 	float metallic = orms.z;
@@ -57,16 +85,11 @@ void main()
 	float shininess =  metallic * shininess_multiplier * material_shininess;
 
 	float attenuation = 0;
-	vec4 frag_color = vec4(vec3(0), albedo_spec.w);
+	vec4 frag_color = vec4(vec3(0) + shadowed_light, albedo_spec.w);
 	if (frag_pos.w < 0.5f)
 	{
 		//glClearColor(0.45f, 0.55f, 0.75f, 0.0f);
 		FragColor = vec4(0.45f, 0.55f, 0.75f, 1.0f);
-		return;
-	}
-	else if (frag_normal.w > 0.1f)
-	{
-		FragColor = clamp(albedo_spec, 0 ,1);
 		return;
 	}
 	float last_intensity = 0;
@@ -102,15 +125,17 @@ void main()
 			float area_normalization = (mat_shininess + 3)*(mat_shininess + 6 ) / ((16 * PI )*(2-(mat_shininess/2) + mat_shininess));
 			float light_absorption = metallic * clamp(mat_shininess / 32.0, 0.0, 1.0);
 			total_brightness *= light_absorption * area_normalization * roughness;
-			frag_color += vec4(total_brightness * attenuation * diffuse_intensity * point_lights[i].color.xyz * albedo_spec.xyz, 0.0) * frag_pos.w;
+			frag_color += vec4(total_brightness * attenuation * diffuse_intensity * point_lights[i].color.xyz * specular.rgb * metallic, 0.0) * frag_pos.w;
 			last_intensity = point_lights[i].color.w;
 			last_color = point_lights[i].color.xyz;
 		}
 		
 	}
 	frag_color *= vec4(albedo_spec.rgb, 1);
+	frag_color.rgb += emissive.rgb * emissive.w;
 	//frag_color -= vec4(vec3(0.25f) * (metallic * metallic), 0);
-	FragColor = clamp(frag_color, 0.0, 1.0);
+	FragColor = clamp(frag_color * shadow_value, 0.0, 1.0);
+	//FragColor = specular;
 	//FragColor = vec4(last_color, 1);
 	//FragColor = vec4(point_lights[0].color.xyz, 1);
 	//FragColor = vec4(attenuation.xxx, 1.0);

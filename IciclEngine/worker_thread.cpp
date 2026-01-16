@@ -419,15 +419,15 @@ void GameThread::execute()
 
 			ind_timer.start();
 
-			for (auto [entity, directional_light] : registry.view<DirectionalLightComponent>().each())
+			for (auto [entity, directional_light, transform] : registry.view<DirectionalLightComponent, TransformDynamicComponent>().each())
 			{
 				if (directional_light.shadow_map)
 				{
 					ShadowLight light;
-					light.color = directional_light.color;
-					light.intensity = directional_light.intensity;
-					light.model_matrix = glm::mat4(0);
-					light.model_matrix *= glm::mat4_cast(directional_light.rotation_quat);
+					light.color = glm::vec4(directional_light.color, directional_light.intensity);
+					light.lightspace_matrix = glm::mat4(1);
+					light.rotation = -transform.rotation_euler_do_not_use;
+					light.lightspace_matrix *= -glm::mat4_cast(transform.rotation_quat);
 					render_context.shadow_lights.push_back(light);
 				}
 			}

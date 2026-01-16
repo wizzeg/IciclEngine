@@ -292,6 +292,7 @@ struct TextureData // needs to store time aswell, to avoid race conditions
 	ELoadStatus texture_gen_status = ELoadStatus::NotLoaded;
 	std::shared_ptr<TextureDataContents> contents;
 	uint64_t modified_time = 0;
+	uint32_t num_references = 0;
 };
 
 struct TextureMiniData
@@ -322,6 +323,7 @@ struct ShaderData
 	ELoadStatus loading_status = ELoadStatus::NotLoaded;
 	uint64_t modified_time = 0;
 	std::string name;
+	uint32_t num_references = 0;
 };
 
 struct ProgramLoadRequest
@@ -399,7 +401,6 @@ struct MaterialData // this is fine to keep large...
 	std::vector<UniformData> uniforms;
 	std::vector<TexDependency> tex_deps;
 	uint64_t modified_time = 0;
-	ELoadStatus load_status = ELoadStatus::NotLoaded;
 	GLuint gl_program = 0; // get from shader
 	uint64_t program_modified_time = 0;
 	bool is_lit = false;
@@ -408,6 +409,8 @@ struct MaterialData // this is fine to keep large...
 	bool instanced = false;
 	bool transparent = false;
 	bool is_deffered = false;
+	bool added_shader_reference = false;
+	ELoadStatus load_status = ELoadStatus::NotLoaded;
 	std::string name = "";
 };
 //This is the path that's entered... this must then load the shader

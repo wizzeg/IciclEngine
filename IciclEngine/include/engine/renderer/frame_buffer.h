@@ -6,11 +6,13 @@
 #include <string>
 #include <engine/utilities/hashed_string_64.h>
 #include <vector>
+#include <algorithm>
 
 enum EFramebufferType : uint8_t
 {
 	GBuffer,
 	ShadowMap,
+	ShadowMapArray,
 	RenderTexture,
 	Output
 };
@@ -42,6 +44,9 @@ struct FrameBuffer
 		case ShadowMap:
 			create_shadow_buffer();
 			break;
+		case ShadowMapArray:
+			create_shadowmap_buffer_array();
+			break;
 		case RenderTexture:
 			create_render_texture();
 			break;
@@ -58,25 +63,26 @@ struct FrameBuffer
 		}
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		//glDrawBuffer(GL_COLOR_ATTACHMENT0);
 		PRINTLN("Created framebuffer '{}' with FBO: {}", hashed_name.string, framebuffer_object);
 	}
 
-	void bind()
+
+	void bind() const
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_object);
 		glViewport(0, 0, width, height);
 	}
+
 	void unbind()
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
-	void clear()
+	void clear() const
 	{
 		//glClearColor(0.45f, 0.55f, 0.75f, 0.0f);
 		glClearColor(0.45f, 0.55f, 0.75f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
-		
 	}
 
 	void resize(int a_width, int a_height)
@@ -162,8 +168,38 @@ struct FrameBuffer
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadow_depth_buffer, 0);
 		glDrawBuffer(GL_NONE);
 		glReadBuffer(GL_NONE);
+	}
 
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	void create_shadowmap_buffer_array()
+	{
+		// Generate the TEXTURE (not framebuffer - that's already created)
+		glGenTextures(1, &shadow_map_buffer_array);  // Note: glGenTextures, not glGenFramebuffers
+		glBindTexture(GL_TEXTURE_2D_ARRAY, shadow_map_buffer_array);
+
+		int max_shadow_lights = 10;
+
+		glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT24,
+			width, height, max_shadow_lights,
+			0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+
+		float border[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+		glTexParameterfv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BORDER_COLOR, border);
+
+		// ATTACH the texture to the framebuffer as depth attachment
+		// Note: We attach layer 0 initially, but will change layers when rendering
+		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+			shadow_map_buffer_array, 0, 0);
+
+		// Tell OpenGL we're not using any color attachments
+		glDrawBuffer(GL_NONE);
+		glReadBuffer(GL_NONE);
 	}
 
 	void create_g_buffer()
@@ -197,13 +233,28 @@ struct FrameBuffer
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, orms_buffer, 0);
 
+		glGenTextures(1, &spec_buffer);
+		glBindTexture(GL_TEXTURE_2D, spec_buffer);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, GL_TEXTURE_2D, spec_buffer, 0);
+
+		glGenTextures(1, &emissive_buffer);
+		glBindTexture(GL_TEXTURE_2D, emissive_buffer);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT5, GL_TEXTURE_2D, emissive_buffer, 0);
+
 		glGenRenderbuffers(1, &depth_rb);
 		glBindRenderbuffer(GL_RENDERBUFFER, depth_rb);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth_rb);
 
-		GLuint attachments[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
-		glDrawBuffers(4, attachments);
+		GLuint attachments[6] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1,
+			GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5};
+		glDrawBuffers(6, attachments);
 	}
 
 	void delete_buffers()
@@ -215,6 +266,9 @@ struct FrameBuffer
 		if (shadow_depth_buffer) { glDeleteTextures(1, &shadow_depth_buffer); shadow_depth_buffer = 0; }
 		if (orms_buffer) { glDeleteTextures(1, &orms_buffer); orms_buffer = 0; }
 		if (depth_rb) { glDeleteRenderbuffers(1, &depth_rb); depth_rb = 0; }
+		if (spec_buffer) { glDeleteTextures(1, &spec_buffer); spec_buffer = 0; }
+		if (emissive_buffer) { glDeleteTextures(1, &emissive_buffer); emissive_buffer = 0; }
+		if (shadow_map_buffer_array) { glDeleteTextures(1, &shadow_map_buffer_array); shadow_map_buffer_array = 0; }
 	}
 
 
@@ -230,6 +284,9 @@ struct FrameBuffer
 	GLuint get_orms_texture() const { return orms_buffer; }
 	GLuint get_shadow_depth_texture() const { return shadow_depth_buffer; }
 	GLuint get_color_texture() const { return color_buffer; }
+	GLuint get_spec_texture() const { return spec_buffer; }
+	GLuint get_emissive_texture() const { return emissive_buffer; }
+	GLuint get_shadow_maps_texture_array() const { return shadow_map_buffer_array; }
 	std::vector<GLuint> get_textures() { return { position_buffer, normal_buffer, albedo_specular_buffer, shadow_depth_buffer, color_buffer }; }
 private:
 	hashed_string_64 hashed_name;
@@ -247,6 +304,9 @@ private:
 	GLuint normal_buffer = 0;
 	GLuint albedo_specular_buffer = 0;
 	GLuint orms_buffer = 0;
+	GLuint spec_buffer = 0;
+	GLuint emissive_buffer = 0;
+	
 
 	// for deffered renderer, renderbuffer, just works for the depth test
 	GLuint depth_rb = 0;
@@ -254,6 +314,7 @@ private:
 
 	// shadow depth buffer, for the shadow mapping
 	GLuint shadow_depth_buffer = 0;
+	GLuint shadow_map_buffer_array = 0;
 
 	int width = 1;
 	int height = 1;

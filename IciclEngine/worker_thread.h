@@ -29,7 +29,7 @@ struct EngineContext
 {
 	EngineContext(/*std::shared_ptr<MeshDataGenStorage> a_storage*/) 
 		: /*storage(a_storage), */ /* /*model_storage(std::make_shared<ModelGenStorage>()),*/ editor_camera("editor camera", 1280, 960),
-		input_manager(InputManager::get()), asset_manager(std::make_shared<AssetManager>())
+		input_manager(InputManager::get()), asset_manager(std::make_shared<AssetManager>(3))
 	{
 	};
 	void set_render_request(std::vector<RenderRequest>& a_render_requests)

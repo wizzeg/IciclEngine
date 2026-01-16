@@ -4,7 +4,7 @@
     "lit": true,
     "instanced": false,
     "recieves_shadows": true,
-    "casts_shadows": true,
+    "casts_shadows": false,
     "transparent": true,
     "deffered": true,
     "uniforms": [

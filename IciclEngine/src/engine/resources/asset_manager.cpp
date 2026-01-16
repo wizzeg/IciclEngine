@@ -142,14 +142,17 @@ void AssetJobThread::process_tex_job(TextureDataJob& a_job)
 				new_tex->hash = job_hash;
 				new_tex->contents->hashed_path = a_job.path_hashed;
 				new_tex->modified_time = a_job.job_time;
+				
 				texs[job_hash] = new_tex;
 				tex_lock.unlock();
 				auto temp_tex = ModelLoader::load_texture_from_file(a_job.path_hashed.string);
-				new_tex = std::make_shared<TextureData>(temp_tex);
 
+				tex_lock.lock();
+				temp_tex.num_references += texs[job_hash]->num_references; // still need to check about deletes
+				new_tex = std::make_shared<TextureData>(temp_tex);
+				texs[job_hash] = new_tex;
 				TexGenRequest gen_req(temp_tex);
 				asset_messages.texgen_queue.add_message(gen_req);
-				tex_lock.lock();
 				fulfill_deps = true;
 			}
 		}
@@ -213,6 +216,7 @@ void AssetJobThread::process_shader_job(ShaderDataJob& a_job)
 			shader_lock.lock();
 			if (shaders[job_hash]->modified_time <= a_job.job_time)
 			{
+				new_shader->num_references += shaders[job_hash]->num_references;
 				shaders[job_hash] = new_shader;
 			}
 			//else return;
@@ -228,7 +232,7 @@ void AssetJobThread::process_shader_job(ShaderDataJob& a_job)
 	}
 }
 
-void AssetJobThread::process_mat_job(MaterialDataJob& a_job)
+void AssetJobThread::process_mat_job(MaterialDataJob& a_job) // remember to add references to textures and shader!!
 {
 	//TODO: check with the modified_time and job_time so that work isn't perforemd out of order.
 	//TODO: handle cases for different load statuses
@@ -295,9 +299,15 @@ void AssetJobThread::process_mat_job(MaterialDataJob& a_job)
 			auto& shader_dep = asset_storage.mat_shader_dependencies;
 			shader_path = new_mat->shader_path;
 			mat_lock.lock();
+			new_mat->added_shader_reference = materials[mat_hash]->added_shader_reference;
+			auto& old_uniforms = materials[mat_hash]->uniforms;
+			for (size_t i = 0; i < new_mat->uniforms.size() && i < old_uniforms.size(); i++)
+			{
+				auto& uniform = new_mat->uniforms[i];
+				uniform.added_reference = old_uniforms[i].added_reference;
+			}
 			materials[mat_hash] = new_mat;
 			std::unique_lock<std::mutex> dep_shader_lock(asset_storage.dep_shader_mutex);
-
 			// so if we have the shader, then it SHOULD have added itself
 
 			// this is all we need to do for this... then we just push an assetjob for the shader path.
@@ -329,127 +339,7 @@ void AssetJobThread::process_mat_job(MaterialDataJob& a_job)
 			}
 			ShaderDataJob shader_job(shader_path, ERequestType::LoadFromFile, a_job.job_time);
 			asset_messages.job_queue.add_message(shader_job);
-
 			dep_shader_lock.unlock();
-
-			//if (shaders.contains(new_mat->shader_path.hash))
-			//{
-			//	auto& shader = shaders[new_mat->shader_path.hash];
-			//	
-			//	// TODO: check if it's loaded, since in that case we'd have to add all the dependency stuff
-			//	// TODO: handle timing stuff with modified time and job time
-			//	// 
-			//	switch (shader->loading_status) // I think something like this
-			//	{
-			//	case ELoadStatus::NotLoaded:
-			//		load_shader = true;
-			//		break;
-			//	case ELoadStatus::Loaded:
-			//		new_mat->gl_program = shader->gl_program;
-			//		load_shader = false;
-			//		break;
-			//	default:
-			//		load_shader = false;
-			//		break;
-			//	}
-			//	// we've already started loading the shader
-			//	if (shader_dep.contains(new_mat->shader_path.hash)) // check so it has added it's dependencies
-			//	{
-			//		// the dependency is already added
-			//		std::vector<uint64_t>& deps = shader_dep[new_mat->shader_path.hash];
-			//		bool registered = false;
-			//		for (auto& dep : deps)
-			//		{
-			//			if (new_mat->hashed_path.hash == dep)
-			//			{
-			//				PRINTLN("unexpectedly the material was already added to shader dependencies!");
-			//				registered = true;
-			//				break;
-			//			}
-			//		}
-			//		if (!registered)
-			//		{
-			//			// this should generally happen
-			//			deps.push_back(new_mat->hashed_path.hash);
-			//		}
-			//			
-			//	}
-			//	else
-			//	{
-			//		PRINTLN("Shader added but not dependency!!!");
-			//		// handle this logic issue
-			//	}
-			//	dep_shader_lock.unlock();
-			//	shader_lock.unlock();
-			//}
-			//if (load_shader)
-			//{
-			//	// create temporary shader to mark existance and that we've started working on it
-			//	std::shared_ptr<ShaderData> temp_shader = std::make_shared<ShaderData>();
-			//	temp_shader->hashed_path = new_mat->shader_path;
-			//	temp_shader->loading_status = ELoadStatus::StartedLoad;
-			//	shaders[new_mat->shader_path.hash] = temp_shader;
-
-			//	if (shader_dep.contains(new_mat->shader_path.hash)) // check so it has added it's dependencies
-			//	{
-			//		PRINTLN("Dependency for the shader should not yet exist! (unless it's been deleted before)");
-			//		// the dependency is already added, should not be... handle this situation
-			//		// or it could be if it's been deleted before!
-			//		std::vector<uint64_t>& deps = shader_dep[new_mat->shader_path.hash];
-			//		bool registered = false;
-			//		for (auto& dep : deps)
-			//		{
-			//			if (new_mat->hashed_path.hash == dep)
-			//			{
-			//				PRINTLN("unexpectedly the material was already added to shader dependencies!");
-			//				registered = true;
-			//				break;
-			//			}
-			//		}
-			//		if (!registered)
-			//		{
-			//			// this should generally happen
-			//			deps.push_back(new_mat->hashed_path.hash);
-			//		}
-			//	}
-			//	else
-			//	{
-			//		std::vector<uint64_t>& deps = shader_dep[new_mat->shader_path.hash];
-			//		bool registered = false;
-			//		for (auto& dep : deps)
-			//		{
-			//			if (new_mat->hashed_path.hash == dep)
-			//			{
-			//				PRINTLN("unexpectedly the material was already added to shader dependencies!");
-			//				registered = true; 
-			//				break;
-			//			}
-			//		}
-			//		if (!registered)
-			//		{
-			//			// this should generally happen
-			//			deps.push_back(new_mat->hashed_path.hash);
-			//		}
-			//		// handle this logic issue
-			//	}
-			//	dep_shader_lock.unlock();
-			//	shader_lock.unlock();
-			//	// we'll now load the shader, then later deal with the textures.
-
-			//	ShaderData new_shader = ShaderLoader::load_shader_from_path(shader_path.string);
-			//	new_shader.modified_time = a_job.job_time;
-			//	shader_lock.lock();
-			//	// replace the loaded shader... then we have to send it to gpu upload
-			//	shaders[shader_path.hash] = std::make_shared<ShaderData>(new_shader);
-			//	asset_messages.program_queue.add_message(ProgramLoadRequest{new_shader});
-			//	shader_lock.unlock();
-			//}
-
-			// done with the shader dependency
-			// now to do texture loading jobs etc.
-
-			// for each texture, check if it's loaded and or GPU loaded...
-
 		}
 
 		//now we must register all dependencies, and start jobs.
@@ -572,6 +462,7 @@ void AssetJobThread::process_tex_update(TextureGenInfo& a_job)
 			tex->texture_gen_status = ELoadStatus::Loaded;
 			tex->modified_time = a_job.modified_time;
 			tex->texture_id = a_job.texture_id;
+			//tex->num_references += texs[job_hash]->num_references;
 		}
 		else
 		{
@@ -632,6 +523,11 @@ void AssetJobThread::process_dependency(ValidateMatDependencies& a_job) // this 
 
 				for (uint64_t tex_dep : tex_deps)
 				{
+					if (!mats[tex_dep]->added_shader_reference) 
+					{
+						tex->num_references++; // this is too loose, make the references store vector of hashes to match
+						mats[tex_dep]->added_shader_reference = true;
+					}
 					if (mats[tex_dep]->load_status == ELoadStatus::Loaded)
 						continue;
 
@@ -745,6 +641,11 @@ void AssetJobThread::process_dependency(ValidateMatDependencies& a_job) // this 
 
 				for (uint64_t shader_dep : shader_deps)
 				{
+					if (!mats[shader_dep]->added_shader_reference)
+					{
+						shader->num_references++;
+						mats[shader_dep]->added_shader_reference = true;
+					}
 					if (mats[shader_dep]->load_status == ELoadStatus::Loaded)
 						continue;
 

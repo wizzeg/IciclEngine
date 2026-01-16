@@ -75,6 +75,9 @@ int main(void)
 	glfw_context->create_framebuffer("editor_camera_gbuffer", 1920, 1080, GBuffer);
 	glfw_context->bind_framebuffer("editor_frame_buffer");
 
+	glfw_context->create_framebuffer("shadow_map_array", 2048, 2048, EFramebufferType::ShadowMapArray);
+	FrameBuffer* shadow_maps = glfw_context->get_framebuffer("shadow_map_array");
+
 	//imgui_manager->setup_default_docking_layout();
 
 	//InputManager input_manager(glfw_context->get_window());
@@ -89,9 +92,10 @@ int main(void)
 	//ObjParser obj_parser;
 	VAOLoader vao_loader;
 	std::shared_ptr<ShaderProgram> shader_program = std::make_shared<ShaderProgram>("./assets/shaders/vertex/vert.glsl", "./assets/shaders/fragment/frag.glsl");
-	Renderer renderer;
+	Renderer renderer(glfw_context);
 	renderer.initialize();
 	renderer.temp_set_shader(shader_program);
+	renderer.set_shadow_maps(shadow_maps);
 	shader_program->save("./assets/shaders/test_shader.shdr");
 
 	ShaderProgram shader_load;
@@ -133,10 +137,6 @@ int main(void)
 	//MeshDataJob job("./assets/obj/triobjmonkey.obj", ERequestType::LoadFromFile);
 	////AssetJob asset_job = std::move(job);
 	//asset_manager.add_asset_job(std::move(job));
-
-	DefferedBuffer deffered_buffer;
-	deffered_buffer.gbuffer = glfw_context->get_framebuffer("editor_camera_gbuffer");
-	deffered_buffer.output = glfw_context->get_framebuffer("editor_frame_buffer");
 
 	uint64_t wait_time = 0;
 	while (engine_context->run())
@@ -190,7 +190,7 @@ int main(void)
 						scene_object->add_component(TransformDynamicComponent{ glm::vec3(x, y, z), glm::vec3(1.f)});
 						//scene_object->add_component(MeshComponent{ false, meshes[mesh_idx]});
 						//scene_object->add_component(MaterialComponent{mats[mat_idx], false, false, true});
-						scene_object->add_component(RenderComponent{ meshes[mesh_idx], mats[mat_idx], true, true, true });
+						scene_object->add_component(RenderComponent{ meshes[mesh_idx], mats[mat_idx], false, true, true });
 						//scene_object->add_component(TextureComponent{ false, texes[tex_idx]});
 					}
 
@@ -304,6 +304,11 @@ int main(void)
 		//	}
 		//}
 		//renderer.temp_render(render_context);
+
+		DefferedBuffer deffered_buffer;
+		deffered_buffer.gbuffer = glfw_context->get_framebuffer("editor_camera_gbuffer");
+		deffered_buffer.output = glfw_context->get_framebuffer("editor_frame_buffer");
+		deffered_buffer.shadow_maps = glfw_context->get_framebuffer("shadow_map_array");
 		renderer.deffered_render(render_context, deffered_buffer);
 
 		glfw_context->bind_framebuffer("main_camera_buffer");

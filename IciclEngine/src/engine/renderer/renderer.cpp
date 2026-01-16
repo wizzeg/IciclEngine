@@ -1,4 +1,4 @@
-#include <engine/renderer/renderer.h>
+﻿#include <engine/renderer/renderer.h>
 #include <engine/utilities/macros.h>
 //#include <glm/ext/matrix_transform.hpp>
 //#include <glm/gtc/type_ptr.hpp>
@@ -46,7 +46,7 @@ void Renderer::temp_render(RenderRequest& a_render_request, glm::vec3 a_camera_p
 				shader->bind();
 				not_bound = false;
 			}
-			
+
 			rotation += glm::radians(0.07f);
 			//glm::mat4 temp = glm::rotate(a_render_request.model_matrix, rotation, glm::vec3(0, 1, 0));
 			bool has_texture = (a_render_request.material_id != 0);
@@ -128,8 +128,8 @@ void Renderer::temp_render(RenderContext& a_render_context)
 						// bind program
 						current_gl_program = mat.gl_program;
 						glUseProgram(mat.gl_program);
-						set_mat4fv(proj, "proj");
-						set_mat4fv(view, "view");
+						set_mat4fv(proj, 1, "proj");
+						set_mat4fv(view, 1, "view");
 					}
 					// bind mat
 					bound_mat = mat.hash;
@@ -155,7 +155,7 @@ void Renderer::temp_render(RenderContext& a_render_context)
 					glBindVertexArray(req.vao);
 				}
 				//draw
-				set_mat4fv(req.model_matrix, "model");
+				set_mat4fv(req.model_matrix, 1, "model");
 				glDrawElements(GL_TRIANGLES, req.indices_size, GL_UNSIGNED_INT, 0);
 
 			}
@@ -183,215 +183,57 @@ void Renderer::temp_set_shader(std::weak_ptr<ShaderProgram> a_shader)
 	shader_program.lock()->bind();
 }
 
-void Renderer::deffered_render(RenderContext& a_render_context, const DefferedBuffer& a_deffered_buffers)
+void Renderer::deffered_render(const RenderContext& a_render_context, const DefferedBuffer& a_deffered_buffers)
 {
-	auto& mats = a_render_context.materials;
-	auto& reqs = a_render_context.render_requests;
-
-	a_deffered_buffers.gbuffer->bind();
-	a_deffered_buffers.gbuffer->clear();
-
-	uint64_t bound_mat = 0;
-	GLuint bound_vao = 0;
-
-	size_t req_index = 0;
-	size_t req_start_index = 0;
-	GLuint tex_num = 0;
-
-	// perhaps bind the first mat and mesh
-	bool mipmaps_set = false;
-	bool mipmap = true;
-	bool set_mipmaps = false;
-	bool mat_instance = false;
-
-	std::vector<glm::mat4> instanced_models;
-	instanced_models.reserve(HALF_MODEL_INSTANCES);
-	bool started_instance_batch = false;
-	bool issued_instance_batch = false;
-	GLsizei batch_indices_count = 0;
-	bool set_instance_buffer_part = false;
-
-	int draw_calls = 0;
-
-	for (auto& mat : mats)
+	std::vector<glm::mat4> light_matrices;
+	std::vector<glm::vec4> light_colors2;
+	light_matrices.reserve(10);
+	if (const FrameBuffer* shadow_maps = a_deffered_buffers.shadow_maps)
 	{
-		mipmaps_set = false;
-		mat_instance = mat.instantiable;
-
-		req_index = req_start_index;
-		if (!mat.is_deffered)
+		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+		shadow_maps->bind();
+		shadow_maps->clear();
+		GLuint shadow_map_array = shadow_maps->get_shadow_maps_texture_array();
+		// we have to do this for each light that casts a shadow...
+		const std::vector<ShadowLight>& shadowed_lights = a_render_context.shadow_lights;
+		for (size_t i = 0; i < shadowed_lights.size() && i < 10; i++)
 		{
-			continue;
+			glm::vec3 light_direction = glm::normalize(
+				glm::mat3(a_render_context.shadow_lights[i].lightspace_matrix)
+				* glm::vec3(0.0f, 0.0f, -1.0f));
+			glm::mat4 light_space_matrix =
+				calculate_directional_light_matrix_fitted(glm::radians(a_render_context.shadow_lights[i].rotation), view, proj);
+			//light_space_matrix = proj * view;
+			light_matrices.push_back(light_space_matrix);
+			light_colors2.push_back(a_render_context.shadow_lights[i].color);
+
+			glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+				shadow_map_array, 0, (GLint)i);
+			glClear(GL_DEPTH_BUFFER_BIT);
+			deffered_shadowmap_pass(a_render_context, shadow_maps, i);
 		}
-		for (; req_index < reqs.size(); req_index++)
-		{
-			RenderReq& req = reqs[req_index];
-			if (req.mat_hash == mat.hash)
-			{
 
+	}
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+	// do shadow passes here for each light that needs shadowing
+	if (const FrameBuffer* gbuffer = a_deffered_buffers.gbuffer)
+	{
 
-				if (started_instance_batch && (!req.instanced || instanced_models.size() >= HALF_MODEL_INSTANCES)) //draw the instanced before drawing non instanced
-				{
-					// draw it before starting on new
-					update_insance_SSBO(instanced_models);
-					glDrawElementsInstanced(GL_TRIANGLES, batch_indices_count, GL_UNSIGNED_INT, 0, (GLsizei)instanced_models.size());
-					started_instance_batch = false;
-					issued_instance_batch = true;
-					set_instance_buffer_part = false;
-					instanced_models.clear();
-					set_vec1i(0, "instance_buffer");
-					draw_calls++;
-				}
-				else if (started_instance_batch && (bound_vao != req.vao || instanced_models.size() >= HALF_MODEL_INSTANCES)) //draw all of the instanced because new vao
-				{
-					update_insance_SSBO(instanced_models);
-					glDrawElementsInstanced(GL_TRIANGLES, batch_indices_count, GL_UNSIGNED_INT, 0, (GLsizei)instanced_models.size());
-					started_instance_batch = false;
-					issued_instance_batch = true;
-					set_instance_buffer_part = false;
-					instanced_models.clear();
-					set_vec1i(0, "instance_buffer");
-					draw_calls++;
-				}
-
-				if (req.instanced && mat_instance)
-				{
-					if (!set_instance_buffer_part)
-					{
-						//int start = (int)(!instance_half) + 1;
-						//set_vec1i(start, "instance_buffer");
-						set_instance_buffer_part = true;
-					}
-					instanced_models.push_back(req.model_matrix);
-					started_instance_batch = true;
-					issued_instance_batch = false;
-					batch_indices_count = req.indices_size;
-				}
-
-				if (!mipmaps_set)
-				{
-					set_mipmaps = true;
-					mipmap = req.mipmap;
-					mipmaps_set = true;
-				}
-				else if (req.mipmap != mipmap)
-				{
-					set_mipmaps = true;
-					mipmap = req.mipmap;
-				}
-				if (bound_mat != mat.hash || set_mipmaps)
-				{
-					if (current_gl_program != mat.gl_program)
-					{
-						// bind program
-						current_gl_program = mat.gl_program;
-						glUseProgram(mat.gl_program);
-						set_mat4fv(proj, "proj");
-						set_mat4fv(view, "view");
-						//set_vec3f(reinterpret_cast<const float*>(&camera_position), "camera_world_pos");
-					}
-					// bind mat
-					bound_mat = mat.hash;
-					GLint tex_index = 0;
-					for (RuntimeUniform& uniform : mat.uniforms)
-					{
-						if (uniform.type == typeid(std::string)) // this means it's texture
-						{
-							GLint combined = (GL_TEXTURE0 + tex_index);
-							glActiveTexture(combined);
-							glBindTexture(GL_TEXTURE_2D, uniform.texture_id);
-							if (set_mipmaps)
-							{
-								if (mipmap)
-								{
-									glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-								}
-								else
-								{
-									glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-								}
-							}
-							set_vec1i(tex_index, uniform.location.c_str());
-							tex_index++;
-						}
-						else
-						{
-							bind_uniform(uniform.type, uniform.location, uniform.value);
-						}
-					}
-					set_mipmaps = false;
-				}
-				if (bound_vao != req.vao)
-				{
-					// bind vao
-					bound_vao = req.vao;
-					glBindVertexArray(req.vao);
-				}
-				//draw
-				if (!req.instanced || !mat.instantiable)
-				{
-					set_mat4fv(req.model_matrix, "model");
-					glDrawElements(GL_TRIANGLES, req.indices_size, GL_UNSIGNED_INT, 0);
-					draw_calls++;
-				}
-
-
-			}
-			else if (req.mat_hash > mat.hash)
-			{
-				if (started_instance_batch && !issued_instance_batch)
-				{
-					update_insance_SSBO(instanced_models);
-					glDrawElementsInstanced(GL_TRIANGLES, batch_indices_count, GL_UNSIGNED_INT, 0, (GLsizei)instanced_models.size());
-					started_instance_batch = false;
-					issued_instance_batch = true;
-					set_instance_buffer_part = false;
-					instanced_models.clear();
-					set_vec1i(0, "instance_buffer");
-					draw_calls++;
-				}
-				req_start_index = req_index;
-				break;
-			}
-			else
-			{
-				if (started_instance_batch && !issued_instance_batch)
-				{
-					update_insance_SSBO(instanced_models);
-					glDrawElementsInstanced(GL_TRIANGLES, batch_indices_count, GL_UNSIGNED_INT, 0, (GLsizei)instanced_models.size());
-					started_instance_batch = false;
-					issued_instance_batch = true;
-					set_instance_buffer_part = false;
-					instanced_models.clear();
-					set_vec1i(0, "instance_buffer");
-					draw_calls++;
-				}
-				//PRINTLN("material for the render request doesn't exist, or missorted");
-				req_start_index = req_index;
-				break;
-			}
-		}
+		deffered_geometry_pass(a_render_context, gbuffer);
 	}
 
-	/// check so that there's no lingering batch
-	if (started_instance_batch && !issued_instance_batch)
-	{
-		update_insance_SSBO(instanced_models);
-		glDrawElementsInstanced(GL_TRIANGLES, batch_indices_count, GL_UNSIGNED_INT, 0, (GLsizei)instanced_models.size());
-		draw_calls++;
-		instanced_models.clear();
-	}
-	//PRINTLN("number of draw calls: {}", draw_calls);
-	if (lighting_program  == 0 || lighting_quad_vao == 0)
+	if (lighting_program == 0 || lighting_quad_vao == 0)
 	{
 		PRINTLN("lighting has not been initialized");
 	}
 	else
 	{
 
-		// if I want post procesing effects, like bloom or something for emissive, I'd do it here
+		// if I want post procesing effects, like bloom or something for emissive, I'd do it here or after
 		////////////////////////////////////////////////////////////////////////////////
 		// lighting pass
+
+
 
 		current_gl_program = lighting_program;
 		glUseProgram(current_gl_program);
@@ -412,7 +254,24 @@ void Renderer::deffered_render(RenderContext& a_render_context, const DefferedBu
 		glActiveTexture(GL_TEXTURE3);
 		glBindTexture(GL_TEXTURE_2D, a_deffered_buffers.gbuffer->get_orms_texture());
 		set_vec1i(3, "orms_tex");
-		
+
+		glActiveTexture(GL_TEXTURE4);
+		glBindTexture(GL_TEXTURE_2D, a_deffered_buffers.gbuffer->get_spec_texture());
+		set_vec1i(4, "spec_tex");
+
+		glActiveTexture(GL_TEXTURE5);
+		glBindTexture(GL_TEXTURE_2D, a_deffered_buffers.gbuffer->get_emissive_texture());
+		set_vec1i(5, "emissive_tex");
+
+		if (auto* shadow_maps = a_deffered_buffers.shadow_maps)
+		{
+			GLuint shadow_map_array = shadow_maps->get_shadow_maps_texture_array();
+			glActiveTexture(GL_TEXTURE6);
+			glBindTexture(GL_TEXTURE_2D_ARRAY, shadow_map_array);  // ← This is reading, not writing
+			set_vec1i(6, "shadow_maps");
+		}
+
+
 		update_pointlight_SSBO(a_render_context.lights);
 
 		GLsizei num_lights = (GLsizei)a_render_context.lights.size();
@@ -424,7 +283,7 @@ void Renderer::deffered_render(RenderContext& a_render_context, const DefferedBu
 		light_intensicies.reserve(num_lights);//{glm::vec1(1), glm::vec1(1), glm::vec1(1)};
 		std::vector<glm::vec3> light_attenuations;
 		light_attenuations.reserve(num_lights);//{glm::vec1(1), glm::vec1(1), glm::vec1(1)};
-		 // 3;
+		// 3;
 
 		for (size_t i = 0; i < std::min((size_t)a_render_context.lights.size(), (size_t)228); i++)
 		{
@@ -440,6 +299,13 @@ void Renderer::deffered_render(RenderContext& a_render_context, const DefferedBu
 			set_vec3fv(light_attenuations, num_lights, "light_attenuations");
 			set_vec1fv(light_intensicies, num_lights, "light_intensities");
 		}
+		if (light_matrices.size() > 0)
+		{
+			set_mat4fv(*light_matrices.data(), (GLsizei)light_matrices.size(), "light_space_matrix");
+			set_vec4fv(light_colors2, (GLsizei)light_colors2.size(), "light_colors");
+		}
+
+		set_vec1i((int)light_matrices.size(), "num_shadow_maps");
 		set_vec1i(num_lights, "num_lights");
 
 		set_vec3f(static_cast<const float*>(&camera_position.x), "camera_position");
@@ -449,7 +315,7 @@ void Renderer::deffered_render(RenderContext& a_render_context, const DefferedBu
 		/// lighting pass end
 		//////////////////////////////////////////////////////////////////////////////////////////////////
 	}
-	
+
 	current_gl_program = 0;
 	glUseProgram(current_gl_program);
 }
@@ -498,7 +364,7 @@ void Renderer::bind_uniform(std::type_index a_type, const std::string& a_locatio
 	}
 	else if (a_type == typeid(glm::mat4))
 	{
-		set_mat4fv(std::get<glm::mat4>(a_value), a_location.c_str());
+		set_mat4fv(std::get<glm::mat4>(a_value), 1, a_location.c_str());
 	}
 	else if (a_type == typeid(glm::ivec1))
 	{
@@ -579,7 +445,7 @@ void Renderer::create_pointlight_SSBO()
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
-void Renderer::update_pointlight_SSBO(std::vector<PointLightSSBO>& a_point_lights) // maybe make this generic somehow
+void Renderer::update_pointlight_SSBO(const std::vector<PointLightSSBO>& a_point_lights) // maybe make this generic somehow
 {
 	if (pointlight_ssbo == 0) return;
 
@@ -598,7 +464,7 @@ void Renderer::update_pointlight_SSBO(std::vector<PointLightSSBO>& a_point_light
 	if (num_lights > 0) {
 		if (a_point_lights.size() <= MAX_POINT_LIGHTS)
 		{
-			
+
 
 			glBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(int) * 4,
 				sizeof(PointLightSSBO) * num_lights, a_point_lights.data());
@@ -619,6 +485,18 @@ void Renderer::update_pointlight_SSBO(std::vector<PointLightSSBO>& a_point_light
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
+void Renderer::create_shadow_framebuffers()
+{
+	if (shadow_maps != nullptr) return;
+
+	glfw_context->create_framebuffer("shadow_map_array", 2048, 2048, EFramebufferType::ShadowMapArray);
+	shadow_maps = glfw_context->get_framebuffer("shadow_map_array");
+}
+
+void Renderer::set_shadow_maps(FrameBuffer* a_shadow_maps)
+{
+	shadow_maps = a_shadow_maps;
+};
 void Renderer::create_instance_SSBO()
 {
 	if (model_instance_ssbo != 0) return;
@@ -635,7 +513,7 @@ void Renderer::create_instance_SSBO()
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
-void Renderer::update_insance_SSBO(std::vector<glm::mat4>& a_model_matrices)
+void Renderer::update_insance_SSBO(const std::vector<glm::mat4>& a_model_matrices)
 {
 	if (model_instance_ssbo == 0) return;
 
@@ -672,7 +550,325 @@ void Renderer::update_insance_SSBO(std::vector<glm::mat4>& a_model_matrices)
 
 }
 
-void Renderer::set_vec1f(const float a_value, const char* a_location) const
+void Renderer::deffered_geometry_pass(const RenderContext& a_render_context, const FrameBuffer* g_buffer)
+{
+	const auto& mats = a_render_context.materials;
+	const auto& reqs = a_render_context.render_requests;
+
+	g_buffer->bind();
+	g_buffer->clear();
+
+	uint64_t bound_mat = 0;
+	GLuint bound_vao = 0;
+
+	size_t req_index = 0;
+	size_t req_start_index = 0;
+	GLuint tex_num = 0;
+
+	// perhaps bind the first mat and mesh
+	bool mipmaps_set = false;
+	bool mipmap = true;
+	bool set_mipmaps = false;
+	bool mat_instance = false;
+
+	std::vector<glm::mat4> instanced_models;
+	instanced_models.reserve(HALF_MODEL_INSTANCES);
+	bool started_instance_batch = false;
+	bool issued_instance_batch = false;
+	GLsizei batch_indices_count = 0;
+	bool broke_batch = false;
+	uint64_t batch_mat = hashed_string_64("");
+
+	int draw_calls = 0;
+
+	for (const RuntimeMaterial& mat : mats)
+	{
+		mipmaps_set = false;
+		mat_instance = mat.instantiable;
+
+		req_index = req_start_index;
+		if (!mat.is_deffered)
+		{
+			continue;
+		}
+		for (; req_index < reqs.size(); req_index++)
+		{
+			const RenderReq& req = reqs[req_index];
+			if (req.mat_hash == mat.hash)
+			{
+				broke_batch = (started_instance_batch && (!req.instanced || instanced_models.size() >= HALF_MODEL_INSTANCES))
+					|| (started_instance_batch && (bound_vao != req.vao || instanced_models.size() >= HALF_MODEL_INSTANCES))
+					|| (started_instance_batch && (req.mipmap != mipmap))
+					|| (started_instance_batch && (req.mat_hash != batch_mat));
+
+				if (broke_batch) //draw the instanced before drawing non instanced
+				{
+					// draw it before starting on new
+					update_insance_SSBO(instanced_models);
+					glDrawElementsInstanced(GL_TRIANGLES, batch_indices_count, GL_UNSIGNED_INT, 0, (GLsizei)instanced_models.size());
+					started_instance_batch = false;
+					issued_instance_batch = true;
+					instanced_models.clear();
+					set_vec1i(0, "instance_buffer");
+					draw_calls++;
+				}
+
+				if (req.instanced && mat_instance)
+				{
+					instanced_models.push_back(req.model_matrix);
+					started_instance_batch = true;
+					issued_instance_batch = false;
+					batch_mat = req.mat_hash;
+					batch_indices_count = req.indices_size;
+				}
+
+				if (!mipmaps_set)
+				{
+					set_mipmaps = true;
+					mipmap = req.mipmap;
+					mipmaps_set = true;
+				}
+				else if (req.mipmap != mipmap)
+				{
+					set_mipmaps = true;
+					mipmap = req.mipmap;
+				}
+				if (bound_mat != mat.hash || set_mipmaps)
+				{
+					if (current_gl_program != mat.gl_program)
+					{
+						// bind program
+						current_gl_program = mat.gl_program;
+						glUseProgram(mat.gl_program);
+						set_mat4fv(proj, 1, "proj");
+						set_mat4fv(view, 1, "view");
+						//set_vec3f(reinterpret_cast<const float*>(&camera_position), "camera_world_pos");
+					}
+					// bind mat
+					bound_mat = mat.hash;
+					GLint tex_index = 0;
+					for (const RuntimeUniform& uniform : mat.uniforms)
+					{
+						if (uniform.type == typeid(std::string)) // this means it's texture
+						{
+							GLint combined = (GL_TEXTURE0 + tex_index);
+							glActiveTexture(combined);
+							glBindTexture(GL_TEXTURE_2D, uniform.texture_id);
+							if (set_mipmaps)
+							{
+								if (mipmap)
+								{
+									glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+								}
+								else
+								{
+									glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+								}
+							}
+							set_vec1i(tex_index, uniform.location.c_str());
+							tex_index++;
+						}
+						else
+						{
+							bind_uniform(uniform.type, uniform.location, uniform.value);
+						}
+					}
+					set_mipmaps = false;
+					set_vec1i(0, "instance_buffer");
+				}
+				if (bound_vao != req.vao)
+				{
+					// bind vao
+					bound_vao = req.vao;
+					glBindVertexArray(req.vao);
+				}
+				//draw
+				if (!req.instanced || !mat.instantiable)
+				{
+					set_mat4fv(req.model_matrix, 1, "model");
+					glDrawElements(GL_TRIANGLES, req.indices_size, GL_UNSIGNED_INT, 0);
+					draw_calls++;
+				}
+
+
+			}
+			//else if (req.mat_hash > mat.hash)
+			//{
+			//	req_start_index = req_index;
+			//	break;
+			//}
+			else
+			{
+				//PRINTLN("material for the render request doesn't exist, or missorted");
+				req_start_index = req_index;
+				break;
+			}
+		}
+	}
+
+	/// check so that there's no lingering batch
+	if (started_instance_batch && !issued_instance_batch)
+	{
+		update_insance_SSBO(instanced_models);
+		glDrawElementsInstanced(GL_TRIANGLES, batch_indices_count, GL_UNSIGNED_INT, 0, (GLsizei)instanced_models.size());
+		draw_calls++;
+		instanced_models.clear();
+	}
+	//PRINTLN("number of draw calls: {}", draw_calls);
+}
+
+void Renderer::deffered_shadowmap_pass(const RenderContext& a_render_context, const FrameBuffer* shadow_array, size_t a_shadowmap_index)
+{
+
+	const auto& mats = a_render_context.materials;
+	const auto& reqs = a_render_context.render_requests;
+
+	glm::vec3 light_direction = glm::normalize(
+		glm::mat3(a_render_context.shadow_lights[a_shadowmap_index].lightspace_matrix)
+		* glm::vec3(0.0f, 0.0f, -1.0f));
+	glm::mat4 light_space_matrix =
+		calculate_directional_light_matrix_fitted(glm::radians(a_render_context.shadow_lights[a_shadowmap_index].rotation), view, proj);
+	//light_space_matrix = proj * view;
+	uint64_t bound_mat = 0;
+	GLuint bound_vao = 0;
+
+	size_t req_index = 0;
+	size_t req_start_index = 0;
+	GLuint tex_num = 0;
+
+	// perhaps bind the first mat and mesh
+	bool mat_instance = false;
+
+	std::vector<glm::mat4> instanced_models;
+	instanced_models.reserve(HALF_MODEL_INSTANCES);
+	bool started_instance_batch = false;
+	bool issued_instance_batch = false;
+	GLsizei batch_indices_count = 0;
+	bool broke_batch = false;
+	uint64_t batch_mat = hashed_string_64("");
+
+	int draw_calls = 0;
+
+	// so we want to check if the material casts shadows.. if not, the skip
+	// then do as normal, except we don't care about mipmaps
+	// but always set all the uniforms that are required
+	for (const RuntimeMaterial& mat : mats)
+	{
+		mat_instance = mat.instantiable;
+
+		req_index = req_start_index;
+		if (!mat.casts_shadows) // we do not care about if it's deffered actually
+		{
+			continue;
+		}
+		for (; req_index < reqs.size(); req_index++)
+		{
+			const RenderReq& req = reqs[req_index];
+			if (req.mat_hash == mat.hash)
+			{
+				broke_batch = (started_instance_batch && (!req.instanced || instanced_models.size() >= HALF_MODEL_INSTANCES))
+					|| (started_instance_batch && (bound_vao != req.vao || instanced_models.size() >= HALF_MODEL_INSTANCES))
+					|| (started_instance_batch && (req.mat_hash != batch_mat));
+
+				if (broke_batch) //draw the instanced before drawing non instanced
+				{
+					// draw it before starting on new
+					update_insance_SSBO(instanced_models);
+					glDrawElementsInstanced(GL_TRIANGLES, batch_indices_count, GL_UNSIGNED_INT, 0, (GLsizei)instanced_models.size());
+					started_instance_batch = false;
+					issued_instance_batch = true;
+					instanced_models.clear();
+					set_vec1i(0, "instance_buffer");
+					draw_calls++;
+				}
+
+				if (req.instanced && mat_instance)
+				{
+					instanced_models.push_back(req.model_matrix);
+					started_instance_batch = true;
+					issued_instance_batch = false;
+					batch_mat = req.mat_hash;
+					batch_indices_count = req.indices_size;
+				}
+				if (bound_mat != mat.hash)
+				{
+					if (current_gl_program != mat.gl_program)
+					{
+						// bind program
+						set_vec1i(0, "shadow_pass");
+						current_gl_program = mat.gl_program;
+						glUseProgram(mat.gl_program);
+						set_mat4fv(proj, 1, "proj");
+						set_mat4fv(view, 1, "view");
+						set_mat4fv(light_space_matrix, 1, "light_space_matrix");
+						set_vec1i(1, "shadow_pass");
+						//set_vec3f(reinterpret_cast<const float*>(&camera_position), "camera_world_pos");
+					}
+					// bind mat
+					bound_mat = mat.hash;
+					GLint tex_index = 0;
+					for (const RuntimeUniform& uniform : mat.uniforms)
+					{
+						if (uniform.type == typeid(std::string)) // this means it's texture
+						{
+							GLint combined = (GL_TEXTURE0 + tex_index);
+							glActiveTexture(combined);
+							glBindTexture(GL_TEXTURE_2D, uniform.texture_id);
+							set_vec1i(tex_index, uniform.location.c_str());
+							tex_index++;
+						}
+						else
+						{
+							bind_uniform(uniform.type, uniform.location, uniform.value);
+						}
+					}
+					set_vec1i(0, "instance_buffer");
+				}
+				if (bound_vao != req.vao)
+				{
+					// bind vao
+					bound_vao = req.vao;
+					glBindVertexArray(req.vao);
+				}
+				//draw
+				if (!req.instanced || !mat.instantiable)
+				{
+					set_mat4fv(req.model_matrix, 1, "model");
+					glDrawElements(GL_TRIANGLES, req.indices_size, GL_UNSIGNED_INT, 0);
+					draw_calls++;
+
+				}
+
+
+			}
+			//else if (req.mat_hash > mat.hash)
+			//{
+			//	req_start_index = req_index;
+			//	break;
+			//}
+			else
+			{
+				//PRINTLN("material for the render request doesn't exist, or missorted");
+				req_start_index = req_index;
+				break;
+			}
+		}
+	}
+
+	/// check so that there's no lingering batch
+	if (started_instance_batch && !issued_instance_batch)
+	{
+		update_insance_SSBO(instanced_models);
+		glDrawElementsInstanced(GL_TRIANGLES, batch_indices_count, GL_UNSIGNED_INT, 0, (GLsizei)instanced_models.size());
+		draw_calls++;
+		instanced_models.clear();
+	}
+	set_vec1i(0, "shadow_pass");
+	glUseProgram(0);
+	//PRINTLN("number of draw calls: {}", draw_calls);
+}
+
+void Renderer::set_vec1f(const float a_value, const char* a_location) const // perhaps later cache all the actual locations instead of string look up
 {
 	glUniform1f(glGetUniformLocation(current_gl_program, a_location), a_value);
 }
@@ -738,7 +934,7 @@ void Renderer::set_vec4ui(const unsigned int a_value[4], const char* a_location)
 {
 	glUniform4ui(glGetUniformLocation(current_gl_program, a_location), a_value[0], a_value[1], a_value[2], a_value[3]);
 }
-void Renderer::set_mat4fv(const glm::mat4 a_value, const char* a_location) const
+void Renderer::set_mat4fv(const glm::mat4 a_value, GLsizei a_count, const char* a_location) const
 {
-	glUniformMatrix4fv(glGetUniformLocation(current_gl_program, a_location), 1, GL_FALSE, glm::value_ptr(a_value));
+	glUniformMatrix4fv(glGetUniformLocation(current_gl_program, a_location), a_count, GL_FALSE, glm::value_ptr(a_value));
 }
