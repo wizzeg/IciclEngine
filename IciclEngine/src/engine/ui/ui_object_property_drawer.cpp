@@ -20,6 +20,7 @@ void UIObjectPropertyDrawer::draw_object_properties(std::shared_ptr<SceneObject>
 		std::vector<FieldInfo> field_info;
 		for (size_t i = 0; i < component_datas.size(); i++)
 		{
+			ImGui::PushID(i);
 			i -= (int)removed_component;
 			removed_component = false;
 			if (ComponentRegistry::instance().is_registered(component_datas[i]->get_type()))
@@ -41,7 +42,7 @@ void UIObjectPropertyDrawer::draw_object_properties(std::shared_ptr<SceneObject>
 			}
 			ImVec2 child_size = ImVec2(0, ImGui::GetFrameHeightWithSpacing() * field_size);
 			ImGui::BeginChild((std::to_string((uint32_t)a_scene_object->get_entity()) + id_salt).c_str(), child_size, true, ImGuiChildFlags_AutoResizeY); // problem, it does not display name, it's an ID.. Need to make an ID system if I want to do this
-			if (component_datas[i]->get_type() != typeid(NameComponent))
+			if (component_datas[i]->get_type() != typeid(EntityComponent) && component_datas[i]->get_type() != typeid(HierarchyComponent))
 			{
 				if (ImGui::Button("Remove"))
 				{
@@ -62,6 +63,7 @@ void UIObjectPropertyDrawer::draw_object_properties(std::shared_ptr<SceneObject>
 			ImGui::SeparatorText(component_datas[i]->get_name());
 			draw_component_fields(field_info, registry);
 			ImGui::EndChild();
+			ImGui::PopID();
 		}
 		if (!drawn_anything)
 		{
@@ -208,12 +210,15 @@ void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_fie
 			int ent = (int)((uint32_t)value.entity);
 			std::string entity_string = "entity: " + std::to_string(ent);
 			std::string scnobj_string = "true id: " + std::to_string(scn_obj);
-			ImGui::Text("entity reference:");
-			if (ImGui::InputScalar(entity_string.c_str(), ImGuiDataType_U32, &value.entity))
+			ImGui::Text(field.name.c_str());
+			std::string id = "##" + field.name + std::to_string(i++) + " " + field.name;
+			ImGui::Text("entity: ");
+			ImGui::SameLine();
+			if (ImGui::InputScalar(id.c_str(), ImGuiDataType_U32, &value.entity))
 			{
 				if (a_registry.valid(value.entity))
 				{
-					if (NameComponent* name = a_registry.try_get<NameComponent>(value.entity))
+					if (EntityComponent* name = a_registry.try_get<EntityComponent>(value.entity))
 					{
 						value.scene_object = name->entity.scene_object;
 					}
@@ -225,10 +230,12 @@ void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_fie
 				}
 				
 			}
-			else if (ImGui::InputScalar(scnobj_string.c_str(), ImGuiDataType_U32, &value.scene_object))
+			ImGui::Text("scene object id: ");
+			ImGui::SameLine();
+			if (ImGui::InputScalar((id + std::string("sdf")).c_str(), ImGuiDataType_U32, &value.scene_object))
 			{
 				bool set_entity = false;
-				for (auto [entity, name_comp] : a_registry.view<NameComponent>().each())
+				for (auto [entity, name_comp] : a_registry.view<EntityComponent>().each())
 				{
 					if (name_comp.entity.scene_object == value.scene_object)
 					{

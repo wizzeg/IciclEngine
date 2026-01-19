@@ -64,7 +64,7 @@ bool Scene::load(std::string a_path, bool clear_registry)
 	if (clear_registry)
 	{
 		registry.clear();
-		for (auto [entity, name_comp] : registry.view<NameComponent>().each())
+		for (auto [entity, name_comp] : registry.view<EntityComponent>().each())
 		{
 			PRINTLN("ENTITIES STILL HERE");
 		}
@@ -95,7 +95,7 @@ bool Scene::load(std::string a_path, bool clear_registry)
 		auto& component_datas = scene_object->get_component_datas();
 		for (const auto& component : component_datas)
 		{
-			if (component->get_type() == typeid(NameComponent))
+			if (component->get_type() == typeid(EntityComponent))
 			{
 				//now get the ids and stuff.
 				TrueID& id = id_registry.get_new_ID();
@@ -136,7 +136,7 @@ bool Scene::load(std::string a_path, bool clear_registry)
 		for (const auto& component : component_datas)
 		{
 			const auto& fields = component->get_registered_field_info();
-			if (component->get_type() == typeid(NameComponent))
+			if (component->get_type() == typeid(EntityComponent))
 			{
 				continue;
 			}
@@ -176,7 +176,7 @@ entt::handle Scene::create_entity(const std::string a_name)
 {
 	auto entity = registry.create();
 	auto& handle = entity_handles.emplace_back(entt::handle{ registry, entity });
-	//registry.emplace<NameComponent>(entity, "a_name");
+	//registry.emplace<EntityComponent>(entity, "a_name");
 	return handle;
 }
 
@@ -228,6 +228,81 @@ void Scene::destroy_scene_object(std::weak_ptr<SceneObject> a_scene_object)
 void Scene::add_scene_object(std::shared_ptr<SceneObject> a_scene_object)
 {
 	scene_objects.push_back(a_scene_object);
+}
+
+void Scene::parent_scene_object(std::weak_ptr<SceneObject> a_parent_scene_object, std::weak_ptr<SceneObject> a_target_scene_object)
+{
+	// TODO: actually add the entityref stuff to the child and parent when adding child
+	if (auto scene_object = a_target_scene_object.lock())
+	{
+		auto parent_scene_object = a_parent_scene_object.lock();
+		if (parent_scene_object->parent.lock().get() == scene_object.get()) // this does not fix the problem ...
+		{
+			// this needs to be recursive loop down to see that the parent is never scene_object
+			return;
+		}
+		// first get the parent of this scene_object...
+		if (auto old_parent = scene_object->parent.lock())
+		{
+			orphan_scene_object(scene_object);
+		}
+		if (parent_scene_object) // now notify the new parent.
+		{
+			//parent_scene_object->remove_child(scene_object);
+			// add as child to parent.
+			parent_scene_object->add_child(a_target_scene_object);
+
+			// remove from root if it is root object.
+			for (size_t i = 0; i < root_scene_objects.size(); i++)
+			{
+				if (scene_object.get() == root_scene_objects[i].get())
+				{
+					root_scene_objects.erase(root_scene_objects.begin() + i);
+					break;
+				}
+			}
+		}
+		else
+		{
+			PRINTLN("NO PARENT!!")
+		}
+	}
+}
+
+void Scene::orphan_scene_object(std::weak_ptr<SceneObject> a_target_scene_object)
+{
+	// if it's dragged into nothing.. or pressed button to orphan...
+
+	// if not already root object
+	if (auto scene_object = a_target_scene_object.lock())
+	{
+		// get parent scene object, tell to remove child.
+		if (!scene_object->parent.expired()) // could look through all root objects too
+		{
+			if (auto parent_object = scene_object->parent.lock())
+			{
+				parent_object->remove_child(scene_object);
+			}
+			//scene_object->parent.reset();
+		}
+		// no parent, no care
+
+		// add to root objects
+		root_scene_objects.push_back(scene_object);
+	}
+
+}
+
+std::weak_ptr<SceneObject> Scene::get_scene_object_by_ID(uint32_t a_id)
+{
+	for (auto& scene_object : scene_objects)
+	{
+		if (scene_object->scene_object_id == a_id)
+		{
+			return scene_object;
+		}
+	}
+	return std::weak_ptr<SceneObject>();
 }
 
 std::weak_ptr<SceneObject> Scene::new_scene_object(const std::string a_name, bool as_root_object)

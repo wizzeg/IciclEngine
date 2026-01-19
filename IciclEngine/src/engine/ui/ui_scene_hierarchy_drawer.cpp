@@ -3,11 +3,13 @@
 #include <engine/utilities/macros.h>
 #include <engine/editor/scene_object.h>
 
-void UISceneHierarchyDrawer::draw_hierarchy_node(std::weak_ptr<SceneObject> a_scene_object)
+void UISceneHierarchyDrawer::draw_hierarchy_node(std::weak_ptr<SceneObject> a_scene_object,size_t a_id)
 {
+	
 	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DrawLinesToNodes | ImGuiTreeNodeFlags_OpenOnArrow;
 	if (auto scene_object = a_scene_object.lock())
 	{
+		ImGui::PushID(a_id);
 		auto children = scene_object->get_children();
 		if (!(children.size() > 0))
 		{
@@ -31,16 +33,20 @@ void UISceneHierarchyDrawer::draw_hierarchy_node(std::weak_ptr<SceneObject> a_sc
 			{
 				if (auto child = children[i].lock())
 				{
-					draw_hierarchy_node(child);
+					//ImGui::PushID(i);
+					draw_hierarchy_node(child, (a_id+1));
+					//ImGui::PopID();
 				}
 			}
 		}
-
+		
 		if (is_open)
 		{
 			ImGui::TreePop();
 		}
+		ImGui::PopID();
 	}
+	
 }
 
 

@@ -27,7 +27,10 @@ public:
 	entt::handle create_entity(const std::string a_name);
 	void destroy_entity(entt::entity a_entity);
 	void destroy_scene_object(std::weak_ptr<SceneObject> a_scene_object);
-	void add_scene_object(std::shared_ptr<SceneObject> a_scene_object);
+	void add_scene_object(std::shared_ptr<SceneObject> a_scene_object); // use only on load
+	void parent_scene_object(std::weak_ptr<SceneObject> a_parent_scene_object, std::weak_ptr<SceneObject> a_target_scene_object);
+	void orphan_scene_object(std::weak_ptr<SceneObject> a_target_scene_object);
+	std::weak_ptr<SceneObject> get_scene_object_by_ID(uint32_t a_id);
 
 	std::weak_ptr<SceneObject> new_scene_object(const std::string a_name, bool as_root_object);
 	//bool add_scene_object(SceneObject& a_scene_object);

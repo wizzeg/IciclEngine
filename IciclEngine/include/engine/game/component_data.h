@@ -180,10 +180,10 @@ protected:
 
 };
 //
-//struct NameComponentData : ComponentData<NameComponent>
+//struct NameComponentData : ComponentData<EntityComponent>
 //{
-//	NameComponentData(NameComponent a_component) : ComponentData<NameComponent>(a_component) {}
-//	std::vector<FieldInfo> get_field_info(NameComponent& a_component) override
+//	NameComponentData(EntityComponent a_component) : ComponentData<EntityComponent>(a_component) {}
+//	std::vector<FieldInfo> get_field_info(EntityComponent& a_component) override
 //	{
 //		return
 //		{
@@ -323,9 +323,9 @@ protected:
 //
 //struct NameComponentData : ComponentData
 //{
-//	NameComponent name_component;
+//	EntityComponent name_component;
 //	const std::string get_name() const override { return "Entity name component"; }
-//	NameComponentData(NameComponent a_name) : name_component(a_name) { };
+//	NameComponentData(EntityComponent a_name) : name_component(a_name) { };
 //	NameComponentData() {};
 //
 //	// implementation in .cpp

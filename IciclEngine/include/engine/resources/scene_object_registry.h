@@ -37,6 +37,6 @@ private:
 		
 	SceneObjectRegistry() = default;
 		///this should be the one, a "scene_object"/"true id" to entity
-		// even if there are no scene_objects (game build), they'll still have a "true id" to reference, and stored in NameComponent EntityReference.
+		// even if there are no scene_objects (game build), they'll still have a "true id" to reference, and stored in EntityComponent EntityReference.
 };		// I'll need an extra mapping for during load, to do retargeting.
 

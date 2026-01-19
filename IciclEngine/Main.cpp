@@ -149,10 +149,10 @@ int main(void)
 				{
 					
 					std::lock_guard<std::mutex> guard(engine_context->mutex);
-					scene->to_runtime(); // deal with making a runtime copy later -------- runtime thing works at least, entities are created
+					//scene->to_runtime(); // deal with making a runtime copy later -------- runtime thing works at least, entities are created
 					// for now I need to be able to see changes to entities -> handle signaling
 					game_playing = true;
-					engine_context->game_playing = true;
+					//engine_context->game_playing = true;
 					std::srand(static_cast<unsigned>(std::time(nullptr)));
 					hashed_string_64 monkey_mesh = hashed_string_64("./assets/obj/triobjmonkey.obj");
 					hashed_string_64 tex = hashed_string_64("./assets/textures/awesomeface.png");
@@ -161,6 +161,30 @@ int main(void)
 					std::vector<hashed_string_64> texes = { "./assets/textures/awesomeface.png", "./assets/textures/wall.jpg", "./assets/textures/container.jpg" };
 					std::vector<hashed_string_64> mats = {"./assets/shaders/test.mat", "./assets/shaders/testcopy.mat" }; // , "./assets/shaders/test2.mat"
 					
+
+					{
+						auto obj = scene->new_scene_object("parent ", true);
+						auto scene_object = obj.lock();
+						auto obj2 = scene->new_scene_object("child ", true);
+						auto scene_object2 = obj2.lock();
+						auto obj3 = scene->new_scene_object("child 2", true);
+						auto scene_object3 = obj3.lock();
+						auto obj4 = scene->new_scene_object("child 4", true);
+						auto scene_object4 = obj4.lock();
+						auto obj5 = scene->new_scene_object("child 5", true);
+						auto scene_object5 = obj5.lock();
+						auto obj6 = scene->new_scene_object("child 6", true);
+						auto scene_object6 = obj6.lock();
+						scene->parent_scene_object(obj, obj2);
+						scene->parent_scene_object(obj, obj3);
+						//scene_object->paren(scene_object2);
+						scene->parent_scene_object(obj2, obj3);
+						//scene->parent_scene_object(obj3, obj2);
+						scene->parent_scene_object(obj, obj4);
+						scene->parent_scene_object(obj, obj5);
+						scene->parent_scene_object(obj2, obj6);
+					}
+
 					{
 						for (auto mesh : meshes)
 						{
@@ -191,7 +215,7 @@ int main(void)
 					}
 
 
-					for (size_t i = 0; i < 1650; i++)
+					for (size_t i = 0; i < 0; i++)
 					{
 						float x = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));
 						float y = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));; // Or random if you want variety
@@ -208,7 +232,7 @@ int main(void)
 						//scene_object->add_component(TextureComponent{ false, texes[tex_idx]});
 					}
 
-					for (size_t i = 0; i < 300; i++)
+					for (size_t i = 0; i < 0; i++)
 					{
 						float x = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));
 						float y = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));; // Or random if you want variety
@@ -249,6 +273,10 @@ int main(void)
 					}
 
 				}
+				//scene->to_runtime(); // deal with making a runtime copy later -------- runtime thing works at least, entities are created
+				//// for now I need to be able to see changes to entities -> handle signaling
+				//game_playing = true;
+				//engine_context->game_playing = true;
 			}
 		}
 		else
@@ -621,9 +649,12 @@ int main(void)
 
 			ui_mananger->draw_object_hierarchy();
 			ui_mananger->draw_object_properties();
-			ui_mananger->draw_selected_icon(engine_context->editor_camera.get_view_matrix(),
-				engine_context->editor_camera.get_proj_matrix());
+			//ui_mananger->draw_selected_icon(engine_context->editor_camera.get_view_matrix(),
+			//	engine_context->editor_camera.get_proj_matrix());
 
+			//ui_mananger->RenderContentBrowser();
+			ui_mananger->RenderTopMenuBar();
+			//ui_mananger->RenderToolbar();
 
 			//input_manager.update_input();
 			input_manager.update_input();
@@ -682,7 +713,7 @@ int main(void)
 		//{
 		//	auto& registry = scene.get()->get_registry();
 
-		//	for (auto [entity, name, worldpos] : registry.view<NameComponent, TransformDynamicComponent>().each())
+		//	for (auto [entity, name, worldpos] : registry.view<EntityComponent, TransformDynamicComponent>().each())
 		//	{
 		//		worldpos.position.x += 0.0005f;
 		//	}
@@ -708,7 +739,7 @@ int main(void)
 		//}
 
 
-		//for (auto [entity, name] : registry.view<NameComponent>().each())
+		//for (auto [entity, name] : registry.view<EntityComponent>().each())
 		//{
 		//	std::cout << (name.name.c_str()) << std::endl;
 		//}

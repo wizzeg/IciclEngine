@@ -97,7 +97,7 @@ void UIManager::draw_object_hierarchy()
 				}
 				else
 				{
-					draw_hierarchy_node(root_scene_objects[i]);
+					draw_hierarchy_node(root_scene_objects[i], i);
 				}
 
 			}

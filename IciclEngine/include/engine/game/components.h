@@ -27,9 +27,9 @@
 /// 
 /// </summary>
 
-struct NameComponent
+struct EntityComponent
 {
-    hashed_string_64 hashed_name;
+    hashed_string_64 hashed_name;   
 	//std::string name;
     EntityReference entity;
 };

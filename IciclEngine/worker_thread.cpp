@@ -119,7 +119,7 @@ void GameThread::execute()
 			ind_timer.start();
 			// this about 1ms
 			//for (auto [entity, name, worldpos] 
-			//	: registry.view<NameComponent, TransformDynamicComponent>(entt::exclude<CameraComponent>).each())
+			//	: registry.view<EntityComponent, TransformDynamicComponent>(entt::exclude<CameraComponent>).each())
 			//{
 			//	worldpos.position.x += 0.1f * (float)delta_time;
 			//	worldpos.rotation_quat *= glm::quat(glm::radians(glm::vec3(0.1, 0.1, 0.1) * 50.f * (float)delta_time));
@@ -503,7 +503,7 @@ void GameThread::execute()
 				//	prev_test = testcomp.test;  
 				//}
 				//uint32_t countererer = 0;
-				//for (auto [entity, name_comp] : registry.view<NameComponent>().each())
+				//for (auto [entity, name_comp] : registry.view<EntityComponent>().each())
 				//{
 				//	countererer++;
 				//}

@@ -9,9 +9,14 @@ class Scene;
 
 class SceneObject : public std::enable_shared_from_this<SceneObject>
 {
-
+	friend class SceneObject;
+	friend class Scene;
 private:
 
+	void add_child(std::weak_ptr<SceneObject> a_child);
+	void orphan();
+	void remove_child(std::weak_ptr<SceneObject> a_child);
+	
 	std::string name = "";
 	std::weak_ptr<SceneObject> parent;
 	std::vector<std::weak_ptr<SceneObject>> children;
@@ -27,6 +32,7 @@ private:
 	bool ui_opened = false;
 	bool original = true;
 public:
+
 	SceneObject(SceneObject&&) = default;
 	SceneObject& operator=(SceneObject&&) = default;
 	//SceneObject() { name = "none"; }
@@ -53,8 +59,6 @@ public:
 	//void destroy_scene_object();
 
 	entt::handle get_entity_handle() const; ///////////////////// REMOVE USAGE OF ENTITY (use entt::handle)
-
-	void add_child(std::weak_ptr<SceneObject> a_child);
 
 	template <typename TcomponentData, typename TComponent>
 	bool add_component_data(TComponent&& a_component) // deprecated
@@ -241,6 +245,37 @@ public:
 		return false;
 	}
 
+	template<typename TComponent>
+	TComponent* get_component()
+	{
+		//static_assert(std::is_standard_layout<std::decay_t<TComponent>>::value, "TComponent must be a standard-layout type (e.g no inheritance)");
+		//static_assert(std::is_trivial<std::decay_t<TComponent>>::value, "TComponent must be trivial (e.g. no smart pointers)");
+		std::type_index t_type = typeid(std::decay_t<TComponent>);
+		bool error = false;
+		for (size_t i = 0; i < component_types.size(); i++) // may want to consider to sort these in order of each other.
+		{
+			if (t_type == component_types[i])
+			{
+				for (size_t i = 0; i < component_datas.size(); i++)
+				{
+					if (component_datas[i]->get_type() == t_type)
+					{
+						ComponentData<std::decay_t<TComponent>>& component_data = static_cast<ComponentData<std::decay_t<TComponent>>&>(*component_datas[i]);
+						return &component_data.get_component();
+					}
+				}
+				error = true;
+				break;
+			}
+		}
+		if (error)
+		{
+			PRINTLN("MISSMATCH: scene_object has component_type info of component for which there's no comopnent_data for");
+			// perhaps remove the component_type ?
+		}
+		return nullptr;
+	}
+
 	bool remove_component_data(size_t a_index)
 	{
 		if (a_index < component_datas.size())
@@ -297,7 +332,7 @@ public:
 	size_t num_children() const { return children.size(); };
 	std::string get_name() 
 	{
-		if (NameComponent* name_comp; get_component<NameComponent>(name_comp))
+		if (EntityComponent* name_comp; get_component<EntityComponent>(name_comp))
 		{
 			name = name_comp->hashed_name.string;
 		}

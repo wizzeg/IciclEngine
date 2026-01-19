@@ -246,6 +246,9 @@
     <ClCompile Include="src\engine\resources\shader_loader.cpp">
       <Filter>Source Files\engine\resources</Filter>
     </ClCompile>
+    <ClCompile Include="content_browser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\imgui-docking\imconfig.h">
@@ -445,6 +448,9 @@
     </ClInclude>
     <ClInclude Include="include\engine\resources\shader_loader.h">
       <Filter>Header Files\engine\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="content_browser.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

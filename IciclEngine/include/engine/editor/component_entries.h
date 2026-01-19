@@ -6,7 +6,7 @@ REGISTER_COMPONENT(TestComponent, ("Test Category"),
 	FIELD_DEFAULT("test: ", comp, test)
 )
 
-REGISTER_COMPONENT(NameComponent, ("Default"),
+REGISTER_COMPONENT(EntityComponent, ("Default"),
 	FIELD_CUSTOM("entity name: ", comp, hashed_name, 1.75f, false),
 	FIELD_READONLY_CUSTOM("entity id: ", comp, entity, 2.75f, false)
 )
@@ -123,3 +123,10 @@ REGISTER_COMPONENT(MaterialUniformComponent, ("Rendering"),
 REGISTER_COMPONENT(TestReferenceComponent, ("Default"),
 	FIELD_CUSTOM("reference: ", comp, reference, 3.5f, false),
 )
+
+REGISTER_COMPONENT(HierarchyComponent, ("Default"),
+	FIELD_CUSTOM("parent: ", comp, parent, 3.f, false),
+	FIELD_CUSTOM("previous sibling: ", comp, previous_sibling, 3.f, false),
+	FIELD_CUSTOM("next sibling: ", comp, next_sibling, 3.f, false),
+	FIELD_CUSTOM("child: ", comp, child, 3.f, false),
+	)

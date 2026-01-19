@@ -3,7 +3,7 @@
 //#include <engine/editor/componentdata_macros.h>
 //
 //REGISTER_COMPONENT(TestComponent, ("Test Category"), FIELD_DEFAULT("test: ", comp, test))
-//REGISTER_COMPONENT(NameComponent, ("Default"),
+//REGISTER_COMPONENT(EntityComponent, ("Default"),
 //	FIELD_CUSTOM("entity name: ", comp, hashed_name, 2.0f, false),
 //	FIELD_READONLY_CUSTOM("entity id: ", comp, entity, 1.25f, false)
 //)
@@ -51,7 +51,7 @@
 ////#include <engine/editor/componentdata_macros.h>
 ////
 ////REGISTER_COMPONENT( TestComponent, ("Test Category"), FIELD_DEFAULT("test: ", comp, test))
-////REGISTER_COMPONENT( NameComponent, ("Default"), 
+////REGISTER_COMPONENT( EntityComponent, ("Default"), 
 ////	FIELD_CUSTOM("entity name: ", comp, hashed_name, 2.0f, false),
 ////	FIELD_READONLY_CUSTOM("entity id: ", comp, entity, 1.25f, false)
 ////)
