@@ -24,6 +24,7 @@ struct ComponentDataBase
 	ComponentDataBase() {}
 	virtual const std::type_info& get_type() = 0;
 	virtual void to_runtime(entt::handle a_handle) = 0;
+	virtual void no_runtime() = 0;
 	virtual std::vector<FieldInfo> get_field_info() = 0; // deprecated
 	virtual std::vector<FieldInfo> get_registered_field_info() = 0;
 	virtual const char* get_name() const = 0;
@@ -173,6 +174,11 @@ struct ComponentData : ComponentDataBase
 		return true;
 	}
 
+	void no_runtime() override
+	{
+		runtime = false;
+	}
+
 protected:
 	TComponent component;
 	entt::handle entity_handle;
@@ -315,7 +321,7 @@ protected:
 //
 //	// implementation in .cpp
 //	virtual bool draw_imgui(entt::handle a_handle, bool runtime) = 0;
-//	virtual void to_runtime(entt::handle a_handle) = 0;
+//	virtual void start_runtime(entt::handle a_handle) = 0;
 //
 //	
 //	virtual std::vector<FieldInfo> get_field_info() = 0;
@@ -330,7 +336,7 @@ protected:
 //
 //	// implementation in .cpp
 //	bool draw_imgui(entt::handle a_handle, bool runtime) override;
-//	void to_runtime(entt::handle a_handle) override;
+//	void start_runtime(entt::handle a_handle) override;
 //	std::vector<FieldInfo> get_field_info() override;
 //};
 //
@@ -343,7 +349,7 @@ protected:
 //
 //	// implementation in .cpp
 //	bool draw_imgui(entt::handle a_handle, bool runtime) override;
-//	void to_runtime(entt::handle a_handle) override;
+//	void start_runtime(entt::handle a_handle) override;
 //	std::vector<FieldInfo> get_field_info() override;
 //};
 //
@@ -356,6 +362,6 @@ protected:
 //
 //	// implementation in .cpp
 //	bool draw_imgui(entt::handle a_handle, bool runtime) override;
-//	void to_runtime(entt::handle a_handle) override;
+//	void start_runtime(entt::handle a_handle) override;
 //	std::vector<FieldInfo> get_field_info() override;
 //};

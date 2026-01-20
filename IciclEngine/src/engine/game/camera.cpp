@@ -37,7 +37,7 @@ void Camera::update_proj_view_matrix()
 	glm::mat4 rotation_matrix = glm::mat4_cast(rotation_quaternion);
 	glm::mat4 translation_matrix = glm::translate(glm::mat4(1.0f), -camera_pos);
 	view = glm::transpose(rotation_matrix) * translation_matrix;
-	proj = glm::perspective(glm::radians(field_of_view), ((float)camera_aspect.x / (float)camera_aspect.y), 0.1f, 500.0f);
+	proj = glm::perspective(glm::radians(field_of_view), aspect, 0.1f, 500.0f);
 	proj_view_unchanged = true;
 }
 

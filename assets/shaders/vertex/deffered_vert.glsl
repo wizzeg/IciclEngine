@@ -36,6 +36,7 @@ void main()
 {
     if (instance_buffer > 0)
     {
+        vec3 instance_color = vec3(0);
         int instanceID = gl_InstanceID;
         if (instance_buffer == 2)
         {
@@ -63,6 +64,15 @@ void main()
         // texture
         tex_coords = aTexCoord.xy;
         vert_color = aCol;
+        if (instanceID >= 1024)
+        {
+            vert_color = vec4(1, 0, 0, 1);
+        }
+        else
+        {
+            vert_color = vec4(0, 1, 0, 1);
+        }
+        
     
         // fragment screen pos
         gl_Position = proj * view * world_pos;

@@ -8,6 +8,8 @@
 #include <engine/editor/component_registry.h>
 #include <engine/editor/component_factory.h>
 
+#include <engine/core/game_thread.h>
+
 
 void UIManager::draw_object_hierarchy()
 {
@@ -213,4 +215,42 @@ void UIManager::set_scene(std::weak_ptr<Scene> a_scene)
 void UIManager::set_draw_texture(GLuint a_texture_id)
 {
 	texture_id = a_texture_id;
+}
+
+void UIManager::render_play_stop(EngineContext* a_engine_context)
+{
+	ImGui::PushID("playstop");
+	ImGui::Begin("playstop");
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(6, 3));
+
+	// Play button - UNIQUE ID "Play##MenuBar"
+	if (ImGui::Button(playback.isPlaying && !playback.isPaused ? "Pause##PlayBtn" : "Play##PlayBtn", ImVec2(45, 18))) {
+		if (playback.isPlaying && !playback.isPaused) {
+			playback.isPaused = true;
+		}
+		else {
+			playback.isPlaying = true;
+			playback.isPaused = false;
+		}
+		//std::lock_guard<std::mutex> guard(a_engine_context->mutex);
+		//a_scene->start_runtime(); // deal with making a runtime copy later -------- runtime thing works at least, entities are created
+		a_engine_context->start_game_thread(true);
+
+	}
+
+	ImGui::SameLine();
+
+	// Stop button - UNIQUE ID "Stop##MenuBar"  
+	if (ImGui::Button("Stop##StopBtn", ImVec2(45, 18))) {
+		playback.isPlaying = false;
+		playback.isPaused = false;
+
+		//set playing to false.
+		a_engine_context->start_game_thread(false);
+	}
+
+	ImGui::PopStyleVar(2);
+	ImGui::End();
+	ImGui::PopID();
 }

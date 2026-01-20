@@ -39,9 +39,9 @@ public:
 	const std::vector<std::shared_ptr<SceneObject>> get_root_scene_objects();
 
 	//void draw_imgui();
-	void to_runtime();
+	void start_runtime();
 	bool is_runtime() { return runtime; };
-	void stop_scene();
+	void stop_runtime();
 	uint64_t get_next_index() { return next_index++; }
 };
 

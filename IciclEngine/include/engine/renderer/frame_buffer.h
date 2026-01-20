@@ -77,6 +77,7 @@ struct FrameBuffer
 	void unbind()
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		//glViewport(0, 0, width, height);
 	}
 	void clear() const
 	{
@@ -316,7 +317,7 @@ private:
 	GLuint shadow_depth_buffer = 0;
 	GLuint shadow_map_buffer_array = 0;
 
-	int width = 1;
-	int height = 1;
+	GLint width = 1;
+	GLint height = 1;
 };
 

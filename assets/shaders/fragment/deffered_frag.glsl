@@ -54,6 +54,7 @@ void main()
     albedo = texture(uTexture, tex_coords).rgb;
 
     gAlbedoSpec.rgb = clamp(albedo.rgb, 0.0, 1.0);
+    //gAlbedoSpec.rgb = vert_color.rgb;
     gAlbedoSpec.a = 1.0f; 
 
     gEmisive = emissive;

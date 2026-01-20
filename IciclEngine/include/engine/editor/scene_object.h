@@ -39,7 +39,7 @@ public:
 	SceneObject(const std::string a_name, std::weak_ptr<Scene> a_scene, bool a_register_id = true);
 	SceneObject(const std::string a_name, std::weak_ptr<SceneObject> a_parent, std::weak_ptr<Scene> a_scene, bool a_register_id = true);
 	~SceneObject() { PRINTLN("Scene Object Destroyed: {}", name); }// if this has parent, add all children to it, otherwise I don't know... 
-	void scene_ended();
+	void stop_runtime();
 	entt::entity get_entity() { return entity_handle.entity(); }
 	bool has_valid_entity() { return entity_handle.valid(); }
 	std::weak_ptr<Scene> get_scene();
@@ -326,7 +326,7 @@ public:
 		return found_component;
 	}
 
-	entt::handle to_runtime(std::weak_ptr<Scene> a_scene);
+	entt::handle start_runtime(std::weak_ptr<Scene> a_scene);
 	//void draw_components();
 
 	size_t num_children() const { return children.size(); };

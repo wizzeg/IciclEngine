@@ -72,7 +72,6 @@ struct GLFWContext
 			{
 				frame_buffers[i].bind();
 				return true;
-				break;
 			}
 		}
 		return false;

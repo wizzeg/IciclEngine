@@ -14,9 +14,11 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <engine/core/game_thread.h>
 
 class Scene;
 class SceneObject;
+struct EngineContext;
 
 struct PlaybackControls {
     bool isPlaying = false;
@@ -269,6 +271,9 @@ public:
                     playback.isPlaying = true;
                     playback.isPaused = false;
                 }
+
+                // set playing to true
+
             }
 
             ImGui::SameLine();
@@ -277,6 +282,9 @@ public:
             if (ImGui::Button("Stop##StopBtn", ImVec2(45, 18))) {
                 playback.isPlaying = false;
                 playback.isPaused = false;
+
+                //set playing to false.
+               
             }
 
             ImGui::PopStyleVar(2);
@@ -284,6 +292,7 @@ public:
         }
     }
 
+    void render_play_stop(EngineContext* a_engine_context);
 
 
     void RenderToolbar() {

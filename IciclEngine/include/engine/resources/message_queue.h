@@ -11,7 +11,14 @@ struct MessageQueue
 	void add_message(const TMessage& a_message)
 	{
 		std::lock_guard guard(mutex);
-		messages.push_back(a_message);
+		messages.emplace_back(a_message);
+	}
+
+	template<typename F>
+	void add_functor_message(F&& f)
+	{
+		std::lock_guard guard(mutex);
+		messages.emplace_back(std::forward<F>(f));
 	}
 
 	void add_messages(const std::vector<TMessage>& a_messages)
@@ -19,7 +26,7 @@ struct MessageQueue
 		std::lock_guard guard(mutex);
 		for (const auto& message : a_messages)
 		{
-			messages.push_back(message);
+			messages.emplace_back(message);
 		}
 	}
 

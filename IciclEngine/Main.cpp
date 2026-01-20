@@ -33,7 +33,7 @@
 #include <engine/renderer/vao_loader.h>
 #include <engine/renderer/shader_program.h>
 #include <engine/renderer/renderer.h>
-#include "worker_thread.h"
+#include <engine/core/game_thread.h>
 
 #include <thread>
 #include <engine/resources/data_storage.h>
@@ -64,15 +64,15 @@ int main(void)
 	glfw_context->deactivate();
 	std::shared_ptr<ImGuiManager> imgui_manager = std::make_shared<ImGuiManager>(glfw_context);
 	glfw_context->activate();
-	glfw_context->create_framebuffer("editor_frame_buffer", 1920, 1080, Output);
+	glfw_context->create_framebuffer("editor_frame_buffer", 2560, 1440, Output);
 	glfw_context->bind_framebuffer("editor_frame_buffer"); // Need to do this every frame really, when I'm changing framebuffers
 	//glEnable(GL_CULL_FACE);
 	glfw_context->unbind_framebuffer();
-	glfw_context->create_framebuffer("main_camera_buffer", 1920, 1080, Output);
+	glfw_context->create_framebuffer("main_camera_buffer", 2560, 1440, Output);
 	glfw_context->bind_framebuffer("editor_frame_buffer");
 
 	glfw_context->unbind_framebuffer();
-	glfw_context->create_framebuffer("editor_camera_gbuffer", 1920, 1080, GBuffer);
+	glfw_context->create_framebuffer("editor_camera_gbuffer", 2560, 1440, GBuffer);
 	glfw_context->bind_framebuffer("editor_frame_buffer");
 
 	glfw_context->create_framebuffer("shadow_map_array", 2048, 2048, EFramebufferType::ShadowMapArray);
@@ -102,7 +102,7 @@ int main(void)
 	shader_load.load("./assets/shaders/test_shader.shdr");
 	shader_load.save("./assets/shaders/test_shader2.shdr");
 	//std::shared_ptr<MeshDataGenStorage> storage = std::make_shared<MeshDataGenStorage>(2);
-	std::shared_ptr<EngineContext> engine_context = std::make_shared<EngineContext>(/*storage*/);
+	std::shared_ptr<EngineContext> engine_context = std::make_shared<EngineContext>(scene/*storage*/);
 	
 	//RenderThread render_thread(engine_context, *shader_program, glfw_context);
 	GameThread game_thread(engine_context, scene);
@@ -149,7 +149,7 @@ int main(void)
 				{
 					
 					std::lock_guard<std::mutex> guard(engine_context->mutex);
-					//scene->to_runtime(); // deal with making a runtime copy later -------- runtime thing works at least, entities are created
+					//scene->start_runtime(); // deal with making a runtime copy later -------- runtime thing works at least, entities are created
 					// for now I need to be able to see changes to entities -> handle signaling
 					game_playing = true;
 					//engine_context->game_playing = true;
@@ -215,11 +215,11 @@ int main(void)
 					}
 
 
-					for (size_t i = 0; i < 0; i++)
+					for (size_t i = 0; i < 1000; i++)
 					{
-						float x = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));
-						float y = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));; // Or random if you want variety
-						float z = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));; // Same here
+						float x = -5.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 10.0f));
+						float y = -5.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 10.0f));; // Or random if you want variety
+						float z = -5.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 10.0f));; // Same here
 						auto obj = scene->new_scene_object(std::string("model: ") + std::to_string(i), true);
 						auto scene_object = obj.lock();
 						size_t mesh_idx = std::rand() % meshes.size();
@@ -228,15 +228,15 @@ int main(void)
 						scene_object->add_component(TransformDynamicComponent{ glm::vec3(x, y, z), glm::vec3(1.f)});
 						//scene_object->add_component(MeshComponent{ false, meshes[mesh_idx]});
 						//scene_object->add_component(MaterialComponent{mats[mat_idx], false, false, true});
-						scene_object->add_component(RenderComponent{ meshes[mesh_idx], mats[mat_idx], false, true, true });
+						scene_object->add_component(RenderComponent{ meshes[mesh_idx], mats[mat_idx], true, true, true });
 						//scene_object->add_component(TextureComponent{ false, texes[tex_idx]});
 					}
 
-					for (size_t i = 0; i < 0; i++)
+					for (size_t i = 0; i < 100; i++)
 					{
-						float x = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));
-						float y = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));; // Or random if you want variety
-						float z = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));; // Same here
+						float x = -5.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 10.0f));
+						float y = -5.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 10.0f));; // Or random if you want variety
+						float z = -5.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 10.0f));; // Same here
 						auto obj = scene->new_scene_object(std::string("light: ") + std::to_string(i), true);
 						auto scene_object = obj.lock();
 						int col = (std::rand() % 3);
@@ -273,7 +273,7 @@ int main(void)
 					}
 
 				}
-				//scene->to_runtime(); // deal with making a runtime copy later -------- runtime thing works at least, entities are created
+				//scene->start_runtime(); // deal with making a runtime copy later -------- runtime thing works at least, entities are created
 				//// for now I need to be able to see changes to entities -> handle signaling
 				//game_playing = true;
 				//engine_context->game_playing = true;
@@ -653,6 +653,7 @@ int main(void)
 			//	engine_context->editor_camera.get_proj_matrix());
 
 			//ui_mananger->RenderContentBrowser();
+			ui_mananger->render_play_stop(engine_context.get());
 			ui_mananger->RenderTopMenuBar();
 			//ui_mananger->RenderToolbar();
 
@@ -667,7 +668,7 @@ int main(void)
 			timer2.stop();
 			ui_manager_time += timer2.get_time_ms();
 		}
-		if (framies > 500 && false)
+		if (framies > 500)
 		{
 			PRINTLN("render thread timer: {}", render_thread_time / (double)framies);
 			PRINTLN("ui manager frametime: {}", ui_manager_time / (double)framies);

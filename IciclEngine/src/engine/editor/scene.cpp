@@ -18,14 +18,14 @@ Scene::Scene(std::shared_ptr<Scene> a_scene) // do I ever use this??
 	auto scene_objects = scene->get_scene_objects();
 	for (size_t i = 0; i < scene_objects.size(); i++)
 	{
-		scene_objects[i]->to_runtime(shared_from_this());
+		scene_objects[i]->start_runtime(shared_from_this());
 	}
 }
 Scene::~Scene()
 {
 	for (size_t i = 0; i < scene_objects.size(); i++)
 	{
-		scene_objects[i]->scene_ended();
+		scene_objects[i]->stop_runtime();
 	}
 	
 }
@@ -122,7 +122,7 @@ bool Scene::load(std::string a_path, bool clear_registry)
 	{
 		for (auto& scene_object : scene_objects)
 		{
-			scene_object->to_runtime(shared_from_this());
+			scene_object->start_runtime(shared_from_this());
 		}
 	}
 
@@ -264,7 +264,7 @@ void Scene::parent_scene_object(std::weak_ptr<SceneObject> a_parent_scene_object
 		}
 		else
 		{
-			PRINTLN("NO PARENT!!")
+			PRINTLN("NO PARENT!!");
 		}
 	}
 }
@@ -318,7 +318,7 @@ std::weak_ptr<SceneObject> Scene::new_scene_object(const std::string a_name, boo
 	scene_objects.push_back(scene_object);
 	if (runtime)
 	{
-		scene_object->to_runtime(shared_from_this());
+		scene_object->start_runtime(shared_from_this());
 	}
 	return scene_object;
 }
@@ -357,21 +357,33 @@ const std::vector<std::shared_ptr<SceneObject>> Scene::get_root_scene_objects()
 //	}
 //}
 
-void Scene::to_runtime()
+void Scene::start_runtime()
 {
-	runtime = true;
-	for (auto scene_object : root_scene_objects)
+	if (!runtime)
 	{
-		scene_object->to_runtime(shared_from_this());
+		runtime = true;
+		for (auto scene_object : root_scene_objects)
+		{
+			scene_object->start_runtime(shared_from_this());
+		}
 	}
+
 	//for (size_t i = 0; i < scene_objects.size(); i++)
 	//{
-	//	scene_objects[i]->to_runtime(shared_from_this());
+	//	scene_objects[i]->start_runtime(shared_from_this());
 	//}
 }
 
-void Scene::stop_scene()
+void Scene::stop_runtime()
 {
-	runtime = false;
-	registry.clear();
+	if (runtime)
+	{
+		runtime = false;
+		for (auto scene_object : root_scene_objects)
+		{
+			scene_object->stop_runtime();
+		}
+		registry.clear();
+
+	}
 }

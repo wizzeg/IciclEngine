@@ -7,7 +7,7 @@
 #include <glm/gtc/quaternion.hpp>
 struct Camera
 {
-	Camera(const std::string a_name, int a_width, int a_height) :name(a_name), camera_aspect((float)a_width, (float)a_height), hashed_name(a_name.c_str()) //:frame_buffer(a_name, a_width, a_height), name(a_name)
+	Camera(const std::string a_name, int a_width, int a_height) :name(a_name), width(a_width), aspect(((float)a_width)/((float)a_height)), height(a_height), camera_aspect(a_width, a_height), hashed_name(a_name.c_str()) //:frame_buffer(a_name, a_width, a_height), name(a_name)
 	{
 	}
 	// this should have the frame buffer
@@ -33,6 +33,10 @@ private:
 	glm::quat rotation_quaternion = glm::quat(1.f, 0, 0, 0);
 
 	glm::ivec2 camera_aspect;
+
+	float aspect;
+	int width;
+	int height;
 
 	glm::mat4 view = glm::mat4(1);
 	glm::mat4 proj = glm::mat4(1);

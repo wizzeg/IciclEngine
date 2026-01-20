@@ -185,35 +185,35 @@ void Renderer::temp_set_shader(std::weak_ptr<ShaderProgram> a_shader)
 
 void Renderer::deffered_render(const RenderContext& a_render_context, const DefferedBuffer& a_deffered_buffers)
 {
-	std::vector<glm::mat4> light_matrices;
-	std::vector<glm::vec4> light_colors2;
-	light_matrices.reserve(10);
-	if (const FrameBuffer* shadow_maps = a_deffered_buffers.shadow_maps)
-	{
-		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-		shadow_maps->bind();
-		shadow_maps->clear();
-		GLuint shadow_map_array = shadow_maps->get_shadow_maps_texture_array();
-		// we have to do this for each light that casts a shadow...
-		const std::vector<ShadowLight>& shadowed_lights = a_render_context.shadow_lights;
-		for (size_t i = 0; i < shadowed_lights.size() && i < 10; i++)
-		{
-			glm::vec3 light_direction = glm::normalize(
-				glm::mat3(a_render_context.shadow_lights[i].lightspace_matrix)
-				* glm::vec3(0.0f, 0.0f, -1.0f));
-			glm::mat4 light_space_matrix =
-				calculate_directional_light_matrix_fitted(glm::radians(a_render_context.shadow_lights[i].rotation), view, proj);
-			//light_space_matrix = proj * view;
-			light_matrices.push_back(light_space_matrix);
-			light_colors2.push_back(a_render_context.shadow_lights[i].color);
+	//std::vector<glm::mat4> light_matrices;
+	//std::vector<glm::vec4> light_colors2;
+	//light_matrices.reserve(10);
+	//if (const FrameBuffer* shadow_maps = a_deffered_buffers.shadow_maps)
+	//{
+	//	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+	//	shadow_maps->bind();
+	//	shadow_maps->clear();
+	//	GLuint shadow_map_array = shadow_maps->get_shadow_maps_texture_array();
+	//	// we have to do this for each light that casts a shadow...
+	//	const std::vector<ShadowLight>& shadowed_lights = a_render_context.shadow_lights;
+	//	for (size_t i = 0; i < shadowed_lights.size() && i < 10; i++)
+	//	{
+	//		glm::vec3 light_direction = glm::normalize(
+	//			glm::mat3(a_render_context.shadow_lights[i].lightspace_matrix)
+	//			* glm::vec3(0.0f, 0.0f, -1.0f));
+	//		glm::mat4 light_space_matrix =
+	//			calculate_directional_light_matrix_fitted(glm::radians(a_render_context.shadow_lights[i].rotation), view, proj);
+	//		//light_space_matrix = proj * view;
+	//		light_matrices.push_back(light_space_matrix);
+	//		light_colors2.push_back(a_render_context.shadow_lights[i].color);
 
-			glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-				shadow_map_array, 0, (GLint)i);
-			glClear(GL_DEPTH_BUFFER_BIT);
-			deffered_shadowmap_pass(a_render_context, shadow_maps, i);
-		}
+	//		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+	//			shadow_map_array, 0, (GLint)i);
+	//		glClear(GL_DEPTH_BUFFER_BIT);
+	//		deffered_shadowmap_pass(a_render_context, shadow_maps, i);
+	//	}
 
-	}
+	//}
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 	// do shadow passes here for each light that needs shadowing
 	if (const FrameBuffer* gbuffer = a_deffered_buffers.gbuffer)
@@ -275,43 +275,42 @@ void Renderer::deffered_render(const RenderContext& a_render_context, const Deff
 		update_pointlight_SSBO(a_render_context.lights);
 
 		GLsizei num_lights = (GLsizei)a_render_context.lights.size();
-		std::vector<glm::vec3> light_poses;
-		light_poses.reserve(num_lights);//{ glm::vec3(0, 0, 0), glm::vec3(10, 10, 10), glm::vec3(-10, -10, -10) };
-		std::vector<glm::vec3> light_colors;
-		light_colors.reserve(num_lights);//{ glm::vec3(0, 1, 0), glm::vec3(1, 0, 0), glm::vec3(0, 0, 1) };
-		std::vector<glm::vec1> light_intensicies;
-		light_intensicies.reserve(num_lights);//{glm::vec1(1), glm::vec1(1), glm::vec1(1)};
-		std::vector<glm::vec3> light_attenuations;
-		light_attenuations.reserve(num_lights);//{glm::vec1(1), glm::vec1(1), glm::vec1(1)};
-		// 3;
+		//std::vector<glm::vec3> light_poses;
+		//light_poses.reserve(num_lights);//{ glm::vec3(0, 0, 0), glm::vec3(10, 10, 10), glm::vec3(-10, -10, -10) };
+		//std::vector<glm::vec3> light_colors;
+		//light_colors.reserve(num_lights);//{ glm::vec3(0, 1, 0), glm::vec3(1, 0, 0), glm::vec3(0, 0, 1) };
+		//std::vector<glm::vec1> light_intensicies;
+		//light_intensicies.reserve(num_lights);//{glm::vec1(1), glm::vec1(1), glm::vec1(1)};
+		//std::vector<glm::vec3> light_attenuations;
+		//light_attenuations.reserve(num_lights);//{glm::vec1(1), glm::vec1(1), glm::vec1(1)};
+		//// 3;
 
-		for (size_t i = 0; i < std::min((size_t)a_render_context.lights.size(), (size_t)228); i++)
-		{
-			light_poses.emplace_back(a_render_context.lights[i].light_positoin); //glm::vec3(a_render_context.lights[i].model_matrix[3])
-			light_colors.emplace_back(a_render_context.lights[i].light_color);
-			light_intensicies.emplace_back(a_render_context.lights[i].light_color.w);
-			light_attenuations.emplace_back(a_render_context.lights[i].light_attenuation);
-		}
-		if (num_lights > 0)
-		{
-			set_vec3fv(light_poses, num_lights, "light_positions");
-			set_vec3fv(light_colors, num_lights, "light_colors");
-			set_vec3fv(light_attenuations, num_lights, "light_attenuations");
-			set_vec1fv(light_intensicies, num_lights, "light_intensities");
-		}
-		if (light_matrices.size() > 0)
-		{
-			set_mat4fv(*light_matrices.data(), (GLsizei)light_matrices.size(), "light_space_matrix");
-			set_vec4fv(light_colors2, (GLsizei)light_colors2.size(), "light_colors");
-		}
+		//for (size_t i = 0; i < std::min((size_t)a_render_context.lights.size(), (size_t)228); i++)
+		//{
+		//	light_poses.emplace_back(a_render_context.lights[i].light_positoin); //glm::vec3(a_render_context.lights[i].model_matrix[3])
+		//	light_colors.emplace_back(a_render_context.lights[i].light_color);
+		//	light_intensicies.emplace_back(a_render_context.lights[i].light_color.w);
+		//	light_attenuations.emplace_back(a_render_context.lights[i].light_attenuation);
+		//}
+		//if (num_lights > 0)
+		//{
+		//	set_vec3fv(light_poses, num_lights, "light_positions");
+		//	set_vec3fv(light_colors, num_lights, "light_colors");
+		//	set_vec3fv(light_attenuations, num_lights, "light_attenuations");
+		//	set_vec1fv(light_intensicies, num_lights, "light_intensities");
+		//}
+		//if (light_matrices.size() > 0)
+		//{
+		//	set_mat4fv(*light_matrices.data(), (GLsizei)light_matrices.size(), "light_space_matrix");
+		//	set_vec4fv(light_colors2, (GLsizei)light_colors2.size(), "light_colors");
+		//}
 
-		set_vec1i((int)light_matrices.size(), "num_shadow_maps");
+		//set_vec1i((int)light_matrices.size(), "num_shadow_maps");
 		set_vec1i(num_lights, "num_lights");
 
 		set_vec3f(static_cast<const float*>(&camera_position.x), "camera_position");
 		render_lighting_quad();
 		a_deffered_buffers.output->unbind();
-
 		/// lighting pass end
 		//////////////////////////////////////////////////////////////////////////////////////////////////
 	}
@@ -714,7 +713,7 @@ void Renderer::deffered_geometry_pass(const RenderContext& a_render_context, con
 		draw_calls++;
 		instanced_models.clear();
 	}
-	//PRINTLN("number of draw calls: {}", draw_calls);
+	//PRINTLN("number of draw calls: {}", draw_calls)
 }
 
 void Renderer::deffered_shadowmap_pass(const RenderContext& a_render_context, const FrameBuffer* shadow_array, size_t a_shadowmap_index)
@@ -865,7 +864,7 @@ void Renderer::deffered_shadowmap_pass(const RenderContext& a_render_context, co
 	}
 	set_vec1i(0, "shadow_pass");
 	glUseProgram(0);
-	//PRINTLN("number of draw calls: {}", draw_calls);
+	//PRINTLN("number of draw calls: {}", draw_calls)
 }
 
 void Renderer::set_vec1f(const float a_value, const char* a_location) const // perhaps later cache all the actual locations instead of string look up

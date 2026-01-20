@@ -185,7 +185,7 @@ void SceneObject::remove_child(std::weak_ptr<SceneObject> a_child)
 												}
 												else
 												{
-													PRINTLN("uh oh, something doesn't have EntityComponent")
+													PRINTLN("uh oh, something doesn't have EntityComponent");
 												}
 											}
 										}
@@ -207,7 +207,7 @@ void SceneObject::remove_child(std::weak_ptr<SceneObject> a_child)
 												}
 												else
 												{
-													PRINTLN("uh oh, something doesn't have EntityComponent")
+													PRINTLN("uh oh, something doesn't have EntityComponent");
 												}
 											}
 										}
@@ -263,7 +263,7 @@ entt::handle SceneObject::get_entity_handle() const
 	return entity_handle;
 }
 
-entt::handle SceneObject::to_runtime(std::weak_ptr<Scene> a_scene) // TODO ... need to check if field has entity reference
+entt::handle SceneObject::start_runtime(std::weak_ptr<Scene> a_scene) // TODO ... need to check if field has entity reference
 {
 	runtime = true;
 	//PRINTLN("runtime started");
@@ -307,7 +307,7 @@ entt::handle SceneObject::to_runtime(std::weak_ptr<Scene> a_scene) // TODO ... n
 		//{
 		//	if (auto c = child.lock())
 		//	{
-		//		c->to_runtime(a_scene);
+		//		c->start_runtime(a_scene);
 		//	}
 		//}
 	}
@@ -328,9 +328,13 @@ bool SceneObject::check_valid(size_t a_index)
 	return true;
 }
 
-void SceneObject::scene_ended()
+void SceneObject::stop_runtime()
 {
 	runtime = false;
+	for (auto& data : component_datas)
+	{
+		data->no_runtime();
+	}
 }
 
 std::weak_ptr<Scene> SceneObject::get_scene()
