@@ -1,0 +1,10 @@
+#include <engine/core/systems_context.h>
+
+SystemsContext::SystemsContext(entt::registry& a_registry, std::shared_ptr<WorkerThreadPool> a_entt_thread_pool, std::shared_ptr<WorkerThreadPool> a_general_thread_pool)
+	: entt_thread_pool(a_entt_thread_pool), registry(a_registry), general_thread_pool(a_general_thread_pool)
+{
+}
+
+SystemsContext::~SystemsContext()
+{
+}

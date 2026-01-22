@@ -69,11 +69,13 @@ int main(void)
 	//glEnable(GL_CULL_FACE);
 	glfw_context->unbind_framebuffer();
 	glfw_context->create_framebuffer("main_camera_buffer", 2560, 1440, Output);
-	glfw_context->bind_framebuffer("editor_frame_buffer");
 
 	glfw_context->unbind_framebuffer();
 	glfw_context->create_framebuffer("editor_camera_gbuffer", 2560, 1440, GBuffer);
-	glfw_context->bind_framebuffer("editor_frame_buffer");
+
+
+	glfw_context->unbind_framebuffer();
+	glfw_context->create_framebuffer("main_camera_gbuffer", 2560, 1440, GBuffer);
 
 	glfw_context->create_framebuffer("shadow_map_array", 2048, 2048, EFramebufferType::ShadowMapArray);
 	FrameBuffer* shadow_maps = glfw_context->get_framebuffer("shadow_map_array");
@@ -157,9 +159,9 @@ int main(void)
 					hashed_string_64 monkey_mesh = hashed_string_64("./assets/obj/triobjmonkey.obj");
 					hashed_string_64 tex = hashed_string_64("./assets/textures/awesomeface.png");
 
-					std::vector<hashed_string_64> meshes = {  "./assets/obj/robot.obj","./assets/obj/robot2.obj","./assets/obj/robot3.obj" }; //"./assets/obj/plane.obj","./assets/obj/triobjmonkey.obj" , "./assets/obj/sizanne.obj",
+					std::vector<hashed_string_64> meshes = {  "./assets/obj/triobjmonkey.obj" }; //"./assets/obj/plane.obj","./assets/obj/triobjmonkey.obj" , "./assets/obj/sizanne.obj", "./assets/obj/robot.obj","./assets/obj/robot2.obj","./assets/obj/robot3.obj"
 					std::vector<hashed_string_64> texes = { "./assets/textures/awesomeface.png", "./assets/textures/wall.jpg", "./assets/textures/container.jpg" };
-					std::vector<hashed_string_64> mats = {"./assets/shaders/test.mat", "./assets/shaders/testcopy.mat" }; // , "./assets/shaders/test2.mat"
+					std::vector<hashed_string_64> mats = { "./assets/shaders/white.mat" }; // , "./assets/shaders/test2.mat" "./assets/shaders/test.mat", "./assets/shaders/testcopy.mat"
 					
 
 					{
@@ -215,11 +217,11 @@ int main(void)
 					}
 
 
-					for (size_t i = 0; i < 1000; i++)
+					for (size_t i = 0; i < 10000; i++)
 					{
-						float x = -5.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 10.0f));
-						float y = -5.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 10.0f));; // Or random if you want variety
-						float z = -5.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 10.0f));; // Same here
+						float x = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));
+						float y = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));; // Or random if you want variety
+						float z = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));; // Same here
 						auto obj = scene->new_scene_object(std::string("model: ") + std::to_string(i), true);
 						auto scene_object = obj.lock();
 						size_t mesh_idx = std::rand() % meshes.size();
@@ -230,13 +232,14 @@ int main(void)
 						//scene_object->add_component(MaterialComponent{mats[mat_idx], false, false, true});
 						scene_object->add_component(RenderComponent{ meshes[mesh_idx], mats[mat_idx], true, true, true });
 						//scene_object->add_component(TextureComponent{ false, texes[tex_idx]});
+						scene_object->add_component(SpawnPositionComponent{ glm::vec3(x, y, z) });
 					}
 
-					for (size_t i = 0; i < 100; i++)
+					for (size_t i = 0; i < 200; i++)
 					{
-						float x = -5.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 10.0f));
-						float y = -5.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 10.0f));; // Or random if you want variety
-						float z = -5.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 10.0f));; // Same here
+						float x = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));
+						float y = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));; // Or random if you want variety
+						float z = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));; // Same here
 						auto obj = scene->new_scene_object(std::string("light: ") + std::to_string(i), true);
 						auto scene_object = obj.lock();
 						int col = (std::rand() % 3);
@@ -328,30 +331,41 @@ int main(void)
 		deffered_buffer.shadow_maps = glfw_context->get_framebuffer("shadow_map_array");
 		renderer.deffered_render(render_context, deffered_buffer);
 
-		glfw_context->bind_framebuffer("main_camera_buffer");
-		glfw_context->clear();
-		// render for each ingame camera
 		for (size_t i = 0; i < engine_context->cameras_render[std::size_t(!engine_context->write_pos)].size(); i++)
 		{
-			if (glfw_context->bind_framebuffer(engine_context->cameras_render[std::size_t(!engine_context->write_pos)][i].frame_buffer_hashed.string))
-			{
 				glfw_context->clear();
 				renderer.set_camera_position(engine_context->cameras_render[std::size_t(!engine_context->write_pos)][i].position);
 				renderer.set_proj_view_matrix(engine_context->cameras_render[std::size_t(!engine_context->write_pos)][i].proj_matrix,
-					engine_context->cameras_render[std::size_t(!engine_context->write_pos)][i].view_matrix);
-				//for (size_t i = 0; i < render_requests.size(); i++)
-				//{
-				//	if (render_requests[i].vao != 0)
-				//	{
-				//		renderer.temp_render(render_requests[i]);
-				//	}
-				//}
-				renderer.temp_render(render_context);
-			}
+				engine_context->cameras_render[std::size_t(!engine_context->write_pos)][i].view_matrix);
+
+				deffered_buffer.gbuffer = glfw_context->get_framebuffer("main_camera_gbuffer");
+				deffered_buffer.output = glfw_context->get_framebuffer("main_camera_buffer");
+				deffered_buffer.shadow_maps = glfw_context->get_framebuffer("shadow_map_array");
+				renderer.deffered_render(render_context, deffered_buffer);
 		}
-		auto now = std::chrono::system_clock::now();
-		uint64_t time = std::chrono::duration_cast<std::chrono::microseconds>(
-			now.time_since_epoch()).count(); // DO NOT USE THIS... will the frame count instead
+
+		//glfw_context->bind_framebuffer("main_camera_buffer");
+		//glfw_context->clear();
+		// render for each ingame camera
+		//for (size_t i = 0; i < engine_context->cameras_render[std::size_t(!engine_context->write_pos)].size(); i++)
+		//{
+		//	if (glfw_context->bind_framebuffer(engine_context->cameras_render[std::size_t(!engine_context->write_pos)][i].frame_buffer_hashed.string))
+		//	{
+		//		glfw_context->clear();
+		//		renderer.set_camera_position(engine_context->cameras_render[std::size_t(!engine_context->write_pos)][i].position);
+		//		renderer.set_proj_view_matrix(engine_context->cameras_render[std::size_t(!engine_context->write_pos)][i].proj_matrix,
+		//			engine_context->cameras_render[std::size_t(!engine_context->write_pos)][i].view_matrix);
+		//		//for (size_t i = 0; i < render_requests.size(); i++)
+		//		//{
+		//		//	if (render_requests[i].vao != 0)
+		//		//	{
+		//		//		renderer.temp_render(render_requests[i]);
+		//		//	}
+		//		//}
+		//		renderer.temp_render(render_context);
+		//	}
+		//}
+
 		/////////////////////////////////////////
 		// Loading a VAO request
 		//if (auto vao_request = engine_context->model_storage->vaoload_returner.return_request())
@@ -463,8 +477,8 @@ int main(void)
 			ImGui::Begin("editor_frame_buffer");
 			ImVec2 available_content = ImGui::GetContentRegionAvail() - ImVec2(5, 5);
 			ImVec2 image_size;
-			//FrameBuffer* frame_buffer = glfw_context->get_framebuffer("editor_frame_buffer");
-			FrameBuffer* frame_buffer = deffered_buffer.output;
+			FrameBuffer* frame_buffer = glfw_context->get_framebuffer("editor_frame_buffer");
+			//FrameBuffer* frame_buffer = deffered_buffer.output;
 			if (frame_buffer)
 			{
 				float fb_height = (float)frame_buffer->get_height();

@@ -67,7 +67,7 @@ struct TransformComponent
     bool overide_quaternion = false;
 };
 
-struct TransformNoRotationComponent
+struct TransformPositionScaleComponent
 {
     glm::vec3 position = glm::vec3(0.0f);
     glm::vec3 scale = glm::vec3(1.0f);
@@ -319,4 +319,9 @@ struct MaterialUniformComponent
 struct TestReferenceComponent
 {
     EntityReference reference;
+};
+
+struct SpawnPositionComponent
+{
+    glm::vec3 spawn_position;
 };

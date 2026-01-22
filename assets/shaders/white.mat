@@ -2,7 +2,7 @@
     "name": "test",
     "shader_path": "./assets/shaders/color.shdr",
     "lit": true,
-    "instanced": false,
+    "instanced": true,
     "recieves_shadows": true,
     "casts_shadows": false,
     "transparent": true,

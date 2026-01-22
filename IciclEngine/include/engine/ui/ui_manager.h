@@ -30,7 +30,7 @@ struct PlaybackControls {
 
         // PLAY button ▶️
         ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8.0f);
-        if (ImGui::Button(isPlaying && !isPaused ? "⏸️" : "▶️", ImVec2(40, 40))) {
+        if (ImGui::Button(isPlaying && !isPaused ? "pause" : "play", ImVec2(40, 40))) {
             if (isPlaying && !isPaused) {
                 isPaused = true;  // Pause
             }
@@ -46,7 +46,7 @@ struct PlaybackControls {
 
         // STOP button ⏹️
         ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8.0f);
-        if (ImGui::Button("⏹️", ImVec2(40, 40))) {
+        if (ImGui::Button("stop", ImVec2(40, 40))) {
             isPlaying = false;
             isPaused = false;  // Stop
         }
@@ -58,7 +58,7 @@ struct PlaybackControls {
         // PAUSE button ⏸️ (only show when playing)
         if (isPlaying) {
             ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8.0f);
-            if (ImGui::Button("⏸️", ImVec2(40, 40))) {
+            if (ImGui::Button("pause", ImVec2(40, 40))) {
                 isPaused = !isPaused;  // Toggle pause
             }
             // REPLACE WITH IMAGE: ImGui::Image((ImTextureID)pause_texture_id, ImVec2(32, 32));
@@ -160,10 +160,10 @@ struct ContentBrowser {
                 // Icon
                 ImGui::SetCursorPosX(ImGui::GetCursorPosX() - cellSize + 4);
                 if (fs::is_directory(entry)) {
-                    ImGui::Text("📁");
+                    ImGui::Text("folder");
                 }
                 else {
-                    ImGui::Text("📄");
+                    ImGui::Text("file");
                 }
 
                 // Filename below icon
@@ -310,7 +310,7 @@ public:
         ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
 
         // Play/Pause
-        if (ImGui::Button(playback.isPlaying && !playback.isPaused ? "⏸️" : "▶️", ImVec2(40, 30))) {
+        if (ImGui::Button(playback.isPlaying && !playback.isPaused ? "pause" : "play", ImVec2(40, 30))) {
             if (playback.isPlaying && !playback.isPaused) {
                 playback.isPaused = true;
             }
@@ -322,7 +322,7 @@ public:
         ImGui::SameLine();
 
         // Stop
-        if (ImGui::Button("⏹️", ImVec2(40, 30))) {
+        if (ImGui::Button("stop", ImVec2(40, 30))) {
             playback.isPlaying = false;
             playback.isPaused = false;
         }

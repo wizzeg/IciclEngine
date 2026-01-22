@@ -158,7 +158,8 @@
     <ClCompile Include="game_engine.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="src\engine\core\game_thread.cpp" />
-    <ClCompile Include="src\engine\core\system_thread.cpp" />
+    <ClCompile Include="src\engine\core\systems_context.cpp" />
+    <ClCompile Include="src\engine\core\worker_thread.cpp" />
     <ClCompile Include="src\engine\editor\component_factory.cpp" />
     <ClCompile Include="src\engine\editor\field_serialization_registry.cpp" />
     <ClCompile Include="src\engine\editor\scene.cpp" />
@@ -168,6 +169,8 @@
     <ClCompile Include="src\engine\game\components.cpp" />
     <ClCompile Include="src\engine\game\component_data.cpp" />
     <ClCompile Include="src\engine\game\input_manager.cpp" />
+    <ClCompile Include="src\engine\game\systems.cpp" />
+    <ClCompile Include="src\engine\game\system_base.cpp" />
     <ClCompile Include="src\engine\renderer\frame_buffer.cpp" />
     <ClCompile Include="src\engine\renderer\glfw_context.cpp" />
     <ClCompile Include="src\engine\renderer\obj_renderer.cpp" />
@@ -190,7 +193,6 @@
     <ClCompile Include="src\engine\ui\ui_manager.cpp" />
     <ClCompile Include="src\engine\ui\ui_object_property_drawer.cpp" />
     <ClCompile Include="src\engine\ui\ui_scene_hierarchy_drawer.cpp" />
-    <ClCompile Include="systems.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\entt\entt.hpp" />
@@ -210,7 +212,8 @@
     <ClInclude Include="content_browser.h" />
     <ClInclude Include="game_engine.h" />
     <ClInclude Include="include\engine\core\game_thread.h" />
-    <ClInclude Include="include\engine\core\system_thread.h" />
+    <ClInclude Include="include\engine\core\systems_context.h" />
+    <ClInclude Include="include\engine\core\worker_thread.h" />
     <ClInclude Include="include\engine\editor\componentdata_macros.h" />
     <ClInclude Include="include\engine\editor\component_entries.h" />
     <ClInclude Include="include\engine\editor\component_factory.h" />
@@ -225,6 +228,8 @@
     <ClInclude Include="include\engine\game\components.h" />
     <ClInclude Include="include\engine\game\component_data.h" />
     <ClInclude Include="include\engine\game\input_manager.h" />
+    <ClInclude Include="include\engine\game\systems.h" />
+    <ClInclude Include="include\engine\game\system_base.h" />
     <ClInclude Include="include\engine\renderer\frame_buffer.h" />
     <ClInclude Include="include\engine\renderer\glfw_context.h" />
     <ClInclude Include="include\engine\renderer\obj_renderer.h" />
@@ -260,7 +265,6 @@
     <ClInclude Include="include\engine\utilities\serialization.h" />
     <ClInclude Include="include\engine\utilities\static_conversions.h" />
     <ClInclude Include="include\engine\utilities\utilities.h" />
-    <ClInclude Include="systems.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\assets\shaders\engine\lighting_frag.glsl" />

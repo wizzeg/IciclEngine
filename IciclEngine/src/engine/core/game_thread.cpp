@@ -9,6 +9,7 @@
 #include <KHR/khrplatform.h>
 #include <glfw/glfw3.h>
 #include <engine/utilities/utilities.h>
+#include <engine/game/systems.h>
 
 
 void GameThread::execute()
@@ -18,17 +19,20 @@ void GameThread::execute()
 
 	hashed_string_64 invalid_hash;
 
+	
 
 	static thread_local const glm::mat4 IDENTITY(1.0f);
-	auto transform_group = scene->get_registry().group<
-		TransformDynamicComponent
-	>();
+	//auto transform_group = scene->get_registry().group<
+	//	TransformDynamicComponent
+	//>();
 	//auto render_group = scene->get_registry().group<
 	//	MeshComponent, MaterialComponent
 	//>(entt::get<TransformDynamicComponent>);
 	auto render_group = scene->get_registry().group<
 		RenderComponent
 	>(entt::get<TransformDynamicComponent>);
+
+	
 	while (true)
 	{
 
@@ -102,6 +106,7 @@ void GameThread::execute()
 		if (std::abs(camera_move.x) > 0.0 || std::abs(camera_move.y) > 0.0 || std::abs(camera_move.z) > 0.0) engine_context->editor_camera.move(camera_move);
 
 		double delta_time = engine_context->delta_time;
+		engine_context->systems_context->set_delta_time(delta_time);
 		if (engine_context->game_playing)
 		{
 			game_runtime();
@@ -151,12 +156,20 @@ void GameThread::game_runtime()
 
 	ind_timer.start();
 	// this about 1ms
-	//for (auto [entity, name, worldpos] 
-	//	: registry.view<EntityComponent, TransformDynamicComponent>(entt::exclude<CameraComponent>).each())
+	//accumilated_time += engine_context->systems_context->get_delta_time();
+	//for (auto [entity, transform, spawn]
+	//	: registry.view<TransformDynamicComponent, SpawnPositionComponent>().each())
 	//{
-	//	worldpos.position.x += 0.1f * (float)delta_time;
-	//	worldpos.rotation_quat *= glm::quat(glm::radians(glm::vec3(0.1, 0.1, 0.1) * 50.f * (float)delta_time));
+	//	//worldpos.position.x += 0.1f * (float)delta_time;
+	//	//worldpos.rotation_quat *= glm::quat(glm::radians(glm::vec3(0.1, 0.1, 0.1) * 50.f * (float)delta_time));
+	//	float amplitude = 5.f;
+	//	float frequency = 5.f;
+	//	float offset = amplitude * glm::sin(frequency * transform.position.x + accumilated_time);
+	//	transform.position.y = spawn.spawn_position.y + offset;
 	//}
+
+	move_system.execute(*engine_context->systems_context);
+	//engine_context->systems_context->sync();
 	ind_timer.stop();
 	movement += ind_timer.get_time_ms();
 
@@ -165,32 +178,33 @@ void GameThread::game_runtime()
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Entity rotation and position final computation (also handles what the imgui has hooked)
 	// need to be done only on root entities first, then do itterative to children and siblings
-	for (auto [entity, world_pos] : registry.view<TransformDynamicComponent>().each()) // this is very multi threadable
-	{
-		//for (auto [entity, world_pos] : transform_group.each()) // this is very multi threadable
-		//{
-		if (world_pos.overide_quaternion)
-		{
-			world_pos.rotation_euler_do_not_use.x = std::fmod(world_pos.rotation_euler_do_not_use.x, 360.0f);
-			if (world_pos.rotation_euler_do_not_use.x < 0.0f) world_pos.rotation_euler_do_not_use.x += 360.0f;
-			world_pos.rotation_euler_do_not_use.y = std::fmod(world_pos.rotation_euler_do_not_use.y, 360.0f);
-			if (world_pos.rotation_euler_do_not_use.y < 0.0f) world_pos.rotation_euler_do_not_use.y += 360.0f;
-			world_pos.rotation_euler_do_not_use.z = std::fmod(world_pos.rotation_euler_do_not_use.z, 360.0f);
-			if (world_pos.rotation_euler_do_not_use.z < 0.0f) world_pos.rotation_euler_do_not_use.z += 360.0f;
+	//for (auto [entity, world_pos] : registry.view<TransformDynamicComponent>().each()) // this is very multi threadable
+	//{
+	//	//for (auto [entity, world_pos] : transform_group.each()) // this is very multi threadable
+	//	//{
+	//	if (world_pos.overide_quaternion)
+	//	{
+	//		world_pos.rotation_euler_do_not_use.x = std::fmod(world_pos.rotation_euler_do_not_use.x, 360.0f);
+	//		if (world_pos.rotation_euler_do_not_use.x < 0.0f) world_pos.rotation_euler_do_not_use.x += 360.0f;
+	//		world_pos.rotation_euler_do_not_use.y = std::fmod(world_pos.rotation_euler_do_not_use.y, 360.0f);
+	//		if (world_pos.rotation_euler_do_not_use.y < 0.0f) world_pos.rotation_euler_do_not_use.y += 360.0f;
+	//		world_pos.rotation_euler_do_not_use.z = std::fmod(world_pos.rotation_euler_do_not_use.z, 360.0f);
+	//		if (world_pos.rotation_euler_do_not_use.z < 0.0f) world_pos.rotation_euler_do_not_use.z += 360.0f;
 
-			world_pos.rotation_quat = glm::quat(glm::radians(world_pos.rotation_euler_do_not_use));
-		}
-		if (world_pos.get_euler_angles) /// 0.5ms
-		{
-			world_pos.rotation_euler_do_not_use = glm::degrees(glm::eulerAngles(world_pos.rotation_quat));
-			//if (world_pos.overide_quaternion)
-			//	world_pos.get_euler_angles = false;
-		}
+	//		world_pos.rotation_quat = glm::quat(glm::radians(world_pos.rotation_euler_do_not_use));
+	//	}
+	//	if (world_pos.get_euler_angles) /// 0.5ms
+	//	{
+	//		world_pos.rotation_euler_do_not_use = glm::degrees(glm::eulerAngles(world_pos.rotation_quat));
+	//		//if (world_pos.overide_quaternion)
+	//		//	world_pos.get_euler_angles = false;
+	//	}
 
-		world_pos.model_matrix = glm::translate(glm::mat4(1.0f), world_pos.position); // 0.47ms
-		world_pos.model_matrix *= glm::mat4_cast(world_pos.rotation_quat); // 1.47ms
-		world_pos.model_matrix = glm::scale(world_pos.model_matrix, world_pos.scale); // 0.4ms
-	}
+	//	world_pos.model_matrix = glm::translate(glm::mat4(1.0f), world_pos.position); // 0.47ms
+	//	world_pos.model_matrix *= glm::mat4_cast(world_pos.rotation_quat); // 1.47ms
+	//	world_pos.model_matrix = glm::scale(world_pos.model_matrix, world_pos.scale); // 0.4ms
+	//}
+	transform_calculation_system.execute(*engine_context->systems_context);
 	ind_timer.stop();
 	complex_movement += ind_timer.get_time_ms();
 
@@ -575,14 +589,122 @@ void GameThread::editor_time()
 	auto& scene_objects = scene->get_scene_objects();
 	std::vector<TransformDynamicComponent*> transforms;
 	std::vector<RenderComponent*> render_components;
+	
+	auto temp_num_scene_objects = scene_objects.size();
 
 	std::vector<EditorEntity> editor_entities;
-	editor_entities.reserve(1000);
+	editor_entities.reserve(temp_num_scene_objects);
 	std::vector<hashed_string_64> materials;
-	materials.reserve(1000);
+	materials.reserve(temp_num_scene_objects);
 	std::vector<hashed_string_64> meshes;
-	meshes.reserve(1000);
+	meshes.reserve(temp_num_scene_objects);
 	uint64_t invalid_hash = hashed_string_64("").hash;
+
+	// multi threading is apparently slower.
+	//{
+	//	auto& ctx = engine_context->systems_context;
+	//	size_t num_threads = engine_context->systems_context->num_threads();
+	//	size_t num_scene_objects = scene_objects.size();
+	//	size_t start_index = 0;
+	//	size_t end_index = 0;
+
+	//	size_t chunk_size = 1024;
+
+	//	size_t num_chunks = (num_scene_objects / chunk_size) + 1;
+	//	std::vector<std::vector<EditorEntity>> entity_containers;
+	//	entity_containers.resize(num_chunks);
+	//	std::vector<std::vector<hashed_string_64>> materials_containers;
+	//	materials_containers.resize(num_chunks);
+	//	std::vector<std::vector<hashed_string_64>> meshes_containers;
+	//	meshes_containers.resize(num_chunks);
+
+	//	for (size_t i = 0; i < num_chunks; i++)
+	//	{
+	//		entity_containers[i].reserve(temp_num_scene_objects);
+	//		materials_containers[i].reserve(temp_num_scene_objects);
+	//		meshes_containers[i].reserve(temp_num_scene_objects);
+	//	}
+
+
+	//	for (size_t i = 0; i < num_chunks; i++)
+	//	{
+	//		size_t thread_id = i;
+
+	//		ctx->enqueue([&, thread_id, chunk_size, num_scene_objects]()
+	//			{
+	//				auto& materials_container = materials_containers[thread_id];
+	//				auto& meshes_container = meshes_containers[thread_id];
+	//				auto& entity_container = entity_containers[thread_id];
+	//				uint64_t invalid_hash = hashed_string_64("").hash;
+	//				for (size_t i = thread_id * chunk_size; i <((thread_id + 1) * chunk_size) && i < num_scene_objects; i++)
+	//				{
+	//					auto& scene_object = scene_objects[i];
+	//					bool valid_entity = false;
+	//					EditorEntity entity;
+
+	//					auto& component_datas = scene_object->get_component_datas();
+	//					for (auto& component_data : component_datas)
+	//					{
+
+	//						std::type_index type = component_data->get_type();
+
+	//						if (type == typeid(TransformDynamicComponent))
+	//						{
+	//							ComponentData<TransformDynamicComponent>* data = static_cast<ComponentData<TransformDynamicComponent>*>(component_data.get());
+	//							entity.transform = &data->get_component();
+	//							valid_entity = true;
+	//						}
+	//						else if (type == typeid(RenderComponent))
+	//						{
+	//							ComponentData<RenderComponent>* data = static_cast<ComponentData<RenderComponent>*>(component_data.get());
+	//							entity.render = &data->get_component();
+	//							valid_entity = true;
+	//							if (entity.render->material.hash != invalid_hash)
+	//							{
+	//								materials_container.push_back(entity.render->material);
+	//							}
+	//							if (entity.render->mesh.hash != invalid_hash)
+	//							{
+	//								meshes_container.push_back(entity.render->mesh);
+	//							}
+	//						}
+	//						else if (type == typeid(PointLightComponent))
+	//						{
+	//							ComponentData<PointLightComponent>* data = static_cast<ComponentData<PointLightComponent>*>(component_data.get());
+	//							entity.point_light = &data->get_component();
+	//							valid_entity = true;
+	//						}
+	//					}
+	//					if (valid_entity)
+	//					{
+	//						entity_container.push_back(entity);
+	//					}
+	//				}
+	//			});
+	//	}
+	//	ctx->sync();
+	//	for (size_t i = 0; i < materials_containers.size(); i++)
+	//	{
+	//		for (size_t j = 0; j < materials_containers[i].size(); j++)
+	//		{
+	//			materials.emplace_back(materials_containers[i][j]);
+	//		}
+	//	}
+	//	for (size_t i = 0; i < meshes_containers.size(); i++)
+	//	{
+	//		for (size_t j = 0; j < meshes_containers[i].size(); j++)
+	//		{
+	//			meshes.emplace_back(meshes_containers[i][j]);
+	//		}
+	//	}
+	//	for (size_t i = 0; i < entity_containers.size(); i++)
+	//	{
+	//		for (size_t j = 0; j < entity_containers[i].size(); j++)
+	//		{
+	//			editor_entities.emplace_back(entity_containers[i][j]);
+	//		}
+	//	}
+	//}
 
 	for (auto& scene_object : scene_objects)
 	{

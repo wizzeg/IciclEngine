@@ -147,9 +147,6 @@
     <ClCompile Include="..\vendor\glad\glad.c">
       <Filter>Source Files\vendor\glad</Filter>
     </ClCompile>
-    <ClCompile Include="systems.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\engine\editor\scene.cpp">
       <Filter>Source Files\engine\editor</Filter>
     </ClCompile>
@@ -255,8 +252,17 @@
     <ClCompile Include="src\engine\core\game_thread.cpp">
       <Filter>Source Files\engine\core</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\core\system_thread.cpp">
+    <ClCompile Include="src\engine\core\worker_thread.cpp">
       <Filter>Source Files\engine\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\core\systems_context.cpp">
+      <Filter>Source Files\engine\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\game\system_base.cpp">
+      <Filter>Source Files\engine\game</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\game\systems.cpp">
+      <Filter>Source Files\engine\game</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -298,9 +304,6 @@
     </ClInclude>
     <ClInclude Include="..\vendor\entt\entt.hpp">
       <Filter>Header Files\vendor\entt</Filter>
-    </ClInclude>
-    <ClInclude Include="systems.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\engine\renderer\render_info.h">
       <Filter>Header Files\engine\renderer</Filter>
@@ -461,8 +464,17 @@
     <ClInclude Include="include\engine\core\game_thread.h">
       <Filter>Header Files\engine\core</Filter>
     </ClInclude>
-    <ClInclude Include="include\engine\core\system_thread.h">
+    <ClInclude Include="include\engine\core\worker_thread.h">
       <Filter>Header Files\engine\core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\core\systems_context.h">
+      <Filter>Header Files\engine\core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\game\system_base.h">
+      <Filter>Header Files\engine\game</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\game\systems.h">
+      <Filter>Header Files\engine\game</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -200,19 +200,19 @@ struct AssetManager
 	{
 		for (uint8_t i = 0; i < a_num_threads; i++)
 		{
-			thread_pool.add_thread<AssetJobThread>(asset_storage, asset_messages, i);
+			entt_thread_pool.add_thread<AssetJobThread>(asset_storage, asset_messages, i);
 		}
-		thread_pool.start_threads();
+		entt_thread_pool.start_threads();
 	}
 	~AssetManager()
 	{
-		thread_pool.stop_threads();
+		entt_thread_pool.stop_threads();
 	}
 
 	void add_asset_job(AssetJob& a_job)
 	{
 		asset_messages.job_queue.add_message(a_job);
-		thread_pool.wake_thread();
+		entt_thread_pool.wake_thread();
 	}
 	void add_asset_jobs(std::vector<AssetJob>& a_jobs)
 	{
@@ -224,7 +224,7 @@ struct AssetManager
 		else
 		{
 			asset_messages.job_queue.add_messages(a_jobs);
-			thread_pool.wake_threads();
+			entt_thread_pool.wake_threads();
 		}
 
 	}
@@ -239,6 +239,6 @@ struct AssetManager
 protected:
 	AssetStorage asset_storage;
 	AssetMessages asset_messages;
-	ThreadPool thread_pool;
+	ThreadPool entt_thread_pool;
 };
 

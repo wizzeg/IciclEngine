@@ -26,7 +26,9 @@
 #include <engine/resources/asset_manager.h>
 #include <engine/utilities/entt_modified.h>
 #include <engine/utilities/utilities.h>
-#include <engine/core/system_thread.h>
+#include <engine/core/worker_thread.h>
+#include <engine/core/systems_context.h>
+#include <engine/game/systems.h>
 
 struct EditorRequestedAssets
 {
@@ -49,29 +51,33 @@ struct EngineContext
 		input_manager(InputManager::get())
 	{
 		num_logical_cores = std::thread::hardware_concurrency();
+		num_game_threads = std::max(1, num_logical_cores - 2);
+		num_general_threads = 1;
 		PRINTLN("logical cores: {}", num_logical_cores);
 		int num_asset_threads = 0;
 		if (num_logical_cores <= 4)
 		{
-			num_game_threads = std::max(1, num_logical_cores - 1);
 			num_asset_threads = 1;
 		}
 		else if (num_logical_cores <= 8)
 		{
-			num_game_threads = std::max(1, num_logical_cores - 2);
+			num_general_threads = 2;
 			num_asset_threads = 2;
 		}
 		else if (num_logical_cores <= 12)
 		{
-			num_game_threads = std::max(1, num_logical_cores - 2);
+			num_general_threads = 3;
 			num_asset_threads = 3;
 		}
 		else
 		{
-			num_game_threads = std::max(1, num_logical_cores - 2);
+			num_general_threads = 4;
 			num_asset_threads = 4;
 		}
 		asset_manager = std::make_shared<AssetManager>(num_asset_threads);
+		worker_pool = std::make_shared<WorkerThreadPool>(num_game_threads);
+		general_pool = std::make_shared<WorkerThreadPool>(num_general_threads);
+		systems_context = std::make_shared<SystemsContext>(scene->get_registry(), worker_pool, general_pool);
 	};
 	void set_render_request(std::vector<RenderRequest>& a_render_requests)
 	{
@@ -133,6 +139,9 @@ struct EngineContext
 	std::shared_ptr<AssetManager> asset_manager;
 	std::shared_ptr<Scene> scene;
 	EditorRequestedAssets requested_assets;
+	std::shared_ptr<WorkerThreadPool> worker_pool;
+	std::shared_ptr<WorkerThreadPool> general_pool;
+	std::shared_ptr<SystemsContext> systems_context;
 
 	Camera editor_camera = Camera("editor camera", 2560, 1440);
 	InputManager& input_manager;
@@ -150,6 +159,7 @@ struct EngineContext
 
 	int num_game_threads = 0;
 	int num_logical_cores = 0;
+	int num_general_threads = 0;
 	
 };
 
@@ -180,5 +190,8 @@ private:
 	double game_thread_time = 0;
 	double lighting_time = 0;
 
+	MoveSystem move_system;
+	TransformCalculationSystem transform_calculation_system;
+	double accumilated_time = 0;
 	// worker threads
 };

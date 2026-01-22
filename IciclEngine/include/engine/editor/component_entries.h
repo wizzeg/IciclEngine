@@ -130,3 +130,7 @@ REGISTER_COMPONENT(HierarchyComponent, ("Default"),
 	FIELD_CUSTOM("next sibling: ", comp, next_sibling, 3.f, false),
 	FIELD_CUSTOM("child: ", comp, child, 3.f, false),
 	)
+
+REGISTER_COMPONENT(SpawnPositionComponent, ("Default"),
+	FIELD_CUSTOM("spawn position: ", comp, spawn_position, 1.75f, false),
+	)
