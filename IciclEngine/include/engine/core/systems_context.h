@@ -11,8 +11,7 @@
 #include <any>
 #include <mutex>
 #include <engine/utilities/macros.h>
-
-using storage_key = std::tuple<std::type_index, std::string>;
+#include <condition_variable>
 
 template<typename...T> struct WithWrite {};
 template<typename...T> struct WithRead {};
@@ -23,9 +22,6 @@ struct SystemsContextDependencies
 	std::vector<std::type_index> reading_components;
 	std::vector<std::type_index> writing_components;
 	std::mutex components_mutex;
-
-	std::vector<storage_key> reading_storages;
-	std::vector<storage_key> writing_storages;
 
 	template<typename... Reads, typename... Writes>
 	bool add_component_dependencies(WithRead<Reads...>, WithWrite<Writes...>, bool check_dependencies = true)
@@ -218,16 +214,77 @@ protected:
 	}
 };
 
+struct SystemsStorageObjectBase
+{
+	std::condition_variable cv;
+	std::mutex mutex;
+	int waiting_readers = 0;
+	int readers = 0;
+	int waiting_writers = 0;
+	bool writing = false;
+};
+
+template<typename T>
+struct SystemsStorageObject : SystemsStorageObjectBase
+{
+	SystemsStorageObject(T a_data) : data(std::move(a_data)) {}
+	T data;
+	void read(const std::function <void(const T&)>& func)
+	{
+		std::unique_lock<std::mutex> read_lock(mutex);
+		waiting_readers++;
+		cv.wait(read_lock, [this]() { return !writing; });
+		waiting_readers--;
+		readers++;
+		read_lock.unlock();
+		func(data);
+		read_lock.lock();
+		readers--;
+		cv.notify_all();
+	}
+	void write(const std::function <void(T&)>& func)
+	{
+		std::unique_lock write_lock(mutex);
+		waiting_writers++;
+		cv.wait(write_lock, [this]() { return !writing && readers == 0; });
+		waiting_writers--;
+		writing = true;
+		write_lock.unlock();
+		func(data);
+		write_lock.lock();
+		writing = false;
+	}
+
+	void copy(T* data_copy)
+	{ 
+		std::unique_lock<std::mutex> read_lock(mutex);
+		waiting_readers++;
+		cv.wait(read_lock, [this]() { return !writing; });
+		waiting_readers--;
+		readers++;
+		read_lock.unlock();
+		*data_copy = data;
+		read_lock.lock();
+		readers--;
+		cv.notify_all();
+	};
+};
+
 struct SystemsContextStorage
 {
-	std::map<storage_key, std::any> storage;
+	using storage_key = std::tuple<std::type_index, std::string>;
+	std::map<storage_key, SystemsStorageObjectBase> storage;
+	std::vector<storage_key> storage_object_deletions;
+	std::mutex deletion_mutex;
+	std::mutex storage_mutex;
 
 	template <typename T>
 	T* get_object(std::string a_name)
 	{
+		std::lock_guard storage_guard(storage_mutex);
 		if (auto it = storage.find(storage_key(typeid(T), a_name)); it != storage.end())
 		{
-			return std::any_cast<T>(&it->second);
+			return static_cast<SystemsStorageObject<T>*>(&it->second);
 		}
 		return nullptr;
 	}
@@ -235,7 +292,41 @@ struct SystemsContextStorage
 	template <typename T>
 	void add_or_replace_object(std::type_index a_type, std::string a_name, T value)
 	{
-		storage[storage_key(a_type, a_name)] = std::move(value);
+		std::lock_lock storage_lock(storage_mutex);
+		if (auto it = storage.find(storage_key(typeid(T), a_name)); it != storage.end())
+		{
+			SystemsStorageObject<T>* object = static_cast<SystemsStorageObject<T>*>(&it->second);
+			storage_lock.unlock();
+			std::unique_lock object_lock(object->mutex);
+			object->cv.wait(object_lock, [this, &object]() {
+				return object->readers == 0 && !object->writing;
+				});
+			object.data = std::move(value);
+		}
+		else
+		{
+			storage[storage_key(a_type, a_name)] = SystemsStorageObject<T>(std::move(value));
+		}
+		
+	}
+	template <typename T>
+	void mark_erase(std::string a_name)
+	{
+		std::lock_guard deletion_guard(deletion_mutex);
+		storage_object_deletions.push_back(storage_key(typeid(T), a_name));
+	}
+
+	void perform_erase()
+	{
+		for (auto& deletion : storage_object_deletions)
+		{
+			auto it = storage.find(deletion);
+			if (it != storage.end())
+			{
+				storage.erase(it);
+			}
+		}
+		storage_object_deletions.clear();
 	}
 };
 
@@ -243,40 +334,6 @@ struct SystemsContext
 {
 	SystemsContext(entt::registry& a_registry, std::shared_ptr<WorkerThreadPool> a_thread_pool, std::shared_ptr<WorkerThreadPool> a_general_thread_pool);
 	~SystemsContext();
-
-	// before going into any of these, it has to register the dependencies
-
-	template<typename... Writes, typename Func>
-	void each(WithWrite<Writes...> writes, Func&& func)
-	{
-		while (systems_dependencies.add_component_dependencies(writes))
-		{
-			PRINTLN("Forced sync");
-			each_sync();
-		}
-		auto view = registry.view< Writes...>();
-		for (auto entity : view)
-		{
-			func(entity, view.get<Writes>(entity)...);
-		}
-		systems_dependencies.remove_component_dependencies(writes);
-	}
-
-	template<typename... Writes, typename... Excludes, typename Func>
-	void each(WithWrite<Writes...> writes, Without<Excludes...>, Func&& func)
-	{
-		while (systems_dependencies.add_component_dependencies(writes))
-		{
-			PRINTLN("Forced sync");
-			each_sync();
-		}
-		auto view = registry.view<Writes...>(entt::exclude<Excludes...>);
-		for (auto entity : view)
-		{
-			func(entity, view.get<Writes>(entity)...);
-		}
-		systems_dependencies.remove_component_dependencies(writes);
-	}
 
 	template<typename... Reads, typename Func>
 	void each(WithRead<Reads...> reads, Func&& func)
@@ -310,6 +367,38 @@ struct SystemsContext
 		systems_dependencies.remove_component_dependencies(reads);
 	}
 
+	template<typename... Writes, typename Func>
+	void each(WithWrite<Writes...> writes, Func&& func)
+	{
+		while (systems_dependencies.add_component_dependencies(writes))
+		{
+			PRINTLN("Forced sync");
+			each_sync();
+		}
+		auto view = registry.view< Writes...>();
+		for (auto entity : view)
+		{
+			func(entity, view.get<Writes>(entity)...);
+		}
+		systems_dependencies.remove_component_dependencies(writes);
+	}
+
+	template<typename... Writes, typename... Excludes, typename Func>
+	void each(WithWrite<Writes...> writes, Without<Excludes...>, Func&& func)
+	{
+		while (systems_dependencies.add_component_dependencies(writes))
+		{
+			PRINTLN("Forced sync");
+			each_sync();
+		}
+		auto view = registry.view<Writes...>(entt::exclude<Excludes...>);
+		for (auto entity : view)
+		{
+			func(entity, view.get<Writes>(entity)...);
+		}
+		systems_dependencies.remove_component_dependencies(writes);
+	}
+
 	template<typename... Reads, typename... Writes, typename Func>
 	void each(WithRead<Reads...> reads, WithWrite<Writes...> writes, Func&& func)
 	{
@@ -340,6 +429,43 @@ struct SystemsContext
 			func(entity, view.template get<Reads>(entity)..., view.get<Writes>(entity)...);
 		}
 		systems_dependencies.remove_component_dependencies(reads, writes);
+	}
+
+
+	template<typename... Reads, typename Func>
+	void enqueue_each(WithRead<Reads...> reads, Func&& func)
+	{
+		while (systems_dependencies.add_component_dependencies(reads))
+		{
+			PRINTLN("Forced sync");
+			each_sync();
+		}
+		entt_thread_pool->enqueue([this, reads, func]() {
+			auto view = registry.view<Reads...>();
+			for (auto entity : view)
+			{
+				func(entity, view.template get<Reads>(entity)...);
+			}
+			systems_dependencies.remove_component_dependencies(reads);
+			});
+	}
+
+	template<typename... Reads, typename...Excludes, typename Func>
+	void enqueue_each(WithRead<Reads...> reads, Without<Excludes...>, Func&& func)
+	{
+		while (systems_dependencies.add_component_dependencies(reads))
+		{
+			PRINTLN("Forced sync");
+			each_sync();
+		}
+		entt_thread_pool->enqueue([this, reads, func]() {
+			auto view = registry.view<Reads...>(entt::exclude<Excludes...>);
+			for (auto entity : view)
+			{
+				func(entity, view.template get<Reads>(entity)...);
+			}
+			systems_dependencies.remove_component_dependencies(reads);
+			});
 	}
 
 	template<typename... Writes, typename Func>
@@ -375,42 +501,6 @@ struct SystemsContext
 					func(entity, view.template get<Writes>(entity)...);
 				}
 				systems_dependencies.remove_component_dependencies(writes);
-			});
-	}
-
-	template<typename... Reads, typename Func>
-	void enqueue_each(WithRead<Reads...> reads, Func&& func)
-	{
-		while (systems_dependencies.add_component_dependencies(reads))
-		{
-			PRINTLN("Forced sync");
-			each_sync();
-		}
-		entt_thread_pool->enqueue([this, reads, func]() {
-			auto view = registry.view<Reads...>();
-				for (auto entity : view)
-				{
-					func(entity, view.template get<Reads>(entity)...);
-				}
-				systems_dependencies.remove_component_dependencies(reads);
-			});
-	}
-
-	template<typename... Reads, typename...Excludes, typename Func>
-	void enqueue_each(WithRead<Reads...> reads, Without<Excludes...>, Func&& func)
-	{
-		while (systems_dependencies.add_component_dependencies(reads))
-		{
-			PRINTLN("Forced sync");
-			each_sync();
-		}
-		entt_thread_pool->enqueue([this, reads, func]() {
-			auto view = registry.view<Reads...>(entt::exclude<Excludes...>);
-				for (auto entity : view)
-				{
-					func(entity, view.template get<Reads>(entity)...);
-				}
-				systems_dependencies.remove_component_dependencies(reads);
 			});
 	}
 
@@ -450,83 +540,6 @@ struct SystemsContext
 			});
 	}
 
-
-
-	template<typename... Writes, typename Func>
-	void enqueue_parallel_each(WithWrite<Writes...> writes, Func&& func, size_t a_chunk_size = 256)
-	{
-		while (systems_dependencies.add_component_dependencies(writes))
-		{
-			PRINTLN("Forced sync");
-			each_sync();
-		}
-		auto view = registry.view<Writes...>();
-		auto it = view.begin();
-
-		while (it != view.end())
-		{
-			auto entity_chunk_begin = it;
-
-			size_t chunk_count = 0;
-			while (it != view.end() && chunk_count < a_chunk_size)
-			{
-				++it;
-				++chunk_count;
-			}
-			auto entity_chunk_end = it;
-			systems_dependencies.add_component_dependencies(writes, false);
-			entt_thread_pool->enqueue([this, view, entity_chunk_begin, entity_chunk_end, func]()
-				{
-					//auto view = registry.view<Components...>();
-					for (auto entity_iter = entity_chunk_begin; entity_iter != entity_chunk_end; ++entity_iter)
-					{
-						auto entity = *entity_iter;
-						func(entity, view.template get<Writes>(entity)...); // needs to match oreder in system
-					} // unsure if I need .template ... might need it, might not.
-					systems_dependencies.remove_component_dependencies(writes);
-				}
-			);
-		}
-		systems_dependencies.remove_component_dependencies(writes);
-	}
-
-	template<typename... Writes, typename... Excludes, typename Func>
-	void enqueue_parallel_each(WithWrite<Writes...> writes, Without<Excludes...>, Func&& func, size_t a_chunk_size = 256)
-	{
-		while (systems_dependencies.add_component_dependencies(writes))
-		{
-			PRINTLN("Forced sync");
-			each_sync();
-		}
-		auto view = registry.view<Writes...>(entt::exclude<Excludes...>);
-		auto it = view.begin();
-
-		while (it != view.end())
-		{
-			auto entity_chunk_begin = it;
-
-			size_t chunk_count = 0;
-			while (it != view.end() && chunk_count < a_chunk_size)
-			{
-				++it;
-				++chunk_count;
-			}
-			auto entity_chunk_end = it;
-			systems_dependencies.add_component_dependencies(writes, false);
-			entt_thread_pool->enqueue([this, view, entity_chunk_begin, entity_chunk_end, writes, func]()
-				{
-					//auto view = registry.view<Components...>(entt::exclude<Excludes...>);
-					for (auto entity_iter = entity_chunk_begin; entity_iter != entity_chunk_end; ++entity_iter)
-					{
-						auto entity = *entity_iter;
-						func(entity, view.template get<Writes>(entity)...); // needs to match oreder in system
-					} // unsure if I need .template ... might need it, might not.
-					systems_dependencies.remove_component_dependencies(writes);
-				}
-			);
-		}
-		systems_dependencies.remove_component_dependencies(writes);
-	}
 
 	template<typename... Reads, typename Func>
 	void enqueue_parallel_each(WithRead<Reads...> reads, Func&& func, size_t a_chunk_size = 256)
@@ -602,6 +615,82 @@ struct SystemsContext
 				}
 			);
 		}
+	}
+
+	template<typename... Writes, typename Func>
+	void enqueue_parallel_each(WithWrite<Writes...> writes, Func&& func, size_t a_chunk_size = 256)
+	{
+		while (systems_dependencies.add_component_dependencies(writes))
+		{
+			PRINTLN("Forced sync");
+			each_sync();
+		}
+		auto view = registry.view<Writes...>();
+		auto it = view.begin();
+
+		while (it != view.end())
+		{
+			auto entity_chunk_begin = it;
+
+			size_t chunk_count = 0;
+			while (it != view.end() && chunk_count < a_chunk_size)
+			{
+				++it;
+				++chunk_count;
+			}
+			auto entity_chunk_end = it;
+			systems_dependencies.add_component_dependencies(writes, false);
+			entt_thread_pool->enqueue([this, view, entity_chunk_begin, entity_chunk_end, func]()
+				{
+					//auto view = registry.view<Components...>();
+					for (auto entity_iter = entity_chunk_begin; entity_iter != entity_chunk_end; ++entity_iter)
+					{
+						auto entity = *entity_iter;
+						func(entity, view.template get<Writes>(entity)...); // needs to match oreder in system
+					} // unsure if I need .template ... might need it, might not.
+					systems_dependencies.remove_component_dependencies(writes);
+				}
+			);
+		}
+		systems_dependencies.remove_component_dependencies(writes);
+	}
+
+	template<typename... Writes, typename... Excludes, typename Func>
+	void enqueue_parallel_each(WithWrite<Writes...> writes, Without<Excludes...>, Func&& func, size_t a_chunk_size = 256)
+	{
+		while (systems_dependencies.add_component_dependencies(writes))
+		{
+			PRINTLN("Forced sync");
+			each_sync();
+		}
+		auto view = registry.view<Writes...>(entt::exclude<Excludes...>);
+		auto it = view.begin();
+
+		while (it != view.end())
+		{
+			auto entity_chunk_begin = it;
+
+			size_t chunk_count = 0;
+			while (it != view.end() && chunk_count < a_chunk_size)
+			{
+				++it;
+				++chunk_count;
+			}
+			auto entity_chunk_end = it;
+			systems_dependencies.add_component_dependencies(writes, false);
+			entt_thread_pool->enqueue([this, view, entity_chunk_begin, entity_chunk_end, writes, func]()
+				{
+					//auto view = registry.view<Components...>(entt::exclude<Excludes...>);
+					for (auto entity_iter = entity_chunk_begin; entity_iter != entity_chunk_end; ++entity_iter)
+					{
+						auto entity = *entity_iter;
+						func(entity, view.template get<Writes>(entity)...); // needs to match oreder in system
+					} // unsure if I need .template ... might need it, might not.
+					systems_dependencies.remove_component_dependencies(writes);
+				}
+			);
+		}
+		systems_dependencies.remove_component_dependencies(writes);
 	}
 
 	template<typename... Reads, typename... Writes, typename Func>
@@ -712,6 +801,8 @@ struct SystemsContext
 
 	SystemsContextDependencies& get_system_dependencies() { return systems_dependencies; }
 	SystemsContextStorage& get_system_storage() { return systems_storage; }
+
+	uint32_t order = 5000;
 private:
 	double delta_time = 0;
 	std::shared_ptr<Scene> scene;
