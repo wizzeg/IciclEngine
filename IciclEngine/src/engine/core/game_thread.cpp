@@ -167,8 +167,9 @@ void GameThread::game_runtime()
 	//	float offset = amplitude * glm::sin(frequency * transform.position.x + accumilated_time);
 	//	transform.position.y = spawn.spawn_position.y + offset;
 	//}
-
+	//PRINTLN("started parallel");
 	move_system.execute(*engine_context->systems_context);
+	//PRINTLN("done parallel");
 	//engine_context->systems_context->sync();
 	ind_timer.stop();
 	movement += ind_timer.get_time_ms();
@@ -208,68 +209,7 @@ void GameThread::game_runtime()
 	ind_timer.stop();
 	complex_movement += ind_timer.get_time_ms();
 
-
-	ind_timer.start();
-	////////////////////////////
-	// Fetch cameras
-	std::vector<CameraData> cameras;
-	cameras.reserve(10); /////// should base this on something instead
-	glm::vec3 direction;
-	glm::vec3 right;
-	glm::vec3 up;
-	for (auto [entity, world_pos, camera_comp] : registry.view<TransformDynamicComponent, CameraComponent>().each())
-	{
-		if (camera_comp.wants_to_render)
-		{
-			if (camera_comp.orbit_camera)
-			{
-				if (camera_comp.target_entity.entity != entt::null)
-				{
-					if (auto target_world_pos = registry.try_get<TransformDynamicComponent>(camera_comp.target_entity.entity))
-						camera_comp.target_location = target_world_pos->position;
-					else
-					{
-						PRINTLN("Failed to get target loction, whaaaat.");
-					}
-				}
-				direction = glm::normalize(world_pos.position - camera_comp.target_location);
-				right = glm::normalize(glm::cross(direction, glm::vec3(0.f, 1.f, 0.f)));
-				up = glm::cross(right, direction);
-				camera_comp.view_matrix = glm::lookAt(world_pos.position, camera_comp.target_location, up);
-			}
-			else
-			{
-				glm::mat4 translation_matrix = glm::translate(glm::mat4(1.0f), -world_pos.position);
-				glm::mat4 rotation_matrix = glm::mat4_cast(world_pos.rotation_quat);
-				camera_comp.view_matrix = glm::transpose(rotation_matrix) * translation_matrix;
-			}
-			camera_comp.projection_matrix = glm::perspective(glm::radians(camera_comp.field_of_view), camera_comp.aspect_ratio, 0.1f, 300.0f);
-			cameras.emplace_back(camera_comp.view_matrix, camera_comp.projection_matrix, camera_comp.frame_buffer_target, camera_comp.render_priority, true, true, world_pos.position);
-		}
-	}
-	if (!cameras.empty())
-	{
-		std::sort(cameras.begin(), cameras.end(), [](const CameraData& cam_a, const CameraData& cam_b)
-			{
-				if (cam_a.frame_buffer_hashed == cam_b.frame_buffer_hashed)
-					return cam_a.priority > cam_b.priority;
-				return cam_a.frame_buffer_hashed < cam_b.frame_buffer_hashed;
-			});
-		hashed_string_64 prev_target = cameras[0].frame_buffer_hashed;
-		unique_cameras.push_back(cameras[0]);
-		for (size_t i = 1; i < cameras.size(); i++)
-		{
-			if (cameras[i].frame_buffer_hashed > prev_target)
-			{
-				prev_target = cameras[i].frame_buffer_hashed;
-				unique_cameras.push_back(cameras[i]);
-			}
-		}
-	}
-	previous_unique_cameras = unique_cameras.size();
-	ind_timer.stop();
-	cameras_db += ind_timer.get_time_ms();
-
+	
 	// all of this takes like 2ms
 	//if (runs == 1000)
 	//{
@@ -409,6 +349,8 @@ void GameThread::game_runtime()
 	ind_timer.stop();
 	mesh_tex_jobs += ind_timer.get_time_ms();
 
+	engine_context->systems_context->gen_sync();
+	engine_context->systems_context->each_sync();
 
 	ind_timer.start();
 	/////////////////////////////////////////////////////
@@ -453,6 +395,67 @@ void GameThread::game_runtime()
 	pre_render_requests_time += ind_timer.get_time_ms();
 
 	ind_timer.start();
+	////////////////////////////
+	// Fetch cameras
+	std::vector<CameraData> cameras;
+	cameras.reserve(10); /////// should base this on something instead
+	glm::vec3 direction;
+	glm::vec3 right;
+	glm::vec3 up;
+	for (auto [entity, world_pos, camera_comp] : registry.view<TransformDynamicComponent, CameraComponent>().each())
+	{
+		if (camera_comp.wants_to_render)
+		{
+			if (camera_comp.orbit_camera)
+			{
+				if (camera_comp.target_entity.entity != entt::null)
+				{
+					if (auto target_world_pos = registry.try_get<TransformDynamicComponent>(camera_comp.target_entity.entity))
+						camera_comp.target_location = target_world_pos->position;
+					else
+					{
+						PRINTLN("Failed to get target loction, whaaaat.");
+					}
+				}
+				direction = glm::normalize(world_pos.position - camera_comp.target_location);
+				right = glm::normalize(glm::cross(direction, glm::vec3(0.f, 1.f, 0.f)));
+				up = glm::cross(right, direction);
+				camera_comp.view_matrix = glm::lookAt(world_pos.position, camera_comp.target_location, up);
+			}
+			else
+			{
+				glm::mat4 translation_matrix = glm::translate(glm::mat4(1.0f), -world_pos.position);
+				glm::mat4 rotation_matrix = glm::mat4_cast(world_pos.rotation_quat);
+				camera_comp.view_matrix = glm::transpose(rotation_matrix) * translation_matrix;
+			}
+			camera_comp.projection_matrix = glm::perspective(glm::radians(camera_comp.field_of_view), camera_comp.aspect_ratio, 0.1f, 300.0f);
+			cameras.emplace_back(camera_comp.view_matrix, camera_comp.projection_matrix, camera_comp.frame_buffer_target, camera_comp.render_priority, true, true, world_pos.position);
+		}
+	}
+	if (!cameras.empty())
+	{
+		std::sort(cameras.begin(), cameras.end(), [](const CameraData& cam_a, const CameraData& cam_b)
+			{
+				if (cam_a.frame_buffer_hashed == cam_b.frame_buffer_hashed)
+					return cam_a.priority > cam_b.priority;
+				return cam_a.frame_buffer_hashed < cam_b.frame_buffer_hashed;
+			});
+		hashed_string_64 prev_target = cameras[0].frame_buffer_hashed;
+		unique_cameras.push_back(cameras[0]);
+		for (size_t i = 1; i < cameras.size(); i++)
+		{
+			if (cameras[i].frame_buffer_hashed > prev_target)
+			{
+				prev_target = cameras[i].frame_buffer_hashed;
+				unique_cameras.push_back(cameras[i]);
+			}
+		}
+	}
+	previous_unique_cameras = unique_cameras.size();
+	ind_timer.stop();
+	cameras_db += ind_timer.get_time_ms();
+
+	ind_timer.start();
 	//if (auto opt_render_requests = 
 	//	engine_context->model_storage->render_request_returner.return_requests(pre_render_requests))
 	//	
@@ -465,6 +468,7 @@ void GameThread::game_runtime()
 	renderrequests_time += ind_timer.get_time_ms();
 
 	ind_timer.start();
+
 
 	for (auto [entity, directional_light, transform] : registry.view<DirectionalLightComponent, TransformDynamicComponent>().each())
 	{
@@ -555,6 +559,9 @@ void GameThread::game_runtime()
 	//	countererer++;
 	//}
 	//PRINTLN("This many entities: {}", countererer);
+
+	//engine_context->systems_context->gen_sync();
+	//engine_context->systems_context->each_sync();
 }
 
 void GameThread::editor_time()
