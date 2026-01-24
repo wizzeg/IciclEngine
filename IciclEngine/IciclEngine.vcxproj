@@ -224,6 +224,8 @@
     <ClInclude Include="include\engine\editor\scene.h" />
     <ClInclude Include="include\engine\editor\scene_object.h" />
     <ClInclude Include="include\engine\editor\field_serialization_registry.h" />
+    <ClInclude Include="include\engine\editor\systems_entries.h" />
+    <ClInclude Include="include\engine\editor\systems_registry.h" />
     <ClInclude Include="include\engine\game\camera.h" />
     <ClInclude Include="include\engine\game\components.h" />
     <ClInclude Include="include\engine\game\component_data.h" />

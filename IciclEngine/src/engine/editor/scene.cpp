@@ -7,6 +7,8 @@
 #include <fstream>
 #include <engine/resources/scene_object_registry.h>
 #include <unordered_map>
+#include <engine/game/systems.h>
+#include <engine/editor/systems_registry.h>
 
 Scene::Scene()
 {
@@ -39,6 +41,15 @@ bool Scene::save(std::string a_path)
 	for (auto& scene_object : root_scene_objects)
 	{
 		j["root objects"].push_back(scene_object->save());
+	}
+
+	j["systems"] = json::array();
+	for (auto& system : systems)
+	{
+		json j_sys = json::object();
+		j_sys["order"] = system->get_order();
+		j_sys["name"] = system->get_name();
+		j["systems"].push_back(j_sys);
 	}
 
 	std::ofstream file(a_path);
@@ -76,6 +87,7 @@ bool Scene::load(std::string a_path, bool clear_registry)
 	file >> j;
 	root_scene_objects.clear(); // order is important here I think
 	scene_objects.clear();
+	systems.clear();
 	j["name"] = name;
 	j["next index"] = next_index;
 
@@ -167,6 +179,24 @@ bool Scene::load(std::string a_path, bool clear_registry)
 	for (auto reference : entity_references)
 	{
 		PRINTLN("test print {}", reference->scene_object);
+	}
+	if (j.contains("systems"))
+	{
+		auto& sys_factory = SystemsFactory::instance();
+		auto& sys_reg = SystemsRegistry::instance();
+		for (auto& j_sys : j["systems"])
+		{
+			if (j_sys.contains("name") && j_sys.contains("order"))
+			{
+				if (sys_factory.has_factory(j_sys["name"]))
+				{
+					auto sys = sys_factory.create_system(j_sys["name"]);
+					sys->set_name(j_sys["name"]);
+					sys->set_order(j_sys["order"]);
+					add_system(sys);
+				}
+			}
+		}
 	}
 
 	return true;
@@ -384,6 +414,49 @@ void Scene::stop_runtime()
 			scene_object->stop_runtime();
 		}
 		registry.clear();
-
 	}
+}
+
+void Scene::add_system(std::shared_ptr<SystemBase> a_system)
+{
+	uint32_t order = a_system->get_order();
+	size_t insertion_index = 0;
+	for (; insertion_index < systems.size(); ++insertion_index)
+	{
+		if (systems[insertion_index]->get_order() >= order)
+		{
+			break;
+		}
+	}
+	systems.insert(systems.begin() + insertion_index, a_system);
+}
+
+void Scene::remove_system(std::weak_ptr<SystemBase> a_system)
+{
+	if (auto system = a_system.lock())
+	{
+		auto* system_ptr = system.get();
+		size_t erase_index = 0;
+		for (; erase_index < systems.size(); ++erase_index)
+		{
+			if (systems[erase_index].get() == system_ptr)
+			{
+				systems.erase(systems.begin() + erase_index);
+			}
+		}
+	}
+}
+
+void Scene::reorder_systems()
+{
+	std::sort(systems.begin(), systems.end(), []
+	(const std::shared_ptr<SystemBase>system_a, const std::shared_ptr<SystemBase> system_b)
+		{
+			return *system_a < *system_b;
+		});
+}
+
+std::vector<std::shared_ptr<SystemBase>>& Scene::get_systems()
+{
+	return systems;
 }

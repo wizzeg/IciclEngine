@@ -6,8 +6,8 @@
 #include <engine/renderer/shader_loader.h>
 #include <algorithm>
 constexpr auto MAX_POINT_LIGHTS = 512;
-constexpr auto MAX_MODEL_INSTANCES = 2048;
-constexpr auto HALF_MODEL_INSTANCES = 1024;
+constexpr auto MAX_MODEL_INSTANCES = 1024;
+constexpr auto HALF_MODEL_INSTANCES = 512;
 
 void Renderer::temp_render(MeshData& a_mesh, TransformDynamicComponent& a_world_pos)
 {
@@ -518,6 +518,9 @@ void Renderer::update_insance_SSBO(const std::vector<glm::mat4>& a_model_matrice
 
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, model_instance_ssbo);
 	// write to first half
+
+	glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(int) * 4 + sizeof(glm::mat4) * MAX_MODEL_INSTANCES, nullptr, GL_DYNAMIC_DRAW);
+
 	std::vector<glm::mat4> model_matrices = a_model_matrices;
 	if (model_matrices.size() > HALF_MODEL_INSTANCES)
 	{

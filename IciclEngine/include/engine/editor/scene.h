@@ -1,8 +1,10 @@
 #pragma once
 #include <engine/utilities/entt_modified.h>
 #include <vector>
+#include <engine/editor/scene_object.h>
 
 class SceneObject;
+struct SystemBase;
 
 class Scene : public std::enable_shared_from_this<Scene>
 {
@@ -12,6 +14,7 @@ private:
 	std::vector<entt::handle> entity_handles;
 	std::vector<std::shared_ptr<SceneObject>> scene_objects;
 	std::vector<std::shared_ptr<SceneObject>> root_scene_objects;
+	std::vector<std::shared_ptr<SystemBase>> systems;
 	bool runtime = false;
 	uint64_t next_index = 0;
 public:
@@ -43,5 +46,10 @@ public:
 	bool is_runtime() { return runtime; };
 	void stop_runtime();
 	uint64_t get_next_index() { return next_index++; }
+
+	void add_system(std::shared_ptr<SystemBase> a_system);
+	void remove_system(std::weak_ptr<SystemBase> a_system);
+	void reorder_systems();
+	std::vector<std::shared_ptr<SystemBase>>& get_systems();
 };
 

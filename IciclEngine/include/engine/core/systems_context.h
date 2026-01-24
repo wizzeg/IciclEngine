@@ -341,7 +341,7 @@ struct SystemsContext
 		while (systems_dependencies.add(reads))
 		{
 			PRINTLN("Forced sync");
-			each_sync();
+			entt_sync();
 		}
 		auto view = registry.view<Reads...>();
 		for (const auto entity : view)
@@ -357,7 +357,7 @@ struct SystemsContext
 		while (systems_dependencies.add(reads))
 		{
 			PRINTLN("Forced sync");
-			each_sync();
+			entt_sync();
 		}
 		auto view = registry.view<Reads...>(entt::exclude<Excludes...>);
 		for (const auto entity : view)
@@ -373,7 +373,7 @@ struct SystemsContext
 		while (systems_dependencies.add(writes))
 		{
 			PRINTLN("Forced sync");
-			each_sync();
+			entt_sync();
 		}
 		auto view = registry.view< Writes...>();
 		for (const auto entity : view)
@@ -389,7 +389,7 @@ struct SystemsContext
 		while (systems_dependencies.add(writes))
 		{
 			PRINTLN("Forced sync");
-			each_sync();
+			entt_sync();
 		}
 		auto view = registry.view<Writes...>(entt::exclude<Excludes...>);
 		for (const auto entity : view)
@@ -405,7 +405,7 @@ struct SystemsContext
 		while (systems_dependencies.add(reads, writes))
 		{
 			PRINTLN("Forced sync");
-			each_sync();
+			entt_sync();
 		}
 		auto view = registry.view<Reads..., Writes...>();
 		for (const auto entity : view)
@@ -421,7 +421,7 @@ struct SystemsContext
 		while (systems_dependencies.add(reads, writes))
 		{
 			PRINTLN("Forced sync");
-			each_sync();
+			entt_sync();
 		}
 		auto view = registry.view<Reads..., Writes...>(entt::exclude<Excludes...>);
 		for (const auto entity : view)
@@ -438,7 +438,7 @@ struct SystemsContext
 		while (systems_dependencies.add(reads))
 		{
 			PRINTLN("Forced sync");
-			each_sync();
+			entt_sync();
 		}
 		entt_thread_pool->enqueue([this, reads, func]() {
 			auto view = registry.view<Reads...>();
@@ -456,7 +456,7 @@ struct SystemsContext
 		while (systems_dependencies.add(reads))
 		{
 			PRINTLN("Forced sync");
-			each_sync();
+			entt_sync();
 		}
 		entt_thread_pool->enqueue([this, reads, func]() {
 			auto view = registry.view<Reads...>(entt::exclude<Excludes...>);
@@ -474,7 +474,7 @@ struct SystemsContext
 		while (systems_dependencies.add(writes))
 		{
 			PRINTLN("Forced sync");
-			each_sync();
+			entt_sync();
 		}
 		entt_thread_pool->enqueue([this, writes, func]() {
 			auto view = registry.view<Writes...>();
@@ -492,7 +492,7 @@ struct SystemsContext
 		while (systems_dependencies.add(writes))
 		{
 			PRINTLN("Forced sync");
-			each_sync();
+			entt_sync();
 		}
 		entt_thread_pool->enqueue([this, writes, func]() {
 			auto view = registry.view<Writes...>(entt::exclude<Excludes...>);
@@ -510,7 +510,7 @@ struct SystemsContext
 		while (systems_dependencies.add(reads, writes))
 		{
 			PRINTLN("Forced sync");
-			each_sync();
+			entt_sync();
 		}
 		entt_thread_pool->enqueue([this, reads, writes, func]() {
 			auto view = registry.view<Reads..., Writes...>();
@@ -528,7 +528,7 @@ struct SystemsContext
 		while (systems_dependencies.add(reads, writes))
 		{
 			PRINTLN("Forced sync");
-			each_sync();
+			entt_sync();
 		}
 		entt_thread_pool->enqueue([this, reads, writes, func]() {
 			auto view = registry.view<Reads..., Writes...>(entt::exclude<Excludes...>);
@@ -547,7 +547,7 @@ struct SystemsContext
 		while (systems_dependencies.add(reads))
 		{
 			//PRINTLN("Forced sync");
-			each_sync();
+			entt_sync();
 		}
 
 		auto view = registry.view<Reads...>();
@@ -561,15 +561,15 @@ struct SystemsContext
 
 			entt_thread_pool->enqueue([this, start, end, reads, func]()
 				{
-					auto thread_view = registry.view<Reads...>();
-					const auto* thread_handle = thread_view.handle();
+					auto view = registry.view<Reads...>();
+					const auto* handle = view.handle();
 
 					for (size_t i = start; i < end; ++i)
 					{
-						const entt::entity entity = (*thread_handle)[i];
-						if (thread_view.contains(entity))
+						const entt::entity entity = (*handle)[i];
+						if (view.contains(entity))
 						{
-							func(entity, thread_view.template get<Reads>(entity)...);
+							func(entity, view.template get<Reads>(entity)...);
 						}
 					}
 					systems_dependencies.remove(reads);
@@ -584,7 +584,7 @@ struct SystemsContext
 		while (systems_dependencies.add(reads))
 		{
 			//PRINTLN("Forced sync");
-			each_sync();
+			entt_sync();
 		}
 		auto view = registry.view<Reads...>(entt::exclude<Excludes...>);
 		const auto* handle = view.handle();
@@ -597,15 +597,15 @@ struct SystemsContext
 
 			entt_thread_pool->enqueue([this, start, end, reads, func]()
 				{
-					auto thread_view = registry.view<Reads...>(entt::exclude<Excludes...>);
-					const auto* thread_handle = thread_view.handle();
+					auto view = registry.view<Reads...>(entt::exclude<Excludes...>);
+					const auto* handle = view.handle();
 
 					for (size_t i = start; i < end; ++i)
 					{
-						const entt::entity entity = (*thread_handle)[i];
-						if (thread_view.contains(entity))
+						const entt::entity entity = (*handle)[i];
+						if (view.contains(entity))
 						{
-							func(entity, thread_view.template get<Reads>(entity)...);
+							func(entity, view.template get<Reads>(entity)...);
 						}
 					}
 					systems_dependencies.remove(reads);
@@ -620,7 +620,7 @@ struct SystemsContext
 		while (systems_dependencies.add(writes))
 		{
 			//PRINTLN("Forced sync");
-			each_sync();
+			entt_sync();
 		}
 		auto view = registry.view<Writes...>();
 		const auto* handle = view.handle();
@@ -633,15 +633,15 @@ struct SystemsContext
 
 			entt_thread_pool->enqueue([this, start, end, writes, func]()
 				{
-					auto thread_view = registry.view<Writes...>();
-					const auto* thread_handle = thread_view.handle();
+					auto view = registry.view<Writes...>();
+					const auto* handle = view.handle();
 
 					for (size_t i = start; i < end; ++i)
 					{
-						const entt::entity entity = (*thread_handle)[i];
-						if (thread_view.contains(entity))
+						const entt::entity entity = (*handle)[i];
+						if (view.contains(entity))
 						{
-							func(entity, thread_view.template get<Writes>(entity)...);
+							func(entity, view.template get<Writes>(entity)...);
 						}
 					}
 					systems_dependencies.remove(writes);
@@ -656,7 +656,7 @@ struct SystemsContext
 		while (systems_dependencies.add(writes))
 		{
 			//PRINTLN("Forced sync");
-			each_sync();
+			entt_sync();
 		}
 		auto view = registry.view<Writes...>(entt::exclude<Excludes...>);
 		const auto* handle = view.handle();
@@ -669,15 +669,15 @@ struct SystemsContext
 
 			entt_thread_pool->enqueue([this, start, end, writes, func]()
 				{
-					auto thread_view = registry.view<Writes...>(entt::exclude<Excludes...>);
-					const auto* thread_handle = thread_view.handle();
+					auto view = registry.view<Writes...>(entt::exclude<Excludes...>);
+					const auto* handle = view.handle();
 
 					for (size_t i = start; i < end; ++i)
 					{
-						const entt::entity entity = (*thread_handle)[i];
-						if (thread_view.contains(entity))
+						const entt::entity entity = (*handle)[i];
+						if (view.contains(entity))
 						{
-							func(entity, thread_view.template get<Writes>(entity)...);
+							func(entity, view.template get<Writes>(entity)...);
 						}
 					}
 					systems_dependencies.remove(writes);
@@ -691,7 +691,7 @@ struct SystemsContext
 	{
 		while (systems_dependencies.add(reads, writes))
 		{
-			each_sync();
+			entt_sync();
 		}
 		auto view = registry.view<Reads..., Writes...>();
 		const auto* handle = view.handle();
@@ -703,15 +703,15 @@ struct SystemsContext
 			systems_dependencies.add(reads, writes, false);
 			entt_thread_pool->enqueue([this, start, end, reads, writes, func]()
 				{
-					auto thread_view = registry.view<Reads..., Writes...>();
-					const auto* thread_handle = thread_view.handle();
+					auto view = registry.view<Reads..., Writes...>();
+					const auto* handle = view.handle();
 
 					for (size_t i = start; i < end; ++i)
 					{
-						const entt::entity entity = (*thread_handle)[i];
-						if (thread_view.contains(entity))
+						const entt::entity entity = (*handle)[i];
+						if (view.contains(entity))
 						{
-							func(entity, thread_view.template get<Reads>(entity)..., thread_view.template get<Writes>(entity)...);
+							func(entity, view.template get<Reads>(entity)..., view.template get<Writes>(entity)...);
 						}
 					}
 					systems_dependencies.remove(reads, writes);
@@ -726,7 +726,7 @@ struct SystemsContext
 		while (systems_dependencies.add(reads, writes))
 		{
 			//PRINTLN("Forced sync");
-			each_sync();
+			entt_sync();
 		}
 		auto view = registry.view<Reads..., Writes...>(entt::exclude<Excludes...>);
 		const auto* handle = view.handle();
@@ -768,7 +768,7 @@ struct SystemsContext
 	//	while (systems_dependencies.add(reads))
 	//	{
 	//		//PRINTLN("Forced sync");
-	//		each_sync();
+	//		entt_sync();
 	//	}
 
 	//	auto view = registry.view<Reads...>();
@@ -818,7 +818,7 @@ struct SystemsContext
 	//	while (systems_dependencies.add(reads))
 	//	{
 	//		//PRINTLN("Forced sync");
-	//		each_sync();
+	//		entt_sync();
 	//	}
 
 	//	auto view = registry.view<Reads...>(entt::exclude<Excludes...>);
@@ -868,7 +868,7 @@ struct SystemsContext
 	//	while (systems_dependencies.add(writes))
 	//	{
 	//		//PRINTLN("Forced sync");
-	//		each_sync();
+	//		entt_sync();
 	//	}
 
 	//	auto view = registry.view<Writes...>();
@@ -918,7 +918,7 @@ struct SystemsContext
 	//	while (systems_dependencies.add(writes))
 	//	{
 	//		//PRINTLN("Forced sync");
-	//		each_sync();
+	//		entt_sync();
 	//	}
 
 	//	auto view = registry.view<Writes...>(entt::exclude<Excludes...>);
@@ -968,7 +968,7 @@ struct SystemsContext
 	//	while (systems_dependencies.add(reads, writes))
 	//	{
 	//		//PRINTLN("Forced sync");
-	//		each_sync();
+	//		entt_sync();
 	//	}
 
 	//	auto view = registry.view<Reads..., Writes...>();
@@ -1018,7 +1018,7 @@ struct SystemsContext
 	//	while (systems_dependencies.add(reads, writes))
 	//	{
 	//		//PRINTLN("Forced sync");
-	//		each_sync();
+	//		entt_sync();
 	//	}
 
 	//	auto view = registry.view<Reads..., Writes...>(entt::exclude<Excludes...>);
@@ -1075,7 +1075,7 @@ struct SystemsContext
 		return registry.try_get<Component>(entity);
 	}
 
-	void each_sync()
+	void entt_sync()
 	{
 		entt_thread_pool->wait();
 	}

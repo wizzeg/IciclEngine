@@ -227,6 +227,7 @@ class UIManager : UISceneHierarchyDrawer , UIObjectPropertyDrawer
 	ContentBrowser content_browser;
     PlaybackControls playback;
 public:
+    void draw_systems();
 	void draw_object_hierarchy();
 	void draw_object_properties();
 	void draw_selected_icon(glm::mat4 a_view, glm::mat4 a_proj);
@@ -239,6 +240,8 @@ public:
 		}
 		ImGui::End();
 	}
+
+    int prev_order = 0;
 
     void RenderTopMenuBar() {
         if (ImGui::BeginMainMenuBar()) {

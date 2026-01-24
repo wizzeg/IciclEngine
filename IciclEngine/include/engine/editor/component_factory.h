@@ -30,4 +30,5 @@ struct ComponentFactory
 private:
 	// we store a function which takes in a scene object
 	std::unordered_map<std::string, std::function<void(SceneObject*)>> component_factories;
+	// really I should just return the component? hmm, but I guess I don't know what the component is, so makes ense
 };

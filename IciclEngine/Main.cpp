@@ -48,6 +48,8 @@
 #include <engine/editor/component_entries.h>
 #include <engine/resources/asset_manager.h>
 #include <engine/renderer/shader_loader.h>
+#include <engine/editor/systems_registry.h>
+#include <engine/editor/systems_entries.h>
 
 #include <algorithm>
 
@@ -217,7 +219,7 @@ int main(void)
 					}
 
 
-					for (size_t i = 0; i < 10000; i++)
+					for (size_t i = 0; i < 5000; i++)
 					{
 						float x = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));
 						float y = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));; // Or random if you want variety
@@ -660,7 +662,7 @@ int main(void)
 
 			bool demo = true;
 			//ImGui::ShowDemoWindow(&demo);
-
+			ui_mananger->draw_systems();
 			ui_mananger->draw_object_hierarchy();
 			ui_mananger->draw_object_properties();
 			//ui_mananger->draw_selected_icon(engine_context->editor_camera.get_view_matrix(),

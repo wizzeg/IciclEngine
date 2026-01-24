@@ -4,6 +4,7 @@
 
 void MoveSystem::execute(SystemsContext& ctx)
 {
+	
 	time += ctx.get_delta_time();
 	//ctx.each_entity<TransformDynamicComponent, SpawnPositionComponent>(
 	//	[&](entt::entity entity, TransformDynamicComponent& transform, SpawnPositionComponent& spawn)

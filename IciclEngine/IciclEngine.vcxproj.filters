@@ -476,6 +476,12 @@
     <ClInclude Include="include\engine\game\systems.h">
       <Filter>Header Files\engine\game</Filter>
     </ClInclude>
+    <ClInclude Include="include\engine\editor\systems_registry.h">
+      <Filter>Header Files\engine\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\editor\systems_entries.h">
+      <Filter>Header Files\engine\editor</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\assets\shaders\fragment\frag.glsl">

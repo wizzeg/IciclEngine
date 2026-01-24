@@ -372,10 +372,8 @@ struct MaterialTexture
 
 struct RuntimeUniform
 {
-	//alignas(16) uint8_t data[64]; // 16bit align for glm
 	UniformValue value = "";
 	std::string location = "";
-	//UniformTypes::Type type;
 	std::type_index type = typeid(std::string);
 	GLint texture_id = 0;
 };

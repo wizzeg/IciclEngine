@@ -12,7 +12,7 @@ struct ComponentRegistryData
 	std::string comp_name = "";
 	std::vector<std::string> categories = {};
 	std::type_index comp_type = typeid(std::string); // there is no default initialization for type_index
-	FieldInfoGenerator field_info_generator = 0;	
+	FieldInfoGenerator field_info_generator = 0;	// I Mean wasn't it this thatwas the problem?
 };
 
 struct ComponentRegistry

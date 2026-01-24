@@ -5,7 +5,7 @@
 #if defined(_DEBUG)
 #define PRINTLN(...) std::println(__VA_ARGS__)
 #else
-#define PRINTLN(...)
+#define PRINTLN(...) std::println(__VA_ARGS__)
 #endif
 #else
 #define PRINTLN(...)

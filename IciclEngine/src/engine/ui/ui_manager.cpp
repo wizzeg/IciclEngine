@@ -7,9 +7,86 @@
 #include <imgui-docking/imgui.h>
 #include <engine/editor/component_registry.h>
 #include <engine/editor/component_factory.h>
+#include <engine/editor/systems_registry.h>
 
 #include <engine/core/game_thread.h>
 
+
+void UIManager::draw_systems()
+{
+	ImGui::Begin("Systems");
+
+	//if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
+	if (ImGui::Button("Add System"))
+	{
+		ImGui::OpenPopup("Add System");
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Order Systems"))
+	{
+		if (auto scn = scene.lock())
+		{
+			scn->reorder_systems();
+		}
+		
+	}
+
+	// Popup
+	if (ImGui::BeginPopup("Add System")) {
+		ImGui::Text("System Order: ");
+		ImGui::SameLine();
+		ImGui::DragInt("##order", &prev_order, 1.f, 0, UINT32_MAX);
+		if (auto shared_scene = scene.lock())
+		{
+			const auto& systems = SystemsRegistry::instance().get_all_system_names();
+			for (const auto& system : systems)
+			{
+				if (ImGui::MenuItem(system.c_str()))
+				{
+					auto new_system = SystemsFactory::instance().create_system(system);
+					new_system->set_name(system);
+					new_system->set_order((uint32_t)prev_order);
+					shared_scene->add_system(new_system);
+				}
+			}
+		}
+		ImGui::EndPopup();
+	}
+
+	if (auto scn = scene.lock())
+	{
+		auto& systems = scn->get_systems();
+		size_t id = 0;
+		std::shared_ptr<SystemBase> selected;
+		selected.reset();
+		bool remove = false;
+		for (auto& system : systems)
+		{
+			ImGui::PushID(id++);
+			ImGui::Text((system->get_name() + " at order: ").c_str());
+			int order = system->get_order();
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(100.0f);
+			if (ImGui::DragInt("order##", &order, 1.f, 0, UINT32_MAX))
+			{
+				system->set_order(order);
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("remove system"))
+			{
+				ImGui::PopID();
+				scn->remove_system(system);
+				scn->reorder_systems();
+				break;
+			}
+			ImGui::PopID();
+		}
+	}
+
+
+
+	ImGui::End();
+}
 
 void UIManager::draw_object_hierarchy()
 {

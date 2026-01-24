@@ -167,8 +167,14 @@ void GameThread::game_runtime()
 	//	float offset = amplitude * glm::sin(frequency * transform.position.x + accumilated_time);
 	//	transform.position.y = spawn.spawn_position.y + offset;
 	//}
+
+	auto& systems = scene->get_systems();
+	for (auto& system : systems)
+	{
+		system->execute(*engine_context->systems_context);
+	}
 	//PRINTLN("started parallel");
-	move_system.execute(*engine_context->systems_context);
+	//move_system.execute(*engine_context->systems_context);
 	//PRINTLN("done parallel");
 	//engine_context->systems_context->sync();
 	ind_timer.stop();
@@ -350,7 +356,7 @@ void GameThread::game_runtime()
 	mesh_tex_jobs += ind_timer.get_time_ms();
 
 	engine_context->systems_context->gen_sync();
-	engine_context->systems_context->each_sync();
+	engine_context->systems_context->entt_sync();
 
 	ind_timer.start();
 	/////////////////////////////////////////////////////
@@ -561,7 +567,7 @@ void GameThread::game_runtime()
 	//PRINTLN("This many entities: {}", countererer);
 
 	//engine_context->systems_context->gen_sync();
-	//engine_context->systems_context->each_sync();
+	//engine_context->systems_context->entt_sync();
 }
 
 void GameThread::editor_time()
