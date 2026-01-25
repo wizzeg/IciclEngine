@@ -23,6 +23,8 @@ public:
 	Scene(std::shared_ptr<Scene> a_scene);
 	~Scene();
 
+	void reset();
+
 	bool save(std::string a_path);
 	bool load(std::string a_path, bool clear_registry = true);
 

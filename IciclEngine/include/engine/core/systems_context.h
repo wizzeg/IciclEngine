@@ -30,11 +30,11 @@ struct SystemsContextDependencies
 			std::lock_guard comp_lock(components_mutex);
 			if (check_dependencies)
 				if (dependency_collision({ typeid(Reads)... }, { typeid(Writes)... }))
-					return true;
+					return false;
 			(add_write_dependency<Writes>(),...);
 			(add_read_dependency<Reads>(),...);
 		}
-		return false;
+		return true;
 	}
 
 	template<typename... Reads>
@@ -44,10 +44,10 @@ struct SystemsContextDependencies
 			std::lock_guard comp_lock(components_mutex);
 			if (check_dependencies)
 				if (dependency_collision({ typeid(Reads)... }, { }))
-					return true;
+					return false;
 			(add_read_dependency<Reads>(),...);
 		}
-		return false;
+		return true;
 	}
 
 	template<typename... Writes>
@@ -57,10 +57,10 @@ struct SystemsContextDependencies
 			std::lock_guard comp_lock(components_mutex);
 			if (check_dependencies)
 				if (dependency_collision({ }, { typeid(Writes)... }))
-					return true;
+					return false;
 			(add_write_dependency<Writes>(),...);
 		}
-		return false;
+		return true;
 	}
 
 	template<typename... Reads, typename... Writes>
@@ -336,10 +336,12 @@ struct SystemsContext
 	~SystemsContext();
 
 	template<typename... Reads, typename Func>
-	void each(WithRead<Reads...> reads, Func&& func)
+	bool each(WithRead<Reads...> reads, Func&& func)
 	{
-		while (systems_dependencies.add(reads))
+		bool synced = false;
+		while (!systems_dependencies.add(reads))
 		{
+			synced = true;
 			PRINTLN("Forced sync");
 			entt_sync();
 		}
@@ -349,13 +351,16 @@ struct SystemsContext
 			func(entity, view.template get<Reads>(entity)...);
 		}
 		systems_dependencies.remove(reads);
+		return synced;
 	}
 
 	template<typename... Reads, typename... Excludes, typename Func>
-	void each(WithRead<Reads...> reads, Without<Excludes...>, Func&& func)
+	bool each(WithRead<Reads...> reads, Without<Excludes...>, Func&& func)
 	{
-		while (systems_dependencies.add(reads))
+		bool synced = false;
+		while (!systems_dependencies.add(reads))
 		{
+			synced = true;
 			PRINTLN("Forced sync");
 			entt_sync();
 		}
@@ -365,13 +370,16 @@ struct SystemsContext
 			func(entity, view.template get<Reads>(entity)...);
 		}
 		systems_dependencies.remove(reads);
+		return synced;
 	}
 
 	template<typename... Writes, typename Func>
-	void each(WithWrite<Writes...> writes, Func&& func)
+	bool each(WithWrite<Writes...> writes, Func&& func)
 	{
-		while (systems_dependencies.add(writes))
+		bool synced = false;
+		while (!systems_dependencies.add(writes))
 		{
+			synced = true;
 			PRINTLN("Forced sync");
 			entt_sync();
 		}
@@ -381,13 +389,16 @@ struct SystemsContext
 			func(entity, view.template get<Writes>(entity)...);
 		}
 		systems_dependencies.remove(writes);
+		return synced;
 	}
 
 	template<typename... Writes, typename... Excludes, typename Func>
-	void each(WithWrite<Writes...> writes, Without<Excludes...>, Func&& func)
+	bool each(WithWrite<Writes...> writes, Without<Excludes...>, Func&& func)
 	{
-		while (systems_dependencies.add(writes))
+		bool synced = false;
+		while (!systems_dependencies.add(writes))
 		{
+			synced = true;
 			PRINTLN("Forced sync");
 			entt_sync();
 		}
@@ -397,13 +408,16 @@ struct SystemsContext
 			func(entity, view.template get<Writes>(entity)...);
 		}
 		systems_dependencies.remove(writes);
+		return synced;
 	}
 
 	template<typename... Reads, typename... Writes, typename Func>
-	void each(WithRead<Reads...> reads, WithWrite<Writes...> writes, Func&& func)
+	bool each(WithRead<Reads...> reads, WithWrite<Writes...> writes, Func&& func)
 	{
-		while (systems_dependencies.add(reads, writes))
+		bool synced = false;
+		while (!systems_dependencies.add(reads, writes))
 		{
+			synced = true;
 			PRINTLN("Forced sync");
 			entt_sync();
 		}
@@ -413,13 +427,16 @@ struct SystemsContext
 			func(entity, view.template get<Reads>(entity)...);
 		}
 		systems_dependencies.remove(reads, writes);
+		return synced;
 	}
 
 	template<typename... Reads, typename... Writes, typename... Excludes, typename Func>
-	void each(WithRead<Reads...> reads, WithWrite<Writes...> writes, Without<Excludes...>, Func&& func)
+	bool each(WithRead<Reads...> reads, WithWrite<Writes...> writes, Without<Excludes...>, Func&& func)
 	{
-		while (systems_dependencies.add(reads, writes))
+		bool synced = false;
+		while (!systems_dependencies.add(reads, writes))
 		{
+			synced = true;
 			PRINTLN("Forced sync");
 			entt_sync();
 		}
@@ -429,14 +446,17 @@ struct SystemsContext
 			func(entity, view.template get<Reads>(entity)..., view.template get<Writes>(entity)...);
 		}
 		systems_dependencies.remove(reads, writes);
+		return synced;
 	}
 
 
 	template<typename... Reads, typename Func>
-	void enqueue_each(WithRead<Reads...> reads, Func&& func)
+	bool enqueue_each(WithRead<Reads...> reads, Func&& func)
 	{
-		while (systems_dependencies.add(reads))
+		bool synced = false;
+		while (!systems_dependencies.add(reads))
 		{
+			synced = true;
 			PRINTLN("Forced sync");
 			entt_sync();
 		}
@@ -448,13 +468,16 @@ struct SystemsContext
 			}
 			systems_dependencies.remove(reads);
 			});
+		return synced;
 	}
 
 	template<typename... Reads, typename...Excludes, typename Func>
-	void enqueue_each(WithRead<Reads...> reads, Without<Excludes...>, Func&& func)
+	bool enqueue_each(WithRead<Reads...> reads, Without<Excludes...>, Func&& func)
 	{
-		while (systems_dependencies.add(reads))
+		bool synced = false;
+		while (!systems_dependencies.add(reads))
 		{
+			synced = true;
 			PRINTLN("Forced sync");
 			entt_sync();
 		}
@@ -466,13 +489,16 @@ struct SystemsContext
 			}
 			systems_dependencies.remove(reads);
 			});
+		return synced;
 	}
 
 	template<typename... Writes, typename Func>
-	void enqueue_each(WithWrite<Writes...>writes , Func&& func)
+	bool enqueue_each(WithWrite<Writes...>writes , Func&& func)
 	{
-		while (systems_dependencies.add(writes))
+		bool synced = false;
+		while (!systems_dependencies.add(writes))
 		{
+			synced = true;
 			PRINTLN("Forced sync");
 			entt_sync();
 		}
@@ -484,13 +510,16 @@ struct SystemsContext
 				}
 				systems_dependencies.remove(writes);
 			});
+		return synced;
 	}
 
 	template<typename... Writes, typename...Excludes, typename Func>
-	void enqueue_each(WithWrite<Writes...> writes, Without<Excludes...>, Func&& func)
+	bool enqueue_each(WithWrite<Writes...> writes, Without<Excludes...>, Func&& func)
 	{
-		while (systems_dependencies.add(writes))
+		bool synced = false;
+		while (!systems_dependencies.add(writes))
 		{
+			synced = true;
 			PRINTLN("Forced sync");
 			entt_sync();
 		}
@@ -502,13 +531,16 @@ struct SystemsContext
 				}
 				systems_dependencies.remove(writes);
 			});
+		return synced;
 	}
 
 	template<typename... Reads, typename... Writes, typename Func>
-	void enqueue_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, Func&& func)
+	bool enqueue_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, Func&& func)
 	{
-		while (systems_dependencies.add(reads, writes))
+		bool synced = false;
+		while (!systems_dependencies.add(reads, writes))
 		{
+			synced = true;
 			PRINTLN("Forced sync");
 			entt_sync();
 		}
@@ -520,13 +552,16 @@ struct SystemsContext
 				}
 				systems_dependencies.remove(reads, writes);
 			});
+		return synced;
 	}
 
 	template<typename... Reads, typename... Writes, typename...Excludes, typename Func>
-	void enqueue_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, Without<Excludes...>, Func&& func)
+	bool enqueue_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, Without<Excludes...>, Func&& func)
 	{
-		while (systems_dependencies.add(reads, writes))
+		bool synced = false;
+		while (!systems_dependencies.add(reads, writes))
 		{
+			synced = true;
 			PRINTLN("Forced sync");
 			entt_sync();
 		}
@@ -538,14 +573,17 @@ struct SystemsContext
 				}
 				systems_dependencies.remove(reads, writes);
 			});
+		return synced;
 	}
 
 
 	template<typename... Reads, typename Func>
-	void enqueue_parallel_each(WithRead<Reads...> reads, Func&& func, size_t a_chunk_size = 256)
+	bool enqueue_parallel_each(WithRead<Reads...> reads, Func&& func, size_t a_chunk_size = 256)
 	{
-		while (systems_dependencies.add(reads))
+		bool synced = false;
+		while (!systems_dependencies.add(reads))
 		{
+			synced = true;
 			//PRINTLN("Forced sync");
 			entt_sync();
 		}
@@ -576,13 +614,16 @@ struct SystemsContext
 				});
 		}
 		systems_dependencies.remove(reads);
+		return synced;
 	}
 
 	template<typename... Reads, typename... Excludes, typename Func>
-	void enqueue_parallel_each(WithRead<Reads...> reads, Without<Excludes...>, Func&& func, size_t a_chunk_size = 256)
+	bool enqueue_parallel_each(WithRead<Reads...> reads, Without<Excludes...>, Func&& func, size_t a_chunk_size = 256)
 	{
-		while (systems_dependencies.add(reads))
+		bool synced = false;
+		while (!systems_dependencies.add(reads))
 		{
+			synced = true;
 			//PRINTLN("Forced sync");
 			entt_sync();
 		}
@@ -612,13 +653,16 @@ struct SystemsContext
 				});
 		}
 		systems_dependencies.remove(reads);
+		return synced;
 	}
 
 	template<typename... Writes, typename Func>
-	void enqueue_parallel_each(WithWrite<Writes...> writes, Func&& func, size_t a_chunk_size = 256)
+	bool enqueue_parallel_each(WithWrite<Writes...> writes, Func&& func, size_t a_chunk_size = 256)
 	{
-		while (systems_dependencies.add(writes))
+		bool synced = false;
+		while (!systems_dependencies.add(writes))
 		{
+			synced = true;
 			//PRINTLN("Forced sync");
 			entt_sync();
 		}
@@ -648,13 +692,16 @@ struct SystemsContext
 				});
 		}
 		systems_dependencies.remove(writes);
+		return synced;
 	}
 
 	template<typename... Writes, typename... Excludes, typename Func>
-	void enqueue_parallel_each(WithWrite<Writes...> writes, Without<Excludes...>, Func&& func, size_t a_chunk_size = 256)
+	bool enqueue_parallel_each(WithWrite<Writes...> writes, Without<Excludes...>, Func&& func, size_t a_chunk_size = 256)
 	{
-		while (systems_dependencies.add(writes))
+		bool synced = false;
+		while (!systems_dependencies.add(writes))
 		{
+			synced = true;
 			//PRINTLN("Forced sync");
 			entt_sync();
 		}
@@ -684,13 +731,16 @@ struct SystemsContext
 				});
 		}
 		systems_dependencies.remove(writes);
+		return synced;
 	}
 
 	template<typename... Reads, typename... Writes, typename Func>
-	void enqueue_parallel_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, Func&& func, size_t a_chunk_size = 256)
+	bool enqueue_parallel_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, Func&& func, size_t a_chunk_size = 256)
 	{
-		while (systems_dependencies.add(reads, writes))
+		bool synced = false;
+		while (!systems_dependencies.add(reads, writes))
 		{
+			synced = true;
 			entt_sync();
 		}
 		auto view = registry.view<Reads..., Writes...>();
@@ -718,13 +768,16 @@ struct SystemsContext
 				});
 		}
 		systems_dependencies.remove(reads, writes);
+		return synced;
 	}
 
 	template<typename... Reads, typename... Writes, typename... Excludes, typename Func>
-	void enqueue_parallel_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, Without<Excludes...>, Func&& func, size_t a_chunk_size = 256)
+	bool enqueue_parallel_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, Without<Excludes...>, Func&& func, size_t a_chunk_size = 256)
 	{
-		while (systems_dependencies.add(reads, writes))
+		bool synced = false;
+		while (!systems_dependencies.add(reads, writes))
 		{
+			synced = true;
 			//PRINTLN("Forced sync");
 			entt_sync();
 		}
@@ -753,315 +806,8 @@ struct SystemsContext
 				});
 		}
 		systems_dependencies.remove(reads, writes);
+		return synced;
 	}
-	//This AI suggestion is actually dumb, it wants to have the single thread compute everything 
-	//before issueing calls, which technically means faster total time the single thread spends in this scope
-	//but that that also means that all threads have to wait before working, which they woulndn't need to if
-	//they're issued immedietly, as they chew work WHILE the main thread is issueing commands.
-#pragma region AIOptimizationSuggestion
-	/////////
-	// AI suggested optimization.
-
-	//template<typename... Reads, typename Func>
-	//void enqueue_parallel_each(WithRead<Reads...> reads, Func&& func, size_t a_chunk_size = 256)
-	//{
-	//	while (systems_dependencies.add(reads))
-	//	{
-	//		//PRINTLN("Forced sync");
-	//		entt_sync();
-	//	}
-
-	//	auto view = registry.view<Reads...>();
-
-	//	// Pre-calculate all chunk boundaries
-	//	using IterType = decltype(view.begin());
-	//	std::vector<std::pair<IterType, IterType>> chunks;
-
-	//	auto it = view.begin();
-	//	auto view_end = view.end();
-
-	//	while (it != view_end)
-	//	{
-	//		auto chunk_begin = it;
-	//		size_t chunk_count = 0;
-
-	//		while (it != view_end && chunk_count < a_chunk_size)
-	//		{
-	//			++it;
-	//			++chunk_count;
-	//		}
-
-	//		chunks.emplace_back(chunk_begin, it);
-	//	}
-
-	//	// Enqueue all chunks rapidly
-	//	for (const auto& [chunk_begin, chunk_end] : chunks)
-	//	{
-	//		systems_dependencies.add(reads, false);
-	//		entt_thread_pool->enqueue([this, view, chunk_begin, chunk_end, reads, func]()
-	//			{
-	//				for (const auto entity_iter = chunk_begin; entity_iter != chunk_end; ++entity_iter)
-	//				{
-	//					auto entity = *entity_iter;
-	//					func(entity, view.template get<Reads>(entity)...);
-	//				}
-	//				systems_dependencies.remove(reads);
-	//			});
-	//	}
-
-	//	systems_dependencies.remove(reads);
-	//}
-
-	//template<typename... Reads, typename... Excludes, typename Func>
-	//void enqueue_parallel_each(WithRead<Reads...> reads, Without<Excludes...>, Func&& func, size_t a_chunk_size = 256)
-	//{
-	//	while (systems_dependencies.add(reads))
-	//	{
-	//		//PRINTLN("Forced sync");
-	//		entt_sync();
-	//	}
-
-	//	auto view = registry.view<Reads...>(entt::exclude<Excludes...>);
-
-	//	// Pre-calculate all chunk boundaries
-	//	using IterType = decltype(view.begin());
-	//	std::vector<std::pair<IterType, IterType>> chunks;
-
-	//	auto it = view.begin();
-	//	auto view_end = view.end();
-
-	//	while (it != view_end)
-	//	{
-	//		auto chunk_begin = it;
-	//		size_t chunk_count = 0;
-
-	//		while (it != view_end && chunk_count < a_chunk_size)
-	//		{
-	//			++it;
-	//			++chunk_count;
-	//		}
-
-	//		chunks.emplace_back(chunk_begin, it);
-	//	}
-
-	//	// Enqueue all chunks rapidly
-	//	for (const auto& [chunk_begin, chunk_end] : chunks)
-	//	{
-	//		systems_dependencies.add(reads, false);
-	//		entt_thread_pool->enqueue([this, view, chunk_begin, chunk_end, reads, func]()
-	//			{
-	//				for (const auto entity_iter = chunk_begin; entity_iter != chunk_end; ++entity_iter)
-	//				{
-	//					auto entity = *entity_iter;
-	//					func(entity, view.template get<Reads>(entity)...);
-	//				}
-	//				systems_dependencies.remove(reads);
-	//			});
-	//	}
-
-	//	systems_dependencies.remove(reads);
-	//}
-
-	//template<typename... Writes, typename Func>
-	//void enqueue_parallel_each(WithWrite<Writes...> writes, Func&& func, size_t a_chunk_size = 256)
-	//{
-	//	while (systems_dependencies.add(writes))
-	//	{
-	//		//PRINTLN("Forced sync");
-	//		entt_sync();
-	//	}
-
-	//	auto view = registry.view<Writes...>();
-
-	//	// Pre-calculate all chunk boundaries
-	//	using IterType = decltype(view.begin());
-	//	std::vector<std::pair<IterType, IterType>> chunks;
-
-	//	auto it = view.begin();
-	//	auto view_end = view.end();
-
-	//	while (it != view_end)
-	//	{
-	//		auto chunk_begin = it;
-	//		size_t chunk_count = 0;
-
-	//		while (it != view_end && chunk_count < a_chunk_size)
-	//		{
-	//			++it;
-	//			++chunk_count;
-	//		}
-
-	//		chunks.emplace_back(chunk_begin, it);
-	//	}
-
-	//	// Enqueue all chunks rapidly
-	//	for (const auto& [chunk_begin, chunk_end] : chunks)
-	//	{
-	//		systems_dependencies.add(writes, false);
-	//		entt_thread_pool->enqueue([this, view, chunk_begin, chunk_end, writes, func]()
-	//			{
-	//				for (const auto entity_iter = chunk_begin; entity_iter != chunk_end; ++entity_iter)
-	//				{
-	//					auto entity = *entity_iter;
-	//					func(entity, view.template get<Writes>(entity)...);
-	//				}
-	//				systems_dependencies.remove(writes);
-	//			});
-	//	}
-
-	//	systems_dependencies.remove(writes);
-	//}
-
-	//template<typename... Writes, typename... Excludes, typename Func>
-	//void enqueue_parallel_each(WithWrite<Writes...> writes, Without<Excludes...>, Func&& func, size_t a_chunk_size = 256)
-	//{
-	//	while (systems_dependencies.add(writes))
-	//	{
-	//		//PRINTLN("Forced sync");
-	//		entt_sync();
-	//	}
-
-	//	auto view = registry.view<Writes...>(entt::exclude<Excludes...>);
-
-	//	// Pre-calculate all chunk boundaries
-	//	using IterType = decltype(view.begin());
-	//	std::vector<std::pair<IterType, IterType>> chunks;
-
-	//	auto it = view.begin();
-	//	auto view_end = view.end();
-
-	//	while (it != view_end)
-	//	{
-	//		auto chunk_begin = it;
-	//		size_t chunk_count = 0;
-
-	//		while (it != view_end && chunk_count < a_chunk_size)
-	//		{
-	//			++it;
-	//			++chunk_count;
-	//		}
-
-	//		chunks.emplace_back(chunk_begin, it);
-	//	}
-
-	//	// Enqueue all chunks rapidly
-	//	for (const auto& [chunk_begin, chunk_end] : chunks)
-	//	{
-	//		systems_dependencies.add(writes, false);
-	//		entt_thread_pool->enqueue([this, view, chunk_begin, chunk_end, writes, func]()
-	//			{
-	//				for (const auto entity_iter = chunk_begin; entity_iter != chunk_end; ++entity_iter)
-	//				{
-	//					auto entity = *entity_iter;
-	//					func(entity, view.template get<Writes>(entity)...);
-	//				}
-	//				systems_dependencies.remove(writes);
-	//			});
-	//	}
-
-	//	systems_dependencies.remove(writes);
-	//}
-
-	//template<typename... Reads, typename... Writes, typename Func>
-	//void enqueue_parallel_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, Func&& func, size_t a_chunk_size = 256)
-	//{
-	//	while (systems_dependencies.add(reads, writes))
-	//	{
-	//		//PRINTLN("Forced sync");
-	//		entt_sync();
-	//	}
-
-	//	auto view = registry.view<Reads..., Writes...>();
-
-	//	// Pre-calculate all chunk boundaries
-	//	using IterType = decltype(view.begin());
-	//	std::vector<std::pair<IterType, IterType>> chunks;
-
-	//	auto it = view.begin();
-	//	auto view_end = view.end();
-
-	//	while (it != view_end)
-	//	{
-	//		auto chunk_begin = it;
-	//		size_t chunk_count = 0;
-
-	//		while (it != view_end && chunk_count < a_chunk_size)
-	//		{
-	//			++it;
-	//			++chunk_count;
-	//		}
-
-	//		chunks.emplace_back(chunk_begin, it);
-	//	}
-
-	//	// Enqueue all chunks rapidly
-	//	for (const auto& [chunk_begin, chunk_end] : chunks)
-	//	{
-	//		systems_dependencies.add(reads, writes, false);
-	//		entt_thread_pool->enqueue([this, view, chunk_begin, chunk_end, reads, writes, func]()
-	//			{
-	//				for (const auto entity_iter = chunk_begin; entity_iter != chunk_end; ++entity_iter)
-	//				{
-	//					auto entity = *entity_iter;
-	//					func(entity, view.template get<Reads>(entity)..., view.template get<Writes>(entity)...);
-	//				}
-	//				systems_dependencies.remove(reads, writes);
-	//			});
-	//	}
-
-	//	systems_dependencies.remove(reads, writes);
-	//}
-
-	//template<typename... Reads, typename... Writes, typename... Excludes, typename Func>
-	//void enqueue_parallel_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, Without<Excludes...>, Func&& func, size_t a_chunk_size = 256)
-	//{
-	//	while (systems_dependencies.add(reads, writes))
-	//	{
-	//		//PRINTLN("Forced sync");
-	//		entt_sync();
-	//	}
-
-	//	auto view = registry.view<Reads..., Writes...>(entt::exclude<Excludes...>);
-
-	//	// Pre-calculate all chunk boundaries
-	//	using IterType = decltype(view.begin());
-	//	std::vector<std::pair<IterType, IterType>> chunks;
-
-	//	auto it = view.begin();
-	//	auto view_end = view.end();
-
-	//	while (it != view_end)
-	//	{
-	//		auto chunk_begin = it;
-	//		size_t chunk_count = 0;
-
-	//		while (it != view_end && chunk_count < a_chunk_size)
-	//		{
-	//			++it;
-	//			++chunk_count;
-	//		}
-
-	//		chunks.emplace_back(chunk_begin, it);
-	//	}
-
-	//	// Enqueue all chunks rapidly
-	//	for (const auto& [chunk_begin, chunk_end] : chunks)
-	//	{
-	//		systems_dependencies.add(reads, writes, false);
-	//		entt_thread_pool->enqueue([this, view, chunk_begin, chunk_end, reads, writes, func]()
-	//			{
-	//				for (const auto entity_iter = chunk_begin; entity_iter != chunk_end; ++entity_iter)
-	//				{
-	//					auto entity = *entity_iter;
-	//					func(entity, view.template get<Reads>(entity)..., view.get<Writes>(entity)...);
-	//				}
-	//				systems_dependencies.remove(reads, writes);
-	//			});
-	//	}
-
-	//	systems_dependencies.remove(reads, writes);
-	//}
-#pragma endregion
 
 	template <typename Func>
 	void enqueue(Func&& func) // this needs it's own entt_thread_pool.

@@ -264,6 +264,9 @@
     <ClCompile Include="src\engine\game\systems.cpp">
       <Filter>Source Files\engine\game</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\ui\ui_menu_bar.cpp">
+      <Filter>Source Files\engine\ui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\imgui-docking\imconfig.h">
@@ -481,6 +484,9 @@
     </ClInclude>
     <ClInclude Include="include\engine\editor\systems_entries.h">
       <Filter>Header Files\engine\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\ui\ui_menu_bar.h">
+      <Filter>Header Files\engine\ui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -15,6 +15,7 @@
 #include <string>
 #include <algorithm>
 #include <engine/core/game_thread.h>
+#include <engine/ui/ui_menu_bar.h>
 
 class Scene;
 class SceneObject;
@@ -226,7 +227,9 @@ class UIManager : UISceneHierarchyDrawer , UIObjectPropertyDrawer
 
 	ContentBrowser content_browser;
     PlaybackControls playback;
+    MenuBar menu_bar;
 public:
+    void draw_menubar();
     void draw_systems();
 	void draw_object_hierarchy();
 	void draw_object_properties();

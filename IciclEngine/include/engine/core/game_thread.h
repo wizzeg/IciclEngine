@@ -52,26 +52,26 @@ struct EngineContext
 	{
 		num_logical_cores = std::thread::hardware_concurrency();
 		num_game_threads = std::max(1, num_logical_cores - 2);
-		num_general_threads = 1;
+		num_general_threads = num_game_threads;
 		PRINTLN("logical cores: {}", num_logical_cores);
-		int num_asset_threads = 0;
+		int num_asset_threads = 1;
 		if (num_logical_cores <= 4)
 		{
 			num_asset_threads = 1;
 		}
 		else if (num_logical_cores <= 8)
 		{
-			num_general_threads = 2;
+			//num_general_threads = 2;
 			num_asset_threads = 2;
 		}
 		else if (num_logical_cores <= 12)
 		{
-			num_general_threads = 3;
+			//num_general_threads = 3;
 			num_asset_threads = 3;
 		}
 		else
 		{
-			num_general_threads = 4;
+			//num_general_threads = 4;
 			num_asset_threads = 4;
 		}
 		asset_manager = std::make_shared<AssetManager>(num_asset_threads);

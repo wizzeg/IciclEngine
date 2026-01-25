@@ -2,7 +2,7 @@
 #include <engine/game/components.h>
 #include <glm/glm.hpp>
 
-void MoveSystem::execute(SystemsContext& ctx)
+bool MoveSystem::execute(SystemsContext& ctx)
 {
 	
 	time += ctx.get_delta_time();
@@ -37,7 +37,7 @@ void MoveSystem::execute(SystemsContext& ctx)
 
 	//ctx.enqueue(
 	//	[&ctx, current_time]() {
-			ctx.enqueue_parallel_each(
+			return ctx.enqueue_parallel_each(
 				WithRead<const SpawnPositionComponent, const RenderComponent>{},
 				WithWrite<TransformDynamicComponent>{},
 				[current_time](const entt::entity entity, const SpawnPositionComponent& spawn, const RenderComponent& render, TransformDynamicComponent& transform)
@@ -50,7 +50,7 @@ void MoveSystem::execute(SystemsContext& ctx)
 		//});
 }
 
-void TransformCalculationSystem::execute(SystemsContext& ctx)
+bool TransformCalculationSystem::execute(SystemsContext& ctx)
 {
 	//ctx.enqueue_parallel_each(
 	//	WithWrite<TransformDynamicComponent>{},
@@ -83,7 +83,7 @@ void TransformCalculationSystem::execute(SystemsContext& ctx)
 
 	//ctx.enqueue(
 	//	[&ctx]() {
-			ctx.enqueue_parallel_each(
+			return ctx.enqueue_parallel_each(
 				WithWrite<TransformDynamicComponent>{},
 				Without<CameraComponent>{},
 				[](const entt::entity entity, TransformDynamicComponent& world_pos)

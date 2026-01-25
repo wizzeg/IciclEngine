@@ -191,6 +191,7 @@
     <ClCompile Include="src\engine\ui\imgui_manager.cpp" />
     <ClCompile Include="src\engine\ui\ui_component_drawer.cpp" />
     <ClCompile Include="src\engine\ui\ui_manager.cpp" />
+    <ClCompile Include="src\engine\ui\ui_menu_bar.cpp" />
     <ClCompile Include="src\engine\ui\ui_object_property_drawer.cpp" />
     <ClCompile Include="src\engine\ui\ui_scene_hierarchy_drawer.cpp" />
   </ItemGroup>
@@ -257,6 +258,7 @@
     <ClInclude Include="include\engine\ui\imgui_manager.h" />
     <ClInclude Include="include\engine\ui\ui_component_drawer.h" />
     <ClInclude Include="include\engine\ui\ui_manager.h" />
+    <ClInclude Include="include\engine\ui\ui_menu_bar.h" />
     <ClInclude Include="include\engine\ui\ui_object_property_drawer.h" />
     <ClInclude Include="include\engine\ui\ui_scene_hierarchy_drawer.h" />
     <ClInclude Include="include\engine\utilities\base_serializers.h" />

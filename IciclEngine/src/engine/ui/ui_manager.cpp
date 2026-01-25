@@ -12,6 +12,12 @@
 #include <engine/core/game_thread.h>
 
 
+
+void UIManager::draw_menubar()
+{
+	menu_bar.draw_menu_bar();
+}
+
 void UIManager::draw_systems()
 {
 	ImGui::Begin("Systems");
@@ -96,75 +102,29 @@ void UIManager::draw_object_hierarchy()
 		{
 			//ImGui::SetNextWindowSize(ImVec2(500, 400));
 			ImGui::Begin("scene objects", &shoud_draw_object_hierarchy);
+
 			if (ImGui::Button("New Scene Object"))
 				scene_ptr->new_scene_object("scene object (" + std::to_string(scene_ptr->get_next_index()) + ")", true);
-			ImGui::SameLine();
-			static bool open_save_popup = false;
-			static bool open_load_popup = false;
-			static char path[260] = "";
-			if (ImGui::Button("Save Scene"))
-			{
-				open_save_popup = true;
-				ImGui::OpenPopup("Save Scene As ... ");
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("Load Scene"))
-			{
-				open_load_popup = true;
-				ImGui::OpenPopup("Load Scene at ...");
-			}
 
-			if (open_load_popup && open_save_popup)
+			
+			if (ImGui::BeginDragDropTarget())
 			{
-				open_load_popup = false;
-				open_save_popup = false;
-			}
-
-			if (ImGui::BeginPopupModal("Save Scene As ... ", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
-			{
-				ImGui::Text("path: ");
-				ImGui::SameLine();
-				ImGui::InputText("##Path", path, IM_ARRAYSIZE(path));
-				std::string full_path = "./assets/" + std::string(path) + ".scn";
-				ImGui::Text(full_path.c_str());
-				if (ImGui::Button("Save", ImVec2(120, 0)))
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SCENE_OBJECT"))
 				{
-					open_save_popup = false;
-					scene_ptr->save(full_path);
-					ImGui::CloseCurrentPopup();
-				}
-				ImGui::SameLine();
-				if (ImGui::Button("Cancel", ImVec2(120, 0)))
-				{
-					open_save_popup = false;
-					ImGui::CloseCurrentPopup();
-				}
+					// Get the dragged object
+					std::shared_ptr<SceneObject> dragged_obj = *(std::shared_ptr<SceneObject>*)payload->Data;
 
-				ImGui::EndPopup();
-			}
-
-			if (ImGui::BeginPopupModal("Load Scene at ...", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
-			{
-				ImGui::Text("path: ");
-				ImGui::SameLine();
-				ImGui::InputText("##Path", path, IM_ARRAYSIZE(path));
-				std::string full_path = "./assets/" + std::string(path) + ".scn";
-				ImGui::Text(full_path.c_str());
-
-				if (ImGui::Button("Load", ImVec2(120, 0)))
-				{
-					open_load_popup = false;
-					scene_ptr->load(full_path, true);
-					ImGui::CloseCurrentPopup();
+					// Make sure we're not dropping onto itself
+					if (dragged_obj.get())
+					{
+						auto scene = dragged_obj->get_scene();
+						if (auto scn = scene.lock())
+						{
+							scn->orphan_scene_object(dragged_obj);
+						}
+					}
 				}
-				ImGui::SameLine();
-				if (ImGui::Button("Cancel", ImVec2(120, 0)))
-				{
-					open_load_popup = false;
-					ImGui::CloseCurrentPopup();
-				}
-
-				ImGui::EndPopup();
+				ImGui::EndDragDropTarget();
 			}
 
 			auto root_scene_objects = scene_ptr->get_root_scene_objects();
@@ -287,6 +247,7 @@ void UIManager::draw_selected_icon(glm::mat4 a_view, glm::mat4 a_proj)
 void UIManager::set_scene(std::weak_ptr<Scene> a_scene)
 {
 	scene = a_scene;
+	menu_bar.set_scene(a_scene);
 }
 
 void UIManager::set_draw_texture(GLuint a_texture_id)

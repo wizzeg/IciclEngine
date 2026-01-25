@@ -4,12 +4,12 @@
 struct MoveSystem : SystemBase
 {
 	double time = 0;
-	void execute(SystemsContext& ctx) override;
+	bool execute(SystemsContext& ctx) override;
 	//const std::string& get_name() override { return "MoveSystem"; }
 };
 
 struct TransformCalculationSystem : SystemBase
 {
-	void execute(SystemsContext& ctx) override;
+	bool execute(SystemsContext& ctx) override;
 	//const std::string& get_name() override { return "TransformCalculationSystem"; }
 };

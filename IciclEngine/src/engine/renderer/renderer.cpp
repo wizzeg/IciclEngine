@@ -6,8 +6,8 @@
 #include <engine/renderer/shader_loader.h>
 #include <algorithm>
 constexpr auto MAX_POINT_LIGHTS = 512;
-constexpr auto MAX_MODEL_INSTANCES = 1024;
-constexpr auto HALF_MODEL_INSTANCES = 512;
+constexpr auto MAX_MODEL_INSTANCES = 4096; // 1024 and 512 makes weird bug with instanced renders, at 25/26k entities
+constexpr auto HALF_MODEL_INSTANCES = 2048;
 
 void Renderer::temp_render(MeshData& a_mesh, TransformDynamicComponent& a_world_pos)
 {
@@ -508,6 +508,8 @@ void Renderer::create_instance_SSBO()
 
 	// binding to binding point 0 (for now, probably always)
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, model_instance_ssbo);
+	int half = HALF_MODEL_INSTANCES;
+	glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(int), &half);
 
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
@@ -515,11 +517,18 @@ void Renderer::create_instance_SSBO()
 void Renderer::update_insance_SSBO(const std::vector<glm::mat4>& a_model_matrices)
 {
 	if (model_instance_ssbo == 0) return;
-
+	int half_models = HALF_MODEL_INSTANCES;
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, model_instance_ssbo);
 	// write to first half
 
 	glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(int) * 4 + sizeof(glm::mat4) * MAX_MODEL_INSTANCES, nullptr, GL_DYNAMIC_DRAW);
+
+	//if (fences[(size_t)instance_half] != nullptr)
+	//{
+	//	glClientWaitSync(fences[(size_t)instance_half], 0, GL_TIMEOUT_IGNORED);
+	//	glDeleteSync(fences[(size_t)instance_half]);
+	//	fences[(size_t)instance_half] = nullptr;
+	//}
 
 	std::vector<glm::mat4> model_matrices = a_model_matrices;
 	if (model_matrices.size() > HALF_MODEL_INSTANCES)
@@ -533,7 +542,7 @@ void Renderer::update_insance_SSBO(const std::vector<glm::mat4>& a_model_matrice
 	int num_models = std::min(static_cast<int>(model_matrices.size()), HALF_MODEL_INSTANCES);
 	if (!instance_half)
 	{
-		glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(int), &num_models);
+		glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(int), &half_models);
 
 		glBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(int) * 4,
 			sizeof(glm::mat4) * num_models, model_matrices.data());
@@ -542,14 +551,15 @@ void Renderer::update_insance_SSBO(const std::vector<glm::mat4>& a_model_matrice
 	}
 	else
 	{
-		glBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(int) * 1, sizeof(int), &num_models);
+		// always to first int, now I'm storing the "HALF_MODEL_INSTANCES" to get correct offset
+		glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(int), &half_models);
 
 		glBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(int) * 4 + HALF_MODEL_INSTANCES * sizeof(glm::mat4),
 			sizeof(glm::mat4) * num_models, model_matrices.data());
 		instance_half = false;
 		set_vec1i(2, "instance_buffer");
 	}
-
+	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 }
 
 void Renderer::deffered_geometry_pass(const RenderContext& a_render_context, const FrameBuffer* g_buffer)
@@ -608,6 +618,12 @@ void Renderer::deffered_geometry_pass(const RenderContext& a_render_context, con
 					// draw it before starting on new
 					update_insance_SSBO(instanced_models);
 					glDrawElementsInstanced(GL_TRIANGLES, batch_indices_count, GL_UNSIGNED_INT, 0, (GLsizei)instanced_models.size());
+					
+					//if (fences[(size_t)instance_half] != nullptr) {
+					//	glDeleteSync(fences[(size_t)instance_half]);
+					//}
+					//fences[(size_t)instance_half] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+
 					started_instance_batch = false;
 					issued_instance_batch = true;
 					instanced_models.clear();
@@ -713,6 +729,14 @@ void Renderer::deffered_geometry_pass(const RenderContext& a_render_context, con
 	{
 		update_insance_SSBO(instanced_models);
 		glDrawElementsInstanced(GL_TRIANGLES, batch_indices_count, GL_UNSIGNED_INT, 0, (GLsizei)instanced_models.size());
+		//if (fences[(size_t)instance_half] != nullptr) {
+		//	glDeleteSync(fences[(size_t)instance_half]);
+		//}
+		//fences[(size_t)instance_half] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+		started_instance_batch = false;
+		issued_instance_batch = true;
+		instanced_models.clear();
+		set_vec1i(0, "instance_buffer");
 		draw_calls++;
 		instanced_models.clear();
 	}

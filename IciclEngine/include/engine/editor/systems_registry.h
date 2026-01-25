@@ -53,9 +53,6 @@ struct SystemsRegistry
 		else if (name.rfind("class ", 0) == 0) {
 			name.erase(0, 6);
 		}
-		else if (name.rfind("const ", 0) == 0) {
-			name.erase(0, 6);
-		}
 		return name;
 	}
 
@@ -88,7 +85,8 @@ struct SystemsFactory
 
 	bool has_factory(const std::string& a_name)
 	{
-		if (auto it = name_to_system.find(a_name); it != name_to_system.end())
+		auto it = name_to_system.find(a_name);
+		if (it != name_to_system.end())
 			return true;
 		return false;
 	}
@@ -97,9 +95,7 @@ struct SystemsFactory
 	{
 		auto it = name_to_system.find(a_name);
 		if (it != name_to_system.end())
-		{
 			return it->second();
-		}
 		return nullptr;
 	}
 	std::unordered_map<std::string, std::function<std::shared_ptr<SystemBase>()>> name_to_system;

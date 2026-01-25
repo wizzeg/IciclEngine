@@ -32,6 +32,16 @@ Scene::~Scene()
 	
 }
 
+void Scene::reset()
+{
+	registry.clear();
+	root_scene_objects.clear();
+	scene_objects.clear();
+	systems.clear();
+	SceneObjectRegistry& id_registry = SceneObjectRegistry::instance();
+	id_registry.clear_registry();
+}
+
 bool Scene::save(std::string a_path)
 {
 	json j = json::object();
@@ -262,7 +272,7 @@ void Scene::add_scene_object(std::shared_ptr<SceneObject> a_scene_object)
 
 void Scene::parent_scene_object(std::weak_ptr<SceneObject> a_parent_scene_object, std::weak_ptr<SceneObject> a_target_scene_object)
 {
-	// TODO: actually add the entityref stuff to the child and parent when adding child
+	// TODO: actually add the entityref stuff to the child and parent when adding child -> I think done?
 	if (auto scene_object = a_target_scene_object.lock())
 	{
 		auto parent_scene_object = a_parent_scene_object.lock();
@@ -312,13 +322,13 @@ void Scene::orphan_scene_object(std::weak_ptr<SceneObject> a_target_scene_object
 			if (auto parent_object = scene_object->parent.lock())
 			{
 				parent_object->remove_child(scene_object);
+				root_scene_objects.push_back(scene_object);
+				scene_object->parent.reset();
 			}
 			//scene_object->parent.reset();
 		}
 		// no parent, no care
-
-		// add to root objects
-		root_scene_objects.push_back(scene_object);
+		
 	}
 
 }
@@ -392,9 +402,14 @@ void Scene::start_runtime()
 	if (!runtime)
 	{
 		runtime = true;
-		for (auto scene_object : root_scene_objects)
+		for (auto scene_object : scene_objects)
 		{
 			scene_object->start_runtime(shared_from_this());
+		}
+		// have to tell all scene objects to fix their refs....
+		for (auto scene_object : scene_objects)
+		{
+			scene_object->get_entity_references();
 		}
 	}
 

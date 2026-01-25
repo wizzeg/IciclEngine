@@ -25,7 +25,7 @@ struct ModelMatrix {
 };
 
 layout (std430, binding = 0) buffer ModelMatrixBuffer {
-    int num_model_matrices1; // don't need these...
+    int half_buffer_size; // don't need these...
     int num_model_matrices2;
 	int[2] pad;
     ModelMatrix model_matrices[];  // Unsized array
@@ -39,7 +39,7 @@ if (instance_buffer > 0)
         int instanceID = gl_InstanceID;
         if (instance_buffer == 2)
         {
-            instanceID += 1024;
+            instanceID += half_buffer_size;
         }
         vec4 world_pos = model_matrices[instanceID].model_matrix * vec4(aPos, 1.0);
 

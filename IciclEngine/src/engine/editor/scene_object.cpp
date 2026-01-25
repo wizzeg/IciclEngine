@@ -315,6 +315,31 @@ entt::handle SceneObject::start_runtime(std::weak_ptr<Scene> a_scene) // TODO ..
 	return entity_handle;
 }
 
+void SceneObject::get_entity_references()
+{
+	auto& IDs = SceneObjectRegistry::instance();
+	for (auto& comp_data : component_datas)
+	{
+		auto field_infos = comp_data->get_registered_field_info();
+		for (auto& field_info : field_infos)
+		{
+			if (field_info.type == typeid(EntityReference))
+			{
+				auto ent_ref = static_cast<EntityReference*>(field_info.value_ptr);
+				if (auto id = IDs.get_registred_ID(ent_ref->scene_object))
+				{
+					if (id->true_id != 0 && id->initialized)
+					{
+						ent_ref->entity = id->entity;
+					}
+				}
+
+				
+			}
+		}
+	}
+}
+
 bool SceneObject::check_valid(size_t a_index)
 {
 	if (runtime && component_datas.size() > a_index)

@@ -327,6 +327,7 @@ public:
 	}
 
 	entt::handle start_runtime(std::weak_ptr<Scene> a_scene);
+	void get_entity_references();
 	//void draw_components();
 
 	size_t num_children() const { return children.size(); };

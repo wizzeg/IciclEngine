@@ -325,3 +325,8 @@ struct SpawnPositionComponent
 {
     glm::vec3 spawn_position;
 };
+
+struct ProcessorComponent
+{
+    uint32_t processor_id;
+};

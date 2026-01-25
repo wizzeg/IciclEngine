@@ -53,7 +53,7 @@ REGISTER_COMPONENT(CameraComponent, ("Rendering"),
 	FIELD_CUSTOM("orbital camera: ", comp, orbit_camera, 0.0f, false),
 	FIELD_CUSTOM("orbital point: ", comp, target_location, 1.75f, false),
 	FIELD_DEFAULT("priority: ", comp, render_priority),
-	FIELD_CUSTOM("buffer: ", comp, frame_buffer_target, 1.75f, false),
+	FIELD_HIDDEN(comp, frame_buffer_target),
 	FIELD_CUSTOM("field of view: ", comp, field_of_view, 1.75f, false),
 	FIELD_HIDDEN(comp, projection_matrix),
 	FIELD_HIDDEN(comp, view_matrix),
@@ -133,4 +133,8 @@ REGISTER_COMPONENT(HierarchyComponent, ("Default"),
 
 REGISTER_COMPONENT(SpawnPositionComponent, ("Default"),
 	FIELD_CUSTOM("spawn position: ", comp, spawn_position, 1.75f, false),
+	)
+
+REGISTER_COMPONENT(ProcessorComponent, ("Default"),
+	FIELD_DEFAULT("spawn position: ", comp, processor_id),
 	)

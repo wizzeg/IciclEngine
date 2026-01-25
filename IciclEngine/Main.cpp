@@ -133,6 +133,9 @@ int main(void)
 	ImVec2 mouse_pos;
 
 	HighResolutionTimer timer2;
+	HighResolutionTimer render_call_timer;
+	double render_load_time = 0;
+	double render_call_time = 0;
 	double render_thread_time = 0;
 	double ui_manager_time = 0;
 	int framies = 0;
@@ -219,7 +222,7 @@ int main(void)
 					}
 
 
-					for (size_t i = 0; i < 5000; i++)
+					for (size_t i = 0; i < 10000; i++)
 					{
 						float x = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));
 						float y = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));; // Or random if you want variety
@@ -237,7 +240,7 @@ int main(void)
 						scene_object->add_component(SpawnPositionComponent{ glm::vec3(x, y, z) });
 					}
 
-					for (size_t i = 0; i < 200; i++)
+					for (size_t i = 0; i < 20; i++)
 					{
 						float x = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));
 						float y = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));; // Or random if you want variety
@@ -267,7 +270,7 @@ int main(void)
 							break;
 						}
 						//glm::vec3 color((std::rand() % 1000)* 0.001f, (std::rand() % 1000) * 0.001f, (std::rand() % 1000) * 0.001f);
-						float intensity = 0.5f;//0.33 * (std::rand() % 1000) * 0.001;
+						float intensity = 0.5f + (std::rand() % 500) * 0.001;
 						glm::vec3 attenuation = glm::vec3(0.75f, 0.1f, 0.01f);
 						hashed_string_64 name(mat.c_str());
 						scene_object->add_component(TransformDynamicComponent{ glm::vec3(x, y, z), glm::vec3(0.5f)});
@@ -310,29 +313,21 @@ int main(void)
 		// Lets just start with a hardcoded editor camera.
 		auto& render_requests = engine_context->render_requests[std::size_t(!engine_context->write_pos)];
 		auto& render_context = engine_context->render_contexts[std::size_t(!engine_context->write_pos)];
-		// do for each camera.
-		renderer.rotation += (float)(0.07 * engine_context->delta_time * 0.01);
-		//glfw_context->bind_framebuffer("editor_camera_gbuffer");
-		//glfw_context->clear();
-		//shader_program->bind();
+
 		renderer.set_camera_position(engine_context->editor_camera.get_camera_position());
 		renderer.set_proj_view_matrix(engine_context->editor_camera.get_proj_matrix(), engine_context->editor_camera.get_view_matrix());
 		glm::vec3 camera_pos = engine_context->editor_camera.get_camera_position();
-		//for (size_t i = 0; i < render_requests.size(); i++)
-		//{
-		//	if (render_requests[i].vao != 0)
-		//	{
-		//		renderer.temp_render(render_requests[i], camera_pos);
-		//	}
-		//}
-		//renderer.temp_render(render_context);
 
 		DefferedBuffer deffered_buffer;
 		deffered_buffer.gbuffer = glfw_context->get_framebuffer("editor_camera_gbuffer");
 		deffered_buffer.output = glfw_context->get_framebuffer("editor_frame_buffer");
 		deffered_buffer.shadow_maps = glfw_context->get_framebuffer("shadow_map_array");
+		render_call_timer.start();
 		renderer.deffered_render(render_context, deffered_buffer);
+		render_call_timer.stop();
+		render_call_time += render_call_timer.get_time_ms();
 
+		// otherrender target stuff... but for now this is basically only for main camera...
 		for (size_t i = 0; i < engine_context->cameras_render[std::size_t(!engine_context->write_pos)].size(); i++)
 		{
 				glfw_context->clear();
@@ -346,58 +341,10 @@ int main(void)
 				renderer.deffered_render(render_context, deffered_buffer);
 		}
 
-		//glfw_context->bind_framebuffer("main_camera_buffer");
-		//glfw_context->clear();
-		// render for each ingame camera
-		//for (size_t i = 0; i < engine_context->cameras_render[std::size_t(!engine_context->write_pos)].size(); i++)
-		//{
-		//	if (glfw_context->bind_framebuffer(engine_context->cameras_render[std::size_t(!engine_context->write_pos)][i].frame_buffer_hashed.string))
-		//	{
-		//		glfw_context->clear();
-		//		renderer.set_camera_position(engine_context->cameras_render[std::size_t(!engine_context->write_pos)][i].position);
-		//		renderer.set_proj_view_matrix(engine_context->cameras_render[std::size_t(!engine_context->write_pos)][i].proj_matrix,
-		//			engine_context->cameras_render[std::size_t(!engine_context->write_pos)][i].view_matrix);
-		//		//for (size_t i = 0; i < render_requests.size(); i++)
-		//		//{
-		//		//	if (render_requests[i].vao != 0)
-		//		//	{
-		//		//		renderer.temp_render(render_requests[i]);
-		//		//	}
-		//		//}
-		//		renderer.temp_render(render_context);
-		//	}
-		//}
-
-		/////////////////////////////////////////
-		// Loading a VAO request
-		//if (auto vao_request = engine_context->model_storage->vaoload_returner.return_request())
-		//{
-		//	MeshData& mesh_data = vao_request.value().mesh_data;
-		//	PRINTLN("got the new type of vao load request");
-		//	if (vao_loader.load_vao(mesh_data))
-		//	{
-		//		PRINTLN("Render sending the new form of vao upate request message");
-		//		LoadJob load_job = std::move(
-		//			VAOLoadInfo{ mesh_data.contents->hashed_path, mesh_data.VAO, mesh_data.contents->EBO, time, mesh_data.contents->VBOs });
-		//		engine_context->model_storage->add_job(load_job);
-		//	}
-		//}
-
-		///////////////////////////////////////////
-		//// Loading Texture to GPU
-		//if (auto gen_request = engine_context->model_storage->texgen_returner.return_request())
-		//{
-		//	TextureData& tex_data = gen_request.value().texture_data;
-		//	PRINTLN("Got texture gen request");
-		//	TextureGenInfo ret_val = engine_context->texture_loader->generate_texture(tex_data);
-		//	if (ret_val.texture_gen_status == ELoadStatus::Loaded)
-		//	{
-		//		LoadJob load_job = std::move(TextureGenInfo{ret_val.hashed_path, ret_val.texture_id, ret_val.texture_gen_status});
-		//		engine_context->model_storage->add_job(load_job);
-		//	}
-		//}
+	
 		//////////////////////////////////////////////////////////////////////
-		// New graphics system
+		// New graphics load system
+		render_call_timer.start();
 		if (auto vao_req = engine_context->asset_manager->get_vao_request())
 		{
 			MeshData& mesh_data = vao_req.value().mesh_data;
@@ -434,6 +381,8 @@ int main(void)
 				engine_context->asset_manager->add_asset_job(load_job);
 			}
 		}
+		render_call_timer.stop();
+		render_load_time += render_call_timer.get_time_ms();
 		
 		timer2.stop();
 		render_thread_time += timer2.get_time_ms();
@@ -670,15 +619,12 @@ int main(void)
 
 			//ui_mananger->RenderContentBrowser();
 			ui_mananger->render_play_stop(engine_context.get());
-			ui_mananger->RenderTopMenuBar();
+			ui_mananger->draw_menubar();
+			//ui_mananger->RenderTopMenuBar();
 			//ui_mananger->RenderToolbar();
 
 			//input_manager.update_input();
 			input_manager.update_input();
-			if (input_manager.is_key_held(EKey::A))
-			{
-				//PRINTLN("HELD A for: {}s", input_manager.key_held_duration(EKey::A));
-			}
 
 			imgui_manager->render();
 			timer2.stop();
@@ -686,8 +632,12 @@ int main(void)
 		}
 		if (framies > 500)
 		{
+			PRINTLN("render draw calls dispatch timer: {}", render_call_time / (double)framies);
+			PRINTLN("render thread loading timer: {}", render_load_time / (double)framies);
 			PRINTLN("render thread timer: {}", render_thread_time / (double)framies);
 			PRINTLN("ui manager frametime: {}", ui_manager_time / (double)framies);
+			render_load_time = 0;
+			render_call_time = 0;
 			render_thread_time = 0;
 			ui_manager_time = 0;
 			framies = 0;

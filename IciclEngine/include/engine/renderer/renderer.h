@@ -170,7 +170,7 @@ private:
 	void create_shadow_framebuffers();
 
 	void create_instance_SSBO();
-	void update_insance_SSBO(const std::vector<glm::mat4>& a_model_matrices); bool instance_half;
+	void update_insance_SSBO(const std::vector<glm::mat4>& a_model_matrices); bool instance_half; GLsync fences[2] = { nullptr, nullptr };
 	void deffered_geometry_pass(const RenderContext& a_render_context, const FrameBuffer* g_buffer);
 	void deffered_shadowmap_pass(const RenderContext& a_render_context, const FrameBuffer* shadow_array, size_t a_shadowmap_index);
 

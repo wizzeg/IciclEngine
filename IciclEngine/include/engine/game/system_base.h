@@ -2,7 +2,7 @@
 #include <engine/core/systems_context.h>
 struct SystemBase
 {
-	virtual void execute(SystemsContext& ctx) = 0;
+	virtual bool execute(SystemsContext& ctx) = 0;
 	const std::string& get_name() const { return name; }
 	void set_name(const std::string& a_name) { name = a_name; }
 	uint32_t get_order() const { return order; }
