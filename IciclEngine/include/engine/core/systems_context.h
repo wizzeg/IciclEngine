@@ -252,11 +252,11 @@ struct SystemsContextStorage
 			object->cv.wait(object_lock, [&object]() {
 				return object->readers == 0 && !object->writing;
 				});
-			object->data = std::move(value);
+			object->data = value;
 		}
 		else
 		{
-			storage[storage_key(typeid(std::decay_t<T>), a_name)] = std::make_unique<SystemsStorageObject<std::decay_t<T>>>(std::move(value));
+			storage[storage_key(typeid(std::decay_t<T>), a_name)] = std::make_unique<SystemsStorageObject<std::decay_t<T>>>(value);
 		}
 		
 	}
@@ -272,7 +272,7 @@ struct SystemsContextStorage
 		}
 		else
 		{
-			storage[storage_key(a_type, a_name)] = std::make_unique<SystemsStorageObject<std::decay_t<T>>>(std::move(value));
+			storage[storage_key(a_type, a_name)] = std::make_unique<SystemsStorageObject<std::decay_t<T>>>(value);
 			return nullptr;
 		}
 
