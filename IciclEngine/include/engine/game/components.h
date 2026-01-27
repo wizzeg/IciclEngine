@@ -330,3 +330,9 @@ struct ProcessorComponent
 {
     uint32_t processor_id;
 };
+
+struct BoundingBoxComponent
+{
+    glm::vec3 offset;
+    glm::vec3 box_extents;
+};

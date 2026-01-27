@@ -69,10 +69,15 @@ struct EngineContext
 			//num_general_threads = 3;
 			num_asset_threads = 3;
 		}
+		else if (num_logical_cores <= 18)
+		{
+			//num_general_threads = 3;
+			num_asset_threads = 4;
+		}
 		else
 		{
 			//num_general_threads = 4;
-			num_asset_threads = 4;
+			num_asset_threads = 6;
 		}
 		asset_manager = std::make_shared<AssetManager>(num_asset_threads);
 		worker_pool = std::make_shared<WorkerThreadPool>(num_game_threads);
@@ -117,6 +122,7 @@ struct EngineContext
 		else if (!a_start && game_playing && scene->is_runtime())
 		{
 			game_playing = false;
+			game_paused = false;
 			requested_assets.materials.clear();
 			requested_assets.meshes.clear();
 			scene->stop_runtime();
@@ -154,6 +160,7 @@ struct EngineContext
 	bool game_playing = false;
 	bool spent_time = false;
 	bool game_paused = false;
+	bool physics_frame = false;
 	std::atomic<uint64_t> job_time = 0;
 	std::mutex glfw_mutex;
 

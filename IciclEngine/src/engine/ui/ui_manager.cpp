@@ -73,10 +73,22 @@ void UIManager::draw_systems()
 			int order = system->get_order();
 			ImGui::SameLine();
 			ImGui::SetNextItemWidth(100.0f);
-			if (ImGui::DragInt("order##", &order, 1.f, 0, UINT32_MAX))
+			if (ImGui::DragInt("##order", &order, 1.f, 0, UINT32_MAX))
 			{
 				system->set_order(order);
 			}
+			ImGui::SameLine();
+			ImGui::Text("enabled: ");
+			ImGui::SameLine();
+			if (bool enabled = system->get_enabled(); ImGui::Checkbox("##enabled", &enabled))
+				system->set_enabled(enabled);
+
+			ImGui::SameLine();
+			ImGui::Text(", physics frame: ");
+			ImGui::SameLine();
+			if (bool physics_only = system->get_physics_frames_only(); ImGui::Checkbox("##physics", &physics_only))
+				system->set_only_on_physics(physics_only);
+
 			ImGui::SameLine();
 			if (ImGui::Button("remove system"))
 			{
@@ -266,10 +278,12 @@ void UIManager::render_play_stop(EngineContext* a_engine_context)
 	if (ImGui::Button(playback.isPlaying && !playback.isPaused ? "Pause##PlayBtn" : "Play##PlayBtn", ImVec2(45, 18))) {
 		if (playback.isPlaying && !playback.isPaused) {
 			playback.isPaused = true;
+			a_engine_context->game_paused = true;
 		}
 		else {
 			playback.isPlaying = true;
 			playback.isPaused = false;
+			a_engine_context->game_paused = false;
 		}
 		//std::lock_guard<std::mutex> guard(a_engine_context->mutex);
 		//a_scene->start_runtime(); // deal with making a runtime copy later -------- runtime thing works at least, entities are created

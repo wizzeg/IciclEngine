@@ -39,7 +39,7 @@ void GameThread::execute()
 		timer.stop();
 		game_thread_time += timer.get_time_ms();
 
-		if (runs > 500)
+		if (runs > 500 && false)
 		{
 			PRINTLN("time for moving: {}", movement / (double)runs);
 			PRINTLN("time for complex worldpos: {}", complex_movement / (double)runs);
@@ -107,7 +107,7 @@ void GameThread::execute()
 
 		double delta_time = engine_context->delta_time;
 		engine_context->systems_context->set_delta_time(delta_time);
-		if (engine_context->game_playing)
+		if (engine_context->game_playing && !engine_context->game_paused)
 		{
 			game_runtime();
 		}
@@ -167,11 +167,15 @@ void GameThread::game_runtime()
 	//	float offset = amplitude * glm::sin(frequency * transform.position.x + accumilated_time);
 	//	transform.position.y = spawn.spawn_position.y + offset;
 	//}
-
+	bool physics_frame = engine_context->physics_frame;
 	auto& systems = scene->get_systems();
 	for (auto& system : systems)
 	{
-		system->execute(*engine_context->systems_context);
+		bool only_on_physics = system->get_physics_frames_only();
+		if (system->get_enabled() && (only_on_physics == (physics_frame && only_on_physics)))
+		{
+			system->execute(*engine_context->systems_context);
+		}
 	}
 	//PRINTLN("started parallel");
 	//move_system.execute(*engine_context->systems_context);

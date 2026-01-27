@@ -224,9 +224,9 @@ int main(void)
 
 					for (size_t i = 0; i < 10000; i++)
 					{
-						float x = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));
-						float y = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));; // Or random if you want variety
-						float z = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));; // Same here
+						float x = -5.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 10.0f));
+						float y = -5.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 10.0f));; // Or random if you want variety
+						float z = -5.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 10.0f));; // Same here
 						auto obj = scene->new_scene_object(std::string("model: ") + std::to_string(i), true);
 						auto scene_object = obj.lock();
 						size_t mesh_idx = std::rand() % meshes.size();
@@ -238,9 +238,10 @@ int main(void)
 						scene_object->add_component(RenderComponent{ meshes[mesh_idx], mats[mat_idx], true, true, true });
 						//scene_object->add_component(TextureComponent{ false, texes[tex_idx]});
 						scene_object->add_component(SpawnPositionComponent{ glm::vec3(x, y, z) });
+						scene_object->add_component(BoundingBoxComponent{ glm::vec3(0.f, 1.0f, 0.f), glm::vec3(1.f) });
 					}
 
-					for (size_t i = 0; i < 20; i++)
+					for (size_t i = 0; i < 50; i++)
 					{
 						float x = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));
 						float y = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));; // Or random if you want variety
@@ -630,7 +631,7 @@ int main(void)
 			timer2.stop();
 			ui_manager_time += timer2.get_time_ms();
 		}
-		if (framies > 500)
+		if (framies > 500 && false)
 		{
 			PRINTLN("render draw calls dispatch timer: {}", render_call_time / (double)framies);
 			PRINTLN("render thread loading timer: {}", render_load_time / (double)framies);

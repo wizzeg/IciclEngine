@@ -42,11 +42,10 @@ void UISceneHierarchyDrawer::draw_hierarchy_node(std::weak_ptr<SceneObject> a_sc
 		{
 			selected_scene_object = a_scene_object;
 		}
-		// Drag source - what you're dragging
+		// drag source
 		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
 		{
-			// Store the scene object pointer in the payload
-			// Use a raw pointer since ImGui needs the data to persist
+			// store the scene object pointer in the payload name
 			auto dragged_obj = scene_object;
 			ImGui::SetDragDropPayload("SCENE_OBJECT", &dragged_obj, sizeof(std::shared_ptr<SceneObject>));
 			ImGui::Text("Move: %s", node_name.c_str());
@@ -55,18 +54,18 @@ void UISceneHierarchyDrawer::draw_hierarchy_node(std::weak_ptr<SceneObject> a_sc
 
 		if (ImGui::BeginDragDropTarget())
 		{
+			// get the dragged object by payload name
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SCENE_OBJECT"))
 			{
-				// Get the dragged object
 				std::shared_ptr<SceneObject> dragged_obj = *(std::shared_ptr<SceneObject>*)payload->Data;
 
-				// Make sure we're not dropping onto itself
+				// make sure not dropped into self
 				if (dragged_obj.get() != scene_object.get())
 				{
 					auto scene = dragged_obj->get_scene();
 					if (auto scn = scene.lock())
 					{
-						scn->orphan_scene_object(dragged_obj);
+						//scn->orphan_scene_object(dragged_obj);
 						scn->parent_scene_object(scene_object, dragged_obj);
 					}
 				}

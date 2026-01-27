@@ -7,6 +7,12 @@
 #include <any>
 #include <variant>
 #include <string>
+#include <unordered_map>
+#include <mutex>
+#include <engine/utilities/macros.h>
+#include <condition_variable>
+#include <functional>
+
 using UniformValue = std::variant<bool, int, float, double, glm::vec3, glm::vec4, glm::quat, glm::mat4, glm::ivec1, std::string>;
 
 namespace EShadowCasterType
@@ -19,6 +25,103 @@ namespace EShadowCasterType
 		PointLight
 	};
 };
+
+struct AABB
+{
+	glm::vec3 aabb_min;
+	glm::vec3 aabb_max;
+};
+
+struct OBB
+{
+	glm::vec3 obb_center;
+	glm::quat obb_rotation;
+	glm::vec3 obb_half_extens;
+};
+
+struct ColliderData
+{
+	entt::entity entity;
+	AABB aabb;
+	OBB obb;
+};
+
+struct SystemsStorageObjectBase
+{
+	std::condition_variable cv;
+	std::mutex mutex;
+	int waiting_readers = 0;
+	int readers = 0;
+	int waiting_writers = 0;
+	bool writing = false;
+};
+
+
+template<typename T>
+struct SystemsStorageObject : SystemsStorageObjectBase
+{
+	SystemsStorageObject(T&& a_data) : data(a_data) {}
+	T data;
+	void read(std::function <void(const T&)>&& func)
+	{
+		std::unique_lock<std::mutex> read_lock(mutex);
+		waiting_readers++;
+		cv.wait(read_lock, [this]() { return !writing && waiting_writers == 0; }); // maybe remove this
+		waiting_readers--;
+		readers++;
+		read_lock.unlock();
+		func(data);
+		read_lock.lock();
+		readers--;
+		cv.notify_all();
+	}
+	void write(std::function <void(T&)>&& func)
+	{
+		std::unique_lock write_lock(mutex);
+		waiting_writers++;
+		cv.wait(write_lock, [this]() { return !writing && readers == 0; });
+		waiting_writers--;
+		writing = true;
+		write_lock.unlock();
+		func(data);
+		write_lock.lock();
+		writing = false;
+	}
+
+	void copy(T& data_copy)
+	{
+		std::unique_lock<std::mutex> read_lock(mutex);
+		waiting_readers++;
+		cv.wait(read_lock, [this]() { return !writing; });
+		waiting_readers--;
+		readers++;
+		read_lock.unlock();
+		data_copy = data;
+		read_lock.lock();
+		readers--;
+		cv.notify_all();
+	}
+};
+
+struct CellCoordinates {
+	int x, y, z;
+
+	bool operator==(const CellCoordinates& other) const {
+		return x == other.x && y == other.y && z == other.z;
+	}
+};
+
+namespace std { // apparently need a hasher... That's annoying
+	template<>
+	struct hash<CellCoordinates> {
+		std::size_t operator()(const CellCoordinates& coord) const {
+			std::size_t h1 = std::hash<int>{}(coord.x);
+			std::size_t h2 = std::hash<int>{}(coord.y);
+			std::size_t h3 = std::hash<int>{}(coord.z);
+			return h1 ^ (h2 << 1) ^ (h3 << 2);  // Simple combine
+		}
+	};
+}
 
 struct ShadowLight
 {

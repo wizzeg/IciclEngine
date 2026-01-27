@@ -148,8 +148,12 @@ struct RenderReq
 	GLsizei indices_size = 0;
 	bool instanced;
 	bool mipmap;
+	//uint8_t stencil;
+	//bool use_dyanmic_value;
 	//uint16_t material_version;
 	GLuint gl_program;
+	//glm::vec4 dynamic_vec4;
+	//glm::vec4 dynamic_vec4;
 	//std::vector<UniformData> uniforms;
 };
 
@@ -426,6 +430,8 @@ struct RuntimeMaterial // pushed to the Render thread, similar to vao load, but 
 	bool instantiable;
 	bool transparent;
 	bool is_deffered;
+	bool dynamic_value;
+	bool has_stencil;
 };
 
 struct RuntimeMesh

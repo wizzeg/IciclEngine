@@ -1,6 +1,8 @@
 #include <engine/game/systems.h>
 #include <engine/game/components.h>
 #include <glm/glm.hpp>
+#include <unordered_map>
+#include <engine/utilities/macros.h>
 
 bool MoveSystem::execute(SystemsContext& ctx)
 {
@@ -119,4 +121,129 @@ bool TransformCalculationSystem::execute(SystemsContext& ctx)
 
 	//	}
 	//);
+}
+
+bool AABBWriteSpatialPartitionSystem::execute(SystemsContext& ctx)
+{
+	using SpatialPartition = std::unordered_map<CellCoordinates, std::vector<entt::entity>>;
+	size_t num_threads = ctx.num_threads();
+	//ctx.enqueue([&ctx]()
+	//	{
+		//auto vectored_spatial_map = std::vector<std::unordered_map<CellCoordinates, std::vector<entt::entity>>>();
+	vectored_spatial_map.clear();
+	vectored_spatial_map.resize(num_threads);
+
+	ctx.enqueue_parallel_data_each(
+		WithRead<TransformDynamicComponent, BoundingBoxComponent>{},
+		[this]( SpatialPartition& spatial_partition,
+			const entt::entity entity, 
+			const TransformDynamicComponent& transform,
+			const BoundingBoxComponent& bbox )
+		{
+			const glm::mat4& model_matrix = transform.model_matrix;
+
+			glm::vec3 half_extents = bbox.box_extents * 0.5f;
+			glm::mat3 scaled_rotation = glm::mat3(model_matrix);
+
+			glm::vec3 offset_rot_scaled_box = glm::vec3(model_matrix * glm::vec4(bbox.offset, 1.f));
+
+			glm::mat3 max_scaled_rotation = glm::mat3(
+				glm::abs(scaled_rotation[0]),
+				glm::abs(scaled_rotation[1]),
+				glm::abs(scaled_rotation[2])
+			);
+
+			glm::vec3 world_half_extents = max_scaled_rotation * half_extents;
+
+			glm::vec3 aabb_min = offset_rot_scaled_box - world_half_extents;
+			glm::vec3 aabb_max = offset_rot_scaled_box + world_half_extents;
+			
+			CellCoordinates min_cell = {
+			static_cast<int>(std::floor(aabb_min.x / cell_size)),
+			static_cast<int>(std::floor(aabb_min.y / cell_size)),
+			static_cast<int>(std::floor(aabb_min.z / cell_size))
+			};
+
+			CellCoordinates max_cell = {
+				static_cast<int>(std::floor(aabb_max.x / cell_size)),
+				static_cast<int>(std::floor(aabb_max.y / cell_size)),
+				static_cast<int>(std::floor(aabb_max.z / cell_size))
+			};
+
+			for (int x = min_cell.x; x <= max_cell.x; ++x)
+				for (int y = min_cell.y; y <= max_cell.y; ++y)
+					for (int z = min_cell.z; z <= max_cell.z; ++z)
+						spatial_partition[{x, y, z}].push_back(entity);
+			
+
+		}, vectored_spatial_map, num_threads);
+	ctx.entt_sync(); // could push vectored_spatial_map into the storage to retrrieve this->vectored_spatial_map later to combine
+
+		// I could send in an extra lambda in the above, as an "after completion" to insert in parallel in chunks
+			
+		//ctx.enqueue([&vectored_spatial_map = this->vectored_spatial_map, &ctx]() // technically not "safe"
+		//	{
+	SpatialPartition data;
+	for (auto& spatial_map : vectored_spatial_map)
+		for (auto& [coords, entities] : spatial_map)
+			data[coords].insert(data[coords].end(), entities.begin(), entities.end());
+
+	auto& system_storage = ctx.get_system_storage();
+	system_storage.add_or_replace_object("AABBSpatialPartition", std::move(data));
+	system_storage.add_or_replace_object("SpatialCellSize", cell_size);
+	//if (auto storage_object = 
+	//	system_storage.get_object<SpatialPartition>("AABBSpatialPartition"))
+	//{
+	//	storage_object->write([this]
+	//	(SpatialPartition& data)
+	//		{
+	//			data.clear();
+	//			for (auto& spatial_map : vectored_spatial_map)
+	//				for (auto& [coords, entities] : spatial_map)
+	//					data[coords].insert(data[coords].end(), entities.begin(), entities.end());
+	//			PRINTLN("updated spatialParition");
+	//		});
+	//}
+	//else
+	//{
+
+	//}
+			//});
+
+		//system_storage.add_or_replace_object("PhysicsHashMap", std::move(hash_map));
+	//});
+
+
+	return false;
+}
+
+bool AABBReadSpatialPartitionSystem::execute(SystemsContext& ctx)
+{
+	if (counter > 5000)
+	{
+		counter = 0;
+		using SpatialPartition = std::unordered_map<CellCoordinates, std::vector<entt::entity>>;
+		if (SystemsStorageObject<SpatialPartition>* spatial_object = ctx.get_system_storage().get_object<SpatialPartition>("AABBSpatialPartition"))
+		{
+			spatial_object->read([](const SpatialPartition& spatial_partition)
+				{
+					for (const auto& [cell, entities] : spatial_partition)
+					{
+						for (const auto& entity : entities)
+						{
+							PRINTLN("entity {} in cell {} {} {}", (uint32_t)entity, cell.x, cell.y, cell.z);
+						}
+					}
+				});
+		}
+
+	}
+	else
+	{
+		++counter;
+	}
+
+
+
+	return false;
 }

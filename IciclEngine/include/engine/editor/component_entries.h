@@ -138,3 +138,8 @@ REGISTER_COMPONENT(SpawnPositionComponent, ("Default"),
 REGISTER_COMPONENT(ProcessorComponent, ("Default"),
 	FIELD_DEFAULT("spawn position: ", comp, processor_id),
 	)
+
+REGISTER_COMPONENT(BoundingBoxComponent, ("Rendering, Physics"),
+	FIELD_CUSTOM("box offset: ", comp, box_extents, 1.75f, false),
+	FIELD_CUSTOM("box extents: ", comp, box_extents, 1.75f, false)
+	)

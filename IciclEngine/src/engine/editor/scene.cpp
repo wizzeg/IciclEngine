@@ -59,6 +59,8 @@ bool Scene::save(std::string a_path)
 		json j_sys = json::object();
 		j_sys["order"] = system->get_order();
 		j_sys["name"] = system->get_name();
+		j_sys["enabled"] = system->get_enabled();
+		j_sys["physics"] = system->get_physics_frames_only();
 		j["systems"].push_back(j_sys);
 	}
 
@@ -196,17 +198,20 @@ bool Scene::load(std::string a_path, bool clear_registry)
 		auto& sys_reg = SystemsRegistry::instance();
 		for (auto& j_sys : j["systems"])
 		{
-			if (j_sys.contains("name") && j_sys.contains("order"))
+			if (j_sys.contains("name") && j_sys.contains("order") && j_sys.contains("physics") && j_sys.contains("enabled"))
 			{
 				if (sys_factory.has_factory(j_sys["name"]))
 				{
 					auto sys = sys_factory.create_system(j_sys["name"]);
-					sys->set_name(j_sys["name"]);
-					sys->set_order(j_sys["order"]);
+					sys->set_name(j_sys["name"].get<std::string>());
+					sys->set_order(j_sys["order"].get<int>());
+					sys->set_enabled(j_sys["enabled"].get<bool>());
+					sys->set_only_on_physics(j_sys["physics"].get<bool>());
 					add_system(sys);
 				}
 			}
 		}
+		reorder_systems();
 	}
 
 	return true;
