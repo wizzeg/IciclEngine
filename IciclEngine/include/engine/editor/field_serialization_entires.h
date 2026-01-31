@@ -161,6 +161,32 @@ REGISTER_TYPE_SERIALIZER(glm::mat4,
     }
 )
 
+// glm::mat3
+REGISTER_TYPE_SERIALIZER(glm::mat3,
+    {
+        json j_arr = json::array();
+        const float* val_ptr = glm::value_ptr(value);
+        int idx = 0;
+        //for (int i = 0; i < 4; i++) {
+        //    for (int k = 0; k < 4; k++) {
+        //        j.push_back((val_ptr[idx++]));
+        //    }
+        //}
+        for (int i = 0; i < 9; i++) j_arr.push_back(val_ptr[i]);
+        j = j_arr;
+    },
+    {
+        if (j.is_array() && j.size() == 9) {
+            int idx = 0;
+            for (int i = 0; i < 3; i++) {
+                for (int k = 0; k < 3; k++) {
+                    value[i][k] = j[idx++].get<float>();
+                }
+            }
+        }
+    }
+)
+
 // std::string
 REGISTER_TYPE_SERIALIZER(std::string,
     { j = value; },

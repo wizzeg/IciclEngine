@@ -333,6 +333,24 @@ struct ProcessorComponent
 
 struct BoundingBoxComponent
 {
-    glm::vec3 offset;
-    glm::vec3 box_extents;
+    glm::vec3 offset = glm::vec3(0.0f);
+    glm::vec3 box_extents = glm::vec3(1.0f);
+};
+
+struct RigidBodyComponent
+{
+    glm::vec3 position;
+    glm::quat rotation;
+
+    glm::vec3 linear_velocity = glm::vec3(0);
+    glm::vec3 angular_velocity = glm::vec3(0);
+
+    float mass = 1.f;
+    float inverse_mass = 1.f;
+
+    glm::mat3 inverse_inertia_tensor_local = glm::mat3(0.f);
+
+    float restitution = 1.0f;
+    float friction = 0.0f;
+    bool recalculate_inverse_inertia_tensor = true;
 };

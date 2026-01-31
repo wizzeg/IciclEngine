@@ -164,7 +164,7 @@ int main(void)
 					hashed_string_64 monkey_mesh = hashed_string_64("./assets/obj/triobjmonkey.obj");
 					hashed_string_64 tex = hashed_string_64("./assets/textures/awesomeface.png");
 
-					std::vector<hashed_string_64> meshes = {  "./assets/obj/triobjmonkey.obj" }; //"./assets/obj/plane.obj","./assets/obj/triobjmonkey.obj" , "./assets/obj/sizanne.obj", "./assets/obj/robot.obj","./assets/obj/robot2.obj","./assets/obj/robot3.obj"
+					std::vector<hashed_string_64> meshes = {  "./assets/obj/cube.obj" }; //"./assets/obj/plane.obj","./assets/obj/triobjmonkey.obj" , "./assets/obj/sizanne.obj", "./assets/obj/robot.obj","./assets/obj/robot2.obj","./assets/obj/robot3.obj"
 					std::vector<hashed_string_64> texes = { "./assets/textures/awesomeface.png", "./assets/textures/wall.jpg", "./assets/textures/container.jpg" };
 					std::vector<hashed_string_64> mats = { "./assets/shaders/white.mat" }; // , "./assets/shaders/test2.mat" "./assets/shaders/test.mat", "./assets/shaders/testcopy.mat"
 					
@@ -224,21 +224,34 @@ int main(void)
 
 					for (size_t i = 0; i < 10000; i++)
 					{
-						float x = -5.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 10.0f));
-						float y = -5.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 10.0f));; // Or random if you want variety
-						float z = -5.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 10.0f));; // Same here
+						float x = -100.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 200.0f));
+						float y = -100.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 200.0f));; // Or random if you want variety
+						float z = -100.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 200.0f));; // Same here
 						auto obj = scene->new_scene_object(std::string("model: ") + std::to_string(i), true);
 						auto scene_object = obj.lock();
 						size_t mesh_idx = std::rand() % meshes.size();
 						size_t tex_idx = std::rand() % texes.size();
 						size_t mat_idx = std::rand() % mats.size();
-						scene_object->add_component(TransformDynamicComponent{ glm::vec3(x, y, z), glm::vec3(1.f)});
+						scene_object->add_component(TransformDynamicComponent{ glm::vec3(x, y, z), (glm::normalize(glm::abs(glm::vec3(x, y, z))) + glm::vec3(0.5f))});
 						//scene_object->add_component(MeshComponent{ false, meshes[mesh_idx]});
 						//scene_object->add_component(MaterialComponent{mats[mat_idx], false, false, true});
 						scene_object->add_component(RenderComponent{ meshes[mesh_idx], mats[mat_idx], true, true, true });
 						//scene_object->add_component(TextureComponent{ false, texes[tex_idx]});
 						scene_object->add_component(SpawnPositionComponent{ glm::vec3(x, y, z) });
-						scene_object->add_component(BoundingBoxComponent{ glm::vec3(0.f, 1.0f, 0.f), glm::vec3(1.f) });
+						scene_object->add_component(BoundingBoxComponent{ glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.f) });
+
+						float mass = 1.f;
+						float inverse_mass = 1.f;
+						glm::vec3 linear_velocity = normalize(glm::vec3(x, y, z)) * -20.f;
+						glm::vec3 rotation_velocity = normalize(glm::vec3(x, y, z)) * -0.2f;
+						if (glm::length(glm::vec3(x, y, z)) < 50.f)
+						{
+							mass = 100.f;	
+							inverse_mass = 0.01f;
+							linear_velocity = glm::vec3(0.f);
+							rotation_velocity = glm::vec3(0.f);
+						}
+						scene_object->add_component(RigidBodyComponent{ glm::vec3(x, y, z), glm::quat(1.0f, 0.f, 0.f, 0.f), linear_velocity, rotation_velocity, mass, inverse_mass });
 					}
 
 					for (size_t i = 0; i < 50; i++)

@@ -140,6 +140,20 @@ REGISTER_COMPONENT(ProcessorComponent, ("Default"),
 	)
 
 REGISTER_COMPONENT(BoundingBoxComponent, ("Rendering, Physics"),
-	FIELD_CUSTOM("box offset: ", comp, box_extents, 1.75f, false),
+	FIELD_CUSTOM("box offset: ", comp, offset, 1.75f, false),
 	FIELD_CUSTOM("box extents: ", comp, box_extents, 1.75f, false)
+	)
+
+REGISTER_COMPONENT(RigidBodyComponent, ("Physics"),
+	FIELD_CUSTOM("position: ", comp, position, 1.75f, false),
+	FIELD_CUSTOM("rotation: ", comp, rotation, 1.75f, false),
+	FIELD_CUSTOM("linear_velocity: ", comp, linear_velocity, 1.75f, false),
+	FIELD_CUSTOM("angular_velocity: ", comp, angular_velocity, 1.75f, false),
+	FIELD_CUSTOM("mass: ", comp, mass, 1.75f, false),
+	FIELD_CUSTOM("inverse_mass: ", comp, inverse_mass, 1.75f, false),
+	FIELD_CUSTOM("restitution: ", comp, restitution, 1.75f, false),
+	FIELD_CUSTOM("friction: ", comp, friction, 1.75f, false),
+	FIELD_HIDDEN(comp, inverse_inertia_tensor_local),
+	FIELD_CUSTOM("recalculate tensor: ", comp, recalculate_inverse_inertia_tensor, 1.f, false)
+
 	)

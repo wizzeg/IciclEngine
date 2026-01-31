@@ -252,6 +252,7 @@
     <ClInclude Include="include\engine\resources\message_queue.h" />
     <ClInclude Include="include\engine\resources\model_loader.h" />
     <ClInclude Include="include\engine\resources\obj_parser.h" />
+    <ClInclude Include="include\engine\resources\physics_structs.h" />
     <ClInclude Include="include\engine\resources\scene_object_registry.h" />
     <ClInclude Include="include\engine\resources\shader_loader.h" />
     <ClInclude Include="include\engine\resources\uniform_registry.h" />

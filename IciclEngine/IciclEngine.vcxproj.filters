@@ -488,6 +488,9 @@
     <ClInclude Include="include\engine\ui\ui_menu_bar.h">
       <Filter>Header Files\engine\ui</Filter>
     </ClInclude>
+    <ClInclude Include="include\engine\resources\physics_structs.h">
+      <Filter>Header Files\engine\resources</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\assets\shaders\fragment\frag.glsl">
