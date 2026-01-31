@@ -1043,3 +1043,9 @@ dkms.conf
 *.uf2
 # Raspberry Pi Pico disassembler file
 *.dis
+
+##files
+*.obj
+*.scn
+*.mat
+*.shdr
