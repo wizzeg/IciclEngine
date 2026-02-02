@@ -1049,3 +1049,4 @@ dkms.conf
 *.scn
 *.mat
 *.shdr
+assets/temp/temp_scene.scn

@@ -42,6 +42,53 @@ void UISceneHierarchyDrawer::draw_hierarchy_node(std::weak_ptr<SceneObject> a_sc
 		{
 			selected_scene_object = a_scene_object;
 		}
+
+		if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
+			selected_scene_object = a_scene_object;
+			ImGui::OpenPopup("SceneObjectContextMenu");
+		}
+		if (ImGui::BeginPopup("SceneObjectContextMenu")) {
+
+			if (ImGui::Selectable("Delete")) {
+				// Handle delete
+				auto scene = scene_object->get_scene();
+				if (auto shared_scene = scene.lock())
+				{
+					shared_scene->destroy_scene_object(selected_scene_object);
+					UISceneHierarchyDrawer::selected_scene_object.reset();
+				}
+			}
+			if (ImGui::Selectable("Save as Prefab")) {
+				// Handle properties
+					open_save_popup = true;
+			}
+			if (ImGui::Selectable("Duplicate")) {
+				// Handle duplicate
+				if (auto scn = scene_object->get_scene().lock())
+				{
+					scn->save_prefab("./assets/temp/temp_prefab.prfb",scene_object);
+					scn->load_prefab("./assets/temp/temp_prefab.prfb");
+				}
+			}
+			ImGui::Separator();
+			if (ImGui::Selectable("Add Child")) {
+				// Handle properties
+				
+			}
+			if (ImGui::Selectable("Orphan")) {
+				// Handle properties
+				if (auto scn = scene_object->get_scene().lock())
+					scn->orphan_scene_object(scene_object);
+			}
+			ImGui::Separator();
+			if (ImGui::Selectable("Insert prefab")) {
+				// Handle properties
+				open_load_popup = true;
+			}
+			ImGui::EndPopup();
+		}
+
+
 		// drag source
 		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
 		{
@@ -98,6 +145,8 @@ void UISceneHierarchyDrawer::draw_hierarchy_node(std::weak_ptr<SceneObject> a_sc
 			ImGui::TreePop();
 		}
 		ImGui::PopID();
+
+	
 	}
 	
 }

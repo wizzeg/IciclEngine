@@ -36,81 +36,90 @@ SceneObject::SceneObject(const std::string a_name, std::weak_ptr<SceneObject> a_
 	component_types.emplace_back(typeid(HierarchyComponent));
 }
 
-void SceneObject::add_child(std::weak_ptr<SceneObject> a_child)
+void SceneObject::add_child(std::weak_ptr<SceneObject> a_child, bool skip_heirarchy)
 {
-	if (auto new_child = a_child.lock())
+	if (!skip_heirarchy)
 	{
-		auto parent_ref = get_component<HierarchyComponent>();
-		auto parent_ent = get_component<EntityComponent>();
-		auto new_child_ref = new_child->get_component<HierarchyComponent>();
-		auto new_child_ent = new_child->get_component<EntityComponent>();
-		new_child_ref->previous_sibling = EntityReference{};
-		new_child_ref->previous_sibling = EntityReference{};
-		for (size_t i = 0; i < children.size(); i++)
+		if (auto new_child = a_child.lock())
 		{
-			if (auto old_child = children[i].lock()) 
+			auto parent_ref = get_component<HierarchyComponent>();
+			auto parent_ent = get_component<EntityComponent>();
+			auto new_child_ref = new_child->get_component<HierarchyComponent>(); // unsafe
+			auto new_child_ent = new_child->get_component<EntityComponent>(); // but I don't care at this point
+			new_child_ref->previous_sibling = EntityReference{};
+			new_child_ref->previous_sibling = EntityReference{};
+			for (size_t i = 0; i < children.size(); i++)
 			{
-				auto old_child_ent = old_child->get_component<EntityComponent>();
-				if (old_child_ent->entity.scene_object == parent_ref->child.scene_object || (runtime && (old_child_ent->entity.entity == parent_ref->child.entity)))
+				if (auto old_child = children[i].lock())
 				{
-					HierarchyComponent* old_child_ref;
-					EntityComponent* old_child_ent;
-					// first setup the new childs ent ref
-					if (parent_ent && parent_ref && new_child_ref && new_child_ent)
+					auto old_child_ent = old_child->get_component<EntityComponent>();
+					if (old_child_ent->entity.scene_object == parent_ref->child.scene_object || (runtime && (old_child_ent->entity.entity == parent_ref->child.entity)))
 					{
-						// first look for the child among children
-						for (auto& child : children)
+						HierarchyComponent* old_child_ref;
+						EntityComponent* old_child_ent;
+						// first setup the new childs ent ref
+						if (parent_ent && parent_ref && new_child_ref && new_child_ent)
 						{
-							if (auto child_lock = child.lock())
+							// first look for the child among children
+							for (auto& child : children)
 							{
-								auto child_ent = child_lock->get_component<EntityComponent>();
-
-								if (child_ent)
+								if (auto child_lock = child.lock())
 								{
-									if (child_ent->entity.scene_object == parent_ref->child.scene_object || (runtime && (child_ent->entity.entity == parent_ref->child.entity)))
-									{
-										// this is the child the parent refs too
-										old_child_ref = child_lock->get_component<HierarchyComponent>();
-										old_child_ent = child_lock->get_component<EntityComponent>();
-										if (old_child_ent && old_child_ref)
-										{
-											old_child_ref->previous_sibling = new_child_ent->entity;
-											new_child_ref->next_sibling = old_child_ent->entity;
-										}
-										break;
-									}
-								}
+									auto child_ent = child_lock->get_component<EntityComponent>();
 
-								//if (child_lock.get() == new_child.get()) // this makes no sense, we want to update child references
-								//{
-								//	// this is the child the parent refs too
-								//	old_child_ref = child_lock->get_component<HierarchyComponent>();
-								//	old_child_ent = child_lock->get_component<EntityComponent>();
-								//	if (old_child_ent && old_child_ref)
-								//	{
-								//		old_child_ref->previous_sibling = new_child_ent->entity;
-								//		new_child_ref->next_sibling = old_child_ent->entity;
-								//	}
-								//}
+									if (child_ent)
+									{
+										if (child_ent->entity.scene_object == parent_ref->child.scene_object || (runtime && (child_ent->entity.entity == parent_ref->child.entity)))
+										{
+											// this is the child the parent refs too
+											old_child_ref = child_lock->get_component<HierarchyComponent>();
+											old_child_ent = child_lock->get_component<EntityComponent>();
+											if (old_child_ent && old_child_ref)
+											{
+												old_child_ref->previous_sibling = new_child_ent->entity;
+												new_child_ref->next_sibling = old_child_ent->entity;
+											}
+											if (new_child_ref->next_sibling.scene_object == new_child_ref->previous_sibling.scene_object)
+											{
+												new_child_ref->next_sibling.scene_object = 0;
+											} // it's not here... which makes sense
+											break;
+										}
+									}
+
+									//if (child_lock.get() == new_child.get()) // this makes no sense, we want to update child references
+									//{
+									//	// this is the child the parent refs too
+									//	old_child_ref = child_lock->get_component<HierarchyComponent>();
+									//	old_child_ent = child_lock->get_component<EntityComponent>();
+									//	if (old_child_ent && old_child_ref)
+									//	{
+									//		old_child_ref->previous_sibling = new_child_ent->entity;
+									//		new_child_ref->next_sibling = old_child_ent->entity;
+									//	}
+									//}
+								}
 							}
+							// it's an only cild.
 						}
-						// it's an only cild.
+						// then link old child to the new child
+						// set the new child to to child for parent
+						//return; // NO RETURN ... we have to tell tell the first sibling there's new first sibling
 					}
-					// then link old child to the new child
-					// set the new child to to child for parent
-					//return; // NO RETURN ... we have to tell tell the first sibling there's new first sibling
 				}
 			}
+			// need to tell child that it has a new parent
+			parent_ref->child = new_child_ent->entity;
+			new_child_ref->parent = parent_ent->entity;
+
 		}
-		// need to tell child that it has a new parent
-		parent_ref->child = new_child_ent->entity;
-		new_child_ref->parent = parent_ent->entity;
+	}
+	if (auto new_child = a_child.lock())
+	{
 		new_child->parent = shared_from_this();
 		children.insert(children.begin(), new_child);
 	}
-	
-
-	PRINTLN("child acquired, I have this many children now: {}", children.size());
+	//PRINTLN("child acquired, I have this many children now: {}", children.size());
 }
 void SceneObject::orphan()
 {
@@ -380,7 +389,7 @@ json SceneObject::save()
 		j_comp["fields"] = json::array();
 		
 		auto fields = component->get_registered_field_info();
-		for (auto& field :fields)
+		for (FieldInfo& field :fields)
 		{
 			json j_field = json::object();
 			if (field.name.empty())
@@ -415,7 +424,8 @@ std::shared_ptr<SceneObject> SceneObject::load(const json& a_j, std::weak_ptr<Sc
 		temp_name = a_j["name"].get<std::string>();
 	}
 	std::shared_ptr<SceneObject> scene_object = std::make_shared<SceneObject>(temp_name, a_scene, false);
-
+	scene_object->component_datas.clear();
+	scene_object->component_types.clear();
 	if (a_j.contains("components"))
 	{
 		for (const auto& comp_j_obj : a_j["components"])
@@ -435,6 +445,7 @@ std::shared_ptr<SceneObject> SceneObject::load(const json& a_j, std::weak_ptr<Sc
 					{
 						std::string field_type_name = field.type.name();
 						std::string field_name = field.name;
+						// for each component field, we look through all json fields until we find match..
 						for (const auto& j_field : j_fields)
 						{
 							if (j_field.contains("name"))
@@ -442,8 +453,25 @@ std::shared_ptr<SceneObject> SceneObject::load(const json& a_j, std::weak_ptr<Sc
 								if (j_field["name"] == field_name)
 								{
 									deserialize_field(j_field, field_name, field.type, field.value_ptr);
-
 								}
+							}
+						}
+					}
+
+					if (comp_data->get_type() == typeid(EntityComponent)) // pretty ugly, but what ever
+					{
+						auto fields = comp_data->get_registered_field_info();
+						for (auto& field : fields)
+						{
+
+							if (field.name == "entity id: ")
+							{
+								scene_object->try_set_id((static_cast<EntityReference*>(field.value_ptr))->scene_object);
+								
+							}
+							else if (field.name == "entity name: ")
+							{
+								scene_object->name = (static_cast<hashed_string_64*>(field.value_ptr))->string;
 							}
 						}
 					}
@@ -455,13 +483,15 @@ std::shared_ptr<SceneObject> SceneObject::load(const json& a_j, std::weak_ptr<Sc
 	{
 		if (a_j.contains("children"))
 		{
-			for (auto& j_child : a_j["children"])
+			for (auto& j_child : std::views::reverse(a_j["children"]))
 			{
 
 					//std::shared_ptr<SceneObject> child = SceneObject::load(j_child, a_scene);
 					//scene->add_scene_object(child);
 					//scene_object->children.push_back(child);
-					scene_object->add_child(SceneObject::load(j_child, a_scene));
+					scene_object->add_child(SceneObject::load(j_child, a_scene), true);
+
+					// This might be where the problem is... because this runs this stuff...
 			}
 		}
 		scene->add_scene_object(scene_object);

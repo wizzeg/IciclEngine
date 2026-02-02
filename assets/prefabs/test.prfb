@@ -1,0 +1,281 @@
+{
+    "name": " ",
+    "root object": {
+        "children": [
+            {
+                "children": [],
+                "components": [
+                    {
+                        "fields": [
+                            {
+                                "name": "entity name: ",
+                                "type": "struct hashed_string_64",
+                                "value": "child 5"
+                            },
+                            {
+                                "name": "entity id: ",
+                                "type": "struct EntityReference",
+                                "value": 5
+                            }
+                        ],
+                        "type": "EntityComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "parent: ",
+                                "type": "struct EntityReference",
+                                "value": 1
+                            },
+                            {
+                                "name": "previous sibling: ",
+                                "type": "struct EntityReference",
+                                "value": 0
+                            },
+                            {
+                                "name": "next sibling: ",
+                                "type": "struct EntityReference",
+                                "value": 4
+                            },
+                            {
+                                "name": "child: ",
+                                "type": "struct EntityReference",
+                                "value": 0
+                            }
+                        ],
+                        "type": "HierarchyComponent"
+                    }
+                ],
+                "name": "child 5"
+            },
+            {
+                "children": [],
+                "components": [
+                    {
+                        "fields": [
+                            {
+                                "name": "entity name: ",
+                                "type": "struct hashed_string_64",
+                                "value": "child 4"
+                            },
+                            {
+                                "name": "entity id: ",
+                                "type": "struct EntityReference",
+                                "value": 4
+                            }
+                        ],
+                        "type": "EntityComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "parent: ",
+                                "type": "struct EntityReference",
+                                "value": 1
+                            },
+                            {
+                                "name": "previous sibling: ",
+                                "type": "struct EntityReference",
+                                "value": 5
+                            },
+                            {
+                                "name": "next sibling: ",
+                                "type": "struct EntityReference",
+                                "value": 2
+                            },
+                            {
+                                "name": "child: ",
+                                "type": "struct EntityReference",
+                                "value": 0
+                            }
+                        ],
+                        "type": "HierarchyComponent"
+                    }
+                ],
+                "name": "child 4"
+            },
+            {
+                "children": [
+                    {
+                        "children": [],
+                        "components": [
+                            {
+                                "fields": [
+                                    {
+                                        "name": "entity name: ",
+                                        "type": "struct hashed_string_64",
+                                        "value": "child 6"
+                                    },
+                                    {
+                                        "name": "entity id: ",
+                                        "type": "struct EntityReference",
+                                        "value": 6
+                                    }
+                                ],
+                                "type": "EntityComponent"
+                            },
+                            {
+                                "fields": [
+                                    {
+                                        "name": "parent: ",
+                                        "type": "struct EntityReference",
+                                        "value": 2
+                                    },
+                                    {
+                                        "name": "previous sibling: ",
+                                        "type": "struct EntityReference",
+                                        "value": 0
+                                    },
+                                    {
+                                        "name": "next sibling: ",
+                                        "type": "struct EntityReference",
+                                        "value": 3
+                                    },
+                                    {
+                                        "name": "child: ",
+                                        "type": "struct EntityReference",
+                                        "value": 0
+                                    }
+                                ],
+                                "type": "HierarchyComponent"
+                            }
+                        ],
+                        "name": "child 6"
+                    },
+                    {
+                        "children": [],
+                        "components": [
+                            {
+                                "fields": [
+                                    {
+                                        "name": "entity name: ",
+                                        "type": "struct hashed_string_64",
+                                        "value": "child 2"
+                                    },
+                                    {
+                                        "name": "entity id: ",
+                                        "type": "struct EntityReference",
+                                        "value": 3
+                                    }
+                                ],
+                                "type": "EntityComponent"
+                            },
+                            {
+                                "fields": [
+                                    {
+                                        "name": "parent: ",
+                                        "type": "struct EntityReference",
+                                        "value": 2
+                                    },
+                                    {
+                                        "name": "previous sibling: ",
+                                        "type": "struct EntityReference",
+                                        "value": 6
+                                    },
+                                    {
+                                        "name": "next sibling: ",
+                                        "type": "struct EntityReference",
+                                        "value": 0
+                                    },
+                                    {
+                                        "name": "child: ",
+                                        "type": "struct EntityReference",
+                                        "value": 0
+                                    }
+                                ],
+                                "type": "HierarchyComponent"
+                            }
+                        ],
+                        "name": "child 2"
+                    }
+                ],
+                "components": [
+                    {
+                        "fields": [
+                            {
+                                "name": "entity name: ",
+                                "type": "struct hashed_string_64",
+                                "value": "child "
+                            },
+                            {
+                                "name": "entity id: ",
+                                "type": "struct EntityReference",
+                                "value": 2
+                            }
+                        ],
+                        "type": "EntityComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "parent: ",
+                                "type": "struct EntityReference",
+                                "value": 1
+                            },
+                            {
+                                "name": "previous sibling: ",
+                                "type": "struct EntityReference",
+                                "value": 4
+                            },
+                            {
+                                "name": "next sibling: ",
+                                "type": "struct EntityReference",
+                                "value": 0
+                            },
+                            {
+                                "name": "child: ",
+                                "type": "struct EntityReference",
+                                "value": 6
+                            }
+                        ],
+                        "type": "HierarchyComponent"
+                    }
+                ],
+                "name": "child "
+            }
+        ],
+        "components": [
+            {
+                "fields": [
+                    {
+                        "name": "entity name: ",
+                        "type": "struct hashed_string_64",
+                        "value": "parent "
+                    },
+                    {
+                        "name": "entity id: ",
+                        "type": "struct EntityReference",
+                        "value": 1
+                    }
+                ],
+                "type": "EntityComponent"
+            },
+            {
+                "fields": [
+                    {
+                        "name": "parent: ",
+                        "type": "struct EntityReference",
+                        "value": 0
+                    },
+                    {
+                        "name": "previous sibling: ",
+                        "type": "struct EntityReference",
+                        "value": 0
+                    },
+                    {
+                        "name": "next sibling: ",
+                        "type": "struct EntityReference",
+                        "value": 0
+                    },
+                    {
+                        "name": "child: ",
+                        "type": "struct EntityReference",
+                        "value": 5
+                    }
+                ],
+                "type": "HierarchyComponent"
+            }
+        ],
+        "name": "parent "
+    }
+}

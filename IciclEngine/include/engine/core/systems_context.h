@@ -18,6 +18,7 @@
 template<typename...T> struct WithWrite {};
 template<typename...T> struct WithRead {};
 template<typename...T> struct Without {};
+template<typename...T> struct WithMod {}; // huh... these don't actually work in the general enqueue...
 
 struct SystemsContextDependencies
 {
@@ -34,8 +35,22 @@ struct SystemsContextDependencies
 			if (check_dependencies)
 				if (dependency_collision({ typeid(Reads)... }, { typeid(Writes)... }))
 					return false;
-			(add_write_dependency<Writes>(),...);
-			(add_read_dependency<Reads>(),...);
+			add_write_dependency<Writes...>();
+			add_read_dependency<Reads...>();
+		}
+		return true;
+	}
+
+	template<typename... Reads, typename... Writes, typename... Mods>
+	bool add(WithRead<Reads...>, WithWrite<Writes...>, WithMod<Mods...>, bool check_dependencies = true)
+	{
+		{
+			std::lock_guard comp_lock(components_mutex);
+			if (check_dependencies)
+				if (dependency_collision({ typeid(Reads)... }, { typeid(Writes)..., typeid(Mods)...}))
+					return false;
+			add_write_dependency<Writes..., Mods...>();
+			add_read_dependency<Reads...>();
 		}
 		return true;
 	}
@@ -48,7 +63,21 @@ struct SystemsContextDependencies
 			if (check_dependencies)
 				if (dependency_collision({ typeid(Reads)... }, { }))
 					return false;
-			(add_read_dependency<Reads>(),...);
+			add_read_dependency<Reads...>();
+		}
+		return true;
+	}
+
+	template<typename... Reads, typename... Mods>
+	bool add(WithRead<Reads...>, WithMod<Mods...>, bool check_dependencies = true)
+	{
+		{
+			std::lock_guard comp_lock(components_mutex);
+			if (check_dependencies)
+				if (dependency_collision({ typeid(Reads)... }, {typeid(Mods)...}))
+					return false;
+			add_write_dependency<Mods...>();
+			add_read_dependency<Reads...>();
 		}
 		return true;
 	}
@@ -61,18 +90,44 @@ struct SystemsContextDependencies
 			if (check_dependencies)
 				if (dependency_collision({ }, { typeid(Writes)... }))
 					return false;
-			(add_write_dependency<Writes>(),...);
+			add_write_dependency<Writes...>();
 		}
 		return true;
 	}
+
+	template<typename... Writes, typename... Mods>
+	bool add(WithWrite<Writes...>, WithMod<Mods...>, bool check_dependencies = true)
+	{
+		{
+			std::lock_guard comp_lock(components_mutex);
+			if (check_dependencies)
+				if (dependency_collision({ }, { typeid(Writes)..., typeid(Mods)...}))
+					return false;
+			add_write_dependency<Writes...,typeid(Mods)...>();
+		}
+		return true;
+	}
+
+
+
 
 	template<typename... Reads, typename... Writes>
 	void remove(WithRead<Reads...>, WithWrite<Writes...>)
 	{
 		{
 			std::lock_guard comp_lock(components_mutex);
-			(remove_write_dependency<Writes>(), ...);
-			(remove_read_dependency<Reads>(), ...);
+			remove_write_dependency<Writes...>();
+			remove_read_dependency<Reads...>();
+		}
+	}
+
+	template<typename... Reads, typename... Writes, typename...Mods>
+	void remove(WithRead<Reads...>, WithWrite<Writes...>, WithMod<Mods...>)
+	{
+		{
+			std::lock_guard comp_lock(components_mutex);
+			remove_write_dependency<Writes..., Mods...>();
+			remove_read_dependency<Reads...>();
 		}
 	}
 
@@ -81,16 +136,36 @@ struct SystemsContextDependencies
 	{
 		{
 			std::lock_guard comp_lock(components_mutex);
-			(remove_read_dependency<Reads>(), ...);
+			remove_read_dependency<Reads...>();
 		}
 	}
+
+	template<typename... Reads, typename... Mods>
+	void remove(WithRead<Reads...>, WithMod<Mods...>)
+	{
+		{
+			std::lock_guard comp_lock(components_mutex);
+			remove_write_dependency<Mods...>();
+			remove_read_dependency<Reads...>();
+		}
+	}
+
 
 	template<typename... Writes>
 	void remove(WithWrite<Writes...>)
 	{
 		{
 			std::lock_guard comp_lock(components_mutex);
-			(remove_write_dependency<Writes>(), ...);
+			remove_write_dependency<Writes...>();
+		}
+	}
+
+	template<typename... Writes, typename... Mods>
+	void remove(WithWrite<Writes...>, WithMod<Mods...>)
+	{
+		{
+			std::lock_guard comp_lock(components_mutex);
+			remove_write_dependency<Writes..., Mods...>();
 		}
 	}
 protected:
@@ -157,62 +232,129 @@ protected:
 		return false;
 	}
 
-	template<typename Read>
+	template<typename... Reads>
 	void add_read_dependency()
 	{
-		std::type_index type = typeid(Read);
+		//std::type_index type = typeid(Read);
+		std::vector<std::type_index> types = {typeid(Reads)...};
+		std::sort(types.begin(), types.end());
 		size_t insertion_index = 0;
-		for (; insertion_index < reading_components.size(); ++insertion_index)
+		for (auto& type : types)
 		{
-			auto& read_comp = reading_components[insertion_index];
-			if (type < read_comp)
+			for (; insertion_index < reading_components.size(); ++insertion_index)
 			{
-				break;
+				auto& read_comp = reading_components[insertion_index];
+				if (type < read_comp)
+				{
+					break;
+				}
 			}
+			reading_components.insert(reading_components.begin() + insertion_index, type);
 		}
-		reading_components.insert(reading_components.begin() + insertion_index, type);
+
+		// change to better insert
+		//std::vector<std::type_index> merged;
+		//merged.reserve(reading_components.size() + types.size());
+
+		//auto it_rc = reading_components.begin();
+		//auto it_t = types.begin();
+
+		//while (it_rc != reading_components.end() &&
+		//	it_t != types.end())
+		//{
+		//	if (*it_t < *it_rc)
+		//	{
+		//		merged.push_back(*it_t++);
+		//	}
+		//	else
+		//	{
+		//		merged.push_back(*it_rc++);
+		//	}
+		//}
+
+		//merged.insert(merged.end(), it_t, types.end());
+		//merged.insert(merged.end(), it_rc, reading_components.end());
+
+		//reading_components.swap(merged);
 	}
-	template<typename Write>
+	template<typename... Writes>
 	void add_write_dependency()
 	{
-		std::type_index type = typeid(Write);
+		//std::type_index type = typeid(Write);
+		std::vector<std::type_index> types = { typeid(Writes)... };
+		std::sort(types.begin(), types.end());
 		size_t insertion_index = 0;
-		for (; insertion_index < writing_components.size(); ++insertion_index)
+		for (auto& type : types)
 		{
-			auto& write_comp = writing_components[insertion_index];
-			if (type < write_comp)
+			for (; insertion_index < writing_components.size(); ++insertion_index)
 			{
-				break;
+				auto& write_comp = writing_components[insertion_index];
+				if (type < write_comp)
+				{
+					break;
+				}
 			}
+			writing_components.insert(writing_components.begin() + insertion_index, type);
 		}
-		writing_components.insert(writing_components.begin() + insertion_index, type);
 	}
 
-	template<typename Read>
+	template<typename... Reads>
 	void remove_read_dependency()
 	{
-		std::type_index type = typeid(Read);
-		for (size_t i = 0; i < reading_components.size(); i++)
+		//std::type_index type = typeid(Read);
+		std::vector<std::type_index> types = {typeid(Reads)...};
+		std::sort(types.begin(), types.end());
+		size_t removal_index = 0;
+		for (auto& type : types)
 		{
-			auto& read_comp = reading_components[i];
-			if (type == read_comp)
+			for (; removal_index < reading_components.size(); ++removal_index)
 			{
-				reading_components.erase(reading_components.begin() + i);
-				break;
+				auto& read_comp = reading_components[removal_index];
+				if (type == read_comp)
+				{
+					reading_components.erase(reading_components.begin() + removal_index); // not great..
+					break;
+				}
 			}
 		}
+
+		// change this to a std::remove_if
+		//auto erase_end = std::remove_if(reading_components.begin(), reading_components.end(),
+		//	[&](const auto& read_comp)
+		//	{
+		//		if (removal_index >= types.size())
+		//			return false;
+
+		//		while (removal_index < types.size() && read_comp > types[removal_index])
+		//			++removal_index;
+		//			
+		//		if (read_comp == types[removal_index])
+		//		{
+		//			++removal_index;
+		//			return true;
+		//		}
+		//		return false;
+		//	});
+		//reading_components.erase(erase_end, reading_components.end());
+
 	}
-	template<typename Write>
+	template<typename... Writes>
 	void remove_write_dependency()
 	{
-		std::type_index type = typeid(Write);
-		for (size_t i = 0; i < writing_components.size(); i++)
+
+		std::vector<std::type_index> types = { typeid(Writes)... };
+		std::sort(types.begin(), types.end());
+		size_t removal_index = 0;
+		for (auto& type : types)
 		{
-			auto& write_comp = writing_components[i];
-			if (type == write_comp)
+			for (; removal_index < writing_components.size(); ++removal_index)
 			{
-				writing_components.erase(writing_components.begin() + i);
-				break;
+				auto& write_comp = writing_components[removal_index];
+				if (type == write_comp)
+				{
+					writing_components.erase(writing_components.begin() + removal_index);
+					break;
+				}
 			}
 		}
 	}
@@ -1332,6 +1474,8 @@ struct SystemsContext
 
 	SystemsContextDependencies& get_system_dependencies() { return systems_dependencies; }
 	SystemsContextStorage& get_system_storage() { return systems_storage; }
+
+
 
 	uint32_t order = 5000;
 private:

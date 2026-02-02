@@ -28,6 +28,11 @@ public:
 	bool save(std::string a_path);
 	bool load(std::string a_path, bool clear_registry = true);
 
+	bool save_prefab(const std::string& a_path, std::weak_ptr<SceneObject> a_scene_ptr, const std::string& a_name = " ");
+	bool load_prefab(const std::string& a_path);
+
+	void add_children_to_vector(std::weak_ptr<SceneObject> a_parent, std::vector<std::shared_ptr<SceneObject>>& a_vector);
+
 	entt::registry& get_registry() { return registry; }
 	entt::handle create_entity(const std::string a_name);
 	void destroy_entity(entt::entity a_entity);

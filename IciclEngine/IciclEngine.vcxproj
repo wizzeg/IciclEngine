@@ -222,6 +222,7 @@
     <ClInclude Include="include\engine\editor\field_info.h" />
     <ClInclude Include="include\engine\editor\field_serialization_entires.h" />
     <ClInclude Include="include\engine\editor\field_serialization_macro.h" />
+    <ClInclude Include="include\engine\editor\prefab_registry.h" />
     <ClInclude Include="include\engine\editor\scene.h" />
     <ClInclude Include="include\engine\editor\scene_object.h" />
     <ClInclude Include="include\engine\editor\field_serialization_registry.h" />

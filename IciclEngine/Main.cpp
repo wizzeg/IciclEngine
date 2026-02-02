@@ -192,7 +192,7 @@ int main(void)
 						scene->parent_scene_object(obj2, obj6);
 					}
 
-					{
+					/*{
 						for (auto mesh : meshes)
 						{
 							auto obj = scene->new_scene_object(std::string("mesh loader for: ") + mesh.string, true);
@@ -219,10 +219,10 @@ int main(void)
 							auto scene_object = obj.lock();
 							scene_object->add_component(MaterialComponent{ mat, true, true, true });
 						}
-					}
+					}*/
 
 
-					for (size_t i = 0; i < 10000; i++)
+					for (size_t i = 0; i < 0; i++)
 					{
 						float x = -100.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 200.0f));
 						float y = -100.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 200.0f));; // Or random if you want variety
@@ -242,9 +242,10 @@ int main(void)
 
 						float mass = 1.f;
 						float inverse_mass = 1.f;
-						glm::vec3 linear_velocity = normalize(glm::vec3(x, y, z)) * -20.f;
+						float random = std::rand() % 50;
+						glm::vec3 linear_velocity = normalize(glm::vec3(x, y, z)) * -random;
 						glm::vec3 rotation_velocity = normalize(glm::vec3(x, y, z)) * -0.2f;
-						if (glm::length(glm::vec3(x, y, z)) < 50.f)
+						if (glm::length(glm::vec3(x, y, z)) < 0.f)
 						{
 							mass = 100.f;	
 							inverse_mass = 0.01f;
@@ -254,7 +255,7 @@ int main(void)
 						scene_object->add_component(RigidBodyComponent{ glm::vec3(x, y, z), glm::quat(1.0f, 0.f, 0.f, 0.f), linear_velocity, rotation_velocity, mass, inverse_mass });
 					}
 
-					for (size_t i = 0; i < 50; i++)
+					for (size_t i = 0; i < 0; i++)
 					{
 						float x = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));
 						float y = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));; // Or random if you want variety

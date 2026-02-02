@@ -13,7 +13,7 @@ class SceneObject : public std::enable_shared_from_this<SceneObject>
 	friend class Scene;
 private:
 
-	void add_child(std::weak_ptr<SceneObject> a_child);
+	void add_child(std::weak_ptr<SceneObject> a_child, bool skip_heirarchy = false);
 	void orphan();
 	void remove_child(std::weak_ptr<SceneObject> a_child);
 	
@@ -38,20 +38,25 @@ public:
 	//SceneObject() { name = "none"; }
 	SceneObject(const std::string a_name, std::weak_ptr<Scene> a_scene, bool a_register_id = true);
 	SceneObject(const std::string a_name, std::weak_ptr<SceneObject> a_parent, std::weak_ptr<Scene> a_scene, bool a_register_id = true);
-	~SceneObject() { PRINTLN("Scene Object Destroyed: {}", name); }// if this has parent, add all children to it, otherwise I don't know... 
+	~SceneObject() { /*PRINTLN("Scene Object Destroyed: {}", name);*/ }// if this has parent, add all children to it, otherwise I don't know... 
 	void stop_runtime();
 	entt::entity get_entity() { return entity_handle.entity(); }
 	bool has_valid_entity() { return entity_handle.valid(); }
 	std::weak_ptr<Scene> get_scene();
 	bool try_set_id(uint32_t a_id)
 	{
+		bool result = false;
 		if (scene_object_id == 0)
 		{
 			scene_object_id = a_id;
-			return true;
+			result = true;
+			//return true;
 		}
-		return false;
+		scene_object_id = a_id;
+		return result;
+		//return false;
 	}
+
 
 	json save();
 	static std::shared_ptr<SceneObject> load(const json& a_j, std::weak_ptr<Scene> a_scene);
@@ -170,10 +175,10 @@ public:
 		//static_assert(std::is_trivial<std::decay_t<TComponent>>::value, "TComponent must be trivial (e.g. no smart pointers)");
 		std::type_index t_type = typeid(std::decay_t<TComponent>);
 		bool error = false;
-		for (size_t i = 0; i < component_types.size(); i++) // may want to consider to sort these in order of each other.
-		{
-			if (t_type == component_types[i])
-			{
+		//for (size_t i = 0; i < component_types.size(); i++) // may want to consider to sort these in order of each other.
+		//{
+		//	if (t_type == component_types[i])
+		//	{
 				for (size_t i = 0; i < component_datas.size(); i++)
 				{
 					if (component_datas[i]->get_type() == t_type)
@@ -185,14 +190,14 @@ public:
 					}
 				}
 				error = true;
-				break;
-			}
-		}
-		if (error)
-		{
-			PRINTLN("MISSMATCH: scene_object has component_type info of component for which there's no comopnent_data for");
-			// perhaps remove the component_type ?
-		}
+				//break;
+		//	}
+		//}
+		//if (error)
+		//{
+		//	PRINTLN("MISSMATCH: scene_object has component_type info of component for which there's no comopnent_data for");
+		//	// perhaps remove the component_type ?
+		//}
 		return false;
 	}
 
@@ -219,10 +224,10 @@ public:
 		//static_assert(std::is_trivial<std::decay_t<TComponent>>::value, "TComponent must be trivial (e.g. no smart pointers)");
 		std::type_index t_type = typeid(std::decay_t<TComponent>);
 		bool error = false;
-		for (size_t i = 0; i < component_types.size(); i++) // may want to consider to sort these in order of each other.
-		{
-			if (t_type == component_types[i])
-			{
+		//for (size_t i = 0; i < component_types.size(); i++) // may want to consider to sort these in order of each other.
+		//{
+		//	if (t_type == component_types[i])
+		//	{
 				for (size_t i = 0; i < component_datas.size(); i++)
 				{
 					if (component_datas[i]->get_type() == t_type)
@@ -233,15 +238,15 @@ public:
 						return true;
 					}
 				}
-				error = true;
-				break;
-			}
-		}
-		if (error)
-		{
-			PRINTLN("MISSMATCH: scene_object has component_type info of component for which there's no comopnent_data for");
-			// perhaps remove the component_type ?
-		}
+		//		error = true;
+		//		break;
+		//	}
+		//}
+		//if (error)
+		//{
+		//	PRINTLN("MISSMATCH: scene_object has component_type info of component for which there's no comopnent_data for");
+		//	// perhaps remove the component_type ?
+		//}
 		return false;
 	}
 
@@ -252,10 +257,10 @@ public:
 		//static_assert(std::is_trivial<std::decay_t<TComponent>>::value, "TComponent must be trivial (e.g. no smart pointers)");
 		std::type_index t_type = typeid(std::decay_t<TComponent>);
 		bool error = false;
-		for (size_t i = 0; i < component_types.size(); i++) // may want to consider to sort these in order of each other.
-		{
-			if (t_type == component_types[i])
-			{
+		//for (size_t i = 0; i < component_types.size(); i++) // may want to consider to sort these in order of each other.
+		//{
+		//	if (t_type == component_types[i])
+		//	{
 				for (size_t i = 0; i < component_datas.size(); i++)
 				{
 					if (component_datas[i]->get_type() == t_type)
@@ -264,15 +269,15 @@ public:
 						return &component_data.get_component();
 					}
 				}
-				error = true;
-				break;
-			}
-		}
-		if (error)
-		{
-			PRINTLN("MISSMATCH: scene_object has component_type info of component for which there's no comopnent_data for");
-			// perhaps remove the component_type ?
-		}
+		//		error = true;
+		//		break;
+		//	}
+		//}
+		//if (error)
+		//{
+		//	PRINTLN("MISSMATCH: scene_object has component_type info of component for which there's no comopnent_data for");
+		//	// perhaps remove the component_type ?
+		//}
 		return nullptr;
 	}
 
@@ -296,12 +301,12 @@ public:
 		size_t index = 0;
 		bool found_index = false;
 		bool found_component = false;
-		for (size_t i = 0; i < component_types.size(); i++) // may want to consider to sort these in order of each other.
-		{
-			if (t_type == component_types[i])
-			{
-				index = i;
-				found_index = true;
+		//for (size_t i = 0; i < component_types.size(); i++) // may want to consider to sort these in order of each other.
+		//{
+		//	if (t_type == component_types[i])
+		//	{
+		//		index = i;
+		//		found_index = true;
 				for (size_t i = 0; i < component_datas.size(); i++)
 				{
 					if (component_datas[i]->get_type() == t_type)
@@ -311,14 +316,14 @@ public:
 						break;
 					}
 				}
-				break;
-			}
-		}
-		if (found_component != found_index)
-		{
-			PRINTLN("MISSMATCH: scene_object has component_type info of component for which there's no comopnent_data for");
-			// perhaps remove the component_type ?
-		}
+		//		break;
+		//	}
+		//}
+		//if (found_component != found_index)
+		//{
+		//	PRINTLN("MISSMATCH: scene_object has component_type info of component for which there's no comopnent_data for");
+		//	// perhaps remove the component_type ?
+		//}
 		if (found_index)
 		{
 			component_types.erase(component_types.begin() + index);

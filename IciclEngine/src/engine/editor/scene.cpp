@@ -123,6 +123,7 @@ bool Scene::load(std::string a_path, bool clear_registry)
 			{
 				//now get the ids and stuff.
 				TrueID& id = id_registry.get_new_ID();
+				
 				const auto& fields = component->get_registered_field_info();
 				for (auto& field : fields)
 				{
@@ -130,12 +131,16 @@ bool Scene::load(std::string a_path, bool clear_registry)
 					{
 						EntityReference* ent_ref = static_cast<EntityReference*>(field.value_ptr);
 						id_remapping[ent_ref->scene_object] = id.true_id;
+						scene_object->try_set_id(id.true_id);
+						//if (!scene_object->try_set_id(id.true_id))
+						//{
+						//	PRINTLN("failed setting the scene object ID");
+						//}
+						//PRINTLN("scene object {}, used id {} to get {}", scene_object->scene_object_id, ent_ref->scene_object, id.true_id);
+
 						ent_ref->scene_object = id.true_id;
-						if (!scene_object->try_set_id(id.true_id))
-						{
-							PRINTLN("failed setting the scene object ID");
-						}
-						break;
+						break; // actually should break... it's on mapping ID for EntityComponent
+						// obviously not break here jesus christ.
 					}
 				}
 				break;
@@ -152,9 +157,165 @@ bool Scene::load(std::string a_path, bool clear_registry)
 
 	/////////////////////////////////////////
 	// Now recalculate all references.
-	std::vector<EntityReference*> entity_references;
-	entity_references.reserve(scene_objects.size() * 2);
+	//std::vector<EntityReference*> entity_references;
+	//entity_references.reserve(scene_objects.size() * 2);
 	for (auto& scene_object : scene_objects)
+	{
+		auto& component_datas = scene_object->get_component_datas();
+		for (const auto& component : component_datas)
+		{
+			const auto& fields = component->get_registered_field_info();
+			if (component->get_type() == typeid(EntityComponent))
+			{
+				continue;
+			}
+			for (auto& field : fields)
+			{
+				if (field.type == typeid(EntityReference))
+				{
+					EntityReference* ent_ref = static_cast<EntityReference*>(field.value_ptr);
+					if (id_remapping.contains(ent_ref->scene_object))
+					{
+						TrueID* true_id = id_registry.get_registred_ID(id_remapping[ent_ref->scene_object]);
+						if (true_id->true_id == 0)
+						{
+							PRINTLN("the true id was 0 when loading!!!"); // shouldn't happen, and doesn't
+						}
+						ent_ref->scene_object = true_id->true_id;
+						ent_ref->entity = true_id->entity;
+					}
+					else
+					{
+						ent_ref->entity = entt::null;
+						ent_ref->scene_object = 0;
+						//PRINTLN("loaded entity reference did not reference a valid entity");
+					}
+					//entity_references.push_back(static_cast<EntityReference*>(field.value_ptr));
+				}
+			}
+		}
+	}
+	//for (auto reference : entity_references)
+	//{
+	//	PRINTLN("test print {}", reference->scene_object);
+	//}
+	if (j.contains("systems"))
+	{
+		auto& sys_factory = SystemsFactory::instance();
+		auto& sys_reg = SystemsRegistry::instance();
+		for (auto& j_sys : j["systems"])
+		{
+			if (j_sys.contains("name") && j_sys.contains("order") && j_sys.contains("physics") && j_sys.contains("enabled"))
+			{
+				if (sys_factory.has_factory(j_sys["name"]))
+				{
+					auto sys = sys_factory.create_system(j_sys["name"]);
+					sys->set_name(j_sys["name"].get<std::string>());
+					sys->set_order(j_sys["order"].get<int>());
+					sys->set_enabled(j_sys["enabled"].get<bool>());
+					sys->set_only_on_physics(j_sys["physics"].get<bool>());
+					add_system(sys);
+				}
+			}
+		}
+		reorder_systems();
+	}
+
+	return true;
+}
+
+bool Scene::save_prefab(const std::string& a_path, std::weak_ptr<SceneObject> a_scn_obj, const std::string& a_name)
+{
+	// we need a scene_object reference actually
+	json j = json::object();
+	if (auto scene_object = a_scn_obj.lock())
+	{
+		
+		j["name"] = a_name;
+		j["root object"] = json::object();
+		j["root object"] = scene_object->save();
+	}
+	else return false;
+
+	std::ofstream file(a_path);
+	if (!file)
+	{
+		PRINTLN("Failed to save prefab at: {}", a_path);
+		return false;
+	}
+
+	file << j.dump(4);
+	// then we're gonna save it to path, that's all really...
+	return true;
+}
+
+bool Scene::load_prefab(const std::string& a_path)
+{
+	std::ifstream file(a_path);
+	if (!file)
+	{
+		PRINTLN("Failed to load prefab at: {}", a_path);
+		return false;
+	}
+	SceneObjectRegistry& id_registry = SceneObjectRegistry::instance();
+	//SceneObjectRegistry::instance().clear_registry();
+
+	json j;
+	file >> j;
+	j["name"] = name;
+	std::vector<std::shared_ptr<SceneObject>> scn_objs;
+	if (j["root object"].is_object())
+	{
+		json root_obj = j["root object"];
+		root_scene_objects.push_back(SceneObject::load(root_obj, shared_from_this()));
+		scn_objs.push_back(root_scene_objects.back());
+	}
+	auto& root_obj = scn_objs.back();
+	add_children_to_vector(root_obj, scn_objs);
+
+	// TODO put this into it's own function I guess
+	// we've loaded these ... now we need to register their IDs...
+	std::unordered_map<uint32_t, uint32_t> id_remapping; // old -> new
+	for (auto& scene_object : scn_objs)
+	{
+		auto& component_datas = scene_object->get_component_datas();
+		for (const auto& component : component_datas)
+		{
+			if (component->get_type() == typeid(EntityComponent))
+			{
+				//now get the ids and stuff.
+				TrueID& id = id_registry.get_new_ID();
+				const auto& fields = component->get_registered_field_info();
+				for (auto& field : fields)
+				{
+					if (field.type == typeid(EntityReference))
+					{
+						EntityReference* ent_ref = static_cast<EntityReference*>(field.value_ptr);
+						id_remapping[ent_ref->scene_object] = id.true_id;
+						ent_ref->scene_object = id.true_id;
+						scene_object->try_set_id(id.true_id);
+						//if (!scene_object->try_set_id(id.true_id))
+						//{
+						//	PRINTLN("failed setting the scene object ID");
+						//}
+						break; // actually yes, should break here...
+					}
+				}
+				break;
+			}
+		}
+	}
+	if (runtime)
+	{
+		for (auto& scene_object : scn_objs)
+		{
+			scene_object->start_runtime(shared_from_this());
+		}
+	}
+
+	/////////////////////////////////////////
+	// Now recalculate all references.
+	for (auto& scene_object : scn_objs)
 	{
 		auto& component_datas = scene_object->get_component_datas();
 		for (const auto& component : component_datas)
@@ -179,42 +340,32 @@ bool Scene::load(std::string a_path, bool clear_registry)
 						ent_ref->scene_object = true_id->true_id;
 						ent_ref->entity = true_id->entity;
 					}
-					else
-					{
-						PRINTLN("loaded entity reference did not reference a valid entity");
-					}
+					//else
+					//{
+					//	PRINTLN("loaded entity reference did not reference a valid entity");
+					//}
 					//entity_references.push_back(static_cast<EntityReference*>(field.value_ptr));
 				}
 			}
 		}
 	}
-	for (auto reference : entity_references)
+	return true;
+}
+
+void Scene::add_children_to_vector(std::weak_ptr<SceneObject> a_parent, std::vector<std::shared_ptr<SceneObject>>& a_vector)
+{
+	if (auto parent = a_parent.lock())
 	{
-		PRINTLN("test print {}", reference->scene_object);
-	}
-	if (j.contains("systems"))
-	{
-		auto& sys_factory = SystemsFactory::instance();
-		auto& sys_reg = SystemsRegistry::instance();
-		for (auto& j_sys : j["systems"])
+		for (auto& child : parent->get_children())
 		{
-			if (j_sys.contains("name") && j_sys.contains("order") && j_sys.contains("physics") && j_sys.contains("enabled"))
+			if (auto real_child = child.lock())
 			{
-				if (sys_factory.has_factory(j_sys["name"]))
-				{
-					auto sys = sys_factory.create_system(j_sys["name"]);
-					sys->set_name(j_sys["name"].get<std::string>());
-					sys->set_order(j_sys["order"].get<int>());
-					sys->set_enabled(j_sys["enabled"].get<bool>());
-					sys->set_only_on_physics(j_sys["physics"].get<bool>());
-					add_system(sys);
-				}
+				a_vector.push_back(real_child);
+				add_children_to_vector(real_child, a_vector);
 			}
 		}
-		reorder_systems();
 	}
 
-	return true;
 }
 
 entt::handle Scene::create_entity(const std::string a_name)

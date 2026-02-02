@@ -162,6 +162,71 @@ void UIManager::draw_object_hierarchy()
 		ImGui::End();
 	}
 
+	if (UISceneHierarchyDrawer::open_load_popup)
+	{
+		ImGui::OpenPopup("Load Prefab at ...");
+	}
+	if (UISceneHierarchyDrawer::open_save_popup)
+	{
+		ImGui::OpenPopup("Save Prefab As ...");
+	}
+
+	if (ImGui::BeginPopupModal("Load Prefab at ...", &(UISceneHierarchyDrawer::open_load_popup), ImGuiWindowFlags_AlwaysAutoResize))
+	{
+		if (auto scene_object = selected_scene_object.lock())
+		{
+			auto scene = scene_object->get_scene();
+			ImGui::Text("path: ");
+			ImGui::SameLine();
+			ImGui::InputText("##Path", prefab_path, IM_ARRAYSIZE(prefab_path));
+			std::string full_path = "./assets/" + std::string(prefab_path) + ".prfb";
+			ImGui::Text(full_path.c_str());
+
+			if (ImGui::Button("Load", ImVec2(120, 0)))
+			{
+				UISceneHierarchyDrawer::open_load_popup = false;
+				if (auto scn = scene.lock())
+					scn->load_prefab(full_path);
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Cancel", ImVec2(120, 0)))
+			{
+				UISceneHierarchyDrawer::open_load_popup = false;
+				ImGui::CloseCurrentPopup();
+			}
+		}
+		
+		ImGui::EndPopup();
+	}
+
+	if (ImGui::BeginPopupModal("Save Prefab As ...", &(UISceneHierarchyDrawer::open_save_popup), ImGuiWindowFlags_AlwaysAutoResize))
+	{
+		if (auto scene_object = selected_scene_object.lock())
+		{
+			auto scene = scene_object->get_scene();
+			ImGui::Text("path: ");
+			ImGui::SameLine();
+			ImGui::InputText("##Path", prefab_path, IM_ARRAYSIZE(prefab_path));
+			std::string full_path = "./assets/" + std::string(prefab_path) + ".prfb";
+			ImGui::Text(full_path.c_str());
+			if (ImGui::Button("Save", ImVec2(120, 0)))
+			{
+				UISceneHierarchyDrawer::open_save_popup = false;
+				if (auto scn = scene.lock())
+					scn->save_prefab(full_path, scene_object);
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Cancel", ImVec2(120, 0)))
+			{
+				UISceneHierarchyDrawer::open_save_popup = false;
+				ImGui::CloseCurrentPopup();
+			}
+
+		}
+		ImGui::EndPopup();
+	}
 	
 }
 

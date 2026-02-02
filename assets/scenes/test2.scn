@@ -1,6 +1,6 @@
 {
     "name": "new scene",
-    "next index": 0,
+    "next index": 3,
     "root objects": [
         {
             "children": [
@@ -12,205 +12,89 @@
                                 {
                                     "name": "entity name: ",
                                     "type": "struct hashed_string_64",
-                                    "value": "camera"
+                                    "value": "extra child"
                                 },
                                 {
                                     "name": "entity id: ",
-                                    "type": "enum entt::entity",
+                                    "type": "struct EntityReference",
+                                    "value": 3
+                                }
+                            ],
+                            "type": "EntityComponent"
+                        },
+                        {
+                            "fields": [
+                                {
+                                    "name": "parent: ",
+                                    "type": "struct EntityReference",
+                                    "value": 2
+                                },
+                                {
+                                    "name": "previous sibling: ",
+                                    "type": "struct EntityReference",
+                                    "value": 0
+                                },
+                                {
+                                    "name": "next sibling: ",
+                                    "type": "struct EntityReference",
+                                    "value": 1
+                                },
+                                {
+                                    "name": "child: ",
+                                    "type": "struct EntityReference",
+                                    "value": 0
+                                }
+                            ],
+                            "type": "HierarchyComponent"
+                        }
+                    ],
+                    "name": "extra child"
+                },
+                {
+                    "children": [],
+                    "components": [
+                        {
+                            "fields": [
+                                {
+                                    "name": "entity name: ",
+                                    "type": "struct hashed_string_64",
+                                    "value": "only child"
+                                },
+                                {
+                                    "name": "entity id: ",
+                                    "type": "struct EntityReference",
                                     "value": 1
                                 }
                             ],
-                            "type": "NameComponent"
+                            "type": "EntityComponent"
                         },
                         {
                             "fields": [
                                 {
-                                    "name": "position: ",
-                                    "type": "struct glm::vec<3,float,0>",
-                                    "value": [
-                                        0.0,
-                                        0.0,
-                                        6.0
-                                    ]
+                                    "name": "parent: ",
+                                    "type": "struct EntityReference",
+                                    "value": 2
                                 },
                                 {
-                                    "name": "scale: ",
-                                    "type": "struct glm::vec<3,float,0>",
-                                    "value": [
-                                        1.0,
-                                        1.0,
-                                        1.0
-                                    ]
+                                    "name": "previous sibling: ",
+                                    "type": "struct EntityReference",
+                                    "value": 3
                                 },
                                 {
-                                    "name": "rotation: ",
-                                    "type": "struct glm::vec<3,float,0>",
-                                    "value": [
-                                        0.0,
-                                        0.0,
-                                        0.0
-                                    ]
+                                    "name": "next sibling: ",
+                                    "type": "struct EntityReference",
+                                    "value": 0
                                 },
                                 {
-                                    "name": "update euler rotation: ",
-                                    "type": "bool",
-                                    "value": false
-                                },
-                                {
-                                    "name": "overwrite quaternion rotation: ",
-                                    "type": "bool",
-                                    "value": false
-                                },
-                                {
-                                    "name": "rotation_quat",
-                                    "type": "struct glm::qua<float,0>",
-                                    "value": [
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        1.0
-                                    ]
-                                },
-                                {
-                                    "name": "model_matrix",
-                                    "type": "struct glm::mat<4,4,float,0>",
-                                    "value": [
-                                        1.0,
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        1.0,
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        1.0,
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        6.0,
-                                        1.0
-                                    ]
+                                    "name": "child: ",
+                                    "type": "struct EntityReference",
+                                    "value": 0
                                 }
                             ],
-                            "type": "TransformDynamicComponent"
-                        },
-                        {
-                            "fields": [
-                                {
-                                    "name": "camera active: ",
-                                    "type": "bool",
-                                    "value": true
-                                },
-                                {
-                                    "name": "orbital camera: ",
-                                    "type": "bool",
-                                    "value": false
-                                },
-                                {
-                                    "name": "orbital point: ",
-                                    "type": "struct glm::vec<3,float,0>",
-                                    "value": [
-                                        0.0,
-                                        0.0,
-                                        0.0
-                                    ]
-                                },
-                                {
-                                    "name": "priority: ",
-                                    "type": "unsigned short",
-                                    "value": 5000
-                                },
-                                {
-                                    "name": "buffer: ",
-                                    "type": "struct hashed_string_64",
-                                    "value": "main_camera_buffer"
-                                },
-                                {
-                                    "name": "field of view: ",
-                                    "type": "float",
-                                    "value": 70.0
-                                },
-                                {
-                                    "name": "projection_matrix",
-                                    "type": "struct glm::mat<4,4,float,0>",
-                                    "value": [
-                                        0.9520986676216125,
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        1.4281480312347412,
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        -1.0006669759750366,
-                                        -1.0,
-                                        0.0,
-                                        0.0,
-                                        -0.2000666856765747,
-                                        0.0
-                                    ]
-                                },
-                                {
-                                    "name": "view_matrix",
-                                    "type": "struct glm::mat<4,4,float,0>",
-                                    "value": [
-                                        1.0,
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        1.0,
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        1.0,
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        -6.0,
-                                        1.0
-                                    ]
-                                },
-                                {
-                                    "name": "clear_color_buffer",
-                                    "type": "bool",
-                                    "value": true
-                                },
-                                {
-                                    "name": "clear_depth_buffer",
-                                    "type": "bool",
-                                    "value": true
-                                },
-                                {
-                                    "name": "target_entity",
-                                    "type": "enum entt::entity",
-                                    "value": 4294967295
-                                },
-                                {
-                                    "name": "near_plane",
-                                    "type": "float",
-                                    "value": 300.0
-                                },
-                                {
-                                    "name": "far_plane",
-                                    "type": "float",
-                                    "value": 0.10000000149011612
-                                },
-                                {
-                                    "name": "aspect_ratio",
-                                    "type": "float",
-                                    "value": 1.5
-                                }
-                            ],
-                            "type": "CameraComponent"
+                            "type": "HierarchyComponent"
                         }
                     ],
-                    "name": "camera"
+                    "name": "only child"
                 }
             ],
             "components": [
@@ -219,122 +103,44 @@
                         {
                             "name": "entity name: ",
                             "type": "struct hashed_string_64",
-                            "value": "3d model"
+                            "value": "Parent"
                         },
                         {
                             "name": "entity id: ",
-                            "type": "enum entt::entity",
+                            "type": "struct EntityReference",
+                            "value": 2
+                        }
+                    ],
+                    "type": "EntityComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "parent: ",
+                            "type": "struct EntityReference",
                             "value": 0
+                        },
+                        {
+                            "name": "previous sibling: ",
+                            "type": "struct EntityReference",
+                            "value": 0
+                        },
+                        {
+                            "name": "next sibling: ",
+                            "type": "struct EntityReference",
+                            "value": 0
+                        },
+                        {
+                            "name": "child: ",
+                            "type": "struct EntityReference",
+                            "value": 3
                         }
                     ],
-                    "type": "NameComponent"
-                },
-                {
-                    "fields": [
-                        {
-                            "name": "position: ",
-                            "type": "struct glm::vec<3,float,0>",
-                            "value": [
-                                0.554253876209259,
-                                0.0,
-                                0.0
-                            ]
-                        },
-                        {
-                            "name": "scale: ",
-                            "type": "struct glm::vec<3,float,0>",
-                            "value": [
-                                1.0,
-                                1.0,
-                                1.0
-                            ]
-                        },
-                        {
-                            "name": "rotation: ",
-                            "type": "struct glm::vec<3,float,0>",
-                            "value": [
-                                0.0,
-                                0.0,
-                                0.0
-                            ]
-                        },
-                        {
-                            "name": "update euler rotation: ",
-                            "type": "bool",
-                            "value": false
-                        },
-                        {
-                            "name": "overwrite quaternion rotation: ",
-                            "type": "bool",
-                            "value": false
-                        },
-                        {
-                            "name": "rotation_quat",
-                            "type": "struct glm::qua<float,0>",
-                            "value": [
-                                0.23482248187065125,
-                                0.23484519124031067,
-                                0.23482206463813782,
-                                0.9135677814483643
-                            ]
-                        },
-                        {
-                            "name": "model_matrix",
-                            "type": "struct glm::mat<4,4,float,0>",
-                            "value": [
-                                0.7794126868247986,
-                                0.5393456220626831,
-                                -0.31881099939346313,
-                                0.0,
-                                -0.31875789165496826,
-                                0.7794339656829834,
-                                0.5393461585044861,
-                                0.0,
-                                0.539376974105835,
-                                -0.31875884532928467,
-                                0.7794122695922852,
-                                0.0,
-                                0.554253876209259,
-                                0.0,
-                                0.0,
-                                1.0
-                            ]
-                        }
-                    ],
-                    "type": "TransformDynamicComponent"
-                },
-                {
-                    "fields": [
-                        {
-                            "name": "mesh loaded: ",
-                            "type": "bool",
-                            "value": true
-                        },
-                        {
-                            "name": "mesh path: ",
-                            "type": "struct hashed_string_64",
-                            "value": "./assets/obj/triobjmonkey.obj"
-                        }
-                    ],
-                    "type": "MeshComponent"
-                },
-                {
-                    "fields": [
-                        {
-                            "name": "texture loaded: ",
-                            "type": "bool",
-                            "value": true
-                        },
-                        {
-                            "name": "texture path: ",
-                            "type": "struct hashed_string_64",
-                            "value": "./assets/textures/awesomeface.png"
-                        }
-                    ],
-                    "type": "TextureComponent"
+                    "type": "HierarchyComponent"
                 }
             ],
-            "name": "3d model"
+            "name": "Parent"
         }
-    ]
+    ],
+    "systems": []
 }

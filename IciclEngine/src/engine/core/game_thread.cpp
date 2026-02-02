@@ -174,6 +174,10 @@ void GameThread::game_runtime()
 		bool only_on_physics = system->get_physics_frames_only();
 		if (system->get_enabled() && (only_on_physics == (physics_frame && only_on_physics)))
 		{
+			//if (system->execute(*engine_context->systems_context))
+			//{
+			//	PRINTLN("synced");
+			//}
 			system->execute(*engine_context->systems_context);
 		}
 	}
