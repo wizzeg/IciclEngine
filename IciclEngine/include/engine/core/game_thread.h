@@ -81,7 +81,9 @@ struct EngineContext
 		}
 		asset_manager = std::make_shared<AssetManager>(num_asset_threads);
 		worker_pool = std::make_shared<WorkerThreadPool>(num_game_threads);
+		worker_pool->start();
 		general_pool = std::make_shared<WorkerThreadPool>(num_general_threads);
+		general_pool->start();
 		systems_context = std::make_shared<SystemsContext>(scene->get_registry(), worker_pool, general_pool);
 	};
 	void set_render_request(std::vector<RenderRequest>& a_render_requests)

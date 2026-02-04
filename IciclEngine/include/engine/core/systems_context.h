@@ -14,6 +14,7 @@
 #include <condition_variable>
 #include <engine/resources/data_structs.h>
 #include <type_traits>
+#include <engine/core/entity_command_buffer.h>
 
 template<typename...T> struct WithWrite {};
 template<typename...T> struct WithRead {};
@@ -1469,17 +1470,48 @@ struct SystemsContext
 		return entt_thread_pool->get_num_threads();
 	}
 
+	void create_ecb(const std::string& ecb_name)
+	{
+		if (!ecbs.contains(ecb_name))
+		{
+			ecbs[ecb_name] = EntityCommandBuffer();
+		}
+	}
+	void remove_ecb(const std::string& ecb_name)
+	{
+		ecbs.erase(ecb_name);
+	}
+
+	EntityCommandBuffer* get_ecb(const std::string& ecb_name)
+	{
+		if (ecbs.contains(ecb_name))
+		{
+			return &ecbs[ecb_name];
+		}
+		return nullptr;
+	}
+
+	void execute_ecb(const std::string& ecb_name)
+	{
+		if (ecbs.contains(ecb_name))
+		{
+			ecbs[ecb_name].execute_queue(registry);
+		}
+	}
+
 	void set_delta_time(double a_dt) { delta_time = a_dt; }
 	double get_delta_time() const { return delta_time; }
 
 	SystemsContextDependencies& get_system_dependencies() { return systems_dependencies; }
 	SystemsContextStorage& get_system_storage() { return systems_storage; }
 
-
+	EntityCommandBuffer end_frame_ecb;
 
 	uint32_t order = 5000;
 private:
 	double delta_time = 0;
+	
+	std::unordered_map<std::string, EntityCommandBuffer> ecbs;
 	std::shared_ptr<Scene> scene;
 	std::shared_ptr<WorkerThreadPool> entt_thread_pool;
 	std::shared_ptr<WorkerThreadPool> general_thread_pool;

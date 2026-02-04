@@ -9,7 +9,6 @@
 struct WorkerThreadPool
 {
 	WorkerThreadPool(int a_num_threads = std::thread::hardware_concurrency());
-
 	~WorkerThreadPool();
 	template <typename F>
 	void enqueue(F&& f)
@@ -20,7 +19,7 @@ struct WorkerThreadPool
 
 	bool wait(); // do not add additional jobs from another thread after this is called
 	size_t get_num_threads() { return num_threads; }
-
+	void start();
 protected:
 	size_t num_threads = 0;
 	std::vector<std::thread> worker_threads;

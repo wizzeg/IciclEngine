@@ -54,3 +54,27 @@ struct BoardPhaseCollision : SystemBase
 {
 	bool execute(SystemsContext& ctx) override;
 };
+
+struct SpawnCubeSystem : SystemBase
+{
+	bool execute(SystemsContext& ctx) override;
+	bool has_spawned = false;
+};
+
+struct DestroyCubeSystem : SystemBase
+{
+	bool execute(SystemsContext& ctx) override;
+	bool has_destroyed = false;
+};
+
+struct ECBCreatorSystem : SystemBase
+{
+	bool execute(SystemsContext& ctx) override;
+};
+
+struct SyncSystem :SystemBase
+{
+	bool execute(SystemsContext& ctx) override { ctx.gen_sync(); ctx.entt_sync(); return false; }
+};
+
+

@@ -1051,3 +1051,57 @@ bool BoardPhaseCollision::execute(SystemsContext& ctx)
 	
 	return false;
 }
+
+bool SpawnCubeSystem::execute(SystemsContext& ctx)
+{
+	if (!has_spawned)
+	{
+		if (auto ecb = ctx.get_ecb("end_frame_ecb"))
+		{
+			ecb->create_entity(new_entity()
+				.with_component<RenderComponent>(hashed_string_64("./assets/obj/cube.obj"), hashed_string_64("./assets/shaders/white.mat"), false, true, true)
+				.with_component<TransformDynamicComponent>()
+				.with_child(new_entity()
+					.with_component<RenderComponent>(hashed_string_64("./assets/obj/cube.obj"), hashed_string_64("./assets/shaders/white.mat"), false, true, true)
+					.with_component<TransformDynamicComponent>(TransformDynamicComponent{ glm::vec3(-1,-1,-1) })
+					.assemble(), "new_child")
+				.assemble(), "new_entity");
+			ctx.execute_ecb("end_frame_ecb");
+			has_spawned = true;
+		}
+	}
+	//ctx.each(WithRead<EntityComponent>{},
+	//	[](const entt::entity, const EntityComponent& comp)
+	//	{
+	//		PRINTLN("entity({}) name: {}",(uint32_t)comp.entity.entity, comp.hashed_name.string);
+	//	});
+	return false;
+}
+
+bool ECBCreatorSystem::execute(SystemsContext& ctx)
+{
+	ctx.create_ecb("end_frame_ecb");
+	set_enabled(false);
+	return false;
+}
+
+bool DestroyCubeSystem::execute(SystemsContext& ctx)
+{
+	if (!has_destroyed)
+	{
+		if (auto ecb = ctx.get_ecb("end_frame_ecb"))
+		{
+			ctx.each(
+				WithRead<RenderComponent>{},
+				[&ecb](const entt::entity entity, const RenderComponent& render_comp)
+				{
+					ecb->destroy_entity(entity);
+					PRINTLN("entity({}) queued for destroy", (uint32_t)entity);
+				}
+			);
+			has_destroyed = true;
+			ctx.execute_ecb("end_frame_ecb");
+		}
+	}
+	return false;
+}

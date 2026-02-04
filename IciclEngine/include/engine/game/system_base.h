@@ -1,5 +1,6 @@
 #pragma once
 #include <engine/core/systems_context.h>
+#include <engine/core/entity_command_buffer.h>
 struct SystemBase
 {
 	virtual bool execute(SystemsContext& ctx) = 0;
@@ -12,6 +13,10 @@ struct SystemBase
 	bool get_enabled() const { return enabled; };
 	void set_only_on_physics(bool a_physics_only) { only_physics_frames = a_physics_only; }
 	bool get_physics_frames_only() const { return only_physics_frames; }
+
+	EntityAssembler new_entity() {
+		return EntityAssembler();  // Creates a new builder each time
+	}
 
 	bool operator < (const SystemBase& other) const
 	{

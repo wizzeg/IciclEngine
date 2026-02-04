@@ -157,6 +157,7 @@
     <ClCompile Include="content_browser.cpp" />
     <ClCompile Include="game_engine.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="src\engine\core\entity_command_buffer.cpp" />
     <ClCompile Include="src\engine\core\game_thread.cpp" />
     <ClCompile Include="src\engine\core\systems_context.cpp" />
     <ClCompile Include="src\engine\core\worker_thread.cpp" />
@@ -212,6 +213,8 @@
     <ClInclude Include="..\vendor\stb_image\stb_image.h" />
     <ClInclude Include="content_browser.h" />
     <ClInclude Include="game_engine.h" />
+    <ClInclude Include="include\engine\core\build_state.h" />
+    <ClInclude Include="include\engine\core\entity_command_buffer.h" />
     <ClInclude Include="include\engine\core\game_thread.h" />
     <ClInclude Include="include\engine\core\systems_context.h" />
     <ClInclude Include="include\engine\core\worker_thread.h" />

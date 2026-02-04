@@ -267,6 +267,9 @@
     <ClCompile Include="src\engine\ui\ui_menu_bar.cpp">
       <Filter>Source Files\engine\ui</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\core\entity_command_buffer.cpp">
+      <Filter>Source Files\engine\core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\imgui-docking\imconfig.h">
@@ -493,6 +496,12 @@
     </ClInclude>
     <ClInclude Include="include\engine\editor\prefab_registry.h">
       <Filter>Header Files\engine\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\core\entity_command_buffer.h">
+      <Filter>Header Files\engine\core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\core\build_state.h">
+      <Filter>Header Files\engine\core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
