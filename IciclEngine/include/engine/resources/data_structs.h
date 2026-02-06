@@ -133,6 +133,14 @@ struct UniformData
 	uint64_t modified_time; 
 };
 
+struct HeightMap
+{
+	std::vector<float> height_map;
+	size_t width = 0;
+	size_t height = 0;
+	float max_height = 1.f;
+};
+
 //struct UniformDataBase
 //{
 //	UniformDataBase(const std::string& a_name, std::type_index a_type, void* a_value_ptr) : name(hashed_string_64(a_name.c_str())), type(a_type), value_ptr(a_value_ptr) {};

@@ -24,7 +24,7 @@ void EntityCommandBuffer::create_entity(EntityAssembly entity_assembly, const st
 
 void EntityCommandBuffer::set_parent(entt::entity parent, entt::entity child)
 {
-	queued_hierarchy_change.push_back([parent, child](entt::registry& registry)
+	queued_hierarchy_changes.push_back([parent, child](entt::registry& registry)
 		{
 			if (registry.valid(parent) && registry.valid(child))
 			{
@@ -54,7 +54,9 @@ void EntityCommandBuffer::set_parent(entt::entity parent, entt::entity child)
 							next_refs->previous_sibling = child_refs->previous_sibling;
 						}
 					}
-
+					child_refs->previous_sibling = EntityReference{};
+					child_refs->next_sibling = EntityReference{};
+					child_refs->parent = EntityReference{};
 					// set new parenting
 					if (auto parent_refs = registry.try_get<HierarchyComponent>(parent))
 					{
@@ -68,6 +70,60 @@ void EntityCommandBuffer::set_parent(entt::entity parent, entt::entity child)
 						parent_refs->child.entity = child;
 
 					}
+				}
+			}
+		});
+}
+
+void EntityCommandBuffer::orphan(entt::entity entity)
+{
+	// orphan, should be quick enough
+	queued_hierarchy_changes.push_back([entity](entt::registry& registry)
+		{
+			if (registry.valid(entity))
+			{
+				if (auto ent_refs = registry.try_get<HierarchyComponent>(entity))
+				{
+					HierarchyComponent new_hier;
+					new_hier.child = ent_refs->child;
+					auto parent = ent_refs->parent.entity;
+					if (registry.valid(parent))
+					{
+						if (auto parent_refs = registry.try_get<HierarchyComponent>(parent))
+						{
+							// case first child
+							if (entity == parent_refs->child.entity)
+							{
+								parent_refs->child = ent_refs->next_sibling;
+								if (registry.valid(ent_refs->next_sibling.entity))
+								{
+									if (auto next_refs = registry.try_get<HierarchyComponent>(ent_refs->next_sibling.entity))
+									{
+										next_refs->previous_sibling = EntityReference{};
+									}
+								}
+							}
+							// case middle child
+							else
+							{
+								if (registry.valid(ent_refs->previous_sibling.entity))
+								{
+									if (auto prev_refs = registry.try_get<HierarchyComponent>(ent_refs->previous_sibling.entity))
+									{
+										prev_refs->next_sibling = ent_refs->next_sibling;
+									}
+								}
+								if (registry.valid(ent_refs->next_sibling.entity))
+								{
+									if (auto next_refs = registry.try_get<HierarchyComponent>(ent_refs->next_sibling.entity))
+									{
+										next_refs->previous_sibling = ent_refs->previous_sibling;
+									}
+								}
+							}
+						}
+					}
+					*ent_refs = new_hier;
 				}
 			}
 		});
@@ -130,7 +186,13 @@ void EntityCommandBuffer::execute_queue(entt::registry& registry)
 	}
 	queued_remove_components.clear();
 
+	for (auto& hierarchy_change : queued_hierarchy_changes)
+	{
+		hierarchy_change(registry);
+	}
+	queued_hierarchy_changes.clear();
 }
+
 void EntityCommandBuffer::recursive_create(entt::registry& registry, const EntityAssembly entity_assembly, entt::entity parent)
 {
 	entt::entity entity = registry.create();

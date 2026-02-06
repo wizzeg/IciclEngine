@@ -15,6 +15,7 @@
 #include <engine/utilities/entt_modified.h>
 #include <engine/resources/data_structs.h>
 
+// hmm... what was this for? some enum?
 /// <summary>
 /// 0 : int
 /// 1 : float
@@ -353,4 +354,19 @@ struct RigidBodyComponent
     float restitution = 1.0f;
     float friction = 0.0f;
     bool recalculate_inverse_inertia_tensor = true;
+    bool kinematic = false;
 };
+
+// landscape component just has a position, and scale, then rendercomponent will hold quad and texture
+// problem is just that the cpu needs to heightmap data... how annoying...
+// I could just save this heightmap data in a systemstorage cache... It would be ugly to store it on component
+struct LandscapeComponent
+{
+    hashed_string_64 height_map_path = hashed_string_64("");
+    float max_height = 100.0f;
+    bool has_loaded_height_map = false;
+};
+// soooo... landscape... transform + landscape + rendercomponent
+// gpu side, uses transform + render component to render it...
+// cpu side uses landscape + transform to figure out OBB... actually, OBB is calculated during pair creation
+// using transform is a bit weird though, because you don't want any weird rotation... OBB gets tricky to calculate...

@@ -53,8 +53,9 @@ struct EntityCommandBuffer
 	void create_entity(EntityAssembly entity_assembly, entt::entity parent, const std::string& name = "0");
 	void create_entity(EntityAssembly entity_assembly, const std::string& name = "0");
 	void set_parent(entt::entity parent, entt::entity child);
+	void orphan(entt::entity entity);
 	template <typename Component, typename... Args>
-	void add_component(entt::entity, Args&&...args)
+	void add_component(entt::entity entity, Args&&...args)
 	{
 		queued_add_components.push_back
 		(
@@ -68,7 +69,7 @@ struct EntityCommandBuffer
 		);
 	}
 	template <typename Component>
-	void add_component(entt::entity)
+	void add_component(entt::entity entity)
 	{
 		queued_add_components.push_back
 		(
@@ -82,7 +83,7 @@ struct EntityCommandBuffer
 		);
 	}
 	template <typename Component>
-	void remove_component(entt::entity)
+	void remove_component(entt::entity entity)
 	{
 		queued_remove_components.push_back
 		(
@@ -104,6 +105,6 @@ struct EntityCommandBuffer
 	std::vector<std::function<void(entt::registry&)>> queued_remove_components;
 	std::vector<entt::entity> queued_destroy;
 	std::vector<std::pair<EntityAssembly, entt::entity>> queued_create;
-	std::vector<std::function<void(entt::registry&)>> queued_hierarchy_change;
-	
+	std::vector<std::function<void(entt::registry&)>> queued_hierarchy_changes;
+	size_t reserve_size = 100;
 };

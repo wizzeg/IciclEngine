@@ -5,6 +5,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <unordered_map>
 #include <engine/utilities/macros.h>
+#include <engine/resources/data_structs.h>
+#include <stb_image/stb_image.h>
 
 
 bool MoveSystem::execute(SystemsContext& ctx)
@@ -211,6 +213,8 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 			
 
 		}, vectored_spatial_collider_partitioning, num_threads, true);
+	// also do one for all landscapes...
+	
 	ctx.entt_sync(); // could push vectored_spatial_map into the storage to retrrieve this->vectored_spatial_map later to combine
 
 	// merge spatial data first.
@@ -273,8 +277,11 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 						{
 							for (size_t j = i + 1; j < colliders.size(); j++)
 							{
+								// here we'de needto check "colliders" what they are.
 								if (colliders[i].entity != colliders[j].entity && overlap(colliders[i].aabb, colliders[j].aabb)) // check if potential collision
 								{
+									// I think here is where we generate new info for the landscape... call it entt::null
+									// we'll need to create a new obb... but we need more information to make these decisions
 									if ((uint32_t)colliders[i].entity < (uint32_t)colliders[j].entity)
 									{
 										pairs.emplace_back(colliders[i].entity, colliders[j].entity,
@@ -353,6 +360,8 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 					}
 					else
 					{
+						// both don't have rigidbody, so store collision information only
+						// actually should probably store this info somewhere in both cases
 						//store information for collision info stuff
 						// but where? I'm not sure...
 					}
@@ -387,7 +396,7 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 	{
 		for (auto& manifold : merged_manifolds)
 		{
-			if (true)
+			if (true)// wait what was I doing here? 
 			{
 
 			}
@@ -1035,9 +1044,6 @@ bool AABBReadSpatialPartitionSystem::execute(SystemsContext& ctx)
 	{
 		++counter;
 	}
-
-
-
 	return false;
 }
 
@@ -1104,4 +1110,50 @@ bool DestroyCubeSystem::execute(SystemsContext& ctx)
 		}
 	}
 	return false;
+}
+
+bool HeightMapLoadSystem::execute(SystemsContext& ctx)
+{
+	ctx.enqueue_each(WithWrite<LandscapeComponent>{},
+		[this, &ctx](const entt::entity entity, LandscapeComponent& landscape)
+		{
+			if (!landscape.has_loaded_height_map)
+			{
+				auto& system_storage = ctx.get_system_storage();
+				HeightMap map;
+				map.max_height = landscape.max_height;
+				if (generate_heightmap(landscape.height_map_path.string, map))
+				{
+					landscape.has_loaded_height_map;
+					system_storage.add_or_replace_object(landscape.height_map_path.string, map);
+				}
+			}
+		});
+	return false;
+}
+
+bool HeightMapLoadSystem::generate_heightmap(const std::string& path, HeightMap& map)
+{
+
+	int width, height, channels;
+	
+	stbi_set_flip_vertically_on_load(true);
+	unsigned char* height_data = stbi_load(path.c_str(), &width, &height, &channels, 0);
+	if (!height_data || width < 0 || height < 0) { return false; }
+	map.height_map.clear();
+	map.height_map.reserve((size_t)width * (size_t)height);
+	map.height = height;
+	map.width = width;
+	float max_height = map.max_height;
+	for (int u = 0; u < width; u++)
+	{
+		for (int v = 0; v < height; v++)
+		{
+			int index = (v * width + u) * channels;
+			unsigned char red = height_data[index];
+			float height = ((float)red / 255.f) * max_height;
+			map.height_map.push_back(height);
+		}
+	}
+	return true;
 }

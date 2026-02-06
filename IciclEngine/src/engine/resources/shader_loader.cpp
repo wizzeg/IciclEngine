@@ -28,6 +28,7 @@ ShaderData ShaderLoader::load_shader_from_path(const std::string& a_path)
 
 	shader.name = j.value("name", "");
 	shader.vert_path = j.value("vert_path", ""); // fix for hard crashes here
+	PRINTLN("Loading {} at path: {}", shader.name, a_path);
 	std::ifstream vert_file(shader.vert_path);
 	if (!vert_file.is_open())
 	{

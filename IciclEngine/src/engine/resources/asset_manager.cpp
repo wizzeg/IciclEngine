@@ -420,6 +420,7 @@ void AssetJobThread::process_mesh_update(VAOLoadInfo& a_job)
 					{
 						if (i < runtime_meshes.size())
 						{
+							PRINTLN("thread inserts runtime_mesh");
 							runtime_meshes.emplace(runtime_meshes.begin() + i,
 								a_job.hashed_path.hash, num_indices, vao);
 							added_mesh = true;
@@ -429,6 +430,7 @@ void AssetJobThread::process_mesh_update(VAOLoadInfo& a_job)
 				}
 				if (!added_mesh)
 				{
+					PRINTLN("thread inserts runtime_mesh");
 					runtime_meshes.emplace_back(a_job.hashed_path.hash, num_indices, vao);
 				}
 			}

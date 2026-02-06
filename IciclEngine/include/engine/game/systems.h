@@ -77,4 +77,8 @@ struct SyncSystem :SystemBase
 	bool execute(SystemsContext& ctx) override { ctx.gen_sync(); ctx.entt_sync(); return false; }
 };
 
-
+struct HeightMapLoadSystem : SystemBase
+{
+	bool execute(SystemsContext& ctx) override;
+	bool generate_heightmap(const std::string& path, HeightMap& map);
+};
