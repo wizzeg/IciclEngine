@@ -62,7 +62,7 @@ int main(void)
 	if (!glfwInit())
 		return -1;
 
-	std::shared_ptr<GLFWContext> glfw_context = std::make_shared<GLFWContext>(1920, 1080, "Icicl engine", true, false, true);
+	std::shared_ptr<GLFWContext> glfw_context = std::make_shared<GLFWContext>(1920, 1080, "Icicl engine", true, true, true);
 	glfw_context->deactivate();
 	std::shared_ptr<ImGuiManager> imgui_manager = std::make_shared<ImGuiManager>(glfw_context);
 	glfw_context->activate();
@@ -222,17 +222,17 @@ int main(void)
 					}*/
 
 
-					for (size_t i = 0; i < 1; i++)
+					for (size_t i = 0; i < 5000; i++)
 					{
-						float x = -10.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 20.0f));
-						float y = -10.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 20.0f));; // Or random if you want variety
-						float z = -10.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 20.0f));; // Same here
+						float x = -100.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 200.0f));
+						float y = -100.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 200.0f));; // Or random if you want variety
+						float z = -100.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 200.0f));; // Same here
 						auto obj = scene->new_scene_object(std::string("model: ") + std::to_string(i), true);
 						auto scene_object = obj.lock();
 						size_t mesh_idx = std::rand() % meshes.size();
 						size_t tex_idx = std::rand() % texes.size();
 						size_t mat_idx = std::rand() % mats.size();
-						scene_object->add_component(TransformDynamicComponent{ glm::vec3(x, y, z), (glm::normalize(glm::abs(glm::vec3(x, y, z))) + glm::vec3(0.5f))});
+						scene_object->add_component(TransformDynamicComponent{ glm::vec3(x, y, z)}); //(glm::normalize(glm::abs(glm::vec3(x, y, z))) + glm::vec3(0.5f))
 						//scene_object->add_component(MeshComponent{ false, meshes[mesh_idx]});
 						//scene_object->add_component(MaterialComponent{mats[mat_idx], false, false, true});
 						scene_object->add_component(RenderComponent{ meshes[mesh_idx], mats[mat_idx], true, true, true });
@@ -243,7 +243,7 @@ int main(void)
 						float mass = 1.f;
 						float inverse_mass = 1.f;
 						float random = std::rand() % 50;
-						glm::vec3 linear_velocity = normalize(glm::vec3(x, y, z)) * -random;
+						glm::vec3 linear_velocity = normalize(glm::vec3(x, y, z)) * -0.f;
 						glm::vec3 rotation_velocity = normalize(glm::vec3(x, y, z)) * -0.2f;
 						if (glm::length(glm::vec3(x, y, z)) < 0.f)
 						{
@@ -252,10 +252,14 @@ int main(void)
 							linear_velocity = glm::vec3(0.f);
 							rotation_velocity = glm::vec3(0.f);
 						}
-						scene_object->add_component(RigidBodyComponent{ glm::vec3(x, y, z), glm::quat(1.0f, 0.f, 0.f, 0.f), linear_velocity, rotation_velocity, mass, inverse_mass });
+						scene_object->add_component(RigidBodyComponent{ glm::vec3(x, y, z), glm::quat(1.0f, 0.f, 0.f, 0.f), linear_velocity, rotation_velocity, mass, inverse_mass, glm::mat3(0), 1.0f, 0.4f});
+						if (auto rb = scene_object->try_get_component<RigidBodyComponent>())
+						{
+							rb->set_dynamic_layer(1);
+						}
 					}
 
-					for (size_t i = 0; i < 0; i++)
+					for (size_t i = 0; i < 20; i++)
 					{
 						float x = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));
 						float y = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));; // Or random if you want variety
@@ -285,7 +289,7 @@ int main(void)
 							break;
 						}
 						//glm::vec3 color((std::rand() % 1000)* 0.001f, (std::rand() % 1000) * 0.001f, (std::rand() % 1000) * 0.001f);
-						float intensity = 0.5f + (std::rand() % 500) * 0.001;
+						float intensity = 0.75f + (std::rand() % 250) * 0.001;
 						glm::vec3 attenuation = glm::vec3(0.75f, 0.1f, 0.01f);
 						hashed_string_64 name(mat.c_str());
 						scene_object->add_component(TransformDynamicComponent{ glm::vec3(x, y, z), glm::vec3(0.5f)});

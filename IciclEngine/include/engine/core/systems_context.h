@@ -1172,12 +1172,18 @@ struct SystemsContext
 			size_t end = std::min(start + a_chunk_size, size);
 			systems_dependencies.add(writes, false);
 
-			entt_thread_pool->enqueue([this, start, end, writes, func]()
+			entt_thread_pool->enqueue([this, view, start, end, writes, func]() // maybe if we copy view?
 				{
-					auto view = registry.view<Writes...>(entt::exclude<Excludes...>);
+					//auto view = registry.view<Writes...>(entt::exclude<Excludes...>);
 					const auto* handle = view.handle();
+					////////////////////////////////////////////////////////////////////////////////////////////
+					// NOTE THIS FIX, PUT THIS IN EVERY SINGLE ONE!!!
+					// Still crashes on view<transform, cameracomp> exclude camera comp ... why did this happen??
+					// 1k rigid in debug...
+					if (!handle) return;
+					size_t size = handle->size();
 
-					for (size_t i = start; i < end; ++i)
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))
@@ -1962,6 +1968,8 @@ struct SystemsContext
 					const auto* handle = view.handle();
 
 					auto& local_data = a_thread_local_data[thread_id];
+					//size_t new_size = std::max(local_data.size() + 1, start - end);
+					//local_data.reserve(new_size);
 					for (size_t i = start; i < end; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
@@ -2473,6 +2481,8 @@ struct SystemsContext
 
 	void execute_ecb(const std::string& ecb_name)
 	{
+		gen_sync();
+		entt_sync();
 		if (ecbs.contains(ecb_name))
 		{
 			ecbs[ecb_name].execute_queue(registry);

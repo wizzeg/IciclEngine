@@ -2,6 +2,7 @@
 #include <engine/game/system_base.h>
 #include <engine/resources/data_structs.h>
 #include <engine/resources/physics_structs.h>
+#include <engine/utilities/utilities.h>
 
 struct MoveSystem : SystemBase
 {
@@ -18,14 +19,29 @@ struct TransformCalculationSystem : SystemBase
 
 struct PhysicsSystem : SystemBase
 {
-	float cell_size = 10.f;
+	float cell_size = 5.f;
+	uint8_t max_cells = 9; // if object spans more than 9 cells, register it in seperate container
 	size_t chunk_size = 1;
 	std::vector<SpatialColliderPartitioning> vectored_spatial_collider_partitioning;
 	std::vector<std::unordered_map<CellCoordinates, std::vector<entt::entity>>> vectored_spatial_map;
 	std::vector<std::vector<SpatialColliderData>> vectored_collider_data;
+
+	std::vector<CellEntry> vectored_cell_entries;
+
+	HighResolutionTimer timer;
+
+	double timer_spatial = 0;
+	double timer_AABB = 0;
+	double timer_OBB = 0;
+	double timer_manifold = 0;
+	double timer_resolve = 0;
+
+	float sleep_linear_threshold = 0.05f;
+	float sleep_angular_threshold = 0.05f;
+
 	bool execute(SystemsContext& ctx) override;
 	bool overlap(const AABB& a, const AABB& b);
-	int divide_int(int input, size_t divisor);
+	int divide_int(float input, size_t divisor);
 	ContactManifold OBB_collision_test(const BroadPhasePair pair);
 	glm::vec3 get_OBB_axis(const OBB& obb, int index) const;
 	float project_OBB_on_axis(const OBB& obb, const glm::vec3& axis) const;

@@ -31,6 +31,96 @@ struct ContactManifold
 	bool has_collision = false;
 };
 
+struct PhysicsLayers
+{
+	uint8_t static_layers = 0b00000000;
+	uint8_t dynamic_layers = 0b00000000;
+	uint8_t collision_layers = 0b00000000;
+
+	bool const is_static_against(const uint8_t layers) const
+	{
+		return (static_layers & layers) != 0;
+	}
+	bool is_dynamic_against(uint8_t layers) const
+	{
+		return (dynamic_layers & layers) != 0;
+	}
+
+	bool is_static_layer(uint8_t layer) const
+	{
+		if (layer > 7) return false;
+		return (static_layers & (1u << layer)) != 0;
+	}
+	void set_static_layer(uint8_t layer)
+	{
+		if (layer > 7) return;
+		uint8_t mask = (1u << layer);
+		dynamic_layers &= ~mask;
+		static_layers |= mask;
+	}
+	void clear_static_layer(uint8_t layer)
+	{
+		if (layer > 7) return;
+		uint8_t mask = (1u << layer);
+		static_layers &= ~mask;
+	}
+	bool is_dynamic_layer(uint8_t layer) const
+	{
+		if (layer > 7) return false;
+		return (dynamic_layers & (1u << layer)) != 0;
+	}
+	void set_dynamic_layer(uint8_t layer)
+	{
+		if (layer > 7) return;
+		uint8_t mask = (1u << layer);
+		static_layers &= ~mask;
+		dynamic_layers |= mask;
+	}
+	void clear_dynamic_layer(uint8_t layer)
+	{
+		if (layer > 7) return;
+		uint8_t mask = (1u << layer);
+		dynamic_layers &= ~mask;
+	}
+	bool const is_collision_against(const PhysicsLayers& other) const
+	{
+		return (collision_layers & other.collision_layers) != 0;
+	}
+	bool const is_collision_against(const uint8_t layers) const
+	{
+		return (collision_layers & layers) != 0;
+	}
+	bool const is_collision_layer(const uint8_t layer) const
+	{
+		if (layer > 7) return false;
+		return (collision_layers & (1u << layer)) != 0;
+	}
+	void const set_collision_layer(const uint8_t layer)
+	{
+		if (layer > 7) return;
+		uint8_t mask = (1u << layer);
+		collision_layers |= mask;
+	}
+	void const clear_collision_layer(const uint8_t layer)
+	{
+		if (layer > 7) return;
+		uint8_t mask = (1u << layer);
+		collision_layers &= ~mask;
+	}
+
+	bool const any_physics_collision(const PhysicsLayers& b) const
+	{
+		return ( is_dynamic_against(b.dynamic_layers) // is_static_against(b.static_layers) ||
+			|| is_static_against(b.dynamic_layers) || is_dynamic_against(b.static_layers));
+	}
+
+	bool const operator &(const PhysicsLayers& other) const
+	{
+		return any_physics_collision(other);
+	}
+};
+
+
 struct BroadPhasePair
 {
 	entt::entity entity_a;
@@ -41,11 +131,13 @@ struct BroadPhasePair
 	RigidBodyComponent* rb_b = nullptr;
 	OBB obb_a;
 	OBB obb_b;
+	PhysicsLayers layers_a;
+	PhysicsLayers layers_b;
 
-	bool operator==(const BroadPhasePair& other) const {
+	bool const operator==(const BroadPhasePair& other) const {
 		return entity_a == other.entity_a && entity_b == other.entity_b;
 	}
-	bool operator<(const BroadPhasePair& other) const {
+	bool const operator<(const BroadPhasePair& other) const {
 		if (entity_a == other.entity_a)
 			return entity_b < other.entity_b;
 		return entity_a < other.entity_a;
@@ -60,10 +152,11 @@ struct SpatialColliderData
 	RigidBodyComponent* rb = nullptr;
 	AABB aabb;
 	OBB obb;
-	bool operator==(const SpatialColliderData& other) const {
+	PhysicsLayers layers;
+	bool const operator==(const SpatialColliderData& other) const {
 		return entity == other.entity;
 	}
-	bool operator<(const SpatialColliderData& other) const {
+	bool const operator<(const SpatialColliderData& other) const {
 		return entity < other.entity;
 	}
 };
@@ -71,8 +164,17 @@ struct SpatialColliderData
 struct CellCoordinates {
 	int x, y, z;
 
-	bool operator==(const CellCoordinates& other) const {
+	bool const operator==(const CellCoordinates& other) const {
 		return x == other.x && y == other.y && z == other.z;
+	}
+	bool const operator<(const CellCoordinates& other) const {
+		if (x == other.x)
+		{
+			if (y == other.y)
+				return z < other.z;
+			return y < other.y;
+		}
+		return x < other.x;
 	}
 };
 
@@ -91,3 +193,63 @@ struct SpatialColliderPartitioning
 	std::unordered_map<CellCoordinates, std::vector<SpatialColliderData>> spatial_cells;
 	std::vector<BroadPhasePair> broad_phase_data;
 };
+
+struct SmallEntry
+{
+	CellCoordinates coordinates;
+	entt::entity entity;
+	size_t access_order;
+	RigidBodyComponent* rb = nullptr;
+	AABB aabb;
+	OBB obb;
+	PhysicsLayers layers;
+	bool asleep = false;
+	bool operator==(const SmallEntry& other) const {
+		return coordinates == other.coordinates;
+	}
+	bool operator<(const SmallEntry& other) const {
+		return coordinates < other.coordinates;
+	}
+};
+
+struct LargeEntry
+{
+	CellCoordinates coordinates;
+	entt::entity entity;
+	size_t access_order;
+	RigidBodyComponent* rb = nullptr;
+	AABB aabb;
+	OBB obb;
+	PhysicsLayers layers;
+	bool operator==(const LargeEntry& other) const {
+		return coordinates == other.coordinates;
+	}
+	bool operator<(const LargeEntry& other) const {
+		return coordinates < other.coordinates;
+	}
+};
+
+struct MassiveEntry
+{
+	entt::entity entity;
+	size_t access_order;
+	RigidBodyComponent* rb = nullptr;
+	AABB aabb;
+	OBB obb;
+	PhysicsLayers layers;
+	bool asleep = false;
+	bool operator==(const MassiveEntry& other) const {
+		return entity == other.entity;
+	}
+	bool operator<(const MassiveEntry& other) const {
+		return entity < other.entity;
+	}
+};
+
+struct CellEntry
+{
+	std::vector<SmallEntry> small_entries;
+	//std::vector<LargeEntry> large_entries;
+	std::vector<MassiveEntry> massive_entries;
+};
+

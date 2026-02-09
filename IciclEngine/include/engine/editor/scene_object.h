@@ -152,14 +152,14 @@ public:
 	}
 
 	template <typename TComponent>
-	ComponentData<TComponent>* try_get_component()
+	TComponent* try_get_component()
 	{
 		for (const auto& comp_data : component_datas)
 		{
 			if (comp_data->get_type() == typeid(TComponent))
 			{
 				ComponentData<TComponent>* comp = static_cast<ComponentData<TComponent>*>(comp_data.get());
-				return comp;
+				return &comp->get_component();
 			}
 		}
 		return nullptr;

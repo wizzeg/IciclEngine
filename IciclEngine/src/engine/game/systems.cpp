@@ -47,7 +47,12 @@ bool MoveSystem::execute(SystemsContext& ctx)
 			return ctx.enqueue_parallel_each(
 				WithRead<const SpawnPositionComponent, const RenderComponent>{},
 				WithWrite<TransformDynamicComponent>{},
-				[current_time](const entt::entity entity, const SpawnPositionComponent& spawn, const RenderComponent& render, TransformDynamicComponent& transform)
+				[current_time](
+					const entt::entity entity, 
+					const SpawnPositionComponent& spawn, 
+					const RenderComponent& render, 
+					TransformDynamicComponent& transform
+					)
 				{
 					float amplitude = 5.f;
 					float frequency = 5.f;
@@ -130,6 +135,7 @@ bool TransformCalculationSystem::execute(SystemsContext& ctx)
 
 bool PhysicsSystem::execute(SystemsContext& ctx)
 {
+	timer.start();
 	size_t num_threads = ctx.num_threads();
 
 	// consider just storing pointer to this in the storage
@@ -146,15 +152,168 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 		PRINTLN("launching threads");
 
 	}
+	//ctx.enqueue_parallel_data_each(
+	//	WithRead<TransformDynamicComponent, BoundingBoxComponent>{},
+	//	WithMod<RigidBodyComponent>{},
+	//	[this, &ctx](SpatialColliderPartitioning& spatial_partition,
+	//		const entt::entity entity,
+	//		const TransformDynamicComponent& transform,
+	//		const BoundingBoxComponent& bbox, // need rigid body? No not really
+	//		size_t visit_order)
+	//	{
+	//		auto& cells = spatial_partition.spatial_cells;
+
+	//		const glm::mat4& model_matrix = transform.model_matrix;
+
+	//		
+	//		glm::mat3 scaled_rotation = glm::mat3(model_matrix); // I should not use model matrix, should use quat I think
+	//		glm::mat3 rotation; // need to remove scaling from model matrix
+	//		rotation[0] = glm::normalize(model_matrix[0]);
+	//		rotation[1] = glm::normalize(model_matrix[1]);  
+	//		rotation[2] = glm::normalize(model_matrix[2]);
+	//		glm::vec3 scale;
+	//		scale.x = glm::length(model_matrix[0]);
+	//		scale.y = glm::length(model_matrix[1]);  
+	//		scale.z = glm::length(model_matrix[2]);
+	//		glm::vec3 half_extents = bbox.box_extents * 0.5f * scale;
+	//		glm::quat obb_rotation = glm::quat_cast(rotation);
+	//		glm::vec3 offset_rot_scaled_box = glm::vec3(model_matrix * glm::vec4(bbox.offset, 1.f));
+
+	//		glm::mat3 max_scaled_rotation = glm::mat3(
+	//			glm::abs(rotation[0]),
+	//			glm::abs(rotation[1]),
+	//			glm::abs(rotation[2])
+	//		);
+
+	//		glm::vec3 world_half_extents = max_scaled_rotation * half_extents;
+
+	//		glm::vec3 aabb_min = offset_rot_scaled_box - world_half_extents;
+	//		glm::vec3 aabb_max = offset_rot_scaled_box + world_half_extents;
+	//		AABB aabb{ aabb_min, aabb_max };
+	//		OBB obb{ offset_rot_scaled_box, obb_rotation, half_extents };
+	//		PhysicsLayers physics_layers{ 0, 0, bbox.collision_layers };
+
+	//		CellCoordinates min_cell = {
+	//		static_cast<int>(divide_int(aabb_min.x, cell_size)),
+	//		static_cast<int>(divide_int(aabb_min.y, cell_size)),
+	//		static_cast<int>(divide_int(aabb_min.z, cell_size))
+	//		};
+
+	//		CellCoordinates max_cell = {
+	//			static_cast<int>(divide_int(aabb_max.x, cell_size)),
+	//			static_cast<int>(divide_int(aabb_max.y, cell_size)),
+	//			static_cast<int>(divide_int(aabb_max.z, cell_size))
+	//		};
+	//		auto rb = ctx.try_get<RigidBodyComponent>(entity);
+	//		if (rb)
+	//		{
+	//			if (rb->recalculate_inverse_inertia_tensor)
+	//			{
+	//				rb->recalculate_inverse_inertia_tensor = false;
+	//				rb->inverse_inertia_tensor_local = calculate_box_inertia_tensor_inverse(rb->mass, half_extents);
+	//			}
+	//			physics_layers.static_layers = rb->static_layers;
+	//			physics_layers.dynamic_layers = rb->dynamic_layers;
+
+	//		}
+	//		// really need to make this into std::pair<cell, other> in a vector instead of unordered_map
+	//		for (int x = min_cell.x; x <= max_cell.x; ++x)
+	//			for (int y = min_cell.y; y <= max_cell.y; ++y)
+	//				for (int z = min_cell.z; z <= max_cell.z; ++z)
+	//					cells[{x, y, z}].emplace_back(
+	//						entity, visit_order, rb,
+	//						aabb, obb, physics_layers);
+	//		
+	//		//for (int x = min_cell.x; x <= max_cell.x; ++x)
+	//		//	for (int y = min_cell.y; y <= max_cell.y; ++y)
+	//		//		for (int z = min_cell.z; z <= max_cell.z; ++z)
+	//		//			cells[{x, y, z}].emplace_back(
+	//		//				entity, visit_order, ctx.try_get<RigidBodyComponent>(entity),
+	//		//				aabb, obb, physics_layers);// need to filter out none-rigid bodies
+	//		
+
+	//	}, vectored_spatial_collider_partitioning, num_threads, true);
+
+
+	//
+	//// also do one for all landscapes...
+	//
+	//ctx.entt_sync(); // could push vectored_spatial_map into the storage to retrrieve this->vectored_spatial_map later to combine
+
+	//// merge spatial data first.
+	//SpatialColliderPartitioning merged_partition;
+
+	//for (auto& thread_partition : vectored_spatial_collider_partitioning)
+	//{
+	//	for (auto& [cell_coord, colliders] 
+	//		: thread_partition.spatial_cells) 
+	//	{
+	//		auto& merged_cell = merged_partition.spatial_cells[cell_coord];
+	//		merged_cell.insert(merged_cell.end(), colliders.begin(), colliders.end());
+	//	}
+	//}
+	//// then split it into chunks
+	//// so this was a bad idea, I need to fix this later, to avoid this whole thing.
+	//std::unordered_map<CellCoordinates, std::vector<CellCoordinates>> chunks;
+
+	//// I don't want to do this, needs to be removed later
+	//for (auto& [cell_coord, _] : merged_partition.spatial_cells)
+	//{
+	//	CellCoordinates cunk
+	//	{
+	//		divide_int(cell_coord.x, chunk_size),
+	//		divide_int(cell_coord.y, chunk_size),
+	//		divide_int(cell_coord.z, chunk_size)
+	//	};
+	//	chunks[cunk].push_back(cell_coord);
+	//}
+	//std::vector<std::pair<CellCoordinates, std::vector<CellCoordinates>>> vec_chunks;
+	//vec_chunks.reserve(chunks.size());
+	//// split up the chunks...
+	//for (auto& [chunk, coords] : chunks)
+	//{
+	//	vec_chunks.emplace_back(chunk, std::move(coords));
+	//}
+	//std::vector<std::vector<BroadPhasePair>> thread_pairs(num_threads);
+	//const size_t chunks_per_thread = (vec_chunks.size() + num_threads - 1) / num_threads;
+	//// would be nice to note start unecessary threads..
+
+	{
+		std::vector<std::pair<size_t, size_t>> sizes;
+		sizes.resize(num_threads);
+		{
+			size_t index = 0;
+			for (auto& cell_entry : vectored_cell_entries)
+			{
+				sizes[index++] = { cell_entry.small_entries.size(), cell_entry.massive_entries.size() };
+			}
+		}
+
+
+		vectored_cell_entries.clear();
+		vectored_cell_entries.resize(num_threads);
+		{
+			size_t index = 0;
+			for (auto& cell_entry : vectored_cell_entries)
+			{
+				cell_entry.small_entries.reserve(sizes[index].first);
+				cell_entry.massive_entries.reserve(sizes[index].second);
+				++index;
+			}
+		}
+	}
+
 	ctx.enqueue_parallel_data_each(
 		WithRead<TransformDynamicComponent, BoundingBoxComponent>{},
-		[this, &ctx](SpatialColliderPartitioning& spatial_partition,
+		WithMod<RigidBodyComponent>{},
+		[this, &ctx](CellEntry& cell_entires,
 			const entt::entity entity,
 			const TransformDynamicComponent& transform,
-			const BoundingBoxComponent& bbox, // need rigid body? No not really
-			size_t visit_order)
+			const BoundingBoxComponent& bbox,
+			size_t access_order)
 		{
-			auto& cells = spatial_partition.spatial_cells;
+			auto& small_entries = cell_entires.small_entries;
+			auto& massive_entries = cell_entires.massive_entries;
 
 			const glm::mat4& model_matrix = transform.model_matrix;
 
@@ -172,154 +331,351 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 			glm::quat obb_rotation = glm::quat_cast(rotation);
 			glm::vec3 offset_rot_scaled_box = glm::vec3(model_matrix * glm::vec4(bbox.offset, 1.f));
 
-			glm::mat3 max_scaled_rotation = glm::mat3(
-				glm::abs(scaled_rotation[0]),
-				glm::abs(scaled_rotation[1]),
-				glm::abs(scaled_rotation[2])
+			glm::mat3 abs_rotation(
+				glm::abs(rotation[0]),
+				glm::abs(rotation[1]),
+				glm::abs(rotation[2])
 			);
 
-			glm::vec3 world_half_extents = max_scaled_rotation * half_extents;
+			glm::vec3 world_half_extents = abs_rotation * half_extents;
 
 			glm::vec3 aabb_min = offset_rot_scaled_box - world_half_extents;
 			glm::vec3 aabb_max = offset_rot_scaled_box + world_half_extents;
 			AABB aabb{ aabb_min, aabb_max };
 			OBB obb{ offset_rot_scaled_box, obb_rotation, half_extents };
+			PhysicsLayers physics_layers{ 0, 0, bbox.collision_layers };
 
-			CellCoordinates min_cell = {
-			static_cast<int>(std::floor(aabb_min.x / cell_size)),
-			static_cast<int>(std::floor(aabb_min.y / cell_size)),
-			static_cast<int>(std::floor(aabb_min.z / cell_size))
-			};
-
-			CellCoordinates max_cell = {
-				static_cast<int>(std::floor(aabb_max.x / cell_size)),
-				static_cast<int>(std::floor(aabb_max.y / cell_size)),
-				static_cast<int>(std::floor(aabb_max.z / cell_size))
-			};
-
-			if (auto rb = ctx.try_get<RigidBodyComponent>(entity))
+			auto rb = ctx.try_get<RigidBodyComponent>(entity);
+			bool asleep = false;
+			if (rb)
 			{
 				if (rb->recalculate_inverse_inertia_tensor)
 				{
 					rb->recalculate_inverse_inertia_tensor = false;
 					rb->inverse_inertia_tensor_local = calculate_box_inertia_tensor_inverse(rb->mass, half_extents);
 				}
+				physics_layers.static_layers = rb->static_layers;
+				physics_layers.dynamic_layers = rb->dynamic_layers;
+				asleep = rb->asleep;
 			}
+			CellCoordinates min_cell = {
+				static_cast<int>(divide_int(aabb_min.x, cell_size)),
+				static_cast<int>(divide_int(aabb_min.y, cell_size)),
+				static_cast<int>(divide_int(aabb_min.z, cell_size))
+			};
 
-			for (int x = min_cell.x; x <= max_cell.x; ++x)
-				for (int y = min_cell.y; y <= max_cell.y; ++y)
-					for (int z = min_cell.z; z <= max_cell.z; ++z)
-						cells[{x, y, z}].emplace_back(entity, visit_order, ctx.try_get<RigidBodyComponent>(entity), aabb, obb);// need to filter out none-rigid bodies
-			
+			CellCoordinates max_cell = {
+				static_cast<int>(divide_int(aabb_max.x, cell_size)),
+				static_cast<int>(divide_int(aabb_max.y, cell_size)),
+				static_cast<int>(divide_int(aabb_max.z, cell_size))
+			};
+			if ((max_cell.x - min_cell.x) * (max_cell.y - min_cell.y) * (max_cell.z - min_cell.z) > max_cells)
+			{
+				// register to large partition instead.
+				massive_entries.emplace_back(entity, access_order, rb, aabb, obb, physics_layers, asleep);
+			}
+			else
+			{
+				for (int x = min_cell.x; x <= max_cell.x; ++x)
+					for (int y = min_cell.y; y <= max_cell.y; ++y)
+						for (int z = min_cell.z; z <= max_cell.z; ++z)
+						{
+							small_entries.emplace_back(CellCoordinates(x, y, z),
+								entity, access_order, rb,
+								aabb, obb, physics_layers, asleep);
+						}
 
-		}, vectored_spatial_collider_partitioning, num_threads, true);
-	// also do one for all landscapes...
-	
-	ctx.entt_sync(); // could push vectored_spatial_map into the storage to retrrieve this->vectored_spatial_map later to combine
+			}
+			// really need to make this into std::pair<cell, other> in a vector instead of unordered_map
 
-	// merge spatial data first.
-	SpatialColliderPartitioning merged_partition;
+		},vectored_cell_entries, num_threads, true);
+	ctx.entt_sync();
 
-	for (auto& thread_partition : vectored_spatial_collider_partitioning)
+	timer.stop();
+	timer_spatial += timer.get_time_us();
+
+
+	if (count > 100)
 	{
-		for (auto& [cell_coord, colliders] 
-			: thread_partition.spatial_cells) 
+		size_t thread_id = 0;
+		for (auto& cell_entry : vectored_cell_entries)
 		{
-			auto& merged_cell = merged_partition.spatial_cells[cell_coord];
-			merged_cell.insert(merged_cell.end(), colliders.begin(), colliders.end());
+			PRINTLN("thread({}) - found entries: {}", thread_id, cell_entry.small_entries.size());
+		}
+		
+	}
+
+	CellEntry merged_cell_entries;
+	{
+		size_t total_small = 0;
+		size_t total_massive = 0;
+		for (auto& cell_entry : vectored_cell_entries)
+		{
+			total_small += cell_entry.small_entries.size();
+			total_massive += cell_entry.massive_entries.size();
+		}
+		merged_cell_entries.small_entries.reserve(total_small);
+		merged_cell_entries.massive_entries.reserve(total_massive);
+	}
+
+	for (size_t i = 0; i < vectored_cell_entries.size(); i++) {
+		merged_cell_entries.small_entries.insert(merged_cell_entries.small_entries.end(), 
+			std::make_move_iterator(vectored_cell_entries[i].small_entries.begin()),
+			std::make_move_iterator(vectored_cell_entries[i].small_entries.end()));
+		merged_cell_entries.massive_entries.insert(merged_cell_entries.massive_entries.end(),
+			std::make_move_iterator(vectored_cell_entries[i].massive_entries.begin()),
+			std::make_move_iterator(vectored_cell_entries[i].massive_entries.end()));
+	}
+
+	
+	//std::sort(merged_cell_entries.small_entries.begin(),
+	//	merged_cell_entries.small_entries.end(),
+	//	[](const SmallEntry& a, const SmallEntry& b) {
+	//		return a.entity < b.entity;
+	//	});
+	//auto new_end = std::unique(merged_cell_entries.small_entries.begin(),
+	//	merged_cell_entries.small_entries.end(),
+	//	[](const SmallEntry& a, const SmallEntry& b) {
+	//		return a.entity == b.entity;
+	//	});
+	//merged_cell_entries.small_entries.erase(new_end, merged_cell_entries.small_entries.end());
+	std::sort(merged_cell_entries.small_entries.begin(), merged_cell_entries.small_entries.end());
+
+	std::vector<CellEntry> chunks;
+	{
+		size_t i = 0;
+		if (!merged_cell_entries.small_entries.empty())
+		{
+			auto& small_entries = merged_cell_entries.small_entries;
+			CellCoordinates cell_coord = small_entries[0].coordinates;
+			size_t chunk_index = 0;
+			chunks.emplace_back();
+			chunks[chunk_index].small_entries.reserve(10);
+			size_t chunk_max = 512;
+			size_t chunk_count = 0;
+			for (size_t i = 0; i < small_entries.size(); i++)
+			{
+				if (cell_coord != small_entries[i].coordinates)
+				{
+					chunks.emplace_back();
+					chunks[++chunk_index].small_entries.reserve(10);
+					cell_coord = small_entries[i].coordinates;
+					chunk_count = 0;
+				}
+				chunks[chunk_index].small_entries.push_back(std::move(small_entries[i]));
+			}
 		}
 	}
-	// then split it into chunks
-	// so this was a bad idea, I need to fix this later, to avoid this whole thing.
-	std::unordered_map<CellCoordinates, std::vector<CellCoordinates>> chunks;
 
-	for (auto& [cell_coord, _] : merged_partition.spatial_cells)
-	{
-		CellCoordinates cunk
-		{
-			divide_int(cell_coord.x, chunk_size),
-			divide_int(cell_coord.y, chunk_size),
-			divide_int(cell_coord.z, chunk_size)
-		};
-		chunks[cunk].push_back(cell_coord);
-	}
-	std::vector<std::pair<CellCoordinates, std::vector<CellCoordinates>>> vec_chunks;
-	vec_chunks.reserve(chunks.size());
-	// split up the chunks...
-	for (auto& [chunk, coords] : chunks)
-	{
-		vec_chunks.emplace_back(chunk, std::move(coords));
-	}
+
+
+	timer.start();
+
 	std::vector<std::vector<BroadPhasePair>> thread_pairs(num_threads);
-	const size_t chunks_per_thread = (vec_chunks.size() + num_threads - 1) / num_threads;
+	const size_t chunks_per_thread = (chunks.size() + num_threads - 1) / num_threads;
 	// would be nice to note start unecessary threads..
 
-	// how check AABBs and generate pairs...
+
+
+
 	for (size_t i = 0; i < num_threads; i++)
 	{
-		
+
 		size_t thread_id = i;
+		size_t start_chunk = chunks_per_thread * thread_id;
+		size_t end_chunk = std::min(start_chunk + chunks_per_thread, chunks.size());
 		ctx.enqueue(
-			[this, &vec_chunks, &merged_partition, &thread_pairs, chunks_per_thread, thread_id]()
+			[this, &chunks, & merged_cell_entries, &thread_pairs, chunks_per_thread, start_chunk, end_chunk, thread_id]()
 			{
-				size_t start_chunk = chunks_per_thread * thread_id;
-				size_t end_chunk = std::min(start_chunk + chunks_per_thread, vec_chunks.size());
 				auto& pairs = thread_pairs[thread_id];
 				pairs.reserve(500);
-				for (size_t chunk = start_chunk; chunk < end_chunk; ++chunk)
+				//const auto& colliders = chunks[thread_id].small_entries;
+				const auto& massives = merged_cell_entries.massive_entries;
+				size_t its = 0;
+				const auto& my_chunks = std::span(chunks).subspan(start_chunk, end_chunk - start_chunk);
+				for (const auto& chunk : my_chunks)
 				{
-					
-					const auto& [chunk_coord, cell_coords] = vec_chunks[chunk];
-					for (const auto& cell_coord : cell_coords)
+					const auto& colliders = chunk.small_entries;
+					for (size_t i = 0; i < colliders.size(); i++)
 					{
-						auto& colliders = merged_partition.spatial_cells[cell_coord];
-						for (size_t i = 0; i < colliders.size(); i++)
+						for (size_t j = i + 1; j < colliders.size(); j++)
 						{
-							for (size_t j = i + 1; j < colliders.size(); j++)
+							++its;
+							// here we'de needto check "colliders" what they are.
+							if (colliders[i].entity != colliders[j].entity
+								&& (!colliders[i].asleep || !colliders[j].asleep)
+								&& overlap(colliders[i].aabb, colliders[j].aabb)) // check if potential collision
 							{
-								// here we'de needto check "colliders" what they are.
-								if (colliders[i].entity != colliders[j].entity && overlap(colliders[i].aabb, colliders[j].aabb)) // check if potential collision
+								if (colliders[i].layers.is_collision_against(colliders[j].layers))
 								{
-									// I think here is where we generate new info for the landscape... call it entt::null
-									// we'll need to create a new obb... but we need more information to make these decisions
+									// do something with collision info
+								}
+								if (colliders[i].layers.any_physics_collision(colliders[j].layers) || true)
+								{
+									// collision
+									//BroadPhasePair
 									if ((uint32_t)colliders[i].entity < (uint32_t)colliders[j].entity)
 									{
 										pairs.emplace_back(colliders[i].entity, colliders[j].entity,
 											colliders[i].access_order, colliders[j].access_order,
 											colliders[i].rb, colliders[j].rb,
-											colliders[i].obb, colliders[j].obb);
+											colliders[i].obb, colliders[j].obb,
+											colliders[i].layers, colliders[j].layers);
 									}
 									else
 									{
 										pairs.emplace_back(colliders[j].entity, colliders[i].entity,
 											colliders[j].access_order, colliders[i].access_order,
-											colliders[i].rb, colliders[j].rb,
-											colliders[j].obb, colliders[i].obb);
+											colliders[j].rb, colliders[i].rb,
+											colliders[j].obb, colliders[i].obb,
+											colliders[j].layers, colliders[i].layers);
 									}
 								}
+								// I think here is where we generate new info for the landscape... call it entt::null
+								// we'll need to create a new obb... but we need more information to make these decisions
+
+							}
+						}
+
+						for (const auto& massive : massives)
+						{
+							its++;
+							if (colliders[i].entity != massive.entity
+								&& (!colliders[i].asleep || !massive.asleep)
+								&& overlap(colliders[i].aabb, massive.aabb)) // check if potential collision
+							{
+								if (colliders[i].asleep && massive.layers.is_static_against(colliders[i].layers.dynamic_layers) &&
+									massive.rb && glm::length(massive.rb->linear_velocity) < 0.1f && glm::length(massive.rb->angular_velocity) < 0.1f)
+								{
+									continue;
+								}
+								if (colliders[i].layers.is_collision_against(massive.layers))
+								{
+									// do something with collision info
+								}
+								if (colliders[i].layers.any_physics_collision(massive.layers) || true)
+								{
+									// collision
+									//BroadPhasePair
+									if ((uint32_t)colliders[i].entity < (uint32_t)massive.entity)
+									{
+										pairs.emplace_back(colliders[i].entity, massive.entity,
+											colliders[i].access_order, massive.access_order,
+											colliders[i].rb, massive.rb,
+											colliders[i].obb, massive.obb,
+											colliders[i].layers, massive.layers);
+									}
+									else
+									{
+										pairs.emplace_back(massive.entity, colliders[i].entity,
+											massive.access_order, colliders[i].access_order,
+											massive.rb, colliders[i].rb,
+											massive.obb, colliders[i].obb,
+											massive.layers, colliders[i].layers);
+									}
+								}
+								// I think here is where we generate new info for the landscape... call it entt::null
+								// we'll need to create a new obb... but we need more information to make these decisions
+
 							}
 						}
 					}
 				}
-
-				//if (count > 100)
-				//{
-				//	PRINTLN("thread doing work");
-				//}
-
+				
 				// sort
 				std::sort(pairs.begin(), pairs.end());
 				// purge
 				pairs.erase(std::unique(pairs.begin(), pairs.end()), pairs.end());
 				// replace
 				//spatial_collider_partitioning.broad_phase_data = pairs;
-				if (pairs.size() > 0 && count > 100)
+				if (count > 100)
 				{
 					PRINTLN("thread({}) - potential collisions: {}", thread_id, pairs.size());
+					PRINTLN("thread({}) - iterations: {}", thread_id, its);
+					
 				}
 				// can clear old data now.
 			});
 	}
+	// how check AABBs and generate pairs...
+	//for (size_t i = 0; i < num_threads; i++)
+	//{
+	//	
+	//	size_t thread_id = i;
+	//	ctx.enqueue(
+	//		[this, &vec_chunks, &merged_partition, &thread_pairs, chunks_per_thread, thread_id]()
+	//		{
+	//			size_t start_chunk = chunks_per_thread * thread_id;
+	//			size_t end_chunk = std::min(start_chunk + chunks_per_thread, vec_chunks.size());
+	//			auto& pairs = thread_pairs[thread_id];
+	//			pairs.reserve(500);
+	//			for (size_t chunk = start_chunk; chunk < end_chunk; ++chunk)
+	//			{
+	//				
+	//				const auto& [chunk_coord, cell_coords] = vec_chunks[chunk];
+	//				for (const auto& cell_coord : cell_coords)
+	//				{
+	//					auto& colliders = merged_partition.spatial_cells[cell_coord];
+	//					for (size_t i = 0; i < colliders.size(); i++)
+	//					{
+	//						for (size_t j = i + 1; j < colliders.size(); j++)
+	//						{
+	//							// here we'de needto check "colliders" what they are.
+	//							if (colliders[i].entity != colliders[j].entity 
+	//								&& overlap(colliders[i].aabb, colliders[j].aabb)) // check if potential collision
+	//							{
+	//								if (colliders[i].layers.is_collision_against(colliders[j].layers))
+	//								{
+	//									// do something with collision info
+	//								}
+	//								if (colliders[i].layers.any_physics_collision(colliders[j].layers) || true)
+	//								{
+	//									// collision
+	//									//BroadPhasePair
+	//									if ((uint32_t)colliders[i].entity < (uint32_t)colliders[j].entity)
+	//									{
+	//										pairs.emplace_back(colliders[i].entity, colliders[j].entity,
+	//											colliders[i].access_order, colliders[j].access_order,
+	//											colliders[i].rb, colliders[j].rb,
+	//											colliders[i].obb, colliders[j].obb,
+	//											colliders[i].layers, colliders[j].layers);
+	//									}
+	//									else
+	//									{
+	//										pairs.emplace_back(colliders[j].entity, colliders[i].entity,
+	//											colliders[j].access_order, colliders[i].access_order,
+	//											colliders[j].rb, colliders[i].rb,
+	//											colliders[j].obb, colliders[i].obb,
+	//											colliders[j].layers, colliders[i].layers);
+	//									}
+	//								}
+	//								// I think here is where we generate new info for the landscape... call it entt::null
+	//								// we'll need to create a new obb... but we need more information to make these decisions
+	//								
+	//							}
+	//						}
+	//					}
+	//				}
+	//			}
+
+	//			//if (count > 100)
+	//			//{
+	//			//	PRINTLN("thread doing work");
+	//			//}
+
+	//			// sort
+	//			std::sort(pairs.begin(), pairs.end());
+	//			// purge
+	//			pairs.erase(std::unique(pairs.begin(), pairs.end()), pairs.end());
+	//			// replace
+	//			//spatial_collider_partitioning.broad_phase_data = pairs;
+	//			if (pairs.size() > 0 && count > 100)
+	//			{
+	//				PRINTLN("thread({}) - potential collisions: {}", thread_id, pairs.size());
+	//			}
+	//			// can clear old data now.
+	//		});
+	//}
 
 	ctx.gen_sync();
 	// merge pairs
@@ -332,8 +688,11 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 	std::sort(merged_pairs.begin(), merged_pairs.end());
 	merged_pairs.erase(std::unique(merged_pairs.begin(), merged_pairs.end()), merged_pairs.end());
 	
+	timer.stop();
+	timer_AABB += timer.get_time_us();
 	// now I'm not sure what to do?
 	// split into parallel jobs to calculate all contact points? Probably right?
+	timer.start();
 	const size_t pairs_per_thread = (merged_pairs.size() + num_threads - 1) / num_threads;
 	std::vector<std::vector<ContactManifold>> vec_manifolds(num_threads);
 	for (size_t i = 0; i < num_threads; i++)
@@ -350,15 +709,17 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 				//manifolds.reserve(end_pair - start_pair);
 				for (size_t i = start_pair; i < end_pair; ++i)
 				{
-					if (merged_pairs[i].rb_a && merged_pairs[i].rb_b)
+					bool any_physics = merged_pairs[i].layers_a.any_physics_collision(merged_pairs[i].layers_b);
+					if (merged_pairs[i].rb_a && merged_pairs[i].rb_b && any_physics)
 					{
+						// these should all have rbs.
 						ContactManifold manfild = OBB_collision_test(merged_pairs[i]); // need to check if it has RB or not
 						if (manfild.has_collision)
 						{
 							manifolds.push_back(manfild);
 						}
 					}
-					else
+					if (merged_pairs[i].layers_a.is_collision_against(merged_pairs[i].layers_b))
 					{
 						// both don't have rigidbody, so store collision information only
 						// actually should probably store this info somewhere in both cases
@@ -371,6 +732,24 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 	}
 	ctx.gen_sync();
 
+	timer.stop();
+	timer_OBB += timer.get_time_us();
+	float delta = ctx.get_delta_time();
+
+	// iterate through attractors, create formula for attractor, and then make each object do the thing
+
+	ctx.enqueue_parallel_each(WithRead<TransformDynamicComponent>{},
+		WithWrite<RigidBodyComponent>{},
+	[delta](const entt::entity entity, const TransformDynamicComponent& transform, RigidBodyComponent& rb)
+		{
+			if (!rb.is_static_against(UINT8_MAX) && !rb.asleep)
+			{
+				rb.linear_velocity -= glm::vec3(0, 9.82f * delta, 0);
+			}
+			
+		}, 512);
+
+	timer.start();
 	std::vector<ContactManifold> merged_manifolds;
 	for (auto& manifold : vec_manifolds)
 	{
@@ -381,29 +760,26 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 
 	// now time for physics solver ... but I should have gathered rigidbodies by now... hm.. done that now
 	// but before this, I should not have put those that lack rb into the manifolds.
-	std::sort(merged_manifolds.begin(), merged_manifolds.begin(), []
+	std::sort(merged_manifolds.begin(), merged_manifolds.end(), []
 	(const ContactManifold& man_a, const ContactManifold& man_b)
 		{
-			if (man_a.access_order_a == man_b.access_order_b)
+			if (man_a.access_order_a == man_b.access_order_a)
 				return man_a.access_order_b < man_b.access_order_b;
-			return man_a.access_order_a < man_b.access_order_b;
+			return man_a.access_order_a < man_b.access_order_a;
 		});
 
 	// now I need to "just" do physics resolve
-	const int solver_iterations = 5; // 5-10 typical
-
+	const int solver_iterations = 7; // 5-10 typical
+	ctx.entt_sync();
 	for (int iteration = 0; iteration < solver_iterations; iteration++)
 	{
 		for (auto& manifold : merged_manifolds)
 		{
-			if (true)// wait what was I doing here? 
-			{
-
-			}
 			resolve_collision(manifold, ctx.get_delta_time());
 		}
 	}
-
+	timer.stop();
+	timer_resolve += timer.get_time_us();
 	// now realize the rb changes into position and rotation
 	float dt = (float)ctx.get_delta_time();
 	ctx.enqueue_parallel_each(WithRead<>{},
@@ -447,11 +823,50 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 				glm::translate(glm::mat4(1.0f), rb.position) *
 				glm::mat4_cast(rb.rotation) *
 				glm::scale(glm::mat4(1.0f), scale);
+
+			if (rb.is_dynamic_against(UINT8_MAX))
+			{
+				float lin_speed = glm::length(rb.linear_velocity);
+				float ang_speed = glm::length(rb.angular_velocity);
+
+				bool slow =
+					lin_speed < sleep_linear_threshold &&
+					ang_speed < sleep_angular_threshold;
+
+				if (!slow && rb.asleep)
+				{
+					rb.sleep_strikes = 0;
+					rb.asleep = false;
+				}
+				else if (slow && !rb.asleep)
+				{
+					++rb.sleep_strikes;
+
+					if (rb.sleep_strikes > rb.max_sleep_strikes)
+					{
+						rb.asleep = true;
+						rb.linear_velocity = glm::vec3(0);
+						rb.angular_velocity = glm::vec3(0);
+					}
+				}
+
+			}
 		}, 512);
 
 	if (count > 100)
 	{
 		PRINTLN("detected collisions {}", merged_manifolds.size());
+		PRINTLN("Spatial: {}us", timer_spatial);
+		PRINTLN("AABB: {}us", timer_AABB);
+		PRINTLN("OBB: {}us", timer_AABB);
+		PRINTLN("manifold: {}us", timer_manifold);
+		PRINTLN("resolve: {}us", timer_resolve);
+		timer_spatial = 0;
+		timer_AABB = 0;
+		timer_AABB = 0;
+		timer_manifold = 0;
+		timer_resolve = 0;
+
 		count = 0;
 	}
 
@@ -467,15 +882,16 @@ bool PhysicsSystem::overlap(const AABB& a, const AABB& b)
 		a.aabb_max.z < b.aabb_min.z || a.aabb_min.z > b.aabb_max.z);
 }
 
-int PhysicsSystem::divide_int(int input, size_t divisor)
+int PhysicsSystem::divide_int(float input, size_t divisor)
 {
+	
 	if (input >= 0)
 	{
-		return input / (int)divisor;
+		return (int)input / (int)divisor;
 	}
 	else
 	{
-		return -((-input) / (int)divisor);
+		return -((int)(-input) / (int)divisor);
 	}
 }
 
@@ -701,7 +1117,7 @@ void PhysicsSystem::generate_contact_points(ContactManifold& manifold, const OBB
 			if (dist < 0.01f) // Merge close points
 			{
 				//manifold.contact_points.erase(manifold.contact_points.begin() + j);
-				for (size_t k = j; k < manifold.num_contact_points; k--)
+				for (size_t k = j; k + 1 < manifold.num_contact_points; ++k)
 				{
 					if (k+1 < manifold.num_contact_points)
 					{
@@ -767,6 +1183,19 @@ void PhysicsSystem::resolve_collision(ContactManifold& manifold, float dt)
 	RigidBodyComponent* rb_b = manifold.rb_b;
 	if (!rb_a || !rb_b) return;
 
+	// fix for static objects
+	if (manifold.rb_a->is_static_against(manifold.rb_b->static_layers) 
+		|| manifold.rb_b->is_static_against(manifold.rb_a->static_layers)) return; // I think these are the same though
+	bool dynamic_a = manifold.rb_a->is_dynamic_against(manifold.rb_b->dynamic_layers) || manifold.rb_a->is_dynamic_against(manifold.rb_b->static_layers);
+	bool dynamic_b = manifold.rb_b->is_dynamic_against(manifold.rb_a->dynamic_layers) || manifold.rb_b->is_dynamic_against(manifold.rb_a->static_layers);
+	
+
+	float inverse_mass_a = dynamic_a ? rb_a->inverse_mass : 0.0f;
+	float inverse_mass_b = dynamic_b ? rb_b->inverse_mass : 0.0f;
+
+	glm::mat3 inverse_inertia_tensor_a = (float)dynamic_a * manifold.rb_a->inverse_inertia_tensor_local;
+	glm::mat3 inverse_inertia_tensor_b = (float)dynamic_b * manifold.rb_b->inverse_inertia_tensor_local;
+
 	// ==========================================
 	// MATERIAL PROPERTIES
 	// ==========================================
@@ -792,8 +1221,10 @@ void PhysicsSystem::resolve_collision(ContactManifold& manifold, float dt)
 		// Only correct a fraction of it (stability)
 		float correction_amount = excess_penetration * baumgarte_factor;
 
+		
+
 		// Total inverse mass (if both movable, they share the work)
-		float total_inv_mass = rb_a->inverse_mass + rb_b->inverse_mass;
+		float total_inv_mass = inverse_mass_a + inverse_mass_b; //rb_a->inverse_mass + rb_b->inverse_mass;
 
 		if (total_inv_mass > 0.0f) // At least one object is movable
 		{
@@ -804,8 +1235,8 @@ void PhysicsSystem::resolve_collision(ContactManifold& manifold, float dt)
 			// Lighter object (higher inverse_mass) moves MORE
 			// Heavier object (lower inverse_mass) moves LESS
 			// Immovable object (inverse_mass = 0) doesn't move at all
-			rb_a->position -= correction * (rb_a->inverse_mass / total_inv_mass);
-			rb_b->position += correction * (rb_b->inverse_mass / total_inv_mass);
+			rb_a->position -= correction * (inverse_mass_a / total_inv_mass);
+			rb_b->position += correction * (inverse_mass_b / total_inv_mass);
 		}
 	}
 
@@ -818,6 +1249,7 @@ void PhysicsSystem::resolve_collision(ContactManifold& manifold, float dt)
 	for (size_t i = 0; i < manifold.num_contact_points; i++)
 	{
 		const glm::vec3& contact_point = manifold.contact_points[i];
+
 		
 		// --------------------------------------
 		// 2.1: Calculate Moment Arms
@@ -874,12 +1306,12 @@ void PhysicsSystem::resolve_collision(ContactManifold& manifold, float dt)
 		// Transform: Rotate, apply local inertia, rotate back
 		glm::mat3 inv_inertia_world_a =
 			rotation_matrix_a *
-			rb_a->inverse_inertia_tensor_local *
+			inverse_inertia_tensor_a *
 			glm::transpose(rotation_matrix_a);
 
 		glm::mat3 inv_inertia_world_b =
 			rotation_matrix_b *
-			rb_b->inverse_inertia_tensor_local *
+			inverse_inertia_tensor_b *
 			glm::transpose(rotation_matrix_b);
 
 		// --------------------------------------
@@ -924,8 +1356,8 @@ void PhysicsSystem::resolve_collision(ContactManifold& manifold, float dt)
 			);
 
 		float effective_inv_mass =
-			rb_a->inverse_mass +
-			rb_b->inverse_mass +
+			inverse_mass_a +
+			inverse_mass_b +
 			angular_term;
 
 		// The impulse magnitude (scalar)
@@ -936,8 +1368,9 @@ void PhysicsSystem::resolve_collision(ContactManifold& manifold, float dt)
 		// Convert to vector (direction = contact normal)
 		glm::vec3 normal_impulse = impulse_magnitude * manifold.contact_normal;
 
-		float contact_weight = 1.0f / float(manifold.num_contact_points);
-		normal_impulse *= contact_weight;
+		// TAMING THE COLLISIONS
+		//float contact_weight = 1.0f / float(manifold.num_contact_points);
+		//normal_impulse *= contact_weight;
 
 		// --------------------------------------
 		// 2.5: Apply Normal Impulse
@@ -946,8 +1379,8 @@ void PhysicsSystem::resolve_collision(ContactManifold& manifold, float dt)
 		// Change in velocity: Δv = Δp / m = impulse * inverse_mass
 
 		// LINEAR: Apply impulse to linear velocity
-		rb_a->linear_velocity -= normal_impulse * rb_a->inverse_mass;
-		rb_b->linear_velocity += normal_impulse * rb_b->inverse_mass;
+		rb_a->linear_velocity -= normal_impulse * inverse_mass_a;
+		rb_b->linear_velocity += normal_impulse * inverse_mass_b;
 
 		// ANGULAR: Apply torque to angular velocity
 		// Torque: τ = r × impulse
@@ -988,7 +1421,7 @@ void PhysicsSystem::resolve_collision(ContactManifold& manifold, float dt)
 			glm::vec3 ang_vel_effect_t_b = glm::cross(inv_inertia_world_b * r_cross_t_b, r_b);
 
 			float effective_inv_mass_tangent =
-				rb_a->inverse_mass + rb_b->inverse_mass +
+				inverse_mass_a + inverse_mass_b +
 				glm::dot(ang_vel_effect_t_a + ang_vel_effect_t_b, tangent_direction);
 
 			// Friction tries to stop all tangential motion
@@ -1010,11 +1443,71 @@ void PhysicsSystem::resolve_collision(ContactManifold& manifold, float dt)
 			glm::vec3 friction_impulse = friction_impulse_magnitude * tangent_direction;
 
 			// Apply friction impulse (same as normal impulse, different direction)
-			rb_a->linear_velocity -= friction_impulse * rb_a->inverse_mass;
-			rb_b->linear_velocity += friction_impulse * rb_b->inverse_mass;
+			rb_a->linear_velocity -= friction_impulse * inverse_mass_a;
+			rb_b->linear_velocity += friction_impulse * inverse_mass_b;
 
 			rb_a->angular_velocity -= inv_inertia_world_a * glm::cross(r_a, friction_impulse);
 			rb_b->angular_velocity += inv_inertia_world_b * glm::cross(r_b, friction_impulse);
+		}
+
+		//if (!rb_a->is_dynamic_against(UINT8_MAX))
+		//{
+		//	float lin_speed = glm::length(rb_a->linear_velocity);
+		//	float ang_speed = glm::length(rb_a->angular_velocity);
+
+		//	bool slow =
+		//		lin_speed < sleep_linear_threshold &&
+		//		ang_speed < sleep_angular_threshold;
+
+		//	if (slow)
+		//	{
+		//		++rb_a->sleep_strikes;
+
+		//		if (rb_a->sleep_strikes > rb_a->max_sleep_strikes)
+		//		{
+		//			rb_a->asleep = true;
+		//			rb_a->linear_velocity = glm::vec3(0);
+		//			rb_a->angular_velocity = glm::vec3(0);
+		//		}
+		//	}
+		//	else
+		//	{
+		//		rb_a->sleep_strikes = 0.0f;
+		//		rb_a->asleep = false;
+		//	}
+		//}
+
+		if (rb_a->asleep)
+		{
+			float lin_speed = glm::length(rb_a->linear_velocity);
+			float ang_speed = glm::length(rb_a->angular_velocity);
+
+			if (lin_speed < sleep_linear_threshold &&
+				ang_speed < sleep_angular_threshold)
+			{
+				rb_a->asleep = true;
+			}
+			else
+			{
+				rb_a->asleep = false;
+				rb_a->sleep_strikes = 0;
+			}
+		}
+		if (rb_b->asleep)
+		{
+			float lin_speed = glm::length(rb_b->linear_velocity);
+			float ang_speed = glm::length(rb_b->angular_velocity);
+
+			if (lin_speed < sleep_linear_threshold &&
+				ang_speed < sleep_angular_threshold)
+			{
+				rb_b->asleep = true;
+			}
+			else
+			{
+				rb_a->asleep = false;
+				rb_a->sleep_strikes = 0;
+			}
 		}
 	}
 }

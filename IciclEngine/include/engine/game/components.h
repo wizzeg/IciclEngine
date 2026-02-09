@@ -159,26 +159,17 @@ struct TextureComponent
 struct MaterialComponent
 {
     hashed_string_64 hashed_path;
-    bool instance;
+    bool instance = false;
     bool mipmap = true;
-    bool load;
-};
-
-struct RenderableComponent
-{
-    uint32_t mesh_id;
-    uint32_t mateiral_id;
+    bool load = true;
 };
 
 struct CameraComponent
 {
     glm::mat4 projection_matrix = glm::mat4(1);
-
     glm::mat4 view_matrix = glm::mat4(1);
-
     hashed_string_64 frame_buffer_target = hashed_string_64("main_camera_buffer");
     glm::vec3 target_location = glm::vec3(0);
-    //entt::entity target_entity = entt::null;
     EntityReference target_entity = EntityReference(entt::null, 0);
 
     uint16_t render_priority = 5000;
@@ -191,6 +182,13 @@ struct CameraComponent
     bool clear_color_buffer = true;
     bool clear_depth_buffer = true;
 };
+
+struct RenderableComponent
+{
+    uint32_t mesh_id;
+    uint32_t mateiral_id;
+};
+
 
 struct ShadingLightComponent
 {
@@ -332,13 +330,39 @@ struct ProcessorComponent
     uint32_t processor_id;
 };
 
-struct BoundingBoxComponent
+struct alignas(8) BoundingBoxComponent
 {
     glm::vec3 offset = glm::vec3(0.0f);
     glm::vec3 box_extents = glm::vec3(1.0f);
+
+    uint8_t collision_layers = 0b00000000;
+    // these would be elsehwere, in like "CollisionResultComponent"
+    uint16_t tag = 0;
+
+    bool is_collision_against(uint8_t layers) const
+    {
+        return (collision_layers & layers) != 0;
+    }
+    bool is_collision_layer(uint8_t layer) const
+    {
+        if (layer > 7) return false;
+        return (collision_layers & (1u << layer)) != 0;
+    }
+    void set_collision_layer(uint8_t layer)
+    {
+        if (layer > 7) return;
+        uint8_t mask = (1u << layer);
+        collision_layers |= mask;
+    }
+    void clear_collision_layer(uint8_t layer)
+    {
+        if (layer > 7) return;
+        uint8_t mask = (1u << layer);
+        collision_layers &= ~mask;
+    }
 };
 
-struct RigidBodyComponent
+struct alignas(8) RigidBodyComponent
 {
     glm::vec3 position;
     glm::quat rotation;
@@ -354,7 +378,57 @@ struct RigidBodyComponent
     float restitution = 1.0f;
     float friction = 0.0f;
     bool recalculate_inverse_inertia_tensor = true;
-    bool kinematic = false;
+    uint8_t dynamic_layers = 0b00000000;
+    uint8_t static_layers = 0b00000000;
+    bool asleep = false;
+    uint16_t sleep_strikes = 0;
+    uint16_t max_sleep_strikes = 1000;
+
+    bool is_static_against(uint8_t layers) const
+    {
+        return (static_layers & layers) != 0;
+    }
+    bool is_dynamic_against(uint8_t layers) const
+    {
+        return (dynamic_layers & layers) != 0;
+    }
+
+    bool is_static_layer(uint8_t layer) const
+    {
+        if (layer > 7) return false;
+        return (static_layers & (1u << layer)) != 0;
+    }
+    void set_static_layer(uint8_t layer)
+    {
+        if (layer > 7) return;
+        uint8_t mask = (1u << layer);
+        dynamic_layers &= ~mask;
+        static_layers |= mask;
+    }
+    void clear_static_layer(uint8_t layer)
+    {
+        if (layer > 7) return;
+        uint8_t mask = (1u << layer);
+        static_layers &= ~mask;
+    }
+    bool is_dynamic_layer(uint8_t layer) const
+    {
+        if (layer > 7) return false;
+        return (dynamic_layers & (1u << layer)) != 0;
+    }
+    void set_dynamic_layer(uint8_t layer)
+    {
+        if (layer > 7) return;
+        uint8_t mask = (1u << layer);
+        static_layers &= ~mask;
+        dynamic_layers |= mask;
+    }
+    void clear_dynamic_layer(uint8_t layer)
+    {
+        if (layer > 7) return;
+        uint8_t mask = (1u << layer);
+        dynamic_layers &= ~mask;
+    }
 };
 
 // landscape component just has a position, and scale, then rendercomponent will hold quad and texture

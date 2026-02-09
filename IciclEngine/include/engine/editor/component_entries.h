@@ -141,7 +141,8 @@ REGISTER_COMPONENT(ProcessorComponent, ("Default"),
 
 REGISTER_COMPONENT(BoundingBoxComponent, ("Rendering, Physics"),
 	FIELD_CUSTOM("box offset: ", comp, offset, 1.75f, false),
-	FIELD_CUSTOM("box extents: ", comp, box_extents, 1.75f, false)
+	FIELD_CUSTOM("collision layers: ", comp, collision_layers, 1.75f, false),
+	FIELD_CUSTOM("tag: ", comp, tag, 1.75f, false)
 	)
 
 REGISTER_COMPONENT(RigidBodyComponent, ("Physics"),
@@ -154,6 +155,12 @@ REGISTER_COMPONENT(RigidBodyComponent, ("Physics"),
 	FIELD_CUSTOM("restitution: ", comp, restitution, 1.75f, false),
 	FIELD_CUSTOM("friction: ", comp, friction, 1.75f, false),
 	FIELD_HIDDEN(comp, inverse_inertia_tensor_local),
-	FIELD_CUSTOM("recalculate tensor: ", comp, recalculate_inverse_inertia_tensor, 1.f, false)
+	FIELD_CUSTOM("recalculate tensor: ", comp, recalculate_inverse_inertia_tensor, 1.f, false),
+	FIELD_CUSTOM("dynamic layers: ", comp, dynamic_layers, 1.f, false),
+	FIELD_CUSTOM("static layers: ", comp, static_layers, 1.f, false),
+	FIELD_CUSTOM("asleep: ", comp, asleep, 1.f, false),
+	FIELD_CUSTOM("sleep strikes: ", comp, sleep_strikes, 175.f, false),
+	FIELD_CUSTOM("max sleep strikes: ", comp, max_sleep_strikes, 175.f, false),
+
 
 	)

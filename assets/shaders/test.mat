@@ -3,9 +3,9 @@
     "shader_path": "./assets/shaders/deffered.shdr",
     "lit": true,
     "instanced": true,
-    "recieves_shadows": true,
-    "casts_shadows": true,
-    "transparent": true,
+    "recieves_shadows": false,
+    "casts_shadows": false,
+    "transparent": false,
     "deffered": true,
     "uniforms": [
         {
@@ -41,7 +41,7 @@
         {
             "location": "uSpecular",
             "type": "texture",
-            "value": "./assets/textures/robot/specular.png"
+            "value": "./assets/textures/robot/DefaultMaterial_Base_Color.png"
         },
         {
             "location": "max_shininess",
