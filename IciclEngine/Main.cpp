@@ -168,6 +168,14 @@ int main(void)
 					std::vector<hashed_string_64> texes = { "./assets/textures/awesomeface.png", "./assets/textures/wall.jpg", "./assets/textures/container.jpg" };
 					std::vector<hashed_string_64> mats = { "./assets/shaders/white.mat" }; // , "./assets/shaders/test2.mat" "./assets/shaders/test.mat", "./assets/shaders/testcopy.mat"
 					
+					auto processor = scene->new_scene_object("Single thread processor", true);
+					processor.lock()->add_component<SingleProcessorComponent>();
+
+					auto landscape = scene->new_scene_object("landscape", true);
+					auto ls = landscape.lock();
+					ls->add_component(TransformDynamicComponent{ glm::vec3(0, -200, 0), glm::vec3(512, 1, 512) });
+					ls->add_component(LandscapeComponent{ hashed_string_64("./assets/textures/landscape/heightmap.png"), 2, 0, 0 });
+					ls->add_component(RenderComponent{hashed_string_64("./assets/obj/landscape/landscape512.obj"), hashed_string_64("./assets/shaders/landscape/landscape.mat"), false, false, true});
 
 					{
 						auto obj = scene->new_scene_object("parent ", true);
@@ -222,11 +230,11 @@ int main(void)
 					}*/
 
 
-					for (size_t i = 0; i < 5000; i++)
+					for (size_t i = 0; i < 500; i++)
 					{
-						float x = -100.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 200.0f));
-						float y = -100.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 200.0f));; // Or random if you want variety
-						float z = -100.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 200.0f));; // Same here
+						float x = -200.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 400.0f));
+						float y = -200.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 400.0f));; // Or random if you want variety
+						float z = -200.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 400.0f));; // Same here
 						auto obj = scene->new_scene_object(std::string("model: ") + std::to_string(i), true);
 						auto scene_object = obj.lock();
 						size_t mesh_idx = std::rand() % meshes.size();

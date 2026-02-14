@@ -12,6 +12,7 @@
 #include <engine/utilities/macros.h>
 #include <condition_variable>
 #include <functional>
+#include <glad/glad.h>
 //TODO move the stuff for physics to another header, otherwise circular references
 
 using UniformValue = std::variant<bool, int, float, double, glm::vec3, glm::vec4, glm::quat, glm::mat4, glm::ivec1, std::string>;

@@ -270,6 +270,9 @@
     <ClCompile Include="src\engine\core\entity_command_buffer.cpp">
       <Filter>Source Files\engine\core</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\core\system_dependencies.cpp">
+      <Filter>Source Files\engine\core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\imgui-docking\imconfig.h">
@@ -501,6 +504,9 @@
       <Filter>Header Files\engine\core</Filter>
     </ClInclude>
     <ClInclude Include="include\engine\core\build_state.h">
+      <Filter>Header Files\engine\core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\core\system_dependencies.h">
       <Filter>Header Files\engine\core</Filter>
     </ClInclude>
   </ItemGroup>

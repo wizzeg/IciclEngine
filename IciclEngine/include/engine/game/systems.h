@@ -28,6 +28,9 @@ struct PhysicsSystem : SystemBase
 
 	std::vector<CellEntry> vectored_cell_entries;
 
+	std::vector<ContactManifold> landscape_manifolds;
+	std::vector<RigidBodyComponent> landscape_rbs;
+
 	HighResolutionTimer timer;
 
 	double timer_spatial = 0;
@@ -53,8 +56,9 @@ struct PhysicsSystem : SystemBase
 	void generate_contact_points(ContactManifold& manifold, const OBB& obb_a, const OBB& obb_b);
 
 	glm::mat3 calculate_box_inertia_tensor_inverse(float mass, const glm::vec3& half_extents);
-	void resolve_collision(ContactManifold& manifold, float dt);
+	void resolve_collision(ContactManifold& manifold, std::vector<RigidBodyComponent>& landscape_rbs, float dt);
 
+	void generate_landscape_collision();
 	size_t count = 0;
 };
 

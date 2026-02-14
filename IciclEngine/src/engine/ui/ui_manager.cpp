@@ -294,6 +294,7 @@ void UIManager::draw_object_properties()
 		ImGui::End();
 	}
 	if (!should_draw_object_properties) UISceneHierarchyDrawer::selected_scene_object.reset();
+	// POP ID missing when removing component.
 
 	//}
 	//ui_hiearchy_drawer.prev_selected_scene_object.reset();

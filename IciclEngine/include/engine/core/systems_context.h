@@ -15,351 +15,9 @@
 #include <engine/resources/data_structs.h>
 #include <type_traits>
 #include <engine/core/entity_command_buffer.h>
-
-template<typename...T> struct WithWrite {};
-template<typename...T> struct WithRead {};
-template<typename...T> struct Without {};
-template<typename...T> struct WithMod {}; // huh... these don't actually work in the general enqueue...
-
-struct SystemsContextDependencies
-{
-	std::vector<std::type_index> reading_components;
-	std::vector<std::type_index> writing_components;
-	std::mutex components_mutex;
-	//std::atomic<bool> block{false};
-
-	template<typename... Reads, typename... Writes>
-	bool add(WithRead<Reads...>, WithWrite<Writes...>, bool check_dependencies = true)
-	{
-		{
-			std::lock_guard comp_lock(components_mutex);
-			if (check_dependencies)
-				if (dependency_collision({ typeid(Reads)... }, { typeid(Writes)... }))
-					return false;
-			add_write_dependency<Writes...>();
-			add_read_dependency<Reads...>();
-		}
-		return true;
-	}
-
-	template<typename... Reads, typename... Writes, typename... Mods>
-	bool add(WithRead<Reads...>, WithWrite<Writes...>, WithMod<Mods...>, bool check_dependencies = true)
-	{
-		{
-			std::lock_guard comp_lock(components_mutex);
-			if (check_dependencies)
-				if (dependency_collision({ typeid(Reads)... }, { typeid(Writes)..., typeid(Mods)...}))
-					return false;
-			add_write_dependency<Writes..., Mods...>();
-			add_read_dependency<Reads...>();
-		}
-		return true;
-	}
-
-	template<typename... Reads>
-	bool add(WithRead<Reads...>, bool check_dependencies = true)
-	{
-		{
-			std::lock_guard comp_lock(components_mutex);
-			if (check_dependencies)
-				if (dependency_collision({ typeid(Reads)... }, { }))
-					return false;
-			add_read_dependency<Reads...>();
-		}
-		return true;
-	}
-
-	template<typename... Reads, typename... Mods>
-	bool add(WithRead<Reads...>, WithMod<Mods...>, bool check_dependencies = true)
-	{
-		{
-			std::lock_guard comp_lock(components_mutex);
-			if (check_dependencies)
-				if (dependency_collision({ typeid(Reads)... }, {typeid(Mods)...}))
-					return false;
-			add_write_dependency<Mods...>();
-			add_read_dependency<Reads...>();
-		}
-		return true;
-	}
-
-	template<typename... Writes>
-	bool add(WithWrite<Writes...>, bool check_dependencies = true)
-	{
-		{
-			std::lock_guard comp_lock(components_mutex);
-			if (check_dependencies)
-				if (dependency_collision({ }, { typeid(Writes)... }))
-					return false;
-			add_write_dependency<Writes...>();
-		}
-		return true;
-	}
-
-	template<typename... Writes, typename... Mods>
-	bool add(WithWrite<Writes...>, WithMod<Mods...>, bool check_dependencies = true)
-	{
-		{
-			std::lock_guard comp_lock(components_mutex);
-			if (check_dependencies)
-				if (dependency_collision({ }, { typeid(Writes)..., typeid(Mods)...}))
-					return false;
-			add_write_dependency<Writes...,typeid(Mods)...>();
-		}
-		return true;
-	}
+#include <engine/core/system_dependencies.h>
 
 
-
-
-	template<typename... Reads, typename... Writes>
-	void remove(WithRead<Reads...>, WithWrite<Writes...>)
-	{
-		{
-			std::lock_guard comp_lock(components_mutex);
-			remove_write_dependency<Writes...>();
-			remove_read_dependency<Reads...>();
-		}
-	}
-
-	template<typename... Reads, typename... Writes, typename...Mods>
-	void remove(WithRead<Reads...>, WithWrite<Writes...>, WithMod<Mods...>)
-	{
-		{
-			std::lock_guard comp_lock(components_mutex);
-			remove_write_dependency<Writes..., Mods...>();
-			remove_read_dependency<Reads...>();
-		}
-	}
-
-	template<typename... Reads>
-	void remove(WithRead<Reads...>)
-	{
-		{
-			std::lock_guard comp_lock(components_mutex);
-			remove_read_dependency<Reads...>();
-		}
-	}
-
-	template<typename... Reads, typename... Mods>
-	void remove(WithRead<Reads...>, WithMod<Mods...>)
-	{
-		{
-			std::lock_guard comp_lock(components_mutex);
-			remove_write_dependency<Mods...>();
-			remove_read_dependency<Reads...>();
-		}
-	}
-
-
-	template<typename... Writes>
-	void remove(WithWrite<Writes...>)
-	{
-		{
-			std::lock_guard comp_lock(components_mutex);
-			remove_write_dependency<Writes...>();
-		}
-	}
-
-	template<typename... Writes, typename... Mods>
-	void remove(WithWrite<Writes...>, WithMod<Mods...>)
-	{
-		{
-			std::lock_guard comp_lock(components_mutex);
-			remove_write_dependency<Writes..., Mods...>();
-		}
-	}
-protected:
-	bool dependency_collision(std::vector<std::type_index>&& a_reads, std::vector<std::type_index>&& a_writes) // have to actually check if component that is going to be added collides
-	{
-		//if (block.load(std::memory_order_acquire)) return true;
-		if (a_reads.size() > 0)
-		{
-			size_t write_index = 0;
-			std::sort(a_reads.begin(), a_reads.end(), std::less<std::type_index>{});
-			for (auto& read : a_reads)
-			{
-				for (; write_index < writing_components.size(); ++write_index)
-				{
-					auto& write = writing_components[write_index];
-					if (read == write)
-					{
-						return true;
-					}
-					else if (write > read)
-					{
-						break;
-					}
-				}
-			}
-		}
-
-		if (a_writes.size() > 0)
-		{
-			size_t read_index = 0;
-			std::sort(a_writes.begin(), a_writes.end(), std::less<std::type_index>{});
-			for (auto& write : a_writes)
-			{
-				for (; read_index < reading_components.size(); ++read_index)
-				{
-					auto& read = reading_components[read_index];
-					if (write == read)
-					{
-						return true;
-					}
-					else if (read > write)
-					{
-						break;
-					}
-				}
-			}
-			size_t write_index = 0;
-			for (auto& write : a_writes)
-			{
-				for (; write_index < writing_components.size(); ++write_index)
-				{
-					auto& comp_write = writing_components[write_index];
-					if (write == comp_write)
-					{
-						return true;
-					}
-					else if (comp_write > write)
-					{
-						break;
-					}
-				}
-			}
-		}
-		return false;
-	}
-
-	template<typename... Reads>
-	void add_read_dependency()
-	{
-		//std::type_index type = typeid(Read);
-		std::vector<std::type_index> types = {typeid(Reads)...};
-		std::sort(types.begin(), types.end());
-		size_t insertion_index = 0;
-		for (auto& type : types)
-		{
-			for (; insertion_index < reading_components.size(); ++insertion_index)
-			{
-				auto& read_comp = reading_components[insertion_index];
-				if (type < read_comp)
-				{
-					break;
-				}
-			}
-			reading_components.insert(reading_components.begin() + insertion_index, type);
-		}
-
-		// change to better insert
-		//std::vector<std::type_index> merged;
-		//merged.reserve(reading_components.size() + types.size());
-
-		//auto it_rc = reading_components.begin();
-		//auto it_t = types.begin();
-
-		//while (it_rc != reading_components.end() &&
-		//	it_t != types.end())
-		//{
-		//	if (*it_t < *it_rc)
-		//	{
-		//		merged.push_back(*it_t++);
-		//	}
-		//	else
-		//	{
-		//		merged.push_back(*it_rc++);
-		//	}
-		//}
-
-		//merged.insert(merged.end(), it_t, types.end());
-		//merged.insert(merged.end(), it_rc, reading_components.end());
-
-		//reading_components.swap(merged);
-	}
-	template<typename... Writes>
-	void add_write_dependency()
-	{
-		//std::type_index type = typeid(Write);
-		std::vector<std::type_index> types = { typeid(Writes)... };
-		std::sort(types.begin(), types.end());
-		size_t insertion_index = 0;
-		for (auto& type : types)
-		{
-			for (; insertion_index < writing_components.size(); ++insertion_index)
-			{
-				auto& write_comp = writing_components[insertion_index];
-				if (type < write_comp)
-				{
-					break;
-				}
-			}
-			writing_components.insert(writing_components.begin() + insertion_index, type);
-		}
-	}
-
-	template<typename... Reads>
-	void remove_read_dependency()
-	{
-		//std::type_index type = typeid(Read);
-		std::vector<std::type_index> types = {typeid(Reads)...};
-		std::sort(types.begin(), types.end());
-		size_t removal_index = 0;
-		for (auto& type : types)
-		{
-			for (; removal_index < reading_components.size(); ++removal_index)
-			{
-				auto& read_comp = reading_components[removal_index];
-				if (type == read_comp)
-				{
-					reading_components.erase(reading_components.begin() + removal_index); // not great..
-					break;
-				}
-			}
-		}
-
-		// change this to a std::remove_if
-		//auto erase_end = std::remove_if(reading_components.begin(), reading_components.end(),
-		//	[&](const auto& read_comp)
-		//	{
-		//		if (removal_index >= types.size())
-		//			return false;
-
-		//		while (removal_index < types.size() && read_comp > types[removal_index])
-		//			++removal_index;
-		//			
-		//		if (read_comp == types[removal_index])
-		//		{
-		//			++removal_index;
-		//			return true;
-		//		}
-		//		return false;
-		//	});
-		//reading_components.erase(erase_end, reading_components.end());
-
-	}
-	template<typename... Writes>
-	void remove_write_dependency()
-	{
-
-		std::vector<std::type_index> types = { typeid(Writes)... };
-		std::sort(types.begin(), types.end());
-		size_t removal_index = 0;
-		for (auto& type : types)
-		{
-			for (; removal_index < writing_components.size(); ++removal_index)
-			{
-				auto& write_comp = writing_components[removal_index];
-				if (type == write_comp)
-				{
-					writing_components.erase(writing_components.begin() + removal_index);
-					break;
-				}
-			}
-		}
-	}
-};
 
 struct SystemsContextStorage
 {
@@ -474,7 +132,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename... Mods, typename Func>
-	bool each(WithRead<Reads...> reads, WithMod<Mods...> mods, Func&& func)
+	bool each(WithRead<Reads...> reads, WithRef<Mods...> mods, Func&& func)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads, mods))
@@ -493,7 +151,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename... Excludes, typename Func>
-	bool each(WithRead<Reads...> reads, Without<Excludes...>, Func&& func)
+	bool each(WithRead<Reads...> reads, WithOut<Excludes...>, Func&& func)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads))
@@ -512,7 +170,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename... Excludes, typename... Mods, typename Func>
-	bool each(WithRead<Reads...> reads, Without<Excludes...>, WithMod<Mods...> mods, Func&& func)
+	bool each(WithRead<Reads...> reads, WithOut<Excludes...>, WithRef<Mods...> mods, Func&& func)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads, mods))
@@ -531,7 +189,7 @@ struct SystemsContext
 	}
 
 	template<typename... Writes, typename... Mods, typename Func>
-	bool each(WithWrite<Writes...> writes, WithMod<Mods...> mods, Func&& func)
+	bool each(WithWrite<Writes...> writes, WithRef<Mods...> mods, Func&& func)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(writes, mods))
@@ -550,7 +208,7 @@ struct SystemsContext
 	}
 
 	template<typename... Writes, typename... Excludes, typename Func>
-	bool each(WithWrite<Writes...> writes, Without<Excludes...>, Func&& func)
+	bool each(WithWrite<Writes...> writes, WithOut<Excludes...>, Func&& func)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(writes))
@@ -569,7 +227,7 @@ struct SystemsContext
 	}
 
 	template<typename... Writes, typename... Excludes, typename... Mods, typename Func>
-	bool each(WithWrite<Writes...> writes, Without<Excludes...>, WithMod<Mods...> mods, Func&& func)
+	bool each(WithWrite<Writes...> writes, WithOut<Excludes...>, WithRef<Mods...> mods, Func&& func)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(writes, mods))
@@ -607,7 +265,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename... Writes, typename...Mods, typename Func>
-	bool each(WithRead<Reads...> reads, WithWrite<Writes...> writes, WithMod<Mods...> mods, Func&& func)
+	bool each(WithRead<Reads...> reads, WithWrite<Writes...> writes, WithRef<Mods...> mods, Func&& func)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads, writes, mods))
@@ -626,7 +284,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename... Writes, typename... Excludes, typename Func>
-	bool each(WithRead<Reads...> reads, WithWrite<Writes...> writes, Without<Excludes...>, Func&& func)
+	bool each(WithRead<Reads...> reads, WithWrite<Writes...> writes, WithOut<Excludes...>, Func&& func)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads, writes))
@@ -645,7 +303,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename... Writes, typename... Excludes, typename... Mods, typename Func>
-	bool each(WithRead<Reads...> reads, WithWrite<Writes...> writes, Without<Excludes...>, WithMod<Mods...> mods, Func&& func)
+	bool each(WithRead<Reads...> reads, WithWrite<Writes...> writes, WithOut<Excludes...>, WithRef<Mods...> mods, Func&& func)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads, writes, mods))
@@ -686,7 +344,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename... Mods, typename Func>
-	bool enqueue_each(WithRead<Reads...> reads, WithMod<Mods...> mods, Func&& func)
+	bool enqueue_each(WithRead<Reads...> reads, WithRef<Mods...> mods, Func&& func)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads, mods))
@@ -707,7 +365,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename...Excludes, typename Func>
-	bool enqueue_each(WithRead<Reads...> reads, Without<Excludes...>, Func&& func)
+	bool enqueue_each(WithRead<Reads...> reads, WithOut<Excludes...>, Func&& func)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads))
@@ -728,7 +386,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename...Excludes, typename...Mods, typename Func>
-	bool enqueue_each(WithRead<Reads...> reads, Without<Excludes...>, WithMod<Mods...> mods, Func&& func)
+	bool enqueue_each(WithRead<Reads...> reads, WithOut<Excludes...>, WithRef<Mods...> mods, Func&& func)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads, mods))
@@ -770,7 +428,7 @@ struct SystemsContext
 	}
 
 	template<typename... Writes, typename...Mods, typename Func>
-	bool enqueue_each(WithWrite<Writes...>writes, WithMod<Mods...> mods, Func&& func)
+	bool enqueue_each(WithWrite<Writes...>writes, WithRef<Mods...> mods, Func&& func)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(writes, mods))
@@ -791,7 +449,7 @@ struct SystemsContext
 	}
 
 	template<typename... Writes, typename...Excludes, typename Func>
-	bool enqueue_each(WithWrite<Writes...> writes, Without<Excludes...>, Func&& func)
+	bool enqueue_each(WithWrite<Writes...> writes, WithOut<Excludes...>, Func&& func)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(writes))
@@ -812,7 +470,7 @@ struct SystemsContext
 	}
 
 	template<typename... Writes, typename...Excludes, typename...Mods, typename Func>
-	bool enqueue_each(WithWrite<Writes...> writes, Without<Excludes...>, WithMod<Mods...> mods, Func&& func)
+	bool enqueue_each(WithWrite<Writes...> writes, WithOut<Excludes...>, WithRef<Mods...> mods, Func&& func)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(writes, mods))
@@ -854,7 +512,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename... Writes, typename...Mods, typename Func>
-		bool enqueue_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, WithMod<Mods...> mods, Func&& func)
+		bool enqueue_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, WithRef<Mods...> mods, Func&& func)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads, writes, mods))
@@ -875,7 +533,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename... Writes, typename...Excludes, typename Func>
-	bool enqueue_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, Without<Excludes...>, Func&& func)
+	bool enqueue_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, WithOut<Excludes...>, Func&& func)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads, writes))
@@ -896,7 +554,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename... Writes, typename...Excludes, typename...Mods, typename Func>
-	bool enqueue_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, Without<Excludes...>, WithMod<Mods...> mods, Func&& func)
+	bool enqueue_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, WithOut<Excludes...>, WithRef<Mods...> mods, Func&& func)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads, writes, mods))
@@ -937,12 +595,13 @@ struct SystemsContext
 			size_t end = std::min(start + a_chunk_size, size);
 			systems_dependencies.add(reads, false);
 
-			entt_thread_pool->enqueue([this, start, end, reads, func]()
+			entt_thread_pool->enqueue([this, view, start, end, reads, func]()
 				{
-					auto view = registry.view<Reads...>();
+					//auto view = registry.view<Reads...>();
 					const auto* handle = view.handle();
-
-					for (size_t i = start; i < end; ++i)
+					if (!handle) return;
+					size_t size = handle->size();
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))
@@ -958,7 +617,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename...Mods, typename Func>
-	bool enqueue_parallel_each(WithRead<Reads...> reads, WithMod<Mods...> mods, Func&& func, size_t a_chunk_size = 256)
+	bool enqueue_parallel_each(WithRead<Reads...> reads, WithRef<Mods...> mods, Func&& func, size_t a_chunk_size = 256)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads, mods))
@@ -977,12 +636,13 @@ struct SystemsContext
 			size_t end = std::min(start + a_chunk_size, size);
 			systems_dependencies.add(reads, mods, false);
 
-			entt_thread_pool->enqueue([this, start, end, reads, mods, func]()
+			entt_thread_pool->enqueue([this, view, start, end, reads, mods, func]()
 				{
-					auto view = registry.view<Reads...>();
+					//auto view = registry.view<Reads...>();
 					const auto* handle = view.handle();
-
-					for (size_t i = start; i < end; ++i)
+					if (!handle) return;
+					size_t size = handle->size();
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))
@@ -998,7 +658,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename... Excludes, typename Func>
-	bool enqueue_parallel_each(WithRead<Reads...> reads, Without<Excludes...>, Func&& func, size_t a_chunk_size = 256)
+	bool enqueue_parallel_each(WithRead<Reads...> reads, WithOut<Excludes...>, Func&& func, size_t a_chunk_size = 256)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads))
@@ -1016,12 +676,13 @@ struct SystemsContext
 			size_t end = std::min(start + a_chunk_size, size);
 			systems_dependencies.add(reads, false);
 
-			entt_thread_pool->enqueue([this, start, end, reads, func]()
+			entt_thread_pool->enqueue([this, view,  start, end, reads, func]()
 				{
-					auto view = registry.view<Reads...>(entt::exclude<Excludes...>);
+					//auto view = registry.view<Reads...>(entt::exclude<Excludes...>);
 					const auto* handle = view.handle();
-
-					for (size_t i = start; i < end; ++i)
+					if (!handle) return;
+					size_t size = handle->size();
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))
@@ -1037,7 +698,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename... Excludes, typename...Mods, typename Func>
-	bool enqueue_parallel_each(WithRead<Reads...> reads, Without<Excludes...>, WithMod<Mods...> mods, Func&& func, size_t a_chunk_size = 256)
+	bool enqueue_parallel_each(WithRead<Reads...> reads, WithOut<Excludes...>, WithRef<Mods...> mods, Func&& func, size_t a_chunk_size = 256)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads, mods))
@@ -1055,12 +716,13 @@ struct SystemsContext
 			size_t end = std::min(start + a_chunk_size, size);
 			systems_dependencies.add(reads, mods, false);
 
-			entt_thread_pool->enqueue([this, start, end, reads, mods, func]()
+			entt_thread_pool->enqueue([this, view, start, end, reads, mods, func]()
 				{
-					auto view = registry.view<Reads...>(entt::exclude<Excludes...>);
+					//auto view = registry.view<Reads...>(entt::exclude<Excludes...>);
 					const auto* handle = view.handle();
-
-					for (size_t i = start; i < end; ++i)
+					if (!handle) return;
+					size_t size = handle->size();
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))
@@ -1094,12 +756,13 @@ struct SystemsContext
 			size_t end = std::min(start + a_chunk_size, size);
 			systems_dependencies.add(writes, false);
 
-			entt_thread_pool->enqueue([this, start, end, writes, func]()
+			entt_thread_pool->enqueue([this, view, start, end, writes, func]()
 				{
-					auto view = registry.view<Writes...>();
+					//auto view = registry.view<Writes...>();
 					const auto* handle = view.handle();
-
-					for (size_t i = start; i < end; ++i)
+					if (!handle) return;
+					size_t size = handle->size();
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))
@@ -1115,7 +778,7 @@ struct SystemsContext
 	}
 
 	template<typename... Writes, typename...Mods, typename Func>
-	bool enqueue_parallel_each(WithWrite<Writes...> writes, WithMod<Mods...> mods, Func&& func, size_t a_chunk_size = 256)
+	bool enqueue_parallel_each(WithWrite<Writes...> writes, WithRef<Mods...> mods, Func&& func, size_t a_chunk_size = 256)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(writes, mods))
@@ -1133,12 +796,13 @@ struct SystemsContext
 			size_t end = std::min(start + a_chunk_size, size);
 			systems_dependencies.add(writes, mods, false);
 
-			entt_thread_pool->enqueue([this, start, end, writes, mods, func]()
+			entt_thread_pool->enqueue([this, view, start, end, writes, mods, func]()
 				{
-					auto view = registry.view<Writes...>();
+					//auto view = registry.view<Writes...>();
 					const auto* handle = view.handle();
-
-					for (size_t i = start; i < end; ++i)
+					if (!handle) return;
+					size_t size = handle->size();
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))
@@ -1154,7 +818,7 @@ struct SystemsContext
 	}
 
 	template<typename... Writes, typename... Excludes, typename Func>
-	bool enqueue_parallel_each(WithWrite<Writes...> writes, Without<Excludes...>, Func&& func, size_t a_chunk_size = 256)
+	bool enqueue_parallel_each(WithWrite<Writes...> writes, WithOut<Excludes...>, Func&& func, size_t a_chunk_size = 256)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(writes))
@@ -1182,7 +846,6 @@ struct SystemsContext
 					// 1k rigid in debug...
 					if (!handle) return;
 					size_t size = handle->size();
-
 					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
@@ -1199,7 +862,7 @@ struct SystemsContext
 	}
 
 	template<typename... Writes, typename... Excludes, typename...Mods, typename Func>
-	bool enqueue_parallel_each(WithWrite<Writes...> writes, Without<Excludes...>, WithMod<Mods...> mods, Func&& func, size_t a_chunk_size = 256)
+	bool enqueue_parallel_each(WithWrite<Writes...> writes, WithOut<Excludes...>, WithRef<Mods...> mods, Func&& func, size_t a_chunk_size = 256)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(writes, mods))
@@ -1217,12 +880,13 @@ struct SystemsContext
 			size_t end = std::min(start + a_chunk_size, size);
 			systems_dependencies.add(writes, mods, false);
 
-			entt_thread_pool->enqueue([this, start, end, writes, mods, func]()
+			entt_thread_pool->enqueue([this, view, start, end, writes, mods, func]()
 				{
-					auto view = registry.view<Writes...>(entt::exclude<Excludes...>);
+					//auto view = registry.view<Writes...>(entt::exclude<Excludes...>);
 					const auto* handle = view.handle();
-
-					for (size_t i = start; i < end; ++i)
+					if (!handle) return;
+					size_t size = handle->size();
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))
@@ -1254,12 +918,13 @@ struct SystemsContext
 		{
 			size_t end = std::min(start + a_chunk_size, size);
 			systems_dependencies.add(reads, writes, false);
-			entt_thread_pool->enqueue([this, start, end, reads, writes, func]()
+			entt_thread_pool->enqueue([this, view, start, end, reads, writes, func]()
 				{
-					auto view = registry.view<Reads..., Writes...>();
+					//auto view = registry.view<Reads..., Writes...>();
 					const auto* handle = view.handle();
-
-					for (size_t i = start; i < end; ++i)
+					if (!handle) return;
+					size_t size = handle->size();
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))
@@ -1275,7 +940,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename... Writes, typename...Mods, typename Func>
-	bool enqueue_parallel_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, WithMod<Mods...> mods, Func&& func, size_t a_chunk_size = 256)
+	bool enqueue_parallel_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, WithRef<Mods...> mods, Func&& func, size_t a_chunk_size = 256)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads, writes, mods))
@@ -1291,12 +956,13 @@ struct SystemsContext
 		{
 			size_t end = std::min(start + a_chunk_size, size);
 			systems_dependencies.add(reads, writes, mods, false);
-			entt_thread_pool->enqueue([this, start, end, reads, writes, mods, func]()
+			entt_thread_pool->enqueue([this, view, start, end, reads, writes, mods, func]()
 				{
-					auto view = registry.view<Reads..., Writes...>();
+					//auto view = registry.view<Reads..., Writes...>();
 					const auto* handle = view.handle();
-
-					for (size_t i = start; i < end; ++i)
+					if (!handle) return;
+					size_t size = handle->size();
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))
@@ -1312,7 +978,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename... Writes, typename... Excludes, typename Func>
-	bool enqueue_parallel_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, Without<Excludes...>, Func&& func, size_t a_chunk_size = 256)
+	bool enqueue_parallel_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, WithOut<Excludes...>, Func&& func, size_t a_chunk_size = 256)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads, writes))
@@ -1329,12 +995,13 @@ struct SystemsContext
 		{
 			size_t end = std::min(start + a_chunk_size, size);
 			systems_dependencies.add(reads, writes, false);
-			entt_thread_pool->enqueue([this, start, end, reads, writes, func]()
+			entt_thread_pool->enqueue([this, view, start, end, reads, writes, func]()
 				{
-					auto view = registry.view<Reads..., Writes...>(entt::exclude<Excludes...>);
+					//auto view = registry.view<Reads..., Writes...>(entt::exclude<Excludes...>);
 					const auto* handle = view.handle();
-
-					for (size_t i = start; i < end; ++i)
+					if (!handle) return;
+					size_t size = handle->size();
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))
@@ -1350,7 +1017,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename... Writes, typename... Excludes, typename...Mods, typename Func>
-	bool enqueue_parallel_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, Without<Excludes...>, WithMod<Mods...> mods, Func&& func, size_t a_chunk_size = 256)
+	bool enqueue_parallel_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, WithOut<Excludes...>, WithRef<Mods...> mods, Func&& func, size_t a_chunk_size = 256)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads, writes, mods))
@@ -1367,12 +1034,13 @@ struct SystemsContext
 		{
 			size_t end = std::min(start + a_chunk_size, size);
 			systems_dependencies.add(reads, writes, mods, false);
-			entt_thread_pool->enqueue([this, start, end, reads, writes, mods, func]()
+			entt_thread_pool->enqueue([this, view, start, end, reads, writes, mods, func]()
 				{
-					auto view = registry.view<Reads..., Writes...>(entt::exclude<Excludes...>);
+					//auto view = registry.view<Reads..., Writes...>(entt::exclude<Excludes...>);
 					const auto* handle = view.handle();
-
-					for (size_t i = start; i < end; ++i)
+					if (!handle) return;
+					size_t size = handle->size();
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))
@@ -1409,13 +1077,15 @@ struct SystemsContext
 			if (start >= size) break;
 			systems_dependencies.add(reads, false);
 
-			entt_thread_pool->enqueue([this, thread_id, start, end, reads, func, &a_thread_local_data]()
+			entt_thread_pool->enqueue([this, view, thread_id, start, end, reads, func, &a_thread_local_data]()
 				{
-					auto view = registry.view<Reads...>();
+					//auto view = registry.view<Reads...>();
 					const auto* handle = view.handle();
 
 					auto& local_data = a_thread_local_data[thread_id];
-					for (size_t i = start; i < end; ++i)
+					if (!handle) return;
+					size_t size = handle->size();
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))
@@ -1431,7 +1101,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename...Mods, typename Func, typename T>
-	bool enqueue_parallel_data_each(WithRead<Reads...> reads, WithMod<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads)
+	bool enqueue_parallel_data_each(WithRead<Reads...> reads, WithRef<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads, mods))
@@ -1452,13 +1122,15 @@ struct SystemsContext
 			if (start >= size) break;
 			systems_dependencies.add(reads, mods, false);
 
-			entt_thread_pool->enqueue([this, thread_id, start, end, reads, mods, func, &a_thread_local_data]()
+			entt_thread_pool->enqueue([this, view, thread_id, start, end, reads, mods, func, &a_thread_local_data]()
 				{
-					auto view = registry.view<Reads...>();
+					//auto view = registry.view<Reads...>();
 					const auto* handle = view.handle();
 
 					auto& local_data = a_thread_local_data[thread_id];
-					for (size_t i = start; i < end; ++i)
+					if (!handle) return;
+					size_t size = handle->size();
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))
@@ -1474,7 +1146,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename... Excludes, typename Func, typename T>
-	bool enqueue_parallel_data_each(WithRead<Reads...> reads, Without<Excludes...>, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads)
+	bool enqueue_parallel_data_each(WithRead<Reads...> reads, WithOut<Excludes...>, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads))
@@ -1483,7 +1155,7 @@ struct SystemsContext
 			//PRINTLN("Forced sync");
 			entt_sync();
 		}
-		auto view = registry.view<Reads...>();
+		auto view = registry.view<Reads...>(entt::exclude<Excludes...>);
 		const auto* handle = view.handle();
 		size_t size = handle->size();
 		size_t chunk_size = (size + a_num_threads - 1) / a_num_threads;
@@ -1495,13 +1167,15 @@ struct SystemsContext
 			if (start >= size) break;
 			systems_dependencies.add(reads, false);
 
-			entt_thread_pool->enqueue([this, thread_id, start, end, reads, func, &a_thread_local_data]()
+			entt_thread_pool->enqueue([this, view, thread_id, start, end, reads, func, &a_thread_local_data]()
 				{
-					auto view = registry.view<Reads...>(entt::exclude<Excludes...>);
+					//auto view = registry.view<Reads...>(entt::exclude<Excludes...>);
 					const auto* handle = view.handle();
 
 					auto& local_data = a_thread_local_data[thread_id];
-					for (size_t i = start; i < end; ++i)
+					if (!handle) return;
+					size_t size = handle->size();
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))
@@ -1517,7 +1191,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename... Excludes, typename...Mods, typename Func, typename T>
-	bool enqueue_parallel_data_each(WithRead<Reads...> reads, Without<Excludes...>, WithMod<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads)
+	bool enqueue_parallel_data_each(WithRead<Reads...> reads, WithOut<Excludes...>, WithRef<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads, mods))
@@ -1526,7 +1200,7 @@ struct SystemsContext
 			//PRINTLN("Forced sync");
 			entt_sync();
 		}
-		auto view = registry.view<Reads...>();
+		auto view = registry.view<Reads...>(entt::exclude<Excludes...>);
 		const auto* handle = view.handle();
 		size_t size = handle->size();
 		size_t chunk_size = (size + a_num_threads - 1) / a_num_threads;
@@ -1538,13 +1212,15 @@ struct SystemsContext
 			if (start >= size) break;
 			systems_dependencies.add(reads, mods, false);
 
-			entt_thread_pool->enqueue([this, thread_id, start, end, reads, mods, func, &a_thread_local_data]()
+			entt_thread_pool->enqueue([this, view, thread_id, start, end, reads, mods, func, &a_thread_local_data]()
 				{
-					auto view = registry.view<Reads...>(entt::exclude<Excludes...>);
+					//auto view = registry.view<Reads...>(entt::exclude<Excludes...>);
 					const auto* handle = view.handle();
 
 					auto& local_data = a_thread_local_data[thread_id];
-					for (size_t i = start; i < end; ++i)
+					if (!handle) return;
+					size_t size = handle->size();
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))
@@ -1581,13 +1257,15 @@ struct SystemsContext
 			if (start >= size) break;
 			systems_dependencies.add(writes, false);
 
-			entt_thread_pool->enqueue([this, thread_id, start, end, writes, func, &a_thread_local_data]()
+			entt_thread_pool->enqueue([this, view, thread_id, start, end, writes, func, &a_thread_local_data]()
 				{
-					auto view = registry.view<Writes...>();
+					//auto view = registry.view<Writes...>();
 					const auto* handle = view.handle();
 
 					auto& local_data = a_thread_local_data[thread_id];
-					for (size_t i = start; i < end; ++i)
+					if (!handle) return;
+					size_t size = handle->size();
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))
@@ -1603,7 +1281,7 @@ struct SystemsContext
 	}
 
 	template<typename... Writes, typename...Mods, typename Func, typename T>
-	bool enqueue_parallel_data_each(WithWrite<Writes...> writes, WithMod<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads)
+	bool enqueue_parallel_data_each(WithWrite<Writes...> writes, WithRef<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(writes, mods))
@@ -1624,13 +1302,15 @@ struct SystemsContext
 			if (start >= size) break;
 			systems_dependencies.add(writes, mods, false);
 
-			entt_thread_pool->enqueue([this, thread_id, start, end, writes, mods, func, &a_thread_local_data]()
+			entt_thread_pool->enqueue([this, view, thread_id, start, end, writes, mods, func, &a_thread_local_data]()
 				{
-					auto view = registry.view<Writes...>();
+					//auto view = registry.view<Writes...>();
 					const auto* handle = view.handle();
 
 					auto& local_data = a_thread_local_data[thread_id];
-					for (size_t i = start; i < end; ++i)
+					if (!handle) return;
+					size_t size = handle->size();
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))
@@ -1646,7 +1326,7 @@ struct SystemsContext
 	}
 
 	template<typename... Writes, typename... Excludes, typename Func, typename T>
-	bool enqueue_parallel_data_each(WithWrite<Writes...> writes, Without<Excludes...>, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads)
+	bool enqueue_parallel_data_each(WithWrite<Writes...> writes, WithOut<Excludes...>, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(writes))
@@ -1655,7 +1335,7 @@ struct SystemsContext
 			//PRINTLN("Forced sync");
 			entt_sync();
 		}
-		auto view = registry.view<Writes...>();
+		auto view = registry.view<Writes...>(entt::exclude<Excludes...>);
 		const auto* handle = view.handle();
 		size_t size = handle->size();
 		size_t chunk_size = (size + a_num_threads - 1) / a_num_threads;
@@ -1667,13 +1347,15 @@ struct SystemsContext
 			if (start >= size) break;
 			systems_dependencies.add(writes, false);
 
-			entt_thread_pool->enqueue([this, thread_id, start, end, writes, func, &a_thread_local_data]()
+			entt_thread_pool->enqueue([this, view, thread_id, start, end, writes, func, &a_thread_local_data]()
 				{
-					auto view = registry.view<Writes...>(entt::exclude<Excludes...>);
+					//auto view = registry.view<Writes...>(entt::exclude<Excludes...>);
 					const auto* handle = view.handle();
 
 					auto& local_data = a_thread_local_data[thread_id];
-					for (size_t i = start; i < end; ++i)
+					if (!handle) return;
+					size_t size = handle->size();
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))
@@ -1689,7 +1371,7 @@ struct SystemsContext
 	}
 
 	template<typename... Writes, typename... Excludes, typename...Mods, typename Func, typename T>
-	bool enqueue_parallel_data_each(WithWrite<Writes...> writes, Without<Excludes...>, WithMod<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads)
+	bool enqueue_parallel_data_each(WithWrite<Writes...> writes, WithOut<Excludes...>, WithRef<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(writes, mods))
@@ -1698,7 +1380,7 @@ struct SystemsContext
 			//PRINTLN("Forced sync");
 			entt_sync();
 		}
-		auto view = registry.view<Writes...>();
+		auto view = registry.view<Writes...>(entt::exclude<Excludes...>);
 		const auto* handle = view.handle();
 		size_t size = handle->size();
 		size_t chunk_size = (size + a_num_threads - 1) / a_num_threads;
@@ -1710,13 +1392,15 @@ struct SystemsContext
 			if (start >= size) break;
 			systems_dependencies.add(writes, mods, false);
 
-			entt_thread_pool->enqueue([this, thread_id, start, end, writes, mods, func, &a_thread_local_data]()
+			entt_thread_pool->enqueue([this, view, thread_id, start, end, writes, mods, func, &a_thread_local_data]()
 				{
-					auto view = registry.view<Writes...>(entt::exclude<Excludes...>);
+					//auto view = registry.view<Writes...>(entt::exclude<Excludes...>);
 					const auto* handle = view.handle();
 
 					auto& local_data = a_thread_local_data[thread_id];
-					for (size_t i = start; i < end; ++i)
+					if (!handle) return;
+					size_t size = handle->size();
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))
@@ -1751,13 +1435,15 @@ struct SystemsContext
 			size_t end = std::min(start + chunk_size, size);
 			if (start >= size) break;
 			systems_dependencies.add(reads, writes, false);
-			entt_thread_pool->enqueue([this, thread_id, start, end, reads, writes, func, &a_thread_local_data]()
+			entt_thread_pool->enqueue([this, view, thread_id, start, end, reads, writes, func, &a_thread_local_data]()
 				{
-					auto view = registry.view<Reads..., Writes...>();
+					//auto view = registry.view<Reads..., Writes...>();
 					const auto* handle = view.handle();
 
 					auto& local_data = a_thread_local_data[thread_id];
-					for (size_t i = start; i < end; ++i)
+					if (!handle) return;
+					size_t size = handle->size();
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))
@@ -1773,7 +1459,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename... Writes, typename...Mods, typename Func, typename T>
-	bool enqueue_parallel_data_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, WithMod<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads)
+	bool enqueue_parallel_data_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, WithRef<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads, writes, mods))
@@ -1792,13 +1478,15 @@ struct SystemsContext
 			size_t end = std::min(start + chunk_size, size);
 			if (start >= size) break;
 			systems_dependencies.add(reads, writes, mods, false);
-			entt_thread_pool->enqueue([this, thread_id, start, end, reads, writes, mods, func, &a_thread_local_data]()
+			entt_thread_pool->enqueue([this, view, thread_id, start, end, reads, writes, mods, func, &a_thread_local_data]()
 				{
-					auto view = registry.view<Reads..., Writes...>();
+					//auto view = registry.view<Reads..., Writes...>();
 					const auto* handle = view.handle();
 
 					auto& local_data = a_thread_local_data[thread_id];
-					for (size_t i = start; i < end; ++i)
+					if (!handle) return;
+					size_t size = handle->size();
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))
@@ -1814,7 +1502,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename... Writes, typename... Excludes, typename Func, typename T>
-	bool enqueue_parallel_data_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, Without<Excludes...>, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads)
+	bool enqueue_parallel_data_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, WithOut<Excludes...>, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads, writes))
@@ -1823,7 +1511,7 @@ struct SystemsContext
 			//PRINTLN("Forced sync");
 			entt_sync();
 		}
-		auto view = registry.view<Reads..., Writes...>();
+		auto view = registry.view<Reads..., Writes...>(entt::exclude<Excludes...>);
 		const auto* handle = view.handle();
 		size_t size = handle->size();
 		size_t chunk_size = (size + a_num_threads - 1) / a_num_threads;
@@ -1834,13 +1522,15 @@ struct SystemsContext
 			size_t end = std::min(start + chunk_size, size);
 			if (start >= size) break;
 			systems_dependencies.add(reads, writes, false);
-			entt_thread_pool->enqueue([this, thread_id, start, end, reads, writes, func]()
+			entt_thread_pool->enqueue([this, view, thread_id, start, end, reads, writes, func]()
 				{
-					auto view = registry.view<Reads..., Writes...>(entt::exclude<Excludes...>);
+					//auto view = registry.view<Reads..., Writes...>(entt::exclude<Excludes...>);
 					const auto* handle = view.handle();
 
 					auto& local_data = a_thread_local_data[thread_id];
-					for (size_t i = start; i < end; ++i)
+					if (!handle) return;
+					size_t size = handle->size();
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))
@@ -1856,7 +1546,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename... Writes, typename... Excludes, typename...Mods, typename Func, typename T>
-	bool enqueue_parallel_data_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, Without<Excludes...>, WithMod<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads)
+	bool enqueue_parallel_data_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, WithOut<Excludes...>, WithRef<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads, writes, mods))
@@ -1865,7 +1555,7 @@ struct SystemsContext
 			//PRINTLN("Forced sync");
 			entt_sync();
 		}
-		auto view = registry.view<Reads..., Writes...>();
+		auto view = registry.view<Reads..., Writes...>(entt::exclude<Excludes...>);
 		const auto* handle = view.handle();
 		size_t size = handle->size();
 		size_t chunk_size = (size + a_num_threads - 1) / a_num_threads;
@@ -1876,13 +1566,15 @@ struct SystemsContext
 			size_t end = std::min(start + chunk_size, size);
 			if (start >= size) break;
 			systems_dependencies.add(reads, writes, mods, false);
-			entt_thread_pool->enqueue([this, thread_id, start, end, reads, writes, mods, func]()
+			entt_thread_pool->enqueue([this, view, thread_id, start, end, reads, writes, mods, func]()
 				{
-					auto view = registry.view<Reads..., Writes...>(entt::exclude<Excludes...>);
+					//auto view = registry.view<Reads..., Writes...>(entt::exclude<Excludes...>);
 					const auto* handle = view.handle();
 
 					auto& local_data = a_thread_local_data[thread_id];
-					for (size_t i = start; i < end; ++i)
+					if (!handle) return;
+					size_t size = handle->size();
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))
@@ -1919,13 +1611,15 @@ struct SystemsContext
 			if (start >= size) break;
 			systems_dependencies.add(reads,false);
 
-			entt_thread_pool->enqueue([this, thread_id, start, end, reads, func, &a_thread_local_data]()
+			entt_thread_pool->enqueue([this, view, thread_id, start, end, reads, func, &a_thread_local_data]()
 				{
-					auto view = registry.view<Reads...>();
+					//auto view = registry.view<Reads...>();
 					const auto* handle = view.handle();
 
 					auto& local_data = a_thread_local_data[thread_id];
-					for (size_t i = start; i < end; ++i)
+					if (!handle) return;
+					size_t size = handle->size();
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))
@@ -1941,7 +1635,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename...Mods, typename Func, typename T>
-	bool enqueue_parallel_data_each(WithRead<Reads...> reads, WithMod<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order)
+	bool enqueue_parallel_data_each(WithRead<Reads...> reads, WithRef<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads, mods))
@@ -1962,15 +1656,17 @@ struct SystemsContext
 			if (start >= size) break;
 			systems_dependencies.add(reads, mods, false);
 
-			entt_thread_pool->enqueue([this, thread_id, start, end, reads, mods, func, &a_thread_local_data]()
+			entt_thread_pool->enqueue([this, view, thread_id, start, end, reads, mods, func, &a_thread_local_data]()
 				{
-					auto view = registry.view<Reads...>();
+					//auto view = registry.view<Reads...>();
 					const auto* handle = view.handle();
 
 					auto& local_data = a_thread_local_data[thread_id];
 					//size_t new_size = std::max(local_data.size() + 1, start - end);
 					//local_data.reserve(new_size);
-					for (size_t i = start; i < end; ++i)
+					if (!handle) return;
+					size_t size = handle->size();
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))
@@ -1986,7 +1682,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename... Excludes, typename Func, typename T>
-	bool enqueue_parallel_data_each(WithRead<Reads...> reads, Without<Excludes...>, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order)
+	bool enqueue_parallel_data_each(WithRead<Reads...> reads, WithOut<Excludes...>, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads))
@@ -1995,7 +1691,7 @@ struct SystemsContext
 			//PRINTLN("Forced sync");
 			entt_sync();
 		}
-		auto view = registry.view<Reads...>();
+		auto view = registry.view<Reads...>(entt::exclude<Excludes...>);
 		const auto* handle = view.handle();
 		size_t size = handle->size();
 		size_t chunk_size = (size + a_num_threads - 1) / a_num_threads;
@@ -2007,13 +1703,15 @@ struct SystemsContext
 			if (start >= size) break;
 			systems_dependencies.add(reads, false);
 
-			entt_thread_pool->enqueue([this, thread_id, start, end, reads, func, &a_thread_local_data]()
+			entt_thread_pool->enqueue([this, view, thread_id, start, end, reads, func, &a_thread_local_data]()
 				{
-					auto view = registry.view<Reads...>(entt::exclude<Excludes...>);
+					//auto view = registry.view<Reads...>(entt::exclude<Excludes...>);
 					const auto* handle = view.handle();
 
 					auto& local_data = a_thread_local_data[thread_id];
-					for (size_t i = start; i < end; ++i)
+					if (!handle) return;
+					size_t size = handle->size();
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))
@@ -2029,7 +1727,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename... Excludes, typename...Mods, typename Func, typename T>
-	bool enqueue_parallel_data_each(WithRead<Reads...> reads, Without<Excludes...>, WithMod<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order)
+	bool enqueue_parallel_data_each(WithRead<Reads...> reads, WithOut<Excludes...>, WithRef<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads, mods))
@@ -2038,7 +1736,7 @@ struct SystemsContext
 			//PRINTLN("Forced sync");
 			entt_sync();
 		}
-		auto view = registry.view<Reads...>();
+		auto view = registry.view<Reads...>(entt::exclude<Excludes...>);
 		const auto* handle = view.handle();
 		size_t size = handle->size();
 		size_t chunk_size = (size + a_num_threads - 1) / a_num_threads;
@@ -2050,13 +1748,14 @@ struct SystemsContext
 			if (start >= size) break;
 			systems_dependencies.add(reads, mods, false);
 
-			entt_thread_pool->enqueue([this, thread_id, start, end, reads, mods, func, &a_thread_local_data]()
+			entt_thread_pool->enqueue([this, view, thread_id, start, end, reads, mods, func, &a_thread_local_data]()
 				{
-					auto view = registry.view<Reads...>(entt::exclude<Excludes...>);
+					//auto view = registry.view<Reads...>(entt::exclude<Excludes...>);
 					const auto* handle = view.handle();
-
 					auto& local_data = a_thread_local_data[thread_id];
-					for (size_t i = start; i < end; ++i)
+					if (!handle) return;
+					size_t size = handle->size();
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))
@@ -2093,13 +1792,15 @@ struct SystemsContext
 			if (start >= size) break;
 			systems_dependencies.add(writes, false);
 
-			entt_thread_pool->enqueue([this, thread_id, start, end, writes, func, &a_thread_local_data]()
+			entt_thread_pool->enqueue([this, view, thread_id, start, end, writes, func, &a_thread_local_data]()
 				{
-					auto view = registry.view<Writes...>();
+					//auto view = registry.view<Writes...>();
 					const auto* handle = view.handle();
 
 					auto& local_data = a_thread_local_data[thread_id];
-					for (size_t i = start; i < end; ++i)
+					if (!handle) return;
+					size_t size = handle->size();
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))
@@ -2115,7 +1816,7 @@ struct SystemsContext
 	}
 
 	template<typename... Writes, typename...Mods, typename Func, typename T>
-	bool enqueue_parallel_data_each(WithWrite<Writes...> writes, WithMod<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order)
+	bool enqueue_parallel_data_each(WithWrite<Writes...> writes, WithRef<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(writes, mods))
@@ -2136,13 +1837,15 @@ struct SystemsContext
 			if (start >= size) break;
 			systems_dependencies.add(writes, mods, false);
 
-			entt_thread_pool->enqueue([this, thread_id, start, end, writes, mods, func, &a_thread_local_data]()
+			entt_thread_pool->enqueue([this, view, thread_id, start, end, writes, mods, func, &a_thread_local_data]()
 				{
-					auto view = registry.view<Writes...>();
+					//auto view = registry.view<Writes...>();
 					const auto* handle = view.handle();
 
 					auto& local_data = a_thread_local_data[thread_id];
-					for (size_t i = start; i < end; ++i)
+					if (!handle) return;
+					size_t size = handle->size();
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))
@@ -2158,7 +1861,7 @@ struct SystemsContext
 	}
 
 	template<typename... Writes, typename... Excludes, typename Func, typename T>
-	bool enqueue_parallel_data_each(WithWrite<Writes...> writes, Without<Excludes...>, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order)
+	bool enqueue_parallel_data_each(WithWrite<Writes...> writes, WithOut<Excludes...>, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(writes))
@@ -2167,7 +1870,7 @@ struct SystemsContext
 			//PRINTLN("Forced sync");
 			entt_sync();
 		}
-		auto view = registry.view<Writes...>();
+		auto view = registry.view<Writes...>(entt::exclude<Excludes...>);
 		const auto* handle = view.handle();
 		size_t size = handle->size();
 		size_t chunk_size = (size + a_num_threads - 1) / a_num_threads;
@@ -2179,13 +1882,15 @@ struct SystemsContext
 			if (start >= size) break;
 			systems_dependencies.add(writes, false);
 
-			entt_thread_pool->enqueue([this, thread_id, start, end, writes, func, &a_thread_local_data]()
+			entt_thread_pool->enqueue([this, view, thread_id, start, end, writes, func, &a_thread_local_data]()
 				{
-					auto view = registry.view<Writes...>(entt::exclude<Excludes...>);
+					//auto view = registry.view<Writes...>(entt::exclude<Excludes...>);
 					const auto* handle = view.handle();
 
 					auto& local_data = a_thread_local_data[thread_id];
-					for (size_t i = start; i < end; ++i)
+					if (!handle) return;
+					size_t size = handle->size();
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))
@@ -2201,7 +1906,7 @@ struct SystemsContext
 	}
 
 	template<typename... Writes, typename... Excludes, typename...Mods, typename Func, typename T>
-	bool enqueue_parallel_data_each(WithWrite<Writes...> writes, Without<Excludes...>, WithMod<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order)
+	bool enqueue_parallel_data_each(WithWrite<Writes...> writes, WithOut<Excludes...>, WithRef<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(writes, mods))
@@ -2210,7 +1915,7 @@ struct SystemsContext
 			//PRINTLN("Forced sync");
 			entt_sync();
 		}
-		auto view = registry.view<Writes...>();
+		auto view = registry.view<Writes...>(entt::exclude<Excludes...>);
 		const auto* handle = view.handle();
 		size_t size = handle->size();
 		size_t chunk_size = (size + a_num_threads - 1) / a_num_threads;
@@ -2222,13 +1927,15 @@ struct SystemsContext
 			if (start >= size) break;
 			systems_dependencies.add(writes, mods, false);
 
-			entt_thread_pool->enqueue([this, thread_id, start, end, writes, mods, func, &a_thread_local_data]()
+			entt_thread_pool->enqueue([this, view, thread_id, start, end, writes, mods, func, &a_thread_local_data]()
 				{
-					auto view = registry.view<Writes...>(entt::exclude<Excludes...>);
+					//auto view = registry.view<Writes...>(entt::exclude<Excludes...>);
 					const auto* handle = view.handle();
 
 					auto& local_data = a_thread_local_data[thread_id];
-					for (size_t i = start; i < end; ++i)
+					if (!handle) return;
+					size_t size = handle->size();
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))
@@ -2263,13 +1970,15 @@ struct SystemsContext
 			size_t end = std::min(start + chunk_size, size);
 			if (start >= size) break;
 			systems_dependencies.add(reads, writes, false);
-			entt_thread_pool->enqueue([this, thread_id, start, end, reads, writes, func, &a_thread_local_data]()
+			entt_thread_pool->enqueue([this, view, thread_id, start, end, reads, writes, func, &a_thread_local_data]()
 				{
-					auto view = registry.view<Reads..., Writes...>();
+					//auto view = registry.view<Reads..., Writes...>();
 					const auto* handle = view.handle();
 
 					auto& local_data = a_thread_local_data[thread_id];
-					for (size_t i = start; i < end; ++i)
+					if (!handle) return;
+					size_t size = handle->size();
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))
@@ -2285,7 +1994,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename... Writes, typename...Mods, typename Func, typename T>
-	bool enqueue_parallel_data_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, WithMod<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order)
+	bool enqueue_parallel_data_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, WithRef<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads, writes, mods))
@@ -2304,13 +2013,15 @@ struct SystemsContext
 			size_t end = std::min(start + chunk_size, size);
 			if (start >= size) break;
 			systems_dependencies.add(reads, writes, mods, false);
-			entt_thread_pool->enqueue([this, thread_id, start, end, reads, writes, mods, func, &a_thread_local_data]()
+			entt_thread_pool->enqueue([this, view, thread_id, start, end, reads, writes, mods, func, &a_thread_local_data]()
 				{
-					auto view = registry.view<Reads..., Writes...>();
+					//auto view = registry.view<Reads..., Writes...>();
 					const auto* handle = view.handle();
 
 					auto& local_data = a_thread_local_data[thread_id];
-					for (size_t i = start; i < end; ++i)
+					if (!handle) return;
+					size_t size = handle->size();
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))
@@ -2326,7 +2037,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename... Writes, typename... Excludes, typename Func, typename T>
-	bool enqueue_parallel_data_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, Without<Excludes...>, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order)
+	bool enqueue_parallel_data_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, WithOut<Excludes...>, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads, writes))
@@ -2335,7 +2046,7 @@ struct SystemsContext
 			//PRINTLN("Forced sync");
 			entt_sync();
 		}
-		auto view = registry.view<Reads..., Writes...>();
+		auto view = registry.view<Reads..., Writes...>(entt::exclude<Excludes...>);
 		const auto* handle = view.handle();
 		size_t size = handle->size();
 		size_t chunk_size = (size + a_num_threads - 1) / a_num_threads;
@@ -2346,13 +2057,15 @@ struct SystemsContext
 			size_t end = std::min(start + chunk_size, size);
 			if (start >= size) break;
 			systems_dependencies.add(reads, writes, false);
-			entt_thread_pool->enqueue([this, thread_id, start, end, reads, writes, func]()
+			entt_thread_pool->enqueue([this, view, thread_id, start, end, reads, writes, func]()
 				{
-					auto view = registry.view<Reads..., Writes...>(entt::exclude<Excludes...>);
+					//auto view = registry.view<Reads..., Writes...>(entt::exclude<Excludes...>);
 					const auto* handle = view.handle();
 
 					auto& local_data = a_thread_local_data[thread_id];
-					for (size_t i = start; i < end; ++i)
+					if (!handle) return;
+					size_t size = handle->size();
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))
@@ -2368,7 +2081,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename... Writes, typename... Excludes, typename...Mods, typename Func, typename T>
-	bool enqueue_parallel_data_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, Without<Excludes...>, WithMod<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order)
+	bool enqueue_parallel_data_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, WithOut<Excludes...>, WithRef<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order)
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads, writes, mods))
@@ -2377,7 +2090,7 @@ struct SystemsContext
 			//PRINTLN("Forced sync");
 			entt_sync();
 		}
-		auto view = registry.view<Reads..., Writes...>();
+		auto view = registry.view<Reads..., Writes...>(entt::exclude<Excludes...>);
 		const auto* handle = view.handle();
 		size_t size = handle->size();
 		size_t chunk_size = (size + a_num_threads - 1) / a_num_threads;
@@ -2388,13 +2101,15 @@ struct SystemsContext
 			size_t end = std::min(start + chunk_size, size);
 			if (start >= size) break;
 			systems_dependencies.add(reads, writes, mods, false);
-			entt_thread_pool->enqueue([this, thread_id, start, end, reads, writes, mods, func]()
+			entt_thread_pool->enqueue([this, view, thread_id, start, end, reads, writes, mods, func]()
 				{
-					auto view = registry.view<Reads..., Writes...>(entt::exclude<Excludes...>);
+					//auto view = registry.view<Reads..., Writes...>(entt::exclude<Excludes...>);
 					const auto* handle = view.handle();
 
 					auto& local_data = a_thread_local_data[thread_id];
-					for (size_t i = start; i < end; ++i)
+					if (!handle) return;
+					size_t size = handle->size();
+					for (size_t i = start; i < end && i < size; ++i)
 					{
 						const entt::entity entity = (*handle)[i];
 						if (view.contains(entity))

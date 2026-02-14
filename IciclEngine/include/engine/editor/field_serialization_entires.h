@@ -43,7 +43,7 @@ REGISTER_TYPE_SERIALIZER(EntityReference,
         value.entity = entt::null;
     }
 )
-
+// need to change these into strings, with a map to look up. string -> typeid, and typeid -> string .. to make it consistent
 REGISTER_TYPE_SERIALIZER(glm::ivec1,
     {
         j = json::array();

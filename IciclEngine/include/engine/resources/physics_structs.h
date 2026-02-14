@@ -2,13 +2,13 @@
 
 #include <engine/resources/data_structs.h>
 #include <engine/game/components.h>
-struct AABB
+struct alignas(8) AABB
 {
 	glm::vec3 aabb_min;
 	glm::vec3 aabb_max;
 };
 
-struct OBB
+struct alignas(8) OBB
 {
 	glm::vec3 obb_center;
 	glm::quat obb_rotation;
@@ -19,16 +19,19 @@ struct ContactManifold
 {
 	entt::entity entity_a = entt::null;
 	entt::entity entity_b = entt::null;
-	size_t access_order_a;
-	size_t access_order_b;
-	RigidBodyComponent* rb_a;
-	RigidBodyComponent* rb_b;
+	size_t access_order_a = SIZE_MAX;
+	size_t access_order_b = SIZE_MAX;
+	RigidBodyComponent* rb_a = nullptr;
+	RigidBodyComponent* rb_b = nullptr;
 	glm::vec3 contact_normal = glm::vec3(0.f);
 	float penetration_depth = 0.f;
-	glm::vec3 contact_points[8];
+	glm::vec3 contact_points[8] = { glm::vec3(0),glm::vec3(0),glm::vec3(0),glm::vec3(0),glm::vec3(0),glm::vec3(0),glm::vec3(0),glm::vec3(0) };
 	//std::vector<glm::vec3> contact_points;
 	uint8_t num_contact_points = 0;
 	bool has_collision = false;
+	bool landscape_a = false;
+	bool landscape_b = false;
+	size_t landscape_index = 0;
 };
 
 struct PhysicsLayers
@@ -133,6 +136,8 @@ struct BroadPhasePair
 	OBB obb_b;
 	PhysicsLayers layers_a;
 	PhysicsLayers layers_b;
+	bool landscape_a;
+	bool landscape_b;
 
 	bool const operator==(const BroadPhasePair& other) const {
 		return entity_a == other.entity_a && entity_b == other.entity_b;
@@ -252,4 +257,14 @@ struct CellEntry
 	//std::vector<LargeEntry> large_entries;
 	std::vector<MassiveEntry> massive_entries;
 };
+struct StartStop
+{
+	size_t start;
+	size_t stop;
+};
 
+struct PartitionedCellEntry
+{
+	CellEntry entries;
+	std::vector<StartStop> start_stops;
+};

@@ -897,28 +897,33 @@ void GameThread::editor_time()
 	// update all the stuff like in ecs for transform
 	for (auto& entity : editor_entities)
 	{
-		auto& world_pos = *entity.transform;
-		if (world_pos.overide_quaternion)
+		
+		if (entity.transform)
 		{
-			world_pos.rotation_euler_do_not_use.x = std::fmod(world_pos.rotation_euler_do_not_use.x, 360.0f);
-			if (world_pos.rotation_euler_do_not_use.x < 0.0f) world_pos.rotation_euler_do_not_use.x += 360.0f;
-			world_pos.rotation_euler_do_not_use.y = std::fmod(world_pos.rotation_euler_do_not_use.y, 360.0f);
-			if (world_pos.rotation_euler_do_not_use.y < 0.0f) world_pos.rotation_euler_do_not_use.y += 360.0f;
-			world_pos.rotation_euler_do_not_use.z = std::fmod(world_pos.rotation_euler_do_not_use.z, 360.0f);
-			if (world_pos.rotation_euler_do_not_use.z < 0.0f) world_pos.rotation_euler_do_not_use.z += 360.0f;
+			auto& world_pos = *entity.transform;
+			if (world_pos.overide_quaternion)
+			{
+				world_pos.rotation_euler_do_not_use.x = std::fmod(world_pos.rotation_euler_do_not_use.x, 360.0f);
+				if (world_pos.rotation_euler_do_not_use.x < 0.0f) world_pos.rotation_euler_do_not_use.x += 360.0f;
+				world_pos.rotation_euler_do_not_use.y = std::fmod(world_pos.rotation_euler_do_not_use.y, 360.0f);
+				if (world_pos.rotation_euler_do_not_use.y < 0.0f) world_pos.rotation_euler_do_not_use.y += 360.0f;
+				world_pos.rotation_euler_do_not_use.z = std::fmod(world_pos.rotation_euler_do_not_use.z, 360.0f);
+				if (world_pos.rotation_euler_do_not_use.z < 0.0f) world_pos.rotation_euler_do_not_use.z += 360.0f;
 
-			world_pos.rotation_quat = glm::quat(glm::radians(world_pos.rotation_euler_do_not_use));
-		}
-		if (world_pos.get_euler_angles) /// 0.5ms
-		{
-			world_pos.rotation_euler_do_not_use = glm::degrees(glm::eulerAngles(world_pos.rotation_quat));
-			//if (world_pos.overide_quaternion)
-			//	world_pos.get_euler_angles = false;
-		}
+				world_pos.rotation_quat = glm::quat(glm::radians(world_pos.rotation_euler_do_not_use));
+			}
+			if (world_pos.get_euler_angles) /// 0.5ms
+			{
+				world_pos.rotation_euler_do_not_use = glm::degrees(glm::eulerAngles(world_pos.rotation_quat));
+				//if (world_pos.overide_quaternion)
+				//	world_pos.get_euler_angles = false;
+			}
 
-		world_pos.model_matrix = glm::translate(glm::mat4(1.0f), world_pos.position); // 0.47ms
-		world_pos.model_matrix *= glm::mat4_cast(world_pos.rotation_quat); // 1.47ms
-		world_pos.model_matrix = glm::scale(world_pos.model_matrix, world_pos.scale); // 0.4ms
+			world_pos.model_matrix = glm::translate(glm::mat4(1.0f), world_pos.position); // 0.47ms
+			world_pos.model_matrix *= glm::mat4_cast(world_pos.rotation_quat); // 1.47ms
+			world_pos.model_matrix = glm::scale(world_pos.model_matrix, world_pos.scale); // 0.4ms
+		}
+		
 	}
 
 	// generate all the render requests

@@ -161,6 +161,14 @@ REGISTER_COMPONENT(RigidBodyComponent, ("Physics"),
 	FIELD_CUSTOM("asleep: ", comp, asleep, 1.f, false),
 	FIELD_CUSTOM("sleep strikes: ", comp, sleep_strikes, 175.f, false),
 	FIELD_CUSTOM("max sleep strikes: ", comp, max_sleep_strikes, 175.f, false),
-
-
 	)
+
+REGISTER_COMPONENT(LandscapeComponent, ("Physics"),
+	FIELD_CUSTOM("hashed path: ", comp, height_map_path, 1.75f, false),
+	FIELD_HIDDEN(comp, map),
+	FIELD_CUSTOM("static_layers: ", comp, static_layers, 1.75f, false),
+	FIELD_CUSTOM("dynamic_layers: ", comp, dynamic_layers, 1.75f, false),
+	FIELD_CUSTOM("collision_layers: ", comp, collision_layers, 1.75f, false),
+	FIELD_CUSTOM("max_height: ", comp, max_height, 1.75f, false),
+	FIELD_CUSTOM("has_loaded_height_map: ", comp, has_loaded_height_map, 1.75f, false)
+)

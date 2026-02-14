@@ -156,10 +156,14 @@
     <ClCompile Include="..\vendor\stb_image\stb_image.cpp" />
     <ClCompile Include="content_browser.cpp" />
     <ClCompile Include="game_engine.cpp" />
-    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Main.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">/bigobj %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
     <ClCompile Include="src\engine\core\entity_command_buffer.cpp" />
     <ClCompile Include="src\engine\core\game_thread.cpp" />
     <ClCompile Include="src\engine\core\systems_context.cpp" />
+    <ClCompile Include="src\engine\core\system_dependencies.cpp" />
     <ClCompile Include="src\engine\core\worker_thread.cpp" />
     <ClCompile Include="src\engine\editor\component_factory.cpp" />
     <ClCompile Include="src\engine\editor\field_serialization_registry.cpp" />
@@ -217,6 +221,7 @@
     <ClInclude Include="include\engine\core\entity_command_buffer.h" />
     <ClInclude Include="include\engine\core\game_thread.h" />
     <ClInclude Include="include\engine\core\systems_context.h" />
+    <ClInclude Include="include\engine\core\system_dependencies.h" />
     <ClInclude Include="include\engine\core\worker_thread.h" />
     <ClInclude Include="include\engine\editor\componentdata_macros.h" />
     <ClInclude Include="include\engine\editor\component_entries.h" />

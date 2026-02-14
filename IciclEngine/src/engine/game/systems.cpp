@@ -7,7 +7,7 @@
 #include <engine/utilities/macros.h>
 #include <engine/resources/data_structs.h>
 #include <stb_image/stb_image.h>
-
+#include <glm/gtc/matrix_transform.hpp>  
 
 bool MoveSystem::execute(SystemsContext& ctx)
 {
@@ -66,7 +66,7 @@ bool TransformCalculationSystem::execute(SystemsContext& ctx)
 {
 	//ctx.enqueue_parallel_each(
 	//	WithWrite<TransformDynamicComponent>{},
-	//	Without<CameraComponent>{},
+	//	WithOut<CameraComponent>{},
 	//	[](entt::entity entity, TransformDynamicComponent& world_pos)
 	//	{
 	//		if (world_pos.overide_quaternion)
@@ -97,7 +97,7 @@ bool TransformCalculationSystem::execute(SystemsContext& ctx)
 	//	[&ctx]() {
 			return ctx.enqueue_parallel_each(
 				WithWrite<TransformDynamicComponent>{},
-				Without<CameraComponent>{},
+				WithOut<CameraComponent>{},
 				[](const entt::entity entity, TransformDynamicComponent& world_pos)
 				{
 					if (world_pos.overide_quaternion)
@@ -142,141 +142,13 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 	vectored_spatial_collider_partitioning.clear();
 	vectored_spatial_collider_partitioning.resize(num_threads);
 
-	//vectored_collider_data.clear();
-	//vectored_spatial_map.clear();
-	//vectored_collider_data.resize(num_threads);
-	//vectored_spatial_map.resize(num_threads);
 	count++;
 	if (count > 100)
 	{
 		PRINTLN("launching threads");
 
 	}
-	//ctx.enqueue_parallel_data_each(
-	//	WithRead<TransformDynamicComponent, BoundingBoxComponent>{},
-	//	WithMod<RigidBodyComponent>{},
-	//	[this, &ctx](SpatialColliderPartitioning& spatial_partition,
-	//		const entt::entity entity,
-	//		const TransformDynamicComponent& transform,
-	//		const BoundingBoxComponent& bbox, // need rigid body? No not really
-	//		size_t visit_order)
-	//	{
-	//		auto& cells = spatial_partition.spatial_cells;
 
-	//		const glm::mat4& model_matrix = transform.model_matrix;
-
-	//		
-	//		glm::mat3 scaled_rotation = glm::mat3(model_matrix); // I should not use model matrix, should use quat I think
-	//		glm::mat3 rotation; // need to remove scaling from model matrix
-	//		rotation[0] = glm::normalize(model_matrix[0]);
-	//		rotation[1] = glm::normalize(model_matrix[1]);  
-	//		rotation[2] = glm::normalize(model_matrix[2]);
-	//		glm::vec3 scale;
-	//		scale.x = glm::length(model_matrix[0]);
-	//		scale.y = glm::length(model_matrix[1]);  
-	//		scale.z = glm::length(model_matrix[2]);
-	//		glm::vec3 half_extents = bbox.box_extents * 0.5f * scale;
-	//		glm::quat obb_rotation = glm::quat_cast(rotation);
-	//		glm::vec3 offset_rot_scaled_box = glm::vec3(model_matrix * glm::vec4(bbox.offset, 1.f));
-
-	//		glm::mat3 max_scaled_rotation = glm::mat3(
-	//			glm::abs(rotation[0]),
-	//			glm::abs(rotation[1]),
-	//			glm::abs(rotation[2])
-	//		);
-
-	//		glm::vec3 world_half_extents = max_scaled_rotation * half_extents;
-
-	//		glm::vec3 aabb_min = offset_rot_scaled_box - world_half_extents;
-	//		glm::vec3 aabb_max = offset_rot_scaled_box + world_half_extents;
-	//		AABB aabb{ aabb_min, aabb_max };
-	//		OBB obb{ offset_rot_scaled_box, obb_rotation, half_extents };
-	//		PhysicsLayers physics_layers{ 0, 0, bbox.collision_layers };
-
-	//		CellCoordinates min_cell = {
-	//		static_cast<int>(divide_int(aabb_min.x, cell_size)),
-	//		static_cast<int>(divide_int(aabb_min.y, cell_size)),
-	//		static_cast<int>(divide_int(aabb_min.z, cell_size))
-	//		};
-
-	//		CellCoordinates max_cell = {
-	//			static_cast<int>(divide_int(aabb_max.x, cell_size)),
-	//			static_cast<int>(divide_int(aabb_max.y, cell_size)),
-	//			static_cast<int>(divide_int(aabb_max.z, cell_size))
-	//		};
-	//		auto rb = ctx.try_get<RigidBodyComponent>(entity);
-	//		if (rb)
-	//		{
-	//			if (rb->recalculate_inverse_inertia_tensor)
-	//			{
-	//				rb->recalculate_inverse_inertia_tensor = false;
-	//				rb->inverse_inertia_tensor_local = calculate_box_inertia_tensor_inverse(rb->mass, half_extents);
-	//			}
-	//			physics_layers.static_layers = rb->static_layers;
-	//			physics_layers.dynamic_layers = rb->dynamic_layers;
-
-	//		}
-	//		// really need to make this into std::pair<cell, other> in a vector instead of unordered_map
-	//		for (int x = min_cell.x; x <= max_cell.x; ++x)
-	//			for (int y = min_cell.y; y <= max_cell.y; ++y)
-	//				for (int z = min_cell.z; z <= max_cell.z; ++z)
-	//					cells[{x, y, z}].emplace_back(
-	//						entity, visit_order, rb,
-	//						aabb, obb, physics_layers);
-	//		
-	//		//for (int x = min_cell.x; x <= max_cell.x; ++x)
-	//		//	for (int y = min_cell.y; y <= max_cell.y; ++y)
-	//		//		for (int z = min_cell.z; z <= max_cell.z; ++z)
-	//		//			cells[{x, y, z}].emplace_back(
-	//		//				entity, visit_order, ctx.try_get<RigidBodyComponent>(entity),
-	//		//				aabb, obb, physics_layers);// need to filter out none-rigid bodies
-	//		
-
-	//	}, vectored_spatial_collider_partitioning, num_threads, true);
-
-
-	//
-	//// also do one for all landscapes...
-	//
-	//ctx.entt_sync(); // could push vectored_spatial_map into the storage to retrrieve this->vectored_spatial_map later to combine
-
-	//// merge spatial data first.
-	//SpatialColliderPartitioning merged_partition;
-
-	//for (auto& thread_partition : vectored_spatial_collider_partitioning)
-	//{
-	//	for (auto& [cell_coord, colliders] 
-	//		: thread_partition.spatial_cells) 
-	//	{
-	//		auto& merged_cell = merged_partition.spatial_cells[cell_coord];
-	//		merged_cell.insert(merged_cell.end(), colliders.begin(), colliders.end());
-	//	}
-	//}
-	//// then split it into chunks
-	//// so this was a bad idea, I need to fix this later, to avoid this whole thing.
-	//std::unordered_map<CellCoordinates, std::vector<CellCoordinates>> chunks;
-
-	//// I don't want to do this, needs to be removed later
-	//for (auto& [cell_coord, _] : merged_partition.spatial_cells)
-	//{
-	//	CellCoordinates cunk
-	//	{
-	//		divide_int(cell_coord.x, chunk_size),
-	//		divide_int(cell_coord.y, chunk_size),
-	//		divide_int(cell_coord.z, chunk_size)
-	//	};
-	//	chunks[cunk].push_back(cell_coord);
-	//}
-	//std::vector<std::pair<CellCoordinates, std::vector<CellCoordinates>>> vec_chunks;
-	//vec_chunks.reserve(chunks.size());
-	//// split up the chunks...
-	//for (auto& [chunk, coords] : chunks)
-	//{
-	//	vec_chunks.emplace_back(chunk, std::move(coords));
-	//}
-	//std::vector<std::vector<BroadPhasePair>> thread_pairs(num_threads);
-	//const size_t chunks_per_thread = (vec_chunks.size() + num_threads - 1) / num_threads;
-	//// would be nice to note start unecessary threads..
 
 	{
 		std::vector<std::pair<size_t, size_t>> sizes;
@@ -305,7 +177,8 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 
 	ctx.enqueue_parallel_data_each(
 		WithRead<TransformDynamicComponent, BoundingBoxComponent>{},
-		WithMod<RigidBodyComponent>{},
+		WithOut<LandscapeComponent>{},
+		WithRef<RigidBodyComponent>{},
 		[this, &ctx](CellEntry& cell_entires,
 			const entt::entity entity,
 			const TransformDynamicComponent& transform,
@@ -391,8 +264,7 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 		},vectored_cell_entries, num_threads, true);
 	ctx.entt_sync();
 
-	timer.stop();
-	timer_spatial += timer.get_time_us();
+
 
 
 	if (count > 100)
@@ -419,29 +291,27 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 	}
 
 	for (size_t i = 0; i < vectored_cell_entries.size(); i++) {
-		merged_cell_entries.small_entries.insert(merged_cell_entries.small_entries.end(), 
-			std::make_move_iterator(vectored_cell_entries[i].small_entries.begin()),
-			std::make_move_iterator(vectored_cell_entries[i].small_entries.end()));
-		merged_cell_entries.massive_entries.insert(merged_cell_entries.massive_entries.end(),
-			std::make_move_iterator(vectored_cell_entries[i].massive_entries.begin()),
-			std::make_move_iterator(vectored_cell_entries[i].massive_entries.end()));
+		if (vectored_cell_entries[i].small_entries.size() > 0)
+		{
+			merged_cell_entries.small_entries.insert(merged_cell_entries.small_entries.end(),
+				std::make_move_iterator(vectored_cell_entries[i].small_entries.begin()),
+				std::make_move_iterator(vectored_cell_entries[i].small_entries.end()));
+		}
+		if (vectored_cell_entries[i].massive_entries.size() > 0)
+		{
+			merged_cell_entries.massive_entries.insert(merged_cell_entries.massive_entries.end(),
+				std::make_move_iterator(vectored_cell_entries[i].massive_entries.begin()),
+				std::make_move_iterator(vectored_cell_entries[i].massive_entries.end()));
+		}
 	}
 
-	
-	//std::sort(merged_cell_entries.small_entries.begin(),
-	//	merged_cell_entries.small_entries.end(),
-	//	[](const SmallEntry& a, const SmallEntry& b) {
-	//		return a.entity < b.entity;
-	//	});
-	//auto new_end = std::unique(merged_cell_entries.small_entries.begin(),
-	//	merged_cell_entries.small_entries.end(),
-	//	[](const SmallEntry& a, const SmallEntry& b) {
-	//		return a.entity == b.entity;
-	//	});
-	//merged_cell_entries.small_entries.erase(new_end, merged_cell_entries.small_entries.end());
-	std::sort(merged_cell_entries.small_entries.begin(), merged_cell_entries.small_entries.end());
 
-	std::vector<CellEntry> chunks;
+	std::sort(merged_cell_entries.small_entries.begin(),
+		merged_cell_entries.small_entries.end());
+
+	//std::vector<CellEntry> chunks;
+	std::vector<StartStop> partitioned_entries;
+	partitioned_entries.reserve(merged_cell_entries.small_entries.size());
 	{
 		size_t i = 0;
 		if (!merged_cell_entries.small_entries.empty())
@@ -449,61 +319,504 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 			auto& small_entries = merged_cell_entries.small_entries;
 			CellCoordinates cell_coord = small_entries[0].coordinates;
 			size_t chunk_index = 0;
-			chunks.emplace_back();
-			chunks[chunk_index].small_entries.reserve(10);
-			size_t chunk_max = 512;
-			size_t chunk_count = 0;
+			//chunks.emplace_back();
+			//chunks[chunk_index].small_entries.reserve(10);
+			//size_t chunk_max = 512;
+			//size_t chunk_count = 0;
+			size_t start = 0;
+			partitioned_entries.push_back({0 ,0});
 			for (size_t i = 0; i < small_entries.size(); i++)
 			{
 				if (cell_coord != small_entries[i].coordinates)
 				{
-					chunks.emplace_back();
-					chunks[++chunk_index].small_entries.reserve(10);
+					partitioned_entries.back().stop = i;
+					//chunks.emplace_back(); // this is pretty bad, I should rather just record the "cut off"
+					//chunks[++chunk_index].small_entries.reserve(10);
 					cell_coord = small_entries[i].coordinates;
-					chunk_count = 0;
+					//chunk_count = 0;
+
+					partitioned_entries.push_back({i, 0}); // this should be better
 				}
-				chunks[chunk_index].small_entries.push_back(std::move(small_entries[i]));
+				//chunks[chunk_index].small_entries.push_back(std::move(small_entries[i]);
 			}
+			partitioned_entries.back().stop = small_entries.size();
 		}
 	}
 
-
-
+	timer.stop();
+	timer_spatial += timer.get_time_us();
 	timer.start();
+	landscape_manifolds.clear();
+	landscape_rbs.clear();
+	CellEntry new_merged_cell_entries;
+	new_merged_cell_entries.small_entries.resize(merged_cell_entries.small_entries.size());
+	new_merged_cell_entries.massive_entries.resize(merged_cell_entries.massive_entries.size());
+	std::memcpy(
+		new_merged_cell_entries.small_entries.data(), 
+		merged_cell_entries.small_entries.data(), 
+		merged_cell_entries.small_entries.size() 
+		* sizeof(SmallEntry));
+
+	std::memcpy(
+		new_merged_cell_entries.massive_entries.data(),
+		merged_cell_entries.massive_entries.data(),
+		merged_cell_entries.massive_entries.size()
+		* sizeof(MassiveEntry));
+
+	landscape_rbs.reserve(merged_cell_entries.small_entries.size() + merged_cell_entries.massive_entries.size());
+	landscape_manifolds.reserve(merged_cell_entries.small_entries.size() + merged_cell_entries.massive_entries.size());
+	// here I can start the landscape stuff ... single threaded? Probably
+	
+	// should maybe make it parallel data each instead, but I don't care anymore, I just want this pain to end
+	size_t landscapes = 0;
+	ctx.enqueue_each(
+		WithRead<const TransformDynamicComponent, const LandscapeComponent>{},
+		[this, &new_merged_cell_entries, &landscapes](
+			const entt::entity entity, 
+			const TransformDynamicComponent& transform,
+			const LandscapeComponent& landscape)
+		{
+			landscapes++;
+			if (!landscape.has_loaded_height_map) return;
+			AABB landscape_aabb; 
+			const auto& map = landscape.map;
+			if (map.height_map.empty()) return;
+			landscape_aabb.aabb_min = (transform.position - (transform.scale * 0.5f));
+			landscape_aabb.aabb_min.y = transform.position.y;
+			landscape_aabb.aabb_max = (transform.position + (transform.scale * 0.5f));
+			landscape_aabb.aabb_max.y = transform.position.y + landscape.max_height;
+
+			float cell_x = transform.scale.x / (map.width - 1);
+			float cell_z = transform.scale.z / (map.height - 1);
+
+
+			const auto& small_entries = new_merged_cell_entries.small_entries;
+			const auto& massive_entries = new_merged_cell_entries.massive_entries;
+
+			for (size_t i = 0; i < small_entries.size(); i++)
+			{
+				const auto& entry = small_entries[i];
+				//glm::bvec3 nans = glm::isnan(entry.aabb.aabb_max);
+				//if (nans.x && nans.y && nans.z)
+				//{
+				//	PRINTLN("NAN detected");
+				//}
+				bool _overlap = overlap(landscape_aabb, entry.aabb);
+				if (_overlap)
+				{
+
+					// Step 1: Convert world space AABB to local space (relative to landscape min corner)
+					glm::vec3 local_min = entry.aabb.aabb_min - landscape_aabb.aabb_min;
+					glm::vec3 local_max = entry.aabb.aabb_max - landscape_aabb.aabb_min;
+
+					// Step 2: Normalize to [0, 1] range by dividing by scale
+					float norm_min_x = local_min.x / transform.scale.x; // 0 to 1
+					float norm_max_x = local_max.x / transform.scale.x;
+					float norm_min_z = local_min.z / transform.scale.z;
+					float norm_max_z = local_max.z / transform.scale.z;
+
+					// Step 3: Convert to grid indices
+					size_t start_x = (size_t)glm::clamp(norm_min_x * (map.width - 1), 0.0f, (float)(map.width - 1));
+					size_t end_x = (size_t)glm::clamp(norm_max_x * (map.width - 1), 0.0f, (float)(map.width - 1));
+					size_t start_z = (size_t)glm::clamp(norm_min_z * (map.height - 1), 0.0f, (float)(map.height - 1));
+					size_t end_z = (size_t)glm::clamp(norm_max_z * (map.height - 1), 0.0f, (float)(map.height - 1));
+
+					start_x = (size_t)std::max(((int)start_x - 1), 0);
+					start_z = (size_t)std::max(((int)start_z - 1), 0);
+					end_x = (size_t)std::min(((int)end_x + 1), ((int)map.width - 1));
+					end_z = (size_t)std::min(((int)end_z + 1), ((int)map.height -1));
+					if ((start_x == end_x) && (start_z = end_z))
+					{
+						continue;
+					}
+
+					// Step 4: Find max height in this region
+					float max_height = -1;
+					float max_height2 = -1;
+					float max_height3 = -1;
+					glm::ivec2 max_height_xz = glm::ivec2(-1);
+					glm::ivec2 max_height2_xz = glm::ivec2(-1);
+					glm::ivec2 max_height3_xz = glm::ivec2(-1);
+					// do I really want this? I guess...
+					// nah, lets just sample neighboring ones + outer shell
+					for (size_t x = start_x; x <= end_x; x++)
+					{
+						for (size_t z = start_z; z <= end_z; z++)
+						{
+							size_t index = z * map.width + x;
+							if (index >= map.height_map.size())
+							{
+								continue;
+							}
+							//if (map.height_map[index] * landscape.max_height > max_height)
+							//{
+							//	max_height3 = max_height2;
+							//	max_height2 = max_height;
+							//	max_height = map.height_map[index] * landscape.max_height;
+							//	max_height3_xz = max_height2_xz;
+							//	max_height2_xz = max_height_xz;
+							//	max_height_xz = glm::ivec2(x, z);
+							//}
+							//else if (map.height_map[index] * landscape.max_height > max_height2)
+							//{
+							//	max_height3 = max_height2;
+							//	max_height2 = map.height_map[index] * landscape.max_height;
+							//	max_height3_xz = max_height2_xz;
+							//	max_height2_xz = glm::ivec2(x, z);
+							//}
+							//else if ((map.height_map[index] * landscape.max_height > max_height3))
+							//{
+							//	max_height3 = map.height_map[index] * landscape.max_height;;
+							//	max_height3_xz = glm::ivec2(x, z);
+							//}
+							max_height = std::max(max_height, map.height_map[index] * landscape.max_height); // or however you access heights
+						}
+					}
+					if (max_height >= 0 && entry.aabb.aabb_min.y < (transform.position.y + max_height + 10.f))
+					{
+						// Find the closest grid point to calculate slope
+						glm::vec3 entry_abb_center = ((entry.aabb.aabb_min + entry.aabb.aabb_max) * 0.5f);
+						glm::vec3 local_center = entry_abb_center - landscape_aabb.aabb_min;
+						float norm_x = local_center.x / transform.scale.x;
+						float norm_z = local_center.z / transform.scale.z;
+
+						size_t closest_x = (size_t)glm::clamp(norm_x * (map.width - 1), 0.0f, (float)(map.width - 1));
+						size_t closest_z = (size_t)glm::clamp(norm_z * (map.height - 1), 0.0f, (float)(map.height - 1));
+
+						// actually lets do these + the outer corners and average
+						// no just do the whole plane instead
+
+						// sample 4 height points
+						float height_center = map.height_map[closest_z * map.width + closest_x];
+
+						float height_ul = map.height_map[start_x + map.width * start_z];
+						float height_ur = map.height_map[end_x + map.width * start_z];
+						
+						float height_ll = map.height_map[start_x + map.width * end_z];
+						float height_lr = map.height_map[end_x + map.width * end_z];
+
+						// create the points
+						glm::vec3 origin = landscape_aabb.aabb_min;
+
+						glm::vec3 p_ul = glm::vec3(cell_x * start_x, height_ul, cell_z * start_z);
+						glm::vec3 p_ur = glm::vec3(cell_x * end_x, height_ur, cell_z * start_z);
+						glm::vec3 p_ll = glm::vec3(cell_x * start_x, height_ll, cell_z * end_z);
+						glm::vec3 p_lr = glm::vec3(cell_x * end_x, height_lr, cell_z * end_z);
+
+						// get normals
+						// even if I get this wrong, it should be almost right, and visible ... apparently not..
+						//glm::vec3 n_1 = glm::cross(p_ur - p_ul, p_ll - p_ul);
+						//glm::vec3 n_2 = glm::cross(p_lr - p_ur, p_ll - p_ur);
+						//glm::vec3 plane_normal = glm::normalize(n_1 + n_2);
+
+						glm::vec3 n_1 = glm::cross(p_ll - p_ul, p_ur - p_ul);  // Flipped
+						glm::vec3 n_2 = glm::cross(p_ll - p_ur, p_lr - p_ur);  // Flipped
+						glm::vec3 plane_normal = glm::normalize(n_1 + n_2);
+
+						glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+						
+						glm::vec3 normal = glm::normalize(plane_normal);
+						if (plane_normal.y < 0) {
+							plane_normal = -plane_normal;
+								PRINTLN("Flipped normals");
+						}
+
+						// Pick a safe reference axis (prevents degeneracy)
+						//glm::vec3 ref = (glm::abs(normal.y) < 0.999f)
+						//	? glm::vec3(0, 1, 0)
+						//	: glm::vec3(1, 0, 0);
+
+						// Build orthonormal basis
+						glm::vec3 tangent = glm::normalize(glm::cross(up, normal));
+						glm::vec3 bitangent = glm::cross(normal, tangent);
+
+						// IMPORTANT: columns = local axes
+						// X = tangent
+						// Y = normal  ← up direction of OBB
+						// Z = bitangent
+						glm::mat3 rot;
+						rot[0] = tangent;
+						rot[1] = normal;
+						rot[2] = bitangent;
+
+						// Convert to quaternion
+						glm::quat rotation = glm::normalize(glm::quat_cast(rot));
+						glm::quat quat_up = glm::quat(1, 0, 0, 0);
+
+						float patch_width = (end_x - start_x + 1) * cell_x;
+						float patch_depth = (end_z - start_z + 1) * cell_z;
+
+						glm::vec3 center = entry_abb_center;
+						center.y = transform.position.y + height_center;
+
+
+						glm::vec3 world_up = glm::vec3(0.0f, 1.0f, 0.0f);
+						float dot = glm::dot(world_up, plane_normal);
+						if (glm::abs(dot) > 0.99f) {
+							rotation = quat_up;
+						}
+						else {
+							glm::vec3 axis = glm::normalize(glm::cross(world_up, plane_normal));
+							constexpr float max_angle = glm::radians(85.f);
+							float angle = glm::acos(glm::clamp(dot, -1.0f, 1.0f));
+							angle = glm::min(angle, max_angle);
+							rotation = glm::angleAxis(angle, axis);
+						}
+						center = center - (rotation * up) * 5.f;
+						OBB obb{ center, rotation, glm::vec3(patch_width * 125.f, 5.f, patch_depth * 125.f)};
+
+						
+
+						// Create rigidbody with proper rotation
+						RigidBodyComponent fake_rb;
+						fake_rb.position = center;
+						fake_rb.rotation = rotation;
+						fake_rb.inverse_mass = 0.0f;
+						fake_rb.linear_velocity = glm::vec3(0);
+						fake_rb.angular_velocity = glm::vec3(0);
+						// or these 
+						fake_rb.friction = 0.4f;
+						fake_rb.restitution = 0.9f;
+						// I think these two were corrupting memory somehow
+						fake_rb.static_layers = landscape.static_layers;
+						fake_rb.dynamic_layers = 0;
+
+						//fake_rb.is = true;
+
+						// Add to vector and store index
+						landscape_rbs.push_back(fake_rb);
+						size_t rb_index = landscape_rbs.size() - 1;
+
+						// Use existing OBB collision
+						PhysicsLayers landscape_layer(landscape.static_layers, landscape.dynamic_layers, landscape.collision_layers);
+						BroadPhasePair pair(entry.entity, entt::null, entry.access_order, 0, entry.rb, &landscape_rbs.back(),
+							entry.obb, obb, entry.layers, landscape_layer, false, true);
+						ContactManifold manifold = OBB_collision_test(pair);
+						if (manifold.has_collision)
+						{
+							manifold.landscape_index = rb_index;
+							landscape_manifolds.push_back(manifold);
+						}
+					}
+				}
+			}
+
+			for (size_t i = 0; i < massive_entries.size(); i++)
+			{
+				const auto& entry = massive_entries[i];
+				bool _overlap = overlap(landscape_aabb, entry.aabb);
+				if (_overlap)
+				{
+
+					// Step 1: Convert world space AABB to local space (relative to landscape min corner)
+					glm::vec3 local_min = entry.aabb.aabb_min - landscape_aabb.aabb_min;
+					glm::vec3 local_max = entry.aabb.aabb_max - landscape_aabb.aabb_min;
+
+					// Step 2: Normalize to [0, 1] range by dividing by scale
+					float norm_min_x = local_min.x / transform.scale.x; // 0 to 1
+					float norm_max_x = local_max.x / transform.scale.x;
+					float norm_min_z = local_min.z / transform.scale.z;
+					float norm_max_z = local_max.z / transform.scale.z;
+
+					// Step 3: Convert to grid indices
+					size_t start_x = (size_t)glm::clamp(norm_min_x * (map.width - 1), 0.0f, (float)(map.width - 1));
+					size_t end_x = (size_t)glm::clamp(norm_max_x * (map.width - 1), 0.0f, (float)(map.width - 1));
+					size_t start_z = (size_t)glm::clamp(norm_min_z * (map.height - 1), 0.0f, (float)(map.height - 1));
+					size_t end_z = (size_t)glm::clamp(norm_max_z * (map.height - 1), 0.0f, (float)(map.height - 1));
+
+					start_x = (size_t)std::max(((int)start_x - 1), 0);
+					start_z = (size_t)std::max(((int)start_z - 1), 0);
+					end_x = (size_t)std::min(((int)end_x + 1), ((int)map.width - 1));
+					end_z = (size_t)std::min(((int)end_z + 1), ((int)map.height - 1));
+					if ((start_x == end_x) && (start_z = end_z))
+					{
+						continue;
+					}
+
+					// Step 4: Find max height in this region
+					float max_height = -1;
+					// do I really want this? I guess...
+					// nah, lets just sample neighboring ones + outer shell
+					for (size_t x = start_x; x <= end_x; x++)
+					{
+						for (size_t z = start_z; z <= end_z; z++)
+						{
+							size_t index = z * map.width + x;
+							if (index >= map.height_map.size())
+							{
+								continue;
+							}
+							max_height = std::max(max_height, map.height_map[index] * landscape.max_height); // or however you access heights
+						}
+					}
+					if (max_height >= 0 && entry.aabb.aabb_min.y < (transform.position.y + max_height + 10.f))
+					{
+						// Find the closest grid point to calculate slope
+						glm::vec3 entry_abb_center = ((entry.aabb.aabb_min + entry.aabb.aabb_max) * 0.5f);
+						glm::vec3 local_center = entry_abb_center - landscape_aabb.aabb_min;
+						float norm_x = local_center.x / transform.scale.x;
+						float norm_z = local_center.z / transform.scale.z;
+
+						size_t closest_x = (size_t)glm::clamp(norm_x * (map.width - 1), 0.0f, (float)(map.width - 1));
+						size_t closest_z = (size_t)glm::clamp(norm_z * (map.height - 1), 0.0f, (float)(map.height - 1));
+
+						// actually lets do these + the outer corners and average
+						// no just do the whole plane instead
+
+						// sample 4 height points
+						float height_center = map.height_map[closest_z * map.width + closest_x];
+
+						float height_ul = map.height_map[start_x + map.width * start_z];
+						float height_ur = map.height_map[end_x + map.width * start_z];
+
+						float height_ll = map.height_map[start_x + map.width * end_z];
+						float height_lr = map.height_map[end_x + map.width * end_z];
+
+						// create the points
+						glm::vec3 origin = landscape_aabb.aabb_min;
+
+						glm::vec3 p_ul = glm::vec3(cell_x * start_x, height_ul, cell_z * start_z);
+						glm::vec3 p_ur = glm::vec3(cell_x * end_x, height_ur, cell_z * start_z);
+						glm::vec3 p_ll = glm::vec3(cell_x * start_x, height_ll, cell_z * end_z);
+						glm::vec3 p_lr = glm::vec3(cell_x * end_x, height_lr, cell_z * end_z);
+
+						glm::vec3 n_1 = glm::cross(p_ll - p_ul, p_ur - p_ul);  // Flipped
+						glm::vec3 n_2 = glm::cross(p_ll - p_ur, p_lr - p_ur);  // Flipped
+						glm::vec3 plane_normal = glm::normalize(n_1 + n_2);
+
+						glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+
+						glm::vec3 normal = glm::normalize(plane_normal);
+						if (plane_normal.y < 0) {
+							plane_normal = -plane_normal;
+							PRINTLN("Flipped normals");
+						}
+
+						// Build orthonormal basis
+						glm::vec3 tangent = glm::normalize(glm::cross(up, normal));
+						glm::vec3 bitangent = glm::cross(normal, tangent);
+						glm::mat3 rot;
+						rot[0] = tangent;
+						rot[1] = normal;
+						rot[2] = bitangent;
+
+						// Convert to quaternion
+						glm::quat rotation = glm::normalize(glm::quat_cast(rot));
+						glm::quat quat_up = glm::quat(1, 0, 0, 0);
+
+						float patch_width = (end_x - start_x + 1) * cell_x;
+						float patch_depth = (end_z - start_z + 1) * cell_z;
+
+						glm::vec3 position = entry_abb_center;
+						position.y = transform.position.y + height_center;
+
+
+						glm::vec3 world_up = glm::vec3(0.0f, 1.0f, 0.0f);
+						float dot = glm::dot(world_up, plane_normal);
+						if (glm::abs(dot) > 0.99f) {
+							rotation = quat_up;
+						}
+						else {
+							glm::vec3 axis = glm::normalize(glm::cross(world_up, plane_normal));
+							constexpr float max_angle = glm::radians(85.f);
+							float angle = glm::acos(glm::clamp(dot, -1.0f, 1.0f));
+							angle = glm::min(angle, max_angle);
+							rotation = glm::angleAxis(angle, axis);
+						}
+						position = position - (rotation * up) * 5.f;
+						OBB obb{ position, rotation, glm::vec3(patch_width * 125.f, 5.f, patch_depth * 125.f) };
+
+
+
+						// Create rigidbody with proper rotation
+						RigidBodyComponent fake_rb;
+						fake_rb.position = position;
+						fake_rb.rotation = rotation;
+						fake_rb.inverse_mass = 0.0f;
+						fake_rb.linear_velocity = glm::vec3(0);
+						fake_rb.angular_velocity = glm::vec3(0);
+						// or these 
+						fake_rb.friction = 0.4f;
+						fake_rb.restitution = 0.9f;
+						// I think these two were corrupting memory somehow
+						fake_rb.static_layers = landscape.static_layers;
+						fake_rb.dynamic_layers = 0;
+
+						//fake_rb.is = true;
+
+						// Add to vector and store index
+						landscape_rbs.push_back(fake_rb);
+						size_t rb_index = landscape_rbs.size() - 1;
+
+						// Use existing OBB collision
+						PhysicsLayers landscape_layer(landscape.static_layers, landscape.dynamic_layers, landscape.collision_layers);
+						BroadPhasePair pair(entry.entity, entt::null, entry.access_order, 0, entry.rb, &landscape_rbs.back(),
+							entry.obb, obb, entry.layers, landscape_layer, false, true);
+						ContactManifold manifold = OBB_collision_test(pair);
+						if (manifold.has_collision)
+						{
+							manifold.landscape_index = rb_index;
+							landscape_manifolds.push_back(manifold);
+						}
+					}
+				}
+			}
+		}
+	);
 
 	std::vector<std::vector<BroadPhasePair>> thread_pairs(num_threads);
-	const size_t chunks_per_thread = (chunks.size() + num_threads - 1) / num_threads;
+	//const size_t chunks_per_thread = (chunks.size() + num_threads - 1) / num_threads;
+	const size_t entries_per_thread = (partitioned_entries.size() + num_threads - 1) / num_threads;
 	// would be nice to note start unecessary threads..
-
-
-
 
 	for (size_t i = 0; i < num_threads; i++)
 	{
 
 		size_t thread_id = i;
-		size_t start_chunk = chunks_per_thread * thread_id;
-		size_t end_chunk = std::min(start_chunk + chunks_per_thread, chunks.size());
+		//size_t start_chunk = chunks_per_thread * thread_id;
+		//size_t end_chunk = std::min(start_chunk + chunks_per_thread, chunks.size());
+		size_t start_entry = entries_per_thread * thread_id;
+		size_t end_entry = std::min(start_entry + entries_per_thread, partitioned_entries.size());
 		ctx.enqueue(
-			[this, &chunks, & merged_cell_entries, &thread_pairs, chunks_per_thread, start_chunk, end_chunk, thread_id]()
+			[this, &partitioned_entries, &merged_cell_entries, &thread_pairs, entries_per_thread, start_entry, end_entry, thread_id]()
 			{
 				auto& pairs = thread_pairs[thread_id];
-				pairs.reserve(500);
+				pairs.reserve(1000);
 				//const auto& colliders = chunks[thread_id].small_entries;
 				const auto& massives = merged_cell_entries.massive_entries;
+				const auto& entries = partitioned_entries;
+				const auto& colliders = merged_cell_entries.small_entries;
 				size_t its = 0;
-				const auto& my_chunks = std::span(chunks).subspan(start_chunk, end_chunk - start_chunk);
-				for (const auto& chunk : my_chunks)
+				//const auto& my_chunks = std::span(chunks).subspan(start_chunk, end_chunk - start_chunk);
+				
+				//for (const auto& chunk : my_chunks)
+				for(size_t e = start_entry; e < end_entry; ++e)
 				{
-					const auto& colliders = chunk.small_entries;
-					for (size_t i = 0; i < colliders.size(); i++)
+					if (end_entry  == 0)
 					{
-						for (size_t j = i + 1; j < colliders.size(); j++)
+						break;
+					}
+					//const auto& colliders = chunk.small_entries;
+					//for (size_t i = 0; i < colliders.size(); i++)
+					
+					for (size_t i = entries[e].start; i < entries[e].stop; ++i)
+					{
+						//if (count > 10)
+						//{
+						//	glm::bvec3 nans = glm::isnan(colliders[i].aabb.aabb_max);
+						//	if (nans.x || nans.y || nans.z)
+						//	{
+						//		PRINTLN("NAN detected");
+						//	}
+						//}
+
+						//for (size_t j = i + 1; j < colliders.size(); j++)
+						for (size_t j = i+1; j < entries[e].stop; ++j)
 						{
-							++its;
+							//++its;
 							// here we'de needto check "colliders" what they are.
 							if (colliders[i].entity != colliders[j].entity
-								&& (!colliders[i].asleep || !colliders[j].asleep)
+								&& (!colliders[i].asleep || !colliders[j].asleep) && ++its
 								&& overlap(colliders[i].aabb, colliders[j].aabb)) // check if potential collision
 							{
 								if (colliders[i].layers.is_collision_against(colliders[j].layers))
@@ -537,15 +850,16 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 							}
 						}
 
+						// test against every massive
 						for (const auto& massive : massives)
 						{
-							its++;
+							//its++;
 							if (colliders[i].entity != massive.entity
-								&& (!colliders[i].asleep || !massive.asleep)
+								&& (!colliders[i].asleep || !massive.asleep) && ++its
 								&& overlap(colliders[i].aabb, massive.aabb)) // check if potential collision
 							{
 								if (colliders[i].asleep && massive.layers.is_static_against(colliders[i].layers.dynamic_layers) &&
-									massive.rb && glm::length(massive.rb->linear_velocity) < 0.1f && glm::length(massive.rb->angular_velocity) < 0.1f)
+									massive.rb && glm::length(massive.rb->linear_velocity) < sleep_linear_threshold && glm::length(massive.rb->angular_velocity) < sleep_angular_threshold)
 								{
 									continue;
 								}
@@ -598,84 +912,6 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 			});
 	}
 	// how check AABBs and generate pairs...
-	//for (size_t i = 0; i < num_threads; i++)
-	//{
-	//	
-	//	size_t thread_id = i;
-	//	ctx.enqueue(
-	//		[this, &vec_chunks, &merged_partition, &thread_pairs, chunks_per_thread, thread_id]()
-	//		{
-	//			size_t start_chunk = chunks_per_thread * thread_id;
-	//			size_t end_chunk = std::min(start_chunk + chunks_per_thread, vec_chunks.size());
-	//			auto& pairs = thread_pairs[thread_id];
-	//			pairs.reserve(500);
-	//			for (size_t chunk = start_chunk; chunk < end_chunk; ++chunk)
-	//			{
-	//				
-	//				const auto& [chunk_coord, cell_coords] = vec_chunks[chunk];
-	//				for (const auto& cell_coord : cell_coords)
-	//				{
-	//					auto& colliders = merged_partition.spatial_cells[cell_coord];
-	//					for (size_t i = 0; i < colliders.size(); i++)
-	//					{
-	//						for (size_t j = i + 1; j < colliders.size(); j++)
-	//						{
-	//							// here we'de needto check "colliders" what they are.
-	//							if (colliders[i].entity != colliders[j].entity 
-	//								&& overlap(colliders[i].aabb, colliders[j].aabb)) // check if potential collision
-	//							{
-	//								if (colliders[i].layers.is_collision_against(colliders[j].layers))
-	//								{
-	//									// do something with collision info
-	//								}
-	//								if (colliders[i].layers.any_physics_collision(colliders[j].layers) || true)
-	//								{
-	//									// collision
-	//									//BroadPhasePair
-	//									if ((uint32_t)colliders[i].entity < (uint32_t)colliders[j].entity)
-	//									{
-	//										pairs.emplace_back(colliders[i].entity, colliders[j].entity,
-	//											colliders[i].access_order, colliders[j].access_order,
-	//											colliders[i].rb, colliders[j].rb,
-	//											colliders[i].obb, colliders[j].obb,
-	//											colliders[i].layers, colliders[j].layers);
-	//									}
-	//									else
-	//									{
-	//										pairs.emplace_back(colliders[j].entity, colliders[i].entity,
-	//											colliders[j].access_order, colliders[i].access_order,
-	//											colliders[j].rb, colliders[i].rb,
-	//											colliders[j].obb, colliders[i].obb,
-	//											colliders[j].layers, colliders[i].layers);
-	//									}
-	//								}
-	//								// I think here is where we generate new info for the landscape... call it entt::null
-	//								// we'll need to create a new obb... but we need more information to make these decisions
-	//								
-	//							}
-	//						}
-	//					}
-	//				}
-	//			}
-
-	//			//if (count > 100)
-	//			//{
-	//			//	PRINTLN("thread doing work");
-	//			//}
-
-	//			// sort
-	//			std::sort(pairs.begin(), pairs.end());
-	//			// purge
-	//			pairs.erase(std::unique(pairs.begin(), pairs.end()), pairs.end());
-	//			// replace
-	//			//spatial_collider_partitioning.broad_phase_data = pairs;
-	//			if (pairs.size() > 0 && count > 100)
-	//			{
-	//				PRINTLN("thread({}) - potential collisions: {}", thread_id, pairs.size());
-	//			}
-	//			// can clear old data now.
-	//		});
-	//}
 
 	ctx.gen_sync();
 	// merge pairs
@@ -731,20 +967,27 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 			});
 	}
 	ctx.gen_sync();
-
+	ctx.entt_sync();
 	timer.stop();
 	timer_OBB += timer.get_time_us();
 	float delta = ctx.get_delta_time();
 
 	// iterate through attractors, create formula for attractor, and then make each object do the thing
 
+	// now the landscapes have to be done.
+	
 	ctx.enqueue_parallel_each(WithRead<TransformDynamicComponent>{},
 		WithWrite<RigidBodyComponent>{},
+		WithOut<LandscapeComponent>{},
 	[delta](const entt::entity entity, const TransformDynamicComponent& transform, RigidBodyComponent& rb)
 		{
 			if (!rb.is_static_against(UINT8_MAX) && !rb.asleep)
 			{
-				rb.linear_velocity -= glm::vec3(0, 9.82f * delta, 0);
+				if (rb.linear_velocity.y < 30.f)
+				{
+					rb.linear_velocity -= glm::vec3(0, 9.82f * delta, 0);
+				}
+				//rb.linear_velocity -= glm::vec3(0, 9.82f * delta, 0); // GRAVITY
 			}
 			
 		}, 512);
@@ -757,7 +1000,10 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 			std::make_move_iterator(manifold.begin()),
 			std::make_move_iterator(manifold.end()));
 	}
-
+	merged_manifolds.insert(merged_manifolds.end(),
+		std::make_move_iterator(landscape_manifolds.begin()),
+		std::make_move_iterator(landscape_manifolds.end())
+	);
 	// now time for physics solver ... but I should have gathered rigidbodies by now... hm.. done that now
 	// but before this, I should not have put those that lack rb into the manifolds.
 	std::sort(merged_manifolds.begin(), merged_manifolds.end(), []
@@ -775,7 +1021,7 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 	{
 		for (auto& manifold : merged_manifolds)
 		{
-			resolve_collision(manifold, ctx.get_delta_time());
+			resolve_collision(manifold, landscape_rbs, ctx.get_delta_time());
 		}
 	}
 	timer.stop();
@@ -784,6 +1030,7 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 	float dt = (float)ctx.get_delta_time();
 	ctx.enqueue_parallel_each(WithRead<>{},
 		WithWrite<RigidBodyComponent, TransformDynamicComponent>{},
+		WithOut<LandscapeComponent>{},
 		[this, dt](const entt::entity entity, RigidBodyComponent& rb, TransformDynamicComponent& transform)
 		{
 			// --------------------------------------
@@ -858,12 +1105,12 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 		PRINTLN("detected collisions {}", merged_manifolds.size());
 		PRINTLN("Spatial: {}us", timer_spatial);
 		PRINTLN("AABB: {}us", timer_AABB);
-		PRINTLN("OBB: {}us", timer_AABB);
+		PRINTLN("OBB: {}us", timer_OBB);
 		PRINTLN("manifold: {}us", timer_manifold);
 		PRINTLN("resolve: {}us", timer_resolve);
 		timer_spatial = 0;
 		timer_AABB = 0;
-		timer_AABB = 0;
+		timer_OBB = 0;
 		timer_manifold = 0;
 		timer_resolve = 0;
 
@@ -902,6 +1149,8 @@ ContactManifold PhysicsSystem::OBB_collision_test(const BroadPhasePair pair)
 	manifold.entity_b = pair.entity_b;
 	manifold.has_collision = false;
 	manifold.penetration_depth = FLT_MAX;
+	manifold.landscape_a = pair.landscape_a;
+	manifold.landscape_b = pair.landscape_b;
 
 	glm::vec3 min_axis(0.0f);
 	float min_penetration = FLT_MAX;
@@ -1076,12 +1325,13 @@ void PhysicsSystem::generate_contact_points(ContactManifold& manifold, const OBB
 	auto corners_a = get_OBB_corners(obb_a);
 	for (const auto& corner : corners_a)
 	{
+		if (manifold.num_contact_points >= 7)
+		{
+			break;
+		}
 		if (is_point_in_OBB(corner, obb_b, epsilon))
 		{
-			if (manifold.num_contact_points >= 8)
-			{
-				break;
-			}
+
 			// Project onto B's surface along contact normal
 			glm::vec3 contact = corner - manifold.contact_normal * (manifold.penetration_depth * 0.5f);
 			//manifold.contact_points.push_back(contact);
@@ -1094,12 +1344,13 @@ void PhysicsSystem::generate_contact_points(ContactManifold& manifold, const OBB
 	auto corners_b = get_OBB_corners(obb_b);
 	for (const auto& corner : corners_b)
 	{
+		if (manifold.num_contact_points >= 7)
+		{
+			break;
+		}
 		if (is_point_in_OBB(corner, obb_a, epsilon))
 		{
-			if (manifold.num_contact_points >= 8)
-			{
-				break;
-			}
+
 			// Project onto A's surface along contact normal
 			glm::vec3 contact = corner + manifold.contact_normal * (manifold.penetration_depth * 0.5f);
 			// manifold.contact_points.push_back(contact);
@@ -1174,13 +1425,16 @@ glm::mat3 PhysicsSystem::calculate_box_inertia_tensor_inverse(float mass, const 
 	);
 }
 
-void PhysicsSystem::resolve_collision(ContactManifold& manifold, float dt)
+void PhysicsSystem::resolve_collision(ContactManifold& manifold, std::vector<RigidBodyComponent>& landscape_rbs, float dt)
 {
 	// ==========================================
  // SAFETY CHECK
  // ==========================================
+
 	RigidBodyComponent* rb_a = manifold.rb_a;
 	RigidBodyComponent* rb_b = manifold.rb_b;
+	if (manifold.landscape_a) rb_a = &landscape_rbs[manifold.landscape_index];
+	if (manifold.landscape_b) rb_b = &landscape_rbs[manifold.landscape_index];
 	if (!rb_a || !rb_b) return;
 
 	// fix for static objects
@@ -1612,13 +1866,13 @@ bool HeightMapLoadSystem::execute(SystemsContext& ctx)
 		{
 			if (!landscape.has_loaded_height_map)
 			{
+				landscape.map.max_height = landscape.max_height;
 				auto& system_storage = ctx.get_system_storage();
-				HeightMap map;
-				map.max_height = landscape.max_height;
-				if (generate_heightmap(landscape.height_map_path.string, map))
+				if (generate_heightmap(landscape.height_map_path.string, landscape.map))
 				{
-					landscape.has_loaded_height_map;
-					system_storage.add_or_replace_object(landscape.height_map_path.string, map);
+					landscape.has_loaded_height_map = true;
+					system_storage.add_or_replace_object(landscape.height_map_path.string, landscape.map);
+
 				}
 			}
 		});
@@ -1630,23 +1884,29 @@ bool HeightMapLoadSystem::generate_heightmap(const std::string& path, HeightMap&
 
 	int width, height, channels;
 	
-	stbi_set_flip_vertically_on_load(true);
+	//stbi_set_flip_vertically_on_load(true);
 	unsigned char* height_data = stbi_load(path.c_str(), &width, &height, &channels, 0);
-	if (!height_data || width < 0 || height < 0) { return false; }
+	if (!height_data || width <= 0 || height <= 0)
+	{ 
+		PRINTLN("BAD DATA");
+		return false;
+	}
 	map.height_map.clear();
 	map.height_map.reserve((size_t)width * (size_t)height);
 	map.height = height;
 	map.width = width;
+
 	float max_height = map.max_height;
-	for (int u = 0; u < width; u++)
+	for (int v = height - 1; v >= 0; v--)  // ← Start from bottom, go to top
 	{
-		for (int v = 0; v < height; v++)
+		for (int u = 0; u < width; u++)
 		{
 			int index = (v * width + u) * channels;
 			unsigned char red = height_data[index];
-			float height = ((float)red / 255.f) * max_height;
-			map.height_map.push_back(height);
+			float h = ((float)red / 255.f) * max_height;
+			map.height_map.push_back(h);
 		}
 	}
+	stbi_image_free(height_data);
 	return true;
 }

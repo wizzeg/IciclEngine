@@ -334,7 +334,7 @@ struct alignas(8) BoundingBoxComponent
 {
     glm::vec3 offset = glm::vec3(0.0f);
     glm::vec3 box_extents = glm::vec3(1.0f);
-
+    bool landscape = false;
     uint8_t collision_layers = 0b00000000;
     // these would be elsehwere, in like "CollisionResultComponent"
     uint16_t tag = 0;
@@ -383,6 +383,7 @@ struct alignas(8) RigidBodyComponent
     bool asleep = false;
     uint16_t sleep_strikes = 0;
     uint16_t max_sleep_strikes = 1000;
+    
 
     bool is_static_against(uint8_t layers) const
     {
@@ -437,10 +438,20 @@ struct alignas(8) RigidBodyComponent
 struct LandscapeComponent
 {
     hashed_string_64 height_map_path = hashed_string_64("");
+    uint8_t static_layers = 0b00000000;
+    uint8_t dynamic_layers = 0b00000000;
+    uint8_t collision_layers = 0b00000000;
     float max_height = 100.0f;
     bool has_loaded_height_map = false;
+    HeightMap map;
+
 };
 // soooo... landscape... transform + landscape + rendercomponent
 // gpu side, uses transform + render component to render it...
 // cpu side uses landscape + transform to figure out OBB... actually, OBB is calculated during pair creation
 // using transform is a bit weird though, because you don't want any weird rotation... OBB gets tricky to calculate...
+
+struct SingleProcessorComponent
+{
+    bool nothing = true;
+};
