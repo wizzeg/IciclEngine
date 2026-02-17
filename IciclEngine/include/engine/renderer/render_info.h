@@ -463,4 +463,13 @@ struct RenderContext
 	
 	std::vector<PointLightSSBO> lights;
 	std::vector<ShadowLight> shadow_lights;
+
+	std::vector<UIWord> words;
+	std::vector<UIRect> rects;
+};
+
+struct UIRenders
+{
+	std::vector<UIWord> words;
+	std::vector<UIRect> rects;
 };

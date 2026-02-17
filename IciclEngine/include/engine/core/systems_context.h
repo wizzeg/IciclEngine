@@ -28,6 +28,13 @@ struct SystemsContextStorage
 	std::mutex storage_mutex;
 
 	template <typename T>
+	void mark_erase(std::string a_name, size_t index = 0)
+	{
+		std::lock_guard deletion_guard(deletion_mutex);
+		storage_object_deletions.push_back(storage_key(typeid(T), a_name, index));
+	}
+
+	template <typename T>
 	SystemsStorageObject<T>* get_object(std::string a_name, size_t index = 0)
 	{
 		std::lock_guard storage_guard(storage_mutex);
@@ -35,7 +42,30 @@ struct SystemsContextStorage
 		if (it != storage.end())
 		{
 			auto& ptr = it->second;
-			return static_cast<SystemsStorageObject<T>*>(it->second.get());
+			return static_cast<SystemsStorageObject<T>*>(ptr.get());
+		}
+		return nullptr;
+	}
+
+	template <typename T>
+	std::unique_ptr<T> consume_object(std::string a_name, size_t index = 0) // this will leave object unsafe
+	{
+		std::unique_lock storage_lock(storage_mutex);
+		auto it = storage.find(storage_key(typeid(T), a_name, index));
+		if (it != storage.end())
+		{
+			SystemsStorageObject<std::decay_t<T>>* object = static_cast<SystemsStorageObject<std::decay_t<T>>*>(it->second.get());
+			//storage_lock.unlock();
+			std::unique_lock object_lock(object->mutex);
+			object->cv.wait(object_lock, [&object]() {
+				return object->readers == 0 && !object->writing;
+				});
+			std::unique_ptr<T> o = std::make_unique<T>(std::move(object->data));
+			object->invalid = true;
+			object_lock.unlock();
+			object->cv.notify_all();
+			mark_erase(a_name, index);
+			return std::move(o);
 		}
 		return nullptr;
 	}
@@ -49,11 +79,12 @@ struct SystemsContextStorage
 		{
 			SystemsStorageObject<std::decay_t<T>>* object = static_cast<SystemsStorageObject<std::decay_t<T>>*>(it->second.get());
 			storage_lock.unlock();
-			std::unique_lock object_lock(object->mutex);
+			std::unique_lock object_lock(object->mutex); // I really should just use write...
 			object->cv.wait(object_lock, [&object]() {
 				return object->readers == 0 && !object->writing;
 				});
 			object->data = value;
+			object->cv.notify_all();
 		}
 		else
 		{
@@ -61,7 +92,6 @@ struct SystemsContextStorage
 		}
 		
 	}
-
 
 	template <typename T>
 	SystemsStorageObject<T>* new_or_get_object(std::type_index a_type, std::string a_name, T&& value, size_t index)
@@ -79,12 +109,7 @@ struct SystemsContextStorage
 
 	}
 
-	template <typename T>
-	void mark_erase(std::string a_name, size_t index = 0)
-	{
-		std::lock_guard deletion_guard(deletion_mutex);
-		storage_object_deletions.push_back(storage_key(typeid(T), a_name, index));
-	}
+
 
 	void perform_erase()
 	{
@@ -2166,6 +2191,12 @@ struct SystemsContext
 	void gen_sync()
 	{
 		general_thread_pool->wait();
+	}
+
+	void sync()
+	{
+		gen_sync();
+		entt_sync();
 	}
 
 	size_t num_threads()

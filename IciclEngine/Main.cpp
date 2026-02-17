@@ -9,15 +9,15 @@
 #include <GLFW/glfw3.h>
 
 #include <chrono>
+//
+//#include <glm/glm.hpp>
+//#include <glm/gtc/matrix_transform.hpp>
+//#include <glm/gtc/type_ptr.hpp>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-#include <engine/utilities/entt_modified.h>
+//#include <assimp/Importer.hpp>
+//#include <assimp/scene.h>
+//#include <assimp/postprocess.h>
+//#include <engine/utilities/entt_modified.h>
 //#include <entt/entt.hpp>
 
 #include <engine/editor/scene.h>
@@ -25,18 +25,18 @@
 #include <engine/utilities/macros.h>
 #include <engine/game/components.h>
 
-#ifndef ASSIMP_LOAD_FLAGS
-#define ASSIMP_LOAD_FLAGS (aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices)
-#endif
+//#ifndef ASSIMP_LOAD_FLAGS
+//#define ASSIMP_LOAD_FLAGS (aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices)
+//#endif
 #include <engine/ui/ui_manager.h>
-#include <engine/resources/obj_parser.h>
+//#include <engine/resources/obj_parser.h>
 #include <engine/renderer/vao_loader.h>
-#include <engine/renderer/shader_program.h>
+//#include <engine/renderer/shader_program.h>
 #include <engine/renderer/renderer.h>
 #include <engine/core/game_thread.h>
 
 #include <thread>
-#include <engine/resources/data_storage.h>
+//#include <engine/resources/data_storage.h>
 #include <engine/renderer/glfw_context.h>
 #include <engine/ui/imgui_manager.h>
 #include <engine/utilities/utilities.h>
@@ -57,7 +57,7 @@
 int main(void)
 {
 	GLFWwindow* window;
-	PRINTLN("default hash = {}", (hashed_string_64()).hash);
+	//PRINTLN("default hash = {}", (hashed_string_64()).hash);
 	///* Initialize the library */
 	if (!glfwInit())
 		return -1;

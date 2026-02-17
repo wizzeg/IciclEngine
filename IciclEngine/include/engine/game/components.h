@@ -455,3 +455,24 @@ struct SingleProcessorComponent
 {
     bool nothing = true;
 };
+
+
+
+struct UIRectComponent
+{
+    glm::vec2 position;
+    glm::vec2 size;
+    glm::vec4 color;
+    int order;
+    bool word_space = false;
+};
+
+struct UITextComponent
+{
+    std::string text;
+    glm::vec4 color;
+    glm::vec2 size;
+    float font_size;
+    int order;
+    bool world_space = false;
+};

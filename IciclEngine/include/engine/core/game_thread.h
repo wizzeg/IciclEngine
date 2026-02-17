@@ -102,8 +102,9 @@ struct EngineContext
 	{
 		write_pos = !write_pos;
 		render_requests[std::size_t(write_pos)].clear();
-		render_contexts[std::size_t(write_pos)] = RenderContext();
+		render_contexts[std::size_t(write_pos)] = RenderContext(); // what's this? this the new one I think?
 		cameras_render[std::size_t(write_pos)].clear();
+		UI_renders[std::size_t(write_pos)].clear();
 	}
 	bool run() { return !kill_all; }
 
@@ -141,6 +142,7 @@ struct EngineContext
 	std::vector<RenderRequest> render_requests[2];
 	RenderContext render_contexts[2];
 	std::vector<CameraData> cameras_render[2];
+	UIRenders UI_renders[2];
 	//std::shared_ptr<MeshDataGenStorage> storage;
 	//std::shared_ptr<ModelGenStorage> model_storage;
 	std::shared_ptr<TextureLoader> texture_loader;

@@ -28,6 +28,31 @@ namespace EShadowCasterType
 	};
 };
 
+struct UIRect
+{
+	glm::vec2 position;
+	glm::vec2 extents;
+	glm::vec2 uv_offset;
+	glm::vec4 color;
+	int order;
+};
+struct UIText
+{
+	glm::vec2 position;
+	glm::vec2 extents;
+	glm::vec2 uv_offset;
+	glm::vec4 color;
+	int order;
+};
+struct UIWord
+{
+	glm::vec2 position;
+	glm::vec2 extents;
+	glm::vec2 uv_offset;
+	glm::vec4 color;
+	glm::ivec2 order;
+};
+
 
 struct SystemsStorageObjectBase
 {
@@ -37,6 +62,7 @@ struct SystemsStorageObjectBase
 	int readers = 0;
 	int waiting_writers = 0;
 	bool writing = false;
+	bool invalid = false;
 };
 
 
@@ -53,7 +79,9 @@ struct SystemsStorageObject : SystemsStorageObjectBase
 		waiting_readers--;
 		readers++;
 		read_lock.unlock();
-		func(data);
+		cv.notify_all();
+		if (!invalid)
+			func(data);
 		read_lock.lock();
 		readers--;
 		cv.notify_all();
@@ -66,9 +94,11 @@ struct SystemsStorageObject : SystemsStorageObjectBase
 		waiting_writers--;
 		writing = true;
 		write_lock.unlock();
-		func(data);
+		if (!invalid)
+			func(data);
 		write_lock.lock();
 		writing = false;
+		cv.notify_all();
 	}
 
 	void copy(T& data_copy)
@@ -79,12 +109,15 @@ struct SystemsStorageObject : SystemsStorageObjectBase
 		waiting_readers--;
 		readers++;
 		read_lock.unlock();
-		data_copy = data;
+		cv.notify_all();
+		if (!invalid)
+			data_copy = data;
 		read_lock.lock();
 		readers--;
 		cv.notify_all();
 	}
 };
+
 
 
 struct ShadowLight

@@ -1910,3 +1910,110 @@ bool HeightMapLoadSystem::generate_heightmap(const std::string& path, HeightMap&
 	stbi_image_free(height_data);
 	return true;
 }
+
+bool UIDrawGathering::execute(SystemsContext& ctx)
+{
+	
+	auto& sys_strg = ctx.get_system_storage();
+	
+	std::vector<UIRect> new_rects;
+	sys_strg.add_or_replace_object("UIRects", new_rects, SIZE_MAX);
+	SystemsStorageObject<std::vector<UIRect>>* UIRects
+	= sys_strg.get_object<std::vector<UIRect>>("UIRects", SIZE_MAX);
+	
+	std::vector<UIWord> new_texts;
+	sys_strg.add_or_replace_object("UIWords", new_texts, SIZE_MAX);
+	SystemsStorageObject<std::vector<UIWord>>* UITexts
+		= sys_strg.get_object<std::vector<UIWord>>("UIWords", SIZE_MAX);
+
+	// from now on I don't care about stupid naming, vars will just be letters
+	ctx.enqueue([&ctx, UIRects]()
+		{
+			UIRects->write([&ctx](std::vector<UIRect>& ui_rects)
+				{
+					ctx.each(WithRead<UIRectComponent>{},
+						[&ui_rects](const entt::entity, const UIRectComponent& r)
+						{
+							// just want to add necessary data...
+							UIRect rect;
+							rect.color = r.color;
+							rect.extents = r.size;
+							rect.position = r.position;
+							rect.order = r.order;
+							ui_rects.push_back(rect);
+						}
+					);
+					std::sort(ui_rects.begin(), ui_rects.end(), 
+						[](const auto& a, const auto& b)
+						{
+							return a.order < b.order;
+						});
+				});
+
+		}
+	);
+	ctx.enqueue([this, &ctx, UITexts]()
+		{
+			UITexts->write([this, &ctx](std::vector<UIWord>& ui_words)
+				{
+					ctx.each(WithRead<UITextComponent>{},
+						[this, &ui_words](const entt::entity, const UITextComponent& t)
+						{
+							float fs = t.font_size;
+							int max_row = static_cast<int>(t.size.x / fs);
+							int max_col = static_cast<int>(t.size.y / fs);
+							
+							int row = 0;
+							int col = 0;
+							if (max_row < 1 && max_col < 1 || t.text.length() < 1) return;
+							for (const auto& word : t.text)
+							{
+								UIWord w;
+								w.color = t.color;
+								w.extents = glm::vec2(fs);
+
+								if (word == '\n' || row > max_row)
+								{
+									++col;
+									row = 0;
+								}
+								if (col > max_col) return;
+								
+								w.uv_offset = char_to_offset(word);
+								w.order = glm::vec2(t.order);
+
+								// ah crap, still have to do the ndc offset
+								w.position = glm::vec2(col * fs, row * fs);
+								// probably right, I pray
+								ui_words.push_back(w);
+							}
+						});
+					std::sort(ui_words.begin(), ui_words.end(),
+						[](const auto& a, const auto& b)
+						{
+							return a.order.x < b.order.x;
+						})
+				});
+		}
+	);
+
+	return false;
+}
+
+glm::vec2 UIDrawGathering::char_to_offset(const char& c)
+{
+	int i = static_cast<int>(c - 32);
+	if (i < 0 || i > 95)
+	{
+		// return special error character
+		return glm::vec2(0.9f, 0.9f);
+	}
+
+	// we'll do a 10x10 atlas I guess
+	int col = i & 10;
+	int row = i / 10;
+
+	float u = 0.1f * col;
+	float v = 0.1f * row;
+	return glm::vec2(u,v);
+}

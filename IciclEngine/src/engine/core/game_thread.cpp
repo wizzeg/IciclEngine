@@ -134,6 +134,7 @@ void GameThread::game_runtime()
 	render_requests.reserve(previous_total_render_requests);
 
 	auto& render_context = engine_context->render_contexts[std::size_t(engine_context->write_pos)];
+	auto& ui_renders = engine_context->UI_renders[std::size_t(engine_context->write_pos)];
 
 	std::vector<CameraData>& unique_cameras = engine_context->cameras_render[std::size_t(engine_context->write_pos)];
 	unique_cameras.reserve(previous_unique_cameras);
@@ -169,6 +170,7 @@ void GameThread::game_runtime()
 	//}
 	bool physics_frame = engine_context->physics_frame;
 	auto& systems = scene->get_systems();
+	auto& ctx = *engine_context->systems_context;
 	for (auto& system : systems)
 	{
 		bool only_on_physics = system->get_physics_frames_only();
@@ -178,7 +180,7 @@ void GameThread::game_runtime()
 			//{
 			//	PRINTLN("synced");
 			//}
-			system->execute(*engine_context->systems_context);
+			system->execute(ctx);
 		}
 	}
 	//PRINTLN("started parallel");
@@ -511,6 +513,26 @@ void GameThread::game_runtime()
 	ind_timer.stop();
 	lighting_time += ind_timer.get_time_ms();
 
+	{
+		ctx.enqueue([&ctx, &render_context]()
+			{
+				auto rects = ctx.get_system_storage().consume_object<std::vector<UIRect>>("UIRects", SIZE_MAX);
+				auto words = ctx.get_system_storage().consume_object<std::vector<UIWord>>("UIWords", SIZE_MAX);
+				if (rects)
+				{
+					render_context.rects = std::move(*rects.get());
+				}
+				if (words)
+				{
+					render_context.words = std::move(*words.get());
+				}
+			});
+
+	}
+	
+
+	
+	
 	for (auto [entity, mat_float] :
 		registry.view<MaterialFloatComponent>().each())
 	{
@@ -542,6 +564,7 @@ void GameThread::game_runtime()
 		}
 	}
 
+	ctx.sync();
 	previous_total_render_requests = render_requests.size();
 	/////////////////////////////////////// BELOW is for testing when comopnents are suddenly destroyed.
 	//std::vector<entt::entity> entities;

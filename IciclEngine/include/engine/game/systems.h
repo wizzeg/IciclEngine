@@ -102,3 +102,9 @@ struct HeightMapLoadSystem : SystemBase
 	bool execute(SystemsContext& ctx) override;
 	bool generate_heightmap(const std::string& path, HeightMap& map);
 };
+
+struct UIDrawGathering : SystemBase
+{
+	bool execute(SystemsContext& ctx) override;
+	glm::vec2 char_to_offset(const char& c);
+};
