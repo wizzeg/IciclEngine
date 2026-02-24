@@ -4,9 +4,16 @@ void InputManager::update_input()
 {
 
     input_buffer->time = ImGui::GetTime();
-    ImVec2 new_pos = ImGui::GetMousePos();
-    input_buffer->mouse_delta = ImVec2(new_pos.x - input_buffer->mouse_pos.x, new_pos.y - input_buffer->mouse_pos.y);
-    input_buffer->mouse_pos = new_pos;
+    if (mouse_locked)
+    {
+        input_buffer->mouse_delta = ImGui::GetMousePos() - ImVec2(locked_x, locked_y);
+        SetCursorPos((int)locked_x, (int)locked_y);
+    }
+    else
+    {
+        input_buffer->mouse_delta = ImGui::GetMousePos() - input_buffer->mouse_pos;
+    }
+    input_buffer->mouse_pos = ImGui::GetMousePos();
 
     // Process keyboard input
     update_key(EKey::Zero, ImGuiKey_0);
@@ -78,6 +85,7 @@ void InputManager::update_input()
     update_key(EKey::Down, ImGuiKey_DownArrow);
     update_key(EKey::Left, ImGuiKey_LeftArrow);
     update_key(EKey::Right, ImGuiKey_RightArrow);
+    update_key(EKey::Tilde, ImGuiKey_GraveAccent);
 
     // Process mouse buttons
     update_mouse_button(EKey::LeftMouseButton, ImGuiMouseButton_Left);
@@ -87,11 +95,12 @@ void InputManager::update_input()
 
 void InputManager::update_key(EKey a_key, ImGuiKey a_imgui_key)
 {
-	if (a_key > EKey::RightAlt) return;
+	if (a_key > EKey::Tilde) return;
 	bool key_is_down = ImGui::IsKeyDown(a_imgui_key);
 	KeyState& key_state = input_buffer->inputs[(size_t)a_key].state;
 
-	if (key_is_down && (key_state.state == EKeyState::None || key_state.state == EKeyState::Released))
+
+	if (key_is_down && (key_state.state == EKeyState::Released))
 	{
 		key_state.state = EKeyState::Pressed;
 		key_state.press_time = input_buffer->time;
@@ -100,11 +109,18 @@ void InputManager::update_key(EKey a_key, ImGuiKey a_imgui_key)
     {
         key_state.state = EKeyState::Held;
     }
-	else if (!key_is_down && (key_state.state == EKeyState::Pressed || key_state.state == EKeyState::Held || key_state.state == EKeyState::None))
+	else if (!key_is_down && (key_state.state == EKeyState::Pressed || key_state.state == EKeyState::Held))
 	{
+
 		key_state.state = EKeyState::Released;
 		key_state.release_time = input_buffer->time;
 	}
+    else if (key_state.state == EKeyState::None)
+    {
+        key_state.state = EKeyState::Released;
+        key_state.press_time = input_buffer->time;
+        key_state.release_time = input_buffer->time;
+    }
     
 }
 
@@ -128,6 +144,20 @@ void InputManager::update_mouse_button(EKey a_key, ImGuiMouseButton a_mouse_butt
 		key_state.state = EKeyState::Released;
 		key_state.release_time = input_buffer->time;
 	}
+}
+
+void InputManager::lock_mouse(float x, float y)
+{
+    std::lock_guard mouse_lock(mouse_mutex);
+    mouse_locked = true;
+    locked_x = x;
+    locked_y = y;
+}
+
+void InputManager::unlock_mouse()
+{
+    std::lock_guard mouse_lock(mouse_mutex);
+    mouse_locked = false;
 }
 
 void InputManager::get_mouse_position(float& x, float& y)
@@ -159,7 +189,9 @@ bool InputManager::is_key_released(EKey a_key)
 
 double InputManager::key_held_duration(EKey a_key)
 {
-    return input_buffer->time - input_buffer->inputs[(size_t)a_key].state.press_time;
+    if (input_buffer->inputs[(size_t)a_key].state.state == EKeyState::Held || input_buffer->inputs[(size_t)a_key].state.state == EKeyState::Pressed)
+        return input_buffer->time - input_buffer->inputs[(size_t)a_key].state.press_time;
+    return 0;
 }
 
 double InputManager::key_previous_held_duration(EKey a_key)

@@ -124,8 +124,7 @@ protected:
 	void process_dependency(ValidateMatDependencies& a_job);
 	void process_material_uniform(MaterialUniformJob& a_job);
 
-	void insert_runtime_material(uint64_t a_mat_hash) {}; // to do use this one for clean up
-	// todo generally try to generalize the processing
+	void insert_runtime_material(uint64_t a_mat_hash) {}; // would've been cool if I could get to do this... But no, have to do some dumb game instead
 	AssetStorage& asset_storage;
 	AssetMessages& asset_messages;
 };
@@ -235,6 +234,7 @@ struct AssetManager
 
 	std::vector<RenderRequest> retrieve_render_requests(std::vector<PreRenderRequest>& a_pre_reqs);
 	RenderContext construct_render_context(std::vector<PreRenderReq>& a_pre_reqs);
+	RenderContext construct_render_context(std::vector<PreRenderReq>& a_pre_reqs, std::vector<UIPreRenderRequest>& a_ui_pre_reqs);
 
 protected:
 	AssetStorage asset_storage;

@@ -456,20 +456,58 @@ struct RuntimeRenderCall
 	GLsizei index_count;
 };
 
-struct RenderContext
-{
-	std::vector<RenderReq> render_requests;
-	std::vector<RuntimeMaterial> materials;
-	
-	std::vector<PointLightSSBO> lights;
-	std::vector<ShadowLight> shadow_lights;
 
+struct UIRenders
+{
 	std::vector<UIWord> words;
 	std::vector<UIRect> rects;
 };
 
-struct UIRenders
+struct UIRenderContext
 {
+	hashed_string_64 material;
+};
+
+struct UIPreRenderRequest
+{
+	uint64_t mat_hash = hashed_string_64("").hash;
+	glm::vec2 position = glm::vec2(0);
+	glm::vec2 extents = glm::vec2(0);
+	glm::vec2 uv_offset = glm::vec2(0);
+	glm::vec4 color = glm::vec4(1);
+	int order = 0;
+};
+
+struct UIRenderRequest
+{
+	uint64_t material;
+	GLuint program = 0;
+	int order = 0;
+	glm::vec2 position = glm::vec2(0);
+	glm::vec2 extents = glm::vec2(0);
+	glm::vec2 uv_offset = glm::vec2(0);
+	glm::vec4 color = glm::vec4(1);
+};
+
+struct UISSBO
+{
+	glm::vec4 color;
+	glm::vec2 uv_offset;
+	glm::vec2 uv_size;
+	glm::vec2 position;
+	glm::vec2 size;
+};
+
+struct RenderContext
+{
+	std::vector<RenderReq> render_requests;
+	std::vector<RuntimeMaterial> materials;
+
+	std::vector<PointLightSSBO> lights;
+	std::vector<ShadowLight> shadow_lights;
+
+	std::vector<RuntimeMaterial> ui_materials;
+	std::vector<UIRenderRequest> ui_render_requests;
 	std::vector<UIWord> words;
 	std::vector<UIRect> rects;
 };

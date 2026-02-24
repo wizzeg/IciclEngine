@@ -1155,5 +1155,187 @@ RenderContext AssetManager::construct_render_context(std::vector<PreRenderReq>& 
 		});
 
 
+
+
+	return render_context;
+}
+
+RenderContext AssetManager::construct_render_context(std::vector<PreRenderReq>& a_pre_reqs, std::vector<UIPreRenderRequest>& a_ui_pre_reqs)
+{
+	RenderContext render_context;
+	render_context.materials.reserve(asset_storage.runtime_materials.size());
+	render_context.render_requests.reserve(a_pre_reqs.size());
+	render_context.ui_materials.reserve(asset_storage.runtime_materials.size());
+	render_context.ui_render_requests.reserve(a_ui_pre_reqs.size());
+
+	// order: material -> mesh -> mipmap -> instanced
+	std::sort(a_pre_reqs.begin(), a_pre_reqs.end(), []
+	(const PreRenderReq& request_a, const PreRenderReq& request_b)
+		{
+			if (request_a.mat_hash != request_b.mat_hash)
+				return request_a.mat_hash < request_b.mat_hash;
+			return request_a.mesh_hash < request_b.mesh_hash;
+		});
+
+	std::lock_guard<std::mutex> mesh_guard(asset_storage.runtime_mesh_mutex);
+	std::lock_guard<std::mutex>	material_guard(asset_storage.runtime_mat_mutex);
+
+	auto& mats = asset_storage.runtime_materials;
+	auto& meshes = asset_storage.runtime_meshes;
+	uint64_t invalid_hash = hashed_string_64().hash;
+
+	size_t mat_index = 0;
+	size_t mat_start_index = 0;
+	bool mat_found = false;
+
+	uint64_t prev_mat_hash = invalid_hash;
+
+	size_t mesh_index = 0;
+	size_t mesh_start_index = 0;
+	bool mesh_found = false;
+
+	for (auto& request : a_pre_reqs)
+	{
+		mesh_found = false;
+
+		if (request.mat_hash == invalid_hash)
+			continue;
+
+		if (prev_mat_hash != request.mat_hash)
+		{
+			mat_index = 0;
+			mat_start_index = 0;
+		}
+
+		for (; mat_index < mats.size(); mat_index++) // should check mesh/tex if it's loaded, if not, add it as load job.
+		{
+			RuntimeMaterial& mat = mats[mat_index];
+			if (request.mat_hash == mat.hash)
+			{
+				mat_start_index = mesh_index;
+				mat_found = true;
+
+				mesh_index = 0;
+				mesh_found = false;
+				if (request.mesh_hash != invalid_hash)
+				{
+					for (; mesh_index < meshes.size(); mesh_index++)
+					{
+						RuntimeMesh& mesh = meshes[mesh_index];
+						if (request.mesh_hash == mesh.hash)
+						{
+							// we should have everything we need...
+							if (prev_mat_hash != mat.hash)
+							{
+								// add the material
+								render_context.materials.push_back(mat);
+								prev_mat_hash = mat.hash; // I think? Don't think we need to change this every time.
+							}
+
+							render_context.render_requests.emplace_back(
+								request.model_matrix, request.mesh_hash, request.mat_hash,
+								mesh.vao, mesh.num_indices, request.instanced, request.mipmap,
+								mat.gl_program
+							);
+
+							mesh_start_index = mesh_index;
+							mesh_found = true;
+							break;
+						}
+					}
+				}
+				if (!mesh_found)
+					mesh_index = mesh_start_index;
+
+				break;
+			}
+		}
+		if (!mat_found)
+			mat_index = mat_start_index;
+	}
+
+	auto& reqs = render_context.render_requests;
+	std::sort(reqs.begin(), reqs.end(), []
+	(const RenderReq& request_a, const RenderReq& request_b)
+		{
+			if (request_a.gl_program != request_b.gl_program)
+				return request_a.gl_program < request_b.gl_program;
+
+			if (request_a.mat_hash != request_b.mat_hash)
+				return request_a.mat_hash < request_b.mat_hash;
+
+			if (request_a.mesh_hash != request_b.mesh_hash)
+				return request_a.mesh_hash < request_b.mesh_hash;
+
+			if (request_a.mipmap != request_b.mipmap)
+				return (int)request_a.mipmap > (int)request_b.mipmap;
+
+			return (int)request_a.instanced > (int)request_b.instanced;
+		});
+	auto& ctx_mats = render_context.materials;
+	std::sort(ctx_mats.begin(), ctx_mats.end(), []
+	(const RuntimeMaterial& mat_a, const RuntimeMaterial& mat_b)
+		{
+			if (mat_a.gl_program != mat_b.gl_program)
+				return mat_a.gl_program < mat_b.gl_program;
+			return mat_a.hash < mat_b.hash;
+		});
+
+	// now do ui render reqs.
+
+	std::sort(a_ui_pre_reqs.begin(), a_ui_pre_reqs.end(), []
+	(const UIPreRenderRequest& request_a, const UIPreRenderRequest& request_b)
+		{
+			if (request_a.mat_hash != request_b.mat_hash)
+				return request_a.mat_hash < request_b.mat_hash;
+			return request_a.mat_hash < request_b.mat_hash;
+		});
+
+	mat_index = 0;
+	mat_start_index = 0;
+	mat_found = false;
+
+	prev_mat_hash = invalid_hash;
+	for (auto& req : a_ui_pre_reqs)
+	{
+		auto& req_mat = req.mat_hash;
+		mat_found = false;
+		if (req_mat == invalid_hash) continue;
+
+		for (; mat_index < mats.size(); mat_index++)
+		{
+			const auto& mat = mats[mat_index];
+			if (req_mat == mat.hash)
+			{
+				mat_found = true;
+				mat_start_index = mat_index;
+				if (prev_mat_hash != req_mat)
+				{
+					prev_mat_hash = req_mat;
+					render_context.ui_materials.push_back(mat);
+				}
+				UIRenderRequest asd;
+				render_context.ui_render_requests.emplace_back(req_mat, mat.gl_program, req.order, 
+					req.position, req.extents, req.uv_offset, req.color);
+				break;
+			}
+			else if (req_mat < mat.hash)
+			{
+				break;
+			}
+		}
+		mat_index = mat_start_index;
+	}
+
+	std::sort(render_context.ui_render_requests.begin(), render_context.ui_render_requests.end(), 
+		[](const UIRenderRequest& a, const UIRenderRequest& b)
+		{
+			if (a.order != b.order)
+				return a.order < b.order;
+			else if (a.program != b.program)
+				return a.program < b.program;
+			return a.material < b.material;
+		});
+	
 	return render_context;
 }

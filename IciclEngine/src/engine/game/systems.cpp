@@ -8,6 +8,7 @@
 #include <engine/resources/data_structs.h>
 #include <stb_image/stb_image.h>
 #include <glm/gtc/matrix_transform.hpp>  
+#include <engine/core/game_thread.h>
 
 bool MoveSystem::execute(SystemsContext& ctx)
 {
@@ -1914,50 +1915,91 @@ bool HeightMapLoadSystem::generate_heightmap(const std::string& path, HeightMap&
 bool UIDrawGathering::execute(SystemsContext& ctx)
 {
 	
+	
 	auto& sys_strg = ctx.get_system_storage();
+	std::vector<UIPreRenderRequest> new_rects;
+	sys_strg.add_or_replace_object("UIRects", new_rects);
 	
-	std::vector<UIRect> new_rects;
-	sys_strg.add_or_replace_object("UIRects", new_rects, SIZE_MAX);
-	SystemsStorageObject<std::vector<UIRect>>* UIRects
-	= sys_strg.get_object<std::vector<UIRect>>("UIRects", SIZE_MAX);
-	
-	std::vector<UIWord> new_texts;
-	sys_strg.add_or_replace_object("UIWords", new_texts, SIZE_MAX);
-	SystemsStorageObject<std::vector<UIWord>>* UITexts
-		= sys_strg.get_object<std::vector<UIWord>>("UIWords", SIZE_MAX);
+	std::vector<UIPreRenderRequest> new_texts;
+	sys_strg.add_or_replace_object("UIWords", new_texts);
+
+	std::vector<hashed_string_64> ui_mats;
+	sys_strg.add_or_replace_object("UIMats", ui_mats);
+
+	auto engine_context = ctx.get_engine_context();
+	ctx.enqueue([&ctx, engine_context]()
+		{
+			uint64_t invalid = hashed_string_64("").hash;
+			auto& sys_strg = ctx.get_system_storage();
+			SystemsStorageObject<std::vector<hashed_string_64>>* UIMats
+				= sys_strg.get_object<std::vector<hashed_string_64>>("UIMats");
+			UIMats->write([&ctx, &invalid](std::vector<hashed_string_64>& mats)
+				{
+					mats.clear();
+					ctx.each(WithRead<const UIMaterialComponent>{},
+						[&invalid, &mats]
+						(const entt::entity, const UIMaterialComponent mat)
+						{
+							if (mat.material.hash != invalid)
+							{
+								mats.push_back(mat.material);
+							}
+						});
+					if (!mats.empty())
+					{
+						std::sort(mats.begin(), mats.end());
+						auto last = unique(mats.begin(), mats.end());
+						mats.erase(last, mats.end());
+					}
+
+				});
+		}
+	);
 
 	// from now on I don't care about stupid naming, vars will just be letters
-	ctx.enqueue([&ctx, UIRects]()
+	ctx.enqueue([&ctx]()
 		{
-			UIRects->write([&ctx](std::vector<UIRect>& ui_rects)
+			auto& sys_strg = ctx.get_system_storage();
+			SystemsStorageObject<std::vector<UIPreRenderRequest>>* UIRects
+				= sys_strg.get_object<std::vector<UIPreRenderRequest>>("UIRects");
+			UIRects->write([&ctx](std::vector<UIPreRenderRequest>& ui_rects)
 				{
-					ctx.each(WithRead<UIRectComponent>{},
-						[&ui_rects](const entt::entity, const UIRectComponent& r)
+					ui_rects.clear();
+					ctx.each(WithRead<const UIRectComponent, const UIMaterialComponent>{},
+						[&ui_rects](const entt::entity, const UIRectComponent& r, const UIMaterialComponent& m)
 						{
 							// just want to add necessary data...
-							UIRect rect;
+							UIPreRenderRequest rect;
 							rect.color = r.color;
 							rect.extents = r.size;
 							rect.position = r.position;
 							rect.order = r.order;
+							rect.mat_hash = m.material.hash;
 							ui_rects.push_back(rect);
 						}
 					);
-					std::sort(ui_rects.begin(), ui_rects.end(), 
-						[](const auto& a, const auto& b)
-						{
-							return a.order < b.order;
-						});
+					if (!ui_rects.empty())
+					{
+						std::sort(ui_rects.begin(), ui_rects.end(),
+							[](const auto& a, const auto& b)
+							{
+								return a.order < b.order;
+							});
+					}
 				});
 
 		}
 	);
-	ctx.enqueue([this, &ctx, UITexts]()
+	ctx.enqueue([this, &ctx]()
 		{
-			UITexts->write([this, &ctx](std::vector<UIWord>& ui_words)
+			auto& sys_strg = ctx.get_system_storage();
+			SystemsStorageObject<std::vector<UIPreRenderRequest>>* UITexts
+				= sys_strg.get_object<std::vector<UIPreRenderRequest>>("UIWords");
+			UITexts->write([this, &ctx](std::vector<UIPreRenderRequest>& ui_words)
 				{
-					ctx.each(WithRead<UITextComponent>{},
-						[this, &ui_words](const entt::entity, const UITextComponent& t)
+					ui_words.clear();
+					ctx.each(WithRead<const UITextComponent, const UIMaterialComponent>{},
+						[this, &ui_words](const entt::entity, const UITextComponent& t, const UIMaterialComponent& m)
 						{
 							float fs = t.font_size;
 							int max_row = static_cast<int>(t.size.x / fs);
@@ -1968,7 +2010,7 @@ bool UIDrawGathering::execute(SystemsContext& ctx)
 							if (max_row < 1 && max_col < 1 || t.text.length() < 1) return;
 							for (const auto& word : t.text)
 							{
-								UIWord w;
+								UIPreRenderRequest w;
 								w.color = t.color;
 								w.extents = glm::vec2(fs);
 
@@ -1980,19 +2022,24 @@ bool UIDrawGathering::execute(SystemsContext& ctx)
 								if (col > max_col) return;
 								
 								w.uv_offset = char_to_offset(word);
-								w.order = glm::vec2(t.order);
+								w.order = t.order;
 
 								// ah crap, still have to do the ndc offset
-								w.position = glm::vec2(col * fs, row * fs);
+								w.position = (glm::vec2(1.33f * row * fs, -col * fs * 1.75f)) - (-t.position);
 								// probably right, I pray
+								w.mat_hash = m.material.hash;
 								ui_words.push_back(w);
+								++row;
 							}
 						});
-					std::sort(ui_words.begin(), ui_words.end(),
-						[](const auto& a, const auto& b)
-						{
-							return a.order.x < b.order.x;
-						})
+					if (!ui_words.empty())
+					{
+						std::sort(ui_words.begin(), ui_words.end(),
+							[](const auto& a, const auto& b)
+							{
+								return a.order < b.order;
+							});
+					}
 				});
 		}
 	);
@@ -2003,17 +2050,17 @@ bool UIDrawGathering::execute(SystemsContext& ctx)
 glm::vec2 UIDrawGathering::char_to_offset(const char& c)
 {
 	int i = static_cast<int>(c - 32);
-	if (i < 0 || i > 95)
+	if (i < 0 || i > 95) // well can't be over 95...
 	{
 		// return special error character
 		return glm::vec2(0.9f, 0.9f);
 	}
 
 	// we'll do a 10x10 atlas I guess
-	int col = i & 10;
+	int col = i % 10;
 	int row = i / 10;
 
 	float u = 0.1f * col;
-	float v = 0.1f * row;
+	float v = 1.0f - 0.1f * (row + 1);
 	return glm::vec2(u,v);
 }

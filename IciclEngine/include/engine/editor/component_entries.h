@@ -159,7 +159,7 @@ REGISTER_COMPONENT(RigidBodyComponent, ("Physics"),
 	FIELD_CUSTOM("dynamic layers: ", comp, dynamic_layers, 1.f, false),
 	FIELD_CUSTOM("static layers: ", comp, static_layers, 1.f, false),
 	FIELD_CUSTOM("asleep: ", comp, asleep, 1.f, false),
-	FIELD_CUSTOM("sleep strikes: ", comp, sleep_strikes, 175.f, false),
+	FIELD_CUSTOM("sleep strikes: ", comp, sleep_strikes, 1.75f, false),
 	FIELD_CUSTOM("max sleep strikes: ", comp, max_sleep_strikes, 175.f, false),
 	)
 
@@ -171,4 +171,17 @@ REGISTER_COMPONENT(LandscapeComponent, ("Physics"),
 	FIELD_CUSTOM("collision_layers: ", comp, collision_layers, 1.75f, false),
 	FIELD_CUSTOM("max_height: ", comp, max_height, 1.75f, false),
 	FIELD_CUSTOM("has_loaded_height_map: ", comp, has_loaded_height_map, 1.75f, false)
+)
+
+REGISTER_COMPONENT(UIMaterialComponent, ("Render"),
+	FIELD_CUSTOM("hashed path: ", comp, material, 1.75f, false)
+)
+REGISTER_COMPONENT(UITextComponent, ("Render"),
+	FIELD_CUSTOM("hashed path: ", comp, material, 1.75f, false),
+	FIELD_CUSTOM("text: ", comp, text, 1.75f, false),
+	FIELD_CUSTOM("position: ", comp, position, 1.75f, false),
+	FIELD_CUSTOM("size: ", comp, size, 1.75f, false),
+	FIELD_CUSTOM("font_size: ", comp, font_size, 1.75f, false),
+	FIELD_CUSTOM("color: ", comp, color, 1.75f, false),
+	FIELD_CUSTOM("order: ", comp, order, 1.75f, false)
 )

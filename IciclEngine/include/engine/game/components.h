@@ -456,23 +456,39 @@ struct SingleProcessorComponent
     bool nothing = true;
 };
 
-
-
 struct UIRectComponent
 {
+    hashed_string_64 material;
     glm::vec2 position;
     glm::vec2 size;
     glm::vec4 color;
     int order;
-    bool word_space = false;
 };
 
 struct UITextComponent
 {
+    hashed_string_64 material;
     std::string text;
     glm::vec4 color;
     glm::vec2 size;
     float font_size;
     int order;
-    bool world_space = false;
+    glm::vec2 position;
+};
+
+struct UIRenderComponent
+{
+    hashed_string_64 material;
+    std::string text;
+    glm::vec4 color;
+    glm::vec2 size;
+    float font_size;
+    int order;
+    glm::vec2 position;
+};
+
+
+struct UIMaterialComponent
+{
+    hashed_string_64 material;
 };

@@ -41,6 +41,12 @@ struct ComponentRegistry
 		{
 			component_names_matching_category[category].push_back(comp_reg.comp_name);
 		}
+
+		storage_initializers.push_back(
+			[](entt::registry& reg)
+			{
+				reg.storage<TComponent>();
+			});
 			
 	}
 
@@ -51,6 +57,14 @@ struct ComponentRegistry
 		if (it == component_registry_by_comp_type.end())
 			return false;
 		return true;
+	}
+
+	void init_storages(entt::registry& a_registry)
+	{
+		for (auto& init : storage_initializers)
+		{
+			init(a_registry);
+		}
 	}
 
 	template <typename TComponent>
@@ -155,5 +169,6 @@ private:
 	std::unordered_map<std::type_index, ComponentRegistryData> component_registry_by_comp_type;
 	std::unordered_map<std::string, std::type_index> components_by_name;
 	std::unordered_map<std::string, std::vector<std::string>> component_names_matching_category;
+	std::vector<std::function<void(entt::registry&)>> storage_initializers;
 };
 

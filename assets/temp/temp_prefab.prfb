@@ -1,260 +1,19 @@
 {
     "name": " ",
     "root object": {
-        "children": [
-            {
-                "children": [],
-                "components": [
-                    {
-                        "fields": [
-                            {
-                                "name": "entity name: ",
-                                "type": "struct hashed_string_64",
-                                "value": "child2"
-                            },
-                            {
-                                "name": "entity id: ",
-                                "type": "struct EntityReference",
-                                "value": 2
-                            }
-                        ],
-                        "type": "EntityComponent"
-                    },
-                    {
-                        "fields": [
-                            {
-                                "name": "parent: ",
-                                "type": "struct EntityReference",
-                                "value": 3
-                            },
-                            {
-                                "name": "previous sibling: ",
-                                "type": "struct EntityReference",
-                                "value": 0
-                            },
-                            {
-                                "name": "next sibling: ",
-                                "type": "struct EntityReference",
-                                "value": 1
-                            },
-                            {
-                                "name": "child: ",
-                                "type": "struct EntityReference",
-                                "value": 0
-                            }
-                        ],
-                        "type": "HierarchyComponent"
-                    },
-                    {
-                        "fields": [
-                            {
-                                "name": "position: ",
-                                "type": "struct glm::vec<3,float,0>",
-                                "value": [
-                                    0.0,
-                                    0.0,
-                                    0.0
-                                ]
-                            },
-                            {
-                                "name": "scale: ",
-                                "type": "struct glm::vec<3,float,0>",
-                                "value": [
-                                    1.0,
-                                    1.0,
-                                    1.0
-                                ]
-                            },
-                            {
-                                "name": "rotation: ",
-                                "type": "struct glm::vec<3,float,0>",
-                                "value": [
-                                    0.0,
-                                    0.0,
-                                    0.0
-                                ]
-                            },
-                            {
-                                "name": "overwrite quaternion rotation: ",
-                                "type": "bool",
-                                "value": false
-                            },
-                            {
-                                "name": "update euler rotation: ",
-                                "type": "bool",
-                                "value": false
-                            },
-                            {
-                                "name": "rotation_quat",
-                                "type": "struct glm::qua<float,0>",
-                                "value": [
-                                    0.0,
-                                    0.0,
-                                    0.0,
-                                    1.0
-                                ]
-                            },
-                            {
-                                "name": "model_matrix",
-                                "type": "struct glm::mat<4,4,float,0>",
-                                "value": [
-                                    1.0,
-                                    0.0,
-                                    0.0,
-                                    0.0,
-                                    0.0,
-                                    1.0,
-                                    0.0,
-                                    0.0,
-                                    0.0,
-                                    0.0,
-                                    1.0,
-                                    0.0,
-                                    0.0,
-                                    0.0,
-                                    0.0,
-                                    1.0
-                                ]
-                            }
-                        ],
-                        "type": "TransformDynamicComponent"
-                    }
-                ],
-                "name": "child2"
-            },
-            {
-                "children": [],
-                "components": [
-                    {
-                        "fields": [
-                            {
-                                "name": "entity name: ",
-                                "type": "struct hashed_string_64",
-                                "value": "child1"
-                            },
-                            {
-                                "name": "entity id: ",
-                                "type": "struct EntityReference",
-                                "value": 1
-                            }
-                        ],
-                        "type": "EntityComponent"
-                    },
-                    {
-                        "fields": [
-                            {
-                                "name": "parent: ",
-                                "type": "struct EntityReference",
-                                "value": 3
-                            },
-                            {
-                                "name": "previous sibling: ",
-                                "type": "struct EntityReference",
-                                "value": 2
-                            },
-                            {
-                                "name": "next sibling: ",
-                                "type": "struct EntityReference",
-                                "value": 0
-                            },
-                            {
-                                "name": "child: ",
-                                "type": "struct EntityReference",
-                                "value": 0
-                            }
-                        ],
-                        "type": "HierarchyComponent"
-                    },
-                    {
-                        "fields": [
-                            {
-                                "name": "position: ",
-                                "type": "struct glm::vec<3,float,0>",
-                                "value": [
-                                    0.0,
-                                    0.0,
-                                    0.0
-                                ]
-                            },
-                            {
-                                "name": "scale: ",
-                                "type": "struct glm::vec<3,float,0>",
-                                "value": [
-                                    1.0,
-                                    1.0,
-                                    1.0
-                                ]
-                            },
-                            {
-                                "name": "rotation: ",
-                                "type": "struct glm::vec<3,float,0>",
-                                "value": [
-                                    0.0,
-                                    0.0,
-                                    0.0
-                                ]
-                            },
-                            {
-                                "name": "overwrite quaternion rotation: ",
-                                "type": "bool",
-                                "value": false
-                            },
-                            {
-                                "name": "update euler rotation: ",
-                                "type": "bool",
-                                "value": false
-                            },
-                            {
-                                "name": "rotation_quat",
-                                "type": "struct glm::qua<float,0>",
-                                "value": [
-                                    0.0,
-                                    0.0,
-                                    0.0,
-                                    1.0
-                                ]
-                            },
-                            {
-                                "name": "model_matrix",
-                                "type": "struct glm::mat<4,4,float,0>",
-                                "value": [
-                                    1.0,
-                                    0.0,
-                                    0.0,
-                                    0.0,
-                                    0.0,
-                                    1.0,
-                                    0.0,
-                                    0.0,
-                                    0.0,
-                                    0.0,
-                                    1.0,
-                                    0.0,
-                                    0.0,
-                                    0.0,
-                                    0.0,
-                                    1.0
-                                ]
-                            }
-                        ],
-                        "type": "TransformDynamicComponent"
-                    }
-                ],
-                "name": "child1"
-            }
-        ],
+        "children": [],
         "components": [
             {
                 "fields": [
                     {
                         "name": "entity name: ",
                         "type": "struct hashed_string_64",
-                        "value": "parent"
+                        "value": "scene object (0)"
                     },
                     {
                         "name": "entity id: ",
                         "type": "struct EntityReference",
-                        "value": 3
+                        "value": 531
                     }
                 ],
                 "type": "EntityComponent"
@@ -279,7 +38,7 @@
                     {
                         "name": "child: ",
                         "type": "struct EntityReference",
-                        "value": 2
+                        "value": 0
                     }
                 ],
                 "type": "HierarchyComponent"
@@ -287,78 +46,90 @@
             {
                 "fields": [
                     {
-                        "name": "position: ",
-                        "type": "struct glm::vec<3,float,0>",
-                        "value": [
-                            0.0,
-                            0.0,
-                            0.0
-                        ]
+                        "name": "material path: ",
+                        "type": "struct hashed_string_64",
+                        "value": "./assets/shaders/engine/ui.mat"
                     },
                     {
-                        "name": "scale: ",
-                        "type": "struct glm::vec<3,float,0>",
-                        "value": [
-                            1.0,
-                            1.0,
-                            1.0
-                        ]
-                    },
-                    {
-                        "name": "rotation: ",
-                        "type": "struct glm::vec<3,float,0>",
-                        "value": [
-                            0.0,
-                            0.0,
-                            0.0
-                        ]
-                    },
-                    {
-                        "name": "overwrite quaternion rotation: ",
+                        "name": "instanced: ",
                         "type": "bool",
                         "value": false
                     },
                     {
-                        "name": "update euler rotation: ",
+                        "name": "use mipmaps: ",
+                        "type": "bool",
+                        "value": true
+                    },
+                    {
+                        "name": "load material: ",
                         "type": "bool",
                         "value": false
-                    },
-                    {
-                        "name": "rotation_quat",
-                        "type": "struct glm::qua<float,0>",
-                        "value": [
-                            0.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ]
-                    },
-                    {
-                        "name": "model_matrix",
-                        "type": "struct glm::mat<4,4,float,0>",
-                        "value": [
-                            1.0,
-                            0.0,
-                            0.0,
-                            0.0,
-                            0.0,
-                            1.0,
-                            0.0,
-                            0.0,
-                            0.0,
-                            0.0,
-                            1.0,
-                            0.0,
-                            0.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ]
                     }
                 ],
-                "type": "TransformDynamicComponent"
+                "type": "MaterialComponent"
+            },
+            {
+                "fields": [
+                    {
+                        "name": "hashed path: ",
+                        "type": "struct hashed_string_64",
+                        "value": "./assets/shaders/engine/ui.mat"
+                    }
+                ],
+                "type": "UIMaterialComponent"
+            },
+            {
+                "fields": [
+                    {
+                        "name": "hashed path: ",
+                        "type": "struct hashed_string_64",
+                        "value": ""
+                    },
+                    {
+                        "name": "text: ",
+                        "type": "class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >",
+                        "value": "sfkdjfngdkfjghdkfgjdofkgjd;flkgjd;lkfgj;lkdsgfj;dlskfgjd;lskfgjd;lskfgjd;lskgfj;dlksgj;ldskgjl;dksgj;dlksjgd;lkfgj;dlskjg;dlksj"
+                    },
+                    {
+                        "name": "position: ",
+                        "type": "struct glm::vec<2,float,0>",
+                        "value": [
+                            -0.8799999952316284,
+                            0.6899999976158142
+                        ]
+                    },
+                    {
+                        "name": "size: ",
+                        "type": "struct glm::vec<2,float,0>",
+                        "value": [
+                            1.1100000143051147,
+                            0.07999999821186066
+                        ]
+                    },
+                    {
+                        "name": "font_size: ",
+                        "type": "float",
+                        "value": 0.009999999776482582
+                    },
+                    {
+                        "name": "color: ",
+                        "type": "struct glm::vec<4,float,0>",
+                        "value": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    {
+                        "name": "order: ",
+                        "type": "int",
+                        "value": 0
+                    }
+                ],
+                "type": "UITextComponent"
             }
         ],
-        "name": "parent"
+        "name": "scene object (0)"
     }
 }

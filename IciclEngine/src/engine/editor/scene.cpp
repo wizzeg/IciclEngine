@@ -40,6 +40,7 @@ void Scene::reset()
 	systems.clear();
 	SceneObjectRegistry& id_registry = SceneObjectRegistry::instance();
 	id_registry.clear_registry();
+	ComponentRegistry::instance().init_storages(registry);
 }
 
 bool Scene::save(std::string a_path)
@@ -568,6 +569,9 @@ void Scene::start_runtime()
 			scene_object->get_entity_references();
 		}
 	}
+	ComponentRegistry::instance().init_storages(registry);
+	
+
 
 	//for (size_t i = 0; i < scene_objects.size(); i++)
 	//{

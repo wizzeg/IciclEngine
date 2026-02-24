@@ -17,7 +17,7 @@
 #include <engine/core/entity_command_buffer.h>
 #include <engine/core/system_dependencies.h>
 
-
+struct EngineContext;
 
 struct SystemsContextStorage
 {
@@ -28,14 +28,14 @@ struct SystemsContextStorage
 	std::mutex storage_mutex;
 
 	template <typename T>
-	void mark_erase(std::string a_name, size_t index = 0)
+	void mark_erase(const std::string& a_name, size_t index = 0)
 	{
 		std::lock_guard deletion_guard(deletion_mutex);
 		storage_object_deletions.push_back(storage_key(typeid(T), a_name, index));
 	}
 
 	template <typename T>
-	SystemsStorageObject<T>* get_object(std::string a_name, size_t index = 0)
+	SystemsStorageObject<T>* get_object(const std::string& a_name, size_t index = 0)
 	{
 		std::lock_guard storage_guard(storage_mutex);
 		auto it = storage.find(storage_key(typeid(T), a_name, index));
@@ -48,7 +48,7 @@ struct SystemsContextStorage
 	}
 
 	template <typename T>
-	std::unique_ptr<T> consume_object(std::string a_name, size_t index = 0) // this will leave object unsafe
+	std::unique_ptr<T> consume_object(const std::string& a_name, size_t index = 0) // this will leave object unsafe
 	{
 		std::unique_lock storage_lock(storage_mutex);
 		auto it = storage.find(storage_key(typeid(T), a_name, index));
@@ -64,14 +64,14 @@ struct SystemsContextStorage
 			object->invalid = true;
 			object_lock.unlock();
 			object->cv.notify_all();
-			mark_erase(a_name, index);
+			mark_erase<T>(a_name, index);
 			return std::move(o);
 		}
 		return nullptr;
 	}
 
 	template <typename T>
-	void add_or_replace_object(std::string a_name, T&& value, size_t index = 0)
+	void add_or_replace_object(const std::string& a_name, T&& value, size_t index = 0)
 	{
 		std::unique_lock storage_lock(storage_mutex);
 		auto it = storage.find(storage_key(typeid(std::decay_t<T>), a_name, index));
@@ -94,7 +94,7 @@ struct SystemsContextStorage
 	}
 
 	template <typename T>
-	SystemsStorageObject<T>* new_or_get_object(std::type_index a_type, std::string a_name, T&& value, size_t index)
+	SystemsStorageObject<T>* new_or_get_object(std::type_index a_type, const std::string& a_name, T&& value, size_t index)
 	{
 		std::unique_lock storage_lock(storage_mutex);
 		if (auto it = storage.find(storage_key(typeid(std::decay_t<T>), a_name, index)); it != storage.end())
@@ -2237,6 +2237,8 @@ struct SystemsContext
 
 	void set_delta_time(double a_dt) { delta_time = a_dt; }
 	double get_delta_time() const { return delta_time; }
+	const std::shared_ptr<EngineContext> get_engine_context();
+
 
 	SystemsContextDependencies& get_system_dependencies() { return systems_dependencies; }
 	SystemsContextStorage& get_system_storage() { return systems_storage; }
@@ -2254,4 +2256,5 @@ private:
 	entt::registry& registry;
 	SystemsContextDependencies systems_dependencies;
 	SystemsContextStorage systems_storage;
+	std::shared_ptr<EngineContext> engine_context;
 };

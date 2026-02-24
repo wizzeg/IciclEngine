@@ -98,6 +98,7 @@ REGISTER_TYPE_SERIALIZER(glm::vec3,
     }
 )
 
+
 // glm::vec4
 REGISTER_TYPE_SERIALIZER(glm::vec4,
     { j = json::array({value.x, value.y, value.z, value.w}); },

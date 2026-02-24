@@ -29,7 +29,7 @@ layout (std430, binding = 0) buffer ModelMatrixBuffer {
     int half_buffer_size; // don't need these...
     int num_model_matrices2;
 	int[2] pad;
-    ModelMatrix model_matrices[];  // Unsized array
+    ModelMatrix model_matrices[]; 
 };
 
 void main()

@@ -146,6 +146,14 @@ int main(void)
 	//asset_manager.add_asset_job(std::move(job));
 
 	uint64_t wait_time = 0;
+	glfwSetWindowFocusCallback(window, [](GLFWwindow* window, int focused)
+		{
+			if (!focused)
+			{
+				InputManager::get().unlock_mouse();
+			}
+		});
+
 	while (engine_context->run())
 	{
 		timer2.start();
@@ -528,9 +536,21 @@ int main(void)
 				image_size = ImVec2(720, 480);
 			}
 			ImGui::Image(frame_buffer->get_color_texture(), image_size, ImVec2(0, 1), ImVec2(1, 0));
-			
-			ImGui::End();
+			if (engine_context->input_manager.is_key_pressed(EKey::LeftMouseButton) && ImGui::IsItemHovered()) // all of this should be put into camera
+			{
+				ImVec2 item_min = ImGui::GetItemRectMin();
+				ImVec2 item_max = ImGui::GetItemRectMax();
+				ImVec2 center = ImVec2((item_min.x + item_max.x) * 0.5f, (item_min.y + item_max.y) * 0.5f);
+				engine_context->input_manager.lock_mouse(center.x, center.y);
+			}
+			if (engine_context->input_manager.is_mouse_locked())
+			{
+				ImGui::SetMouseCursor(ImGuiMouseCursor_None); // don't know if this will work in real build...
+				if (engine_context->input_manager.is_key_pressed(EKey::Tilde))
+					engine_context->input_manager.unlock_mouse();
+			}
 
+			ImGui::End();
 
 			ImGui::Begin("editor_camera_gbuffer-albedo_spec_texture");
 			available_content = ImGui::GetContentRegionAvail() - ImVec2(5, 5);

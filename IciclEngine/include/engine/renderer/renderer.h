@@ -168,12 +168,14 @@ private:
 	void create_pointlight_SSBO();
 	void update_pointlight_SSBO(const std::vector<PointLightSSBO>& a_point_lights);
 	void create_shadow_framebuffers();
+	void load_ui_shader();
 
 	void create_instance_SSBO();
 	void update_insance_SSBO(const std::vector<glm::mat4>& a_model_matrices); bool instance_half; GLsync fences[2] = { nullptr, nullptr };
+	void update_ui_insance_SSBO(const std::vector<UISSBO>& ui_SSBO); bool ui_instance_half;
 	void deffered_geometry_pass(const RenderContext& a_render_context, const FrameBuffer* g_buffer);
 	void deffered_shadowmap_pass(const RenderContext& a_render_context, const FrameBuffer* shadow_array, size_t a_shadowmap_index);
-
+	void deffered_ui_pass(const RenderContext& a_render_context, const FrameBuffer* a_output);
 	
 
 	void set_vec1f(const float value, const char* location) const;
@@ -207,12 +209,16 @@ private:
 
 	GLuint pointlight_ssbo = 0;
 	GLuint model_instance_ssbo = 0;
+	GLuint ui_instance_ssbo = 0;
 
 	std::string lighting_shader_path = "./assets/shaders/engine/lighting.shdr";
+	std::string ui_shader_path = "./assets/shaders/engine/ui.shdr";
 	unsigned int count = 0;
 	glm::vec3 camera_position = glm::vec3(0);
 	glm::mat4 proj = glm::mat4(1);
 	glm::mat4 view = glm::mat4(1);
+
+	GLint ui_program = 0;
 
 	float directional_shadow_resolution = 2048;
 	float rect_shadow_resoltuion = 512;

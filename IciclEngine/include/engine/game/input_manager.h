@@ -1,4 +1,5 @@
 #pragma once
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui-docking/imgui.h>
 #include <imgui-docking/imgui_impl_glfw.h>
 #include <imgui-docking/imgui_impl_opengl3.h>
@@ -9,6 +10,11 @@
 #include <unordered_map>
 #include <chrono>
 #include <atomic>
+
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <mutex>
 enum class EKey
 {
 	// Numbers
@@ -20,7 +26,7 @@ enum class EKey
 	// Special keys
 	Space, Enter, Escape, Tab, Backspace, Delete,
 	LeftShift, RightShift, LeftControl, RightControl, LeftAlt, RightAlt,
-	Up, Down, Left, Right,
+	Up, Down, Left, Right, Tilde,
 	// Mouse
 	LeftMouseButton, RightMouseButton, MiddleMouseButton,
 	MAX_VALUE
@@ -78,27 +84,20 @@ struct InputManager
 	bool is_key_released(EKey a_key);
 	double key_held_duration(EKey a_key);
 	double key_previous_held_duration(EKey a_key);
+	// these should be locked behind something
 	void update_input();
-	//{
+	void lock_mouse(float x, float y);
+	void unlock_mouse();
+	bool is_mouse_locked() const { return mouse_locked; };
 
-	//	if (ImGui::IsKeyDown(ImGuiKey_Escape))
-	//	{
-	//		PRINTLN("ESCAPE PRESSED");
-	//	}
-	//	if (ImGui::IsKeyDown(ImGuiKey_Q))
-	//	{
-	//		PRINTLN("Q PRESSED");
-	//	}
-	//	if (ImGui::IsKeyDown(ImGuiKey_W))
-	//	{
-	//		PRINTLN("W PRESSED");
-	//	}
-	//}
 private:
 	InputManager() = default;
 	void update_key(EKey a_key, ImGuiKey a_imgui_key);
 	void update_mouse_button(EKey a_key, ImGuiMouseButton a_mouse_button);
-	
+	bool mouse_locked = false;
+	int locked_x = 0;
+	int locked_y = 0;
+	std::mutex mouse_mutex;
 	std::unique_ptr<InputBuffer> input_buffer = std::make_unique<InputBuffer>();
 };
 

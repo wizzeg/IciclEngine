@@ -104,7 +104,6 @@ struct EngineContext
 		render_requests[std::size_t(write_pos)].clear();
 		render_contexts[std::size_t(write_pos)] = RenderContext(); // what's this? this the new one I think?
 		cameras_render[std::size_t(write_pos)].clear();
-		UI_renders[std::size_t(write_pos)].clear();
 	}
 	bool run() { return !kill_all; }
 

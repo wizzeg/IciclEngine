@@ -105,6 +105,13 @@ void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_fie
 			std::string id = "##" + field.name + std::to_string(i++);
 			ImGui::DragFloat3(id.c_str(), &reinterpret_cast<glm::vec3*>(field.value_ptr)->x, 0.01f);
 		}
+		else if (field.type == typeid(glm::vec2))
+		{
+			ImGui::Text(field.name.c_str());
+			//ImGui::SameLine();
+			std::string id = "##" + field.name + std::to_string(i++);
+			ImGui::DragFloat2(id.c_str(), &reinterpret_cast<glm::vec2*>(field.value_ptr)->x, 0.01f);
+		}
 		else if (field.type == typeid(glm::vec4))
 		{
 			ImGui::Text(field.name.c_str());

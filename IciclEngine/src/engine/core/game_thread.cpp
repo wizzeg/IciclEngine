@@ -398,6 +398,31 @@ void GameThread::game_runtime()
 	//	pre_render_reqs.emplace_back(world_position.model_matrix, mesh_component.hashed_path.hash,
 	//		material_component.hashed_path.hash, material_component.instance, material_component.mipmap);
 	//}
+	std::vector<UIPreRenderRequest> ui_requests;
+	ui_requests.reserve(100);
+	{
+		ctx.enqueue([&ctx, &ui_requests]()
+			{
+				std::unique_ptr<std::vector<UIPreRenderRequest>> rects = ctx.get_system_storage().consume_object<std::vector<UIPreRenderRequest>>("UIRects");
+				auto words = ctx.get_system_storage().consume_object<std::vector<UIPreRenderRequest>>("UIWords");
+				if (rects)
+				{
+					for (size_t i = 0; i < rects->size(); i++)
+					{
+						ui_requests.push_back((*rects)[i]);
+					}
+				}
+				if (words)
+				{
+					for (size_t i = 0; i < words->size(); i++)
+					{
+						ui_requests.push_back((*words)[i]);
+					}
+				}
+			});
+
+	}
+
 
 	for (auto [entity, render, transform] :
 		//registry.view<RenderComponent, TransformDynamicComponent>().each())
@@ -479,7 +504,9 @@ void GameThread::game_runtime()
 	//	render_requests = std::move(opt_render_requests.value());
 	//}
 	//render_requests = std::move(engine_context->asset_manager->retrieve_render_requests(pre_render_requests));
-	render_context = std::move(engine_context->asset_manager->construct_render_context(pre_render_reqs));
+	
+	ctx.sync();
+	render_context = std::move(engine_context->asset_manager->construct_render_context(pre_render_reqs, ui_requests));
 	ind_timer.stop();
 	renderrequests_time += ind_timer.get_time_ms();
 
@@ -513,26 +540,7 @@ void GameThread::game_runtime()
 	ind_timer.stop();
 	lighting_time += ind_timer.get_time_ms();
 
-	{
-		ctx.enqueue([&ctx, &render_context]()
-			{
-				auto rects = ctx.get_system_storage().consume_object<std::vector<UIRect>>("UIRects", SIZE_MAX);
-				auto words = ctx.get_system_storage().consume_object<std::vector<UIWord>>("UIWords", SIZE_MAX);
-				if (rects)
-				{
-					render_context.rects = std::move(*rects.get());
-				}
-				if (words)
-				{
-					render_context.words = std::move(*words.get());
-				}
-			});
 
-	}
-	
-
-	
-	
 	for (auto [entity, mat_float] :
 		registry.view<MaterialFloatComponent>().each())
 	{
@@ -566,6 +574,7 @@ void GameThread::game_runtime()
 
 	ctx.sync();
 	previous_total_render_requests = render_requests.size();
+	ctx.get_system_storage().perform_erase();
 	/////////////////////////////////////// BELOW is for testing when comopnents are suddenly destroyed.
 	//std::vector<entt::entity> entities;
 	//for (auto [entity, worldpos] : registry.view<TransformDynamicComponent>().each())

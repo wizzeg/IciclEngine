@@ -54,6 +54,7 @@ struct UIWord
 };
 
 
+
 struct SystemsStorageObjectBase
 {
 	std::condition_variable cv;
