@@ -128,7 +128,7 @@ int main(void)
 	window = glfw_context->get_window();
 	ImGuiIO* io = imgui_manager->get_io();
 
-	InputManager& input_manager = InputManager::get();
+	InputManager& input_manager = InputManager::instance();
 	bool captured_prev_frame = false;
 	ImVec2 mouse_pos;
 
@@ -150,7 +150,7 @@ int main(void)
 		{
 			if (!focused)
 			{
-				InputManager::get().unlock_mouse();
+				InputManager::instance().unlock_mouse();
 			}
 		});
 
@@ -183,7 +183,7 @@ int main(void)
 					auto ls = landscape.lock();
 					ls->add_component(TransformDynamicComponent{ glm::vec3(0, -200, 0), glm::vec3(512, 1, 512) });
 					ls->add_component(LandscapeComponent{ hashed_string_64("./assets/textures/landscape/heightmap.png"), 2, 0, 0 });
-					ls->add_component(RenderComponent{hashed_string_64("./assets/obj/landscape/landscape512.obj"), hashed_string_64("./assets/shaders/landscape/landscape.mat"), false, false, true});
+					ls->add_component(RenderComponent{hashed_string_64("./assets/obj/landscape/landscape256.obj"), hashed_string_64("./assets/shaders/landscape/landscape.mat"), false, false, true});
 
 					{
 						auto obj = scene->new_scene_object("parent ", true);
@@ -238,7 +238,7 @@ int main(void)
 					}*/
 
 
-					for (size_t i = 0; i < 500; i++)
+					for (size_t i = 0; i < 2500; i++)
 					{
 						float x = -200.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 400.0f));
 						float y = -200.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 400.0f));; // Or random if you want variety
@@ -254,7 +254,7 @@ int main(void)
 						scene_object->add_component(RenderComponent{ meshes[mesh_idx], mats[mat_idx], true, true, true });
 						//scene_object->add_component(TextureComponent{ false, texes[tex_idx]});
 						scene_object->add_component(SpawnPositionComponent{ glm::vec3(x, y, z) });
-						scene_object->add_component(BoundingBoxComponent{ glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.f) });
+						scene_object->add_component(BoundingBoxComponent{ glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.f), false, 2, 32 });
 
 						float mass = 1.f;
 						float inverse_mass = 1.f;
@@ -431,7 +431,7 @@ int main(void)
 		glfwPollEvents();
 		frames++;
 		timer.stop();
-		engine_context->delta_time = timer.get_time_s();
+		engine_context->delta_time = std::min(timer.get_time_s(), 0.25);
 		timer.start();
 		total_time += engine_context->delta_time; // this should be on game thread too: stop at start of frame -> record dt -> immedietly into start
 		if (total_time > 1)
@@ -455,6 +455,12 @@ int main(void)
 			engine_context->swap_render_requests();
 			engine_context->render_thread = true;
 			engine_context->game_thread = true;
+			auto load_scene = engine_context->systems_context->get_system_storage().consume_object<LoadSceneCommand>("LoadSceneCommand");
+			if (load_scene && load_scene->load)
+			{
+				scene->load(load_scene->path);
+			}
+			engine_context->systems_context->get_system_storage().perform_erase();
 			
 			// do all ui drawing.
 			imgui_manager->new_frame();
@@ -671,7 +677,7 @@ int main(void)
 			//ui_mananger->RenderToolbar();
 
 			//input_manager.update_input();
-			input_manager.update_input();
+			engine_context->update_input();
 
 			imgui_manager->render();
 			timer2.stop();

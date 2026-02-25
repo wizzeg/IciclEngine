@@ -286,6 +286,8 @@
     <None Include="..\assets\shaders\engine\pbr_lighting_frag.glsl" />
     <None Include="..\assets\shaders\engine\shadow_frag.glsl" />
     <None Include="..\assets\shaders\engine\shadow_vert.glsl" />
+    <None Include="..\assets\shaders\engine\ui_cursor_frag.glsl" />
+    <None Include="..\assets\shaders\engine\ui_cursor_vert .glsl" />
     <None Include="..\assets\shaders\engine\ui_frag.glsl" />
     <None Include="..\assets\shaders\engine\ui_vert.glsl" />
     <None Include="..\assets\shaders\fragment\color_frag.glsl" />

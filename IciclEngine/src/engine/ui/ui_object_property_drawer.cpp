@@ -49,7 +49,8 @@ void UIObjectPropertyDrawer::draw_object_properties(std::shared_ptr<SceneObject>
 					a_scene_object->remove_component_data(i);
 					ImGui::EndChild();
 					removed_component = true;
-					continue;
+					ImGui::PopID();
+					break;
 				}
 			}
 
@@ -131,6 +132,19 @@ void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_fie
 			if (ImGui::InputText(id.c_str(), buffer, 128))
 			{
 				*string_ptr = buffer;
+			}
+		}
+		else if (field.type == typeid(int))
+		{
+			int* value = static_cast<int*>(field.value_ptr);
+			std::string final_string = field.name;
+			int temp = static_cast<int>(*value);
+			ImGui::Text(field.name.c_str());
+			ImGui::SameLine();
+			std::string id = "##" + field.name + std::to_string(i++) + " " + field.name;
+			if (ImGui::InputInt(id.c_str(), &temp, 1, 100, 0))
+			{
+				*value = ((int)temp);
 			}
 		}
 		else if (field.type == typeid(uint32_t))
@@ -284,7 +298,7 @@ void UIObjectPropertyDrawer::draw_component_fields(std::vector<FieldInfo>& a_fie
 	}
 }
 
-void UIObjectPropertyDrawer::draw_editable_field(FieldInfo& a_field_info)
+void UIObjectPropertyDrawer::draw_editable_field(FieldInfo& a_field_info) // this will never happen unfortunately
 {
 	if (a_field_info.edit_mode == EEditMode::Editable)
 	{

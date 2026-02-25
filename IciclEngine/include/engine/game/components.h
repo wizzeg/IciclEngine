@@ -335,9 +335,12 @@ struct alignas(8) BoundingBoxComponent
     glm::vec3 offset = glm::vec3(0.0f);
     glm::vec3 box_extents = glm::vec3(1.0f);
     bool landscape = false;
-    uint8_t collision_layers = 0b00000000;
+    uint8_t collision_layers = 0b00000000; // should have one layer for "existing in layers" and one that "checks with layers"
     // these would be elsehwere, in like "CollisionResultComponent"
     uint16_t tag = 0;
+    bool has_collision_info = false;
+    size_t result_start_index = 0;
+    size_t result_end_index = 0;
 
     bool is_collision_against(uint8_t layers) const
     {
@@ -459,9 +462,10 @@ struct SingleProcessorComponent
 struct UIRectComponent
 {
     hashed_string_64 material;
-    glm::vec2 position;
-    glm::vec2 size;
-    glm::vec4 color;
+    glm::vec2 position = glm::vec2(0);
+    glm::vec2 uv_offset = glm::vec2(0);
+    glm::vec2 size = glm::vec2(0);
+    glm::vec4 color = glm::vec4(0);
     int order;
 };
 
@@ -491,4 +495,26 @@ struct UIRenderComponent
 struct UIMaterialComponent
 {
     hashed_string_64 material;
+};
+
+struct UIMenuItemStatusComponent
+{
+    bool pressed = false;
+    bool hovered = false;
+};
+
+struct UIColorChangeComponent
+{
+    glm::vec4 active = glm::vec4(1);
+    glm::vec4 inactive = glm::vec4(0);
+};
+
+struct CursorComponent
+{
+    bool active;
+};
+
+struct UISelectableComponent
+{
+    bool selectable;
 };

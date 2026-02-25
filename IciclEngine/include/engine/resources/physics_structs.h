@@ -209,6 +209,7 @@ struct SmallEntry
 	OBB obb;
 	PhysicsLayers layers;
 	bool asleep = false;
+	uint16_t tag;
 	bool operator==(const SmallEntry& other) const {
 		return coordinates == other.coordinates;
 	}
@@ -243,6 +244,7 @@ struct MassiveEntry
 	OBB obb;
 	PhysicsLayers layers;
 	bool asleep = false;
+	uint16_t tag;
 	bool operator==(const MassiveEntry& other) const {
 		return entity == other.entity;
 	}
@@ -267,4 +269,19 @@ struct PartitionedCellEntry
 {
 	CellEntry entries;
 	std::vector<StartStop> start_stops;
+};
+
+struct CollisionInfo
+{
+	entt::entity entity;
+	uint16_t tag;
+};
+
+struct CollisionResult
+{
+	entt::entity self_entity;
+	entt::entity other_entity;
+	uint32_t self_access_order;
+	uint32_t other_access_order;
+	uint16_t other_tag;
 };

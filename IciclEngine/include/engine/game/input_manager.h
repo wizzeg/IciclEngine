@@ -15,6 +15,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <mutex>
+class EngineContext;
 enum class EKey
 {
 	// Numbers
@@ -70,8 +71,8 @@ struct InputBuffer
 
 struct InputManager
 {
-	
-	static InputManager& get()
+	friend class EngineContext;
+	static InputManager& instance()
 	{
 		static InputManager instance;
 		return instance;
@@ -85,13 +86,14 @@ struct InputManager
 	double key_held_duration(EKey a_key);
 	double key_previous_held_duration(EKey a_key);
 	// these should be locked behind something
-	void update_input();
+	
 	void lock_mouse(float x, float y);
 	void unlock_mouse();
 	bool is_mouse_locked() const { return mouse_locked; };
 
 private:
 	InputManager() = default;
+	void update_input();
 	void update_key(EKey a_key, ImGuiKey a_imgui_key);
 	void update_mouse_button(EKey a_key, ImGuiMouseButton a_mouse_button);
 	bool mouse_locked = false;

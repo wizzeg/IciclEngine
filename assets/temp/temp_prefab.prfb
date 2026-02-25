@@ -13,7 +13,7 @@
                     {
                         "name": "entity id: ",
                         "type": "struct EntityReference",
-                        "value": 531
+                        "value": 529
                     }
                 ],
                 "type": "EntityComponent"
@@ -63,7 +63,7 @@
                     {
                         "name": "load material: ",
                         "type": "bool",
-                        "value": false
+                        "value": true
                     }
                 ],
                 "type": "MaterialComponent"
@@ -77,57 +77,6 @@
                     }
                 ],
                 "type": "UIMaterialComponent"
-            },
-            {
-                "fields": [
-                    {
-                        "name": "hashed path: ",
-                        "type": "struct hashed_string_64",
-                        "value": ""
-                    },
-                    {
-                        "name": "text: ",
-                        "type": "class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >",
-                        "value": "sfkdjfngdkfjghdkfgjdofkgjd;flkgjd;lkfgj;lkdsgfj;dlskfgjd;lskfgjd;lskfgjd;lskgfj;dlksgj;ldskgjl;dksgj;dlksjgd;lkfgj;dlskjg;dlksj"
-                    },
-                    {
-                        "name": "position: ",
-                        "type": "struct glm::vec<2,float,0>",
-                        "value": [
-                            -0.8799999952316284,
-                            0.6899999976158142
-                        ]
-                    },
-                    {
-                        "name": "size: ",
-                        "type": "struct glm::vec<2,float,0>",
-                        "value": [
-                            1.1100000143051147,
-                            0.07999999821186066
-                        ]
-                    },
-                    {
-                        "name": "font_size: ",
-                        "type": "float",
-                        "value": 0.009999999776482582
-                    },
-                    {
-                        "name": "color: ",
-                        "type": "struct glm::vec<4,float,0>",
-                        "value": [
-                            1.0,
-                            1.0,
-                            1.0,
-                            1.0
-                        ]
-                    },
-                    {
-                        "name": "order: ",
-                        "type": "int",
-                        "value": 0
-                    }
-                ],
-                "type": "UITextComponent"
             }
         ],
         "name": "scene object (0)"

@@ -213,6 +213,25 @@ struct SystemsContext
 		return synced;
 	}
 
+	template<typename... Writes, typename Func>
+	bool each(WithWrite<Writes...> writes, Func&& func)
+	{
+		bool synced = false;
+		while (!systems_dependencies.add(writes))
+		{
+			synced = true;
+			PRINTLN("Forced sync");
+			entt_sync();
+		}
+		auto view = registry.view< Writes...>();
+		for (const auto entity : view)
+		{
+			func(entity, view.template get<Writes>(entity)...);
+		}
+		systems_dependencies.remove(writes);
+		return synced;
+	}
+
 	template<typename... Writes, typename... Mods, typename Func>
 	bool each(WithWrite<Writes...> writes, WithRef<Mods...> mods, Func&& func)
 	{
@@ -302,7 +321,7 @@ struct SystemsContext
 		auto view = registry.view<Reads..., Writes...>();
 		for (const auto entity : view)
 		{
-			func(entity, view.template get<Reads>(entity)...);
+			func(entity, view.template get<Reads>(entity)..., view.template get<Writes>(entity)...);
 		}
 		systems_dependencies.remove(reads, writes, mods);
 		return synced;
@@ -1615,7 +1634,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename Func, typename T>
-	bool enqueue_parallel_data_each(WithRead<Reads...> reads, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order)
+	bool enqueue_parallel_data_each(WithRead<Reads...> reads, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order) // Note, access order is reversed
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads))
@@ -1660,7 +1679,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename...Mods, typename Func, typename T>
-	bool enqueue_parallel_data_each(WithRead<Reads...> reads, WithRef<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order)
+	bool enqueue_parallel_data_each(WithRead<Reads...> reads, WithRef<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order) // Note, access order is reversed
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads, mods))
@@ -1707,7 +1726,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename... Excludes, typename Func, typename T>
-	bool enqueue_parallel_data_each(WithRead<Reads...> reads, WithOut<Excludes...>, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order)
+	bool enqueue_parallel_data_each(WithRead<Reads...> reads, WithOut<Excludes...>, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order) // Note, access order is reversed
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads))
@@ -1752,7 +1771,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename... Excludes, typename...Mods, typename Func, typename T>
-	bool enqueue_parallel_data_each(WithRead<Reads...> reads, WithOut<Excludes...>, WithRef<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order)
+	bool enqueue_parallel_data_each(WithRead<Reads...> reads, WithOut<Excludes...>, WithRef<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order) // Note, access order is reversed
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads, mods))
@@ -1795,8 +1814,9 @@ struct SystemsContext
 		return synced;
 	}
 
+	
 	template<typename... Writes, typename Func, typename T>
-	bool enqueue_parallel_data_each(WithWrite<Writes...> writes, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order)
+	bool enqueue_parallel_data_each(WithWrite<Writes...> writes, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order) // Note, access order is reversed
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(writes))
@@ -1841,7 +1861,7 @@ struct SystemsContext
 	}
 
 	template<typename... Writes, typename...Mods, typename Func, typename T>
-	bool enqueue_parallel_data_each(WithWrite<Writes...> writes, WithRef<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order)
+	bool enqueue_parallel_data_each(WithWrite<Writes...> writes, WithRef<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order) // Note, access order is reversed
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(writes, mods))
@@ -1886,7 +1906,7 @@ struct SystemsContext
 	}
 
 	template<typename... Writes, typename... Excludes, typename Func, typename T>
-	bool enqueue_parallel_data_each(WithWrite<Writes...> writes, WithOut<Excludes...>, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order)
+	bool enqueue_parallel_data_each(WithWrite<Writes...> writes, WithOut<Excludes...>, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order) // Note, access order is reversed
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(writes))
@@ -1931,7 +1951,7 @@ struct SystemsContext
 	}
 
 	template<typename... Writes, typename... Excludes, typename...Mods, typename Func, typename T>
-	bool enqueue_parallel_data_each(WithWrite<Writes...> writes, WithOut<Excludes...>, WithRef<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order)
+	bool enqueue_parallel_data_each(WithWrite<Writes...> writes, WithOut<Excludes...>, WithRef<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order) // Note, access order is reversed
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(writes, mods))
@@ -1976,7 +1996,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename... Writes, typename Func, typename T>
-	bool enqueue_parallel_data_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order)
+	bool enqueue_parallel_data_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order) // Note, access order is reversed
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads, writes))
@@ -2019,7 +2039,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename... Writes, typename...Mods, typename Func, typename T>
-	bool enqueue_parallel_data_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, WithRef<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order)
+	bool enqueue_parallel_data_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, WithRef<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order) // Note, access order is reversed
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads, writes, mods))
@@ -2062,7 +2082,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename... Writes, typename... Excludes, typename Func, typename T>
-	bool enqueue_parallel_data_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, WithOut<Excludes...>, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order)
+	bool enqueue_parallel_data_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, WithOut<Excludes...>, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order) // Note, access order is reversed
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads, writes))
@@ -2106,7 +2126,7 @@ struct SystemsContext
 	}
 
 	template<typename... Reads, typename... Writes, typename... Excludes, typename...Mods, typename Func, typename T>
-	bool enqueue_parallel_data_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, WithOut<Excludes...>, WithRef<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order)
+	bool enqueue_parallel_data_each(WithRead<Reads...> reads, WithWrite<Writes...> writes, WithOut<Excludes...>, WithRef<Mods...> mods, Func&& func, std::vector<T>& a_thread_local_data, size_t a_num_threads, bool record_order) // Note, access order is reversed
 	{
 		bool synced = false;
 		while (!systems_dependencies.add(reads, writes, mods))
@@ -2126,7 +2146,7 @@ struct SystemsContext
 			size_t end = std::min(start + chunk_size, size);
 			if (start >= size) break;
 			systems_dependencies.add(reads, writes, mods, false);
-			entt_thread_pool->enqueue([this, view, thread_id, start, end, reads, writes, mods, func]()
+			entt_thread_pool->enqueue([this, view, thread_id, start, end, &a_thread_local_data, reads, writes, mods, func]()
 				{
 					//auto view = registry.view<Reads..., Writes...>(entt::exclude<Excludes...>);
 					const auto* handle = view.handle();

@@ -1,0 +1,51 @@
+#version 460 core
+
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec2 aTexCoords;
+
+out vec2 tex_coords;
+out vec4 color;
+
+uniform int instance_buffer;
+//uniform int half_buffer_size = 2048;
+
+struct UISSBO {
+    vec4 color;
+	vec2 uv_offset;
+	vec2 position;
+	vec2 size;
+    vec2 uv_size; // using uniform now, but need the padding
+};
+
+layout (std430, binding = 2) buffer UISSBOs {
+    int half_buffer_size;
+    int pad1;
+    int pad2;
+    int pad3;
+    UISSBO uis[]; 
+};
+
+void main()
+{
+    if (instance_buffer > 0)
+    {
+        int instanceID = gl_InstanceID;
+        if (instance_buffer == 2)
+        {
+            instanceID += half_buffer_size;
+        }
+        
+        UISSBO ui = uis[instanceID];
+        // Get current vertex position
+        vec2 vertex_pos = aPos.xy * ui.size + ui.position; //quad_vertices[gl_VertexID];
+        
+        // Set outputs
+        tex_coords = aTexCoords + ui.uv_offset;
+        color = ui.color;
+        gl_Position = vec4(vertex_pos, 0.0, 1.0);
+        return;
+    }
+    gl_Position = vec4(aPos, 1.f);
+    color = vec4(1.f);
+    tex_coords = aTexCoords;
+}

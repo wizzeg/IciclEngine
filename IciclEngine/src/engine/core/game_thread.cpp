@@ -573,8 +573,8 @@ void GameThread::game_runtime()
 	}
 
 	ctx.sync();
+
 	previous_total_render_requests = render_requests.size();
-	ctx.get_system_storage().perform_erase();
 	/////////////////////////////////////// BELOW is for testing when comopnents are suddenly destroyed.
 	//std::vector<entt::entity> entities;
 	//for (auto [entity, worldpos] : registry.view<TransformDynamicComponent>().each())

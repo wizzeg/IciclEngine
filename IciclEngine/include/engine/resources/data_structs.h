@@ -15,7 +15,7 @@
 #include <glad/glad.h>
 //TODO move the stuff for physics to another header, otherwise circular references
 
-using UniformValue = std::variant<bool, int, float, double, glm::vec3, glm::vec4, glm::quat, glm::mat4, glm::ivec1, std::string>;
+using UniformValue = std::variant<bool, int, float, double, glm::vec2, glm::vec3, glm::vec4, glm::quat, glm::mat4, glm::ivec1, std::string>;
 
 namespace EShadowCasterType
 {
@@ -203,3 +203,9 @@ struct HeightMap
 //	};
 //	TData value;
 //};
+
+struct LoadSceneCommand
+{
+	bool load = false;
+	std::string path;
+};

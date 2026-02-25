@@ -7,14 +7,15 @@ out vec2 tex_coords;
 out vec4 color;
 
 uniform int instance_buffer = 0;
+uniform vec2 uv_size = vec2(0.1f, 0.1f);
 //uniform int half_buffer_size = 2048;
 
 struct UISSBO {
     vec4 color;
 	vec2 uv_offset;
-    vec2 uv_size;
 	vec2 position;
 	vec2 size;
+    vec2 uv_size; // using uniform now, but need the padding
 };
 
 layout (std430, binding = 2) buffer UISSBOs {
@@ -40,7 +41,7 @@ void main()
         vec2 vertex_pos = aPos.xy * ui.size + ui.position; //quad_vertices[gl_VertexID];
         
         // Calculate UV coordinates
-        vec2 vertex_uv = aTexCoords * ui.uv_size + ui.uv_offset;
+        vec2 vertex_uv = aTexCoords * uv_size + ui.uv_offset;
         
         // Set outputs
         tex_coords = vertex_uv;

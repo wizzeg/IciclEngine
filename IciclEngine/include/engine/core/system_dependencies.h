@@ -171,6 +171,7 @@ struct SystemsContextDependencies
 protected:
 	bool dependency_collision(std::vector<std::type_index>&& a_reads, std::vector<std::type_index>&& a_writes) // have to actually check if component that is going to be added collides
 	{
+		
 		//if (block.load(std::memory_order_acquire)) return true;
 		if (a_reads.size() > 0)
 		{
@@ -235,6 +236,7 @@ protected:
 	template<typename... Reads>
 	void add_read_dependency()
 	{
+		// bruv... Why am I ADDING typeindexes? I should increment a counter for them
 		//std::type_index type = typeid(Read);
 		std::vector<std::type_index> types = { typeid(Reads)... };
 		std::sort(types.begin(), types.end());
@@ -280,6 +282,7 @@ protected:
 	template<typename... Writes>
 	void add_write_dependency()
 	{
+		// bruv... Why am I ADDING typeindexes? I should increment a counter for them
 		//std::type_index type = typeid(Write);
 		std::vector<std::type_index> types = { typeid(Writes)... };
 		std::sort(types.begin(), types.end());
@@ -301,6 +304,7 @@ protected:
 	template<typename... Reads>
 	void remove_read_dependency()
 	{
+		// bruv... Why am I ADDING typeindexes? I should increment a counter for them
 		//std::type_index type = typeid(Read);
 		std::vector<std::type_index> types = { typeid(Reads)... };
 		std::sort(types.begin(), types.end());
@@ -341,7 +345,7 @@ protected:
 	template<typename... Writes>
 	void remove_write_dependency()
 	{
-
+		// bruv... Why am I ADDING typeindexes? I should increment a counter for them
 		std::vector<std::type_index> types = { typeid(Writes)... };
 		std::sort(types.begin(), types.end());
 		size_t removal_index = 0;

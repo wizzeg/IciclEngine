@@ -55,5 +55,7 @@ struct FieldSerializationRegistry
 	}
 private:
 	FieldSerializationRegistry() = default;
-	std::unordered_map<std::type_index, SerializerInfo> serializables;
+	std::unordered_map<std::type_index, std::string> type_to_name;
+	std::unordered_map<std::string, std::type_index> name_to_type;
+	std::unordered_map<std::type_index, SerializerInfo> serializables; // I think this has to be string.
 };

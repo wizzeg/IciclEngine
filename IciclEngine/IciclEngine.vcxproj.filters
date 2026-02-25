@@ -572,5 +572,11 @@
     <None Include="..\assets\shaders\engine\ui_vert.glsl">
       <Filter>Shaders\engine</Filter>
     </None>
+    <None Include="..\assets\shaders\engine\ui_cursor_frag.glsl">
+      <Filter>Shaders\engine</Filter>
+    </None>
+    <None Include="..\assets\shaders\engine\ui_cursor_vert .glsl">
+      <Filter>Shaders\engine</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -176,6 +176,14 @@ REGISTER_COMPONENT(LandscapeComponent, ("Physics"),
 REGISTER_COMPONENT(UIMaterialComponent, ("Render"),
 	FIELD_CUSTOM("hashed path: ", comp, material, 1.75f, false)
 )
+
+REGISTER_COMPONENT(CursorComponent, ("Render"),
+	FIELD_CUSTOM("active: ", comp, active, 1.75f, false)
+)
+REGISTER_COMPONENT(UISelectableComponent, ("Render"),
+	FIELD_HIDDEN(comp, selectable)
+)
+
 REGISTER_COMPONENT(UITextComponent, ("Render"),
 	FIELD_CUSTOM("hashed path: ", comp, material, 1.75f, false),
 	FIELD_CUSTOM("text: ", comp, text, 1.75f, false),
@@ -184,4 +192,22 @@ REGISTER_COMPONENT(UITextComponent, ("Render"),
 	FIELD_CUSTOM("font_size: ", comp, font_size, 1.75f, false),
 	FIELD_CUSTOM("color: ", comp, color, 1.75f, false),
 	FIELD_CUSTOM("order: ", comp, order, 1.75f, false)
+)
+
+REGISTER_COMPONENT(UIRectComponent, ("Render"),
+	FIELD_CUSTOM("hashed path: ", comp, material, 1.75f, false),
+	FIELD_CUSTOM("position: ", comp, position, 1.75f, false),
+	FIELD_CUSTOM("size: ", comp, size, 1.75f, false),
+	FIELD_CUSTOM("uv_offset: ", comp, uv_offset, 1.75f, false),
+	FIELD_CUSTOM("color: ", comp, color, 1.75f, false),
+	FIELD_CUSTOM("order: ", comp, order, 1.75f, false)
+)
+
+REGISTER_COMPONENT(UIMenuItemStatusComponent, ("Render"),
+	FIELD_CUSTOM("pressed: ", comp, pressed, 1.75f, false),
+	FIELD_CUSTOM("hovered: ", comp, hovered, 1.75f, false)
+)
+REGISTER_COMPONENT(UIColorChangeComponent, ("Render"),
+	FIELD_CUSTOM("active color: ", comp, active, 1.75f, false),
+	FIELD_CUSTOM("inactive color: ", comp, inactive, 1.75f, false)
 )

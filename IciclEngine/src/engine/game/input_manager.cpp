@@ -1,4 +1,5 @@
 #include <engine/game/input_manager.h>
+#include <engine/core/game_thread.h>
 
 void InputManager::update_input()
 {

@@ -177,19 +177,21 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 	}
 
 	ctx.enqueue_parallel_data_each(
-		WithRead<TransformDynamicComponent, BoundingBoxComponent>{},
+		WithRead<TransformDynamicComponent>{},
+		WithWrite<BoundingBoxComponent>{},
 		WithOut<LandscapeComponent>{},
 		WithRef<RigidBodyComponent>{},
 		[this, &ctx](CellEntry& cell_entires,
 			const entt::entity entity,
 			const TransformDynamicComponent& transform,
-			const BoundingBoxComponent& bbox,
+			BoundingBoxComponent& bbox,
 			size_t access_order)
 		{
 			auto& small_entries = cell_entires.small_entries;
 			auto& massive_entries = cell_entires.massive_entries;
 
 			const glm::mat4& model_matrix = transform.model_matrix;
+			bbox.has_collision_info = false;
 
 			
 			glm::mat3 scaled_rotation = glm::mat3(model_matrix); // I should not use model matrix, should use quat I think
@@ -246,7 +248,7 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 			if ((max_cell.x - min_cell.x) * (max_cell.y - min_cell.y) * (max_cell.z - min_cell.z) > max_cells)
 			{
 				// register to large partition instead.
-				massive_entries.emplace_back(entity, access_order, rb, aabb, obb, physics_layers, asleep);
+				massive_entries.emplace_back(entity, access_order, rb, aabb, obb, physics_layers, asleep, bbox.tag);
 			}
 			else
 			{
@@ -256,7 +258,7 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 						{
 							small_entries.emplace_back(CellCoordinates(x, y, z),
 								entity, access_order, rb,
-								aabb, obb, physics_layers, asleep);
+								aabb, obb, physics_layers, asleep, bbox.tag);
 						}
 
 			}
@@ -264,9 +266,6 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 
 		},vectored_cell_entries, num_threads, true);
 	ctx.entt_sync();
-
-
-
 
 	if (count > 100)
 	{
@@ -406,17 +405,15 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 				if (_overlap)
 				{
 
-					// Step 1: Convert world space AABB to local space (relative to landscape min corner)
 					glm::vec3 local_min = entry.aabb.aabb_min - landscape_aabb.aabb_min;
 					glm::vec3 local_max = entry.aabb.aabb_max - landscape_aabb.aabb_min;
 
-					// Step 2: Normalize to [0, 1] range by dividing by scale
-					float norm_min_x = local_min.x / transform.scale.x; // 0 to 1
+
+					float norm_min_x = local_min.x / transform.scale.x;
 					float norm_max_x = local_max.x / transform.scale.x;
 					float norm_min_z = local_min.z / transform.scale.z;
 					float norm_max_z = local_max.z / transform.scale.z;
 
-					// Step 3: Convert to grid indices
 					size_t start_x = (size_t)glm::clamp(norm_min_x * (map.width - 1), 0.0f, (float)(map.width - 1));
 					size_t end_x = (size_t)glm::clamp(norm_max_x * (map.width - 1), 0.0f, (float)(map.width - 1));
 					size_t start_z = (size_t)glm::clamp(norm_min_z * (map.height - 1), 0.0f, (float)(map.height - 1));
@@ -475,7 +472,6 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 					}
 					if (max_height >= 0 && entry.aabb.aabb_min.y < (transform.position.y + max_height + 10.f))
 					{
-						// Find the closest grid point to calculate slope
 						glm::vec3 entry_abb_center = ((entry.aabb.aabb_min + entry.aabb.aabb_max) * 0.5f);
 						glm::vec3 local_center = entry_abb_center - landscape_aabb.aabb_min;
 						float norm_x = local_center.x / transform.scale.x;
@@ -510,8 +506,8 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 						//glm::vec3 n_2 = glm::cross(p_lr - p_ur, p_ll - p_ur);
 						//glm::vec3 plane_normal = glm::normalize(n_1 + n_2);
 
-						glm::vec3 n_1 = glm::cross(p_ll - p_ul, p_ur - p_ul);  // Flipped
-						glm::vec3 n_2 = glm::cross(p_ll - p_ur, p_lr - p_ur);  // Flipped
+						glm::vec3 n_1 = glm::cross(p_ll - p_ul, p_ur - p_ul);
+						glm::vec3 n_2 = glm::cross(p_ll - p_ur, p_lr - p_ur);
 						glm::vec3 plane_normal = glm::normalize(n_1 + n_2);
 
 						glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -522,25 +518,15 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 								PRINTLN("Flipped normals");
 						}
 
-						// Pick a safe reference axis (prevents degeneracy)
-						//glm::vec3 ref = (glm::abs(normal.y) < 0.999f)
-						//	? glm::vec3(0, 1, 0)
-						//	: glm::vec3(1, 0, 0);
-
-						// Build orthonormal basis
 						glm::vec3 tangent = glm::normalize(glm::cross(up, normal));
 						glm::vec3 bitangent = glm::cross(normal, tangent);
 
-						// IMPORTANT: columns = local axes
-						// X = tangent
-						// Y = normal  ← up direction of OBB
-						// Z = bitangent
+
 						glm::mat3 rot;
 						rot[0] = tangent;
 						rot[1] = normal;
 						rot[2] = bitangent;
 
-						// Convert to quaternion
 						glm::quat rotation = glm::normalize(glm::quat_cast(rot));
 						glm::quat quat_up = glm::quat(1, 0, 0, 0);
 
@@ -567,8 +553,6 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 						OBB obb{ center, rotation, glm::vec3(patch_width * 125.f, 5.f, patch_depth * 125.f)};
 
 						
-
-						// Create rigidbody with proper rotation
 						RigidBodyComponent fake_rb;
 						fake_rb.position = center;
 						fake_rb.rotation = rotation;
@@ -584,11 +568,9 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 
 						//fake_rb.is = true;
 
-						// Add to vector and store index
 						landscape_rbs.push_back(fake_rb);
 						size_t rb_index = landscape_rbs.size() - 1;
 
-						// Use existing OBB collision
 						PhysicsLayers landscape_layer(landscape.static_layers, landscape.dynamic_layers, landscape.collision_layers);
 						BroadPhasePair pair(entry.entity, entt::null, entry.access_order, 0, entry.rb, &landscape_rbs.back(),
 							entry.obb, obb, entry.layers, landscape_layer, false, true);
@@ -609,17 +591,14 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 				if (_overlap)
 				{
 
-					// Step 1: Convert world space AABB to local space (relative to landscape min corner)
 					glm::vec3 local_min = entry.aabb.aabb_min - landscape_aabb.aabb_min;
 					glm::vec3 local_max = entry.aabb.aabb_max - landscape_aabb.aabb_min;
 
-					// Step 2: Normalize to [0, 1] range by dividing by scale
-					float norm_min_x = local_min.x / transform.scale.x; // 0 to 1
+					float norm_min_x = local_min.x / transform.scale.x; 
 					float norm_max_x = local_max.x / transform.scale.x;
 					float norm_min_z = local_min.z / transform.scale.z;
 					float norm_max_z = local_max.z / transform.scale.z;
 
-					// Step 3: Convert to grid indices
 					size_t start_x = (size_t)glm::clamp(norm_min_x * (map.width - 1), 0.0f, (float)(map.width - 1));
 					size_t end_x = (size_t)glm::clamp(norm_max_x * (map.width - 1), 0.0f, (float)(map.width - 1));
 					size_t start_z = (size_t)glm::clamp(norm_min_z * (map.height - 1), 0.0f, (float)(map.height - 1));
@@ -693,7 +672,6 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 							PRINTLN("Flipped normals");
 						}
 
-						// Build orthonormal basis
 						glm::vec3 tangent = glm::normalize(glm::cross(up, normal));
 						glm::vec3 bitangent = glm::cross(normal, tangent);
 						glm::mat3 rot;
@@ -701,7 +679,6 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 						rot[1] = normal;
 						rot[2] = bitangent;
 
-						// Convert to quaternion
 						glm::quat rotation = glm::normalize(glm::quat_cast(rot));
 						glm::quat quat_up = glm::quat(1, 0, 0, 0);
 
@@ -727,9 +704,6 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 						position = position - (rotation * up) * 5.f;
 						OBB obb{ position, rotation, glm::vec3(patch_width * 125.f, 5.f, patch_depth * 125.f) };
 
-
-
-						// Create rigidbody with proper rotation
 						RigidBodyComponent fake_rb;
 						fake_rb.position = position;
 						fake_rb.rotation = rotation;
@@ -766,9 +740,10 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 	);
 
 	std::vector<std::vector<BroadPhasePair>> thread_pairs(num_threads);
+	std::vector<std::vector<CollisionResult>> thread_col_res(num_threads);
 	//const size_t chunks_per_thread = (chunks.size() + num_threads - 1) / num_threads;
 	const size_t entries_per_thread = (partitioned_entries.size() + num_threads - 1) / num_threads;
-	// would be nice to note start unecessary threads..
+	// would be nice to not start unecessary threads..
 
 	for (size_t i = 0; i < num_threads; i++)
 	{
@@ -779,14 +754,17 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 		size_t start_entry = entries_per_thread * thread_id;
 		size_t end_entry = std::min(start_entry + entries_per_thread, partitioned_entries.size());
 		ctx.enqueue(
-			[this, &partitioned_entries, &merged_cell_entries, &thread_pairs, entries_per_thread, start_entry, end_entry, thread_id]()
+			[this, &partitioned_entries, &merged_cell_entries, &thread_pairs, &thread_col_res, entries_per_thread, start_entry, end_entry, thread_id]()
 			{
 				auto& pairs = thread_pairs[thread_id];
-				pairs.reserve(1000);
+				auto& col_res = thread_col_res[thread_id];
+
 				//const auto& colliders = chunks[thread_id].small_entries;
 				const auto& massives = merged_cell_entries.massive_entries;
 				const auto& entries = partitioned_entries;
 				const auto& colliders = merged_cell_entries.small_entries;
+				pairs.reserve(colliders.size());
+				col_res.reserve(colliders.size());
 				size_t its = 0;
 				//const auto& my_chunks = std::span(chunks).subspan(start_chunk, end_chunk - start_chunk);
 				
@@ -802,15 +780,6 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 					
 					for (size_t i = entries[e].start; i < entries[e].stop; ++i)
 					{
-						//if (count > 10)
-						//{
-						//	glm::bvec3 nans = glm::isnan(colliders[i].aabb.aabb_max);
-						//	if (nans.x || nans.y || nans.z)
-						//	{
-						//		PRINTLN("NAN detected");
-						//	}
-						//}
-
 						//for (size_t j = i + 1; j < colliders.size(); j++)
 						for (size_t j = i+1; j < entries[e].stop; ++j)
 						{
@@ -823,6 +792,20 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 								if (colliders[i].layers.is_collision_against(colliders[j].layers))
 								{
 									// do something with collision info
+									CollisionResult a;
+									CollisionResult b;
+									a.self_entity = colliders[i].entity;
+									b.self_entity = colliders[j].entity;
+									a.other_entity = colliders[j].entity;
+									b.other_entity = colliders[i].entity;
+									a.self_access_order = colliders[i].access_order;
+									b.self_access_order = colliders[j].access_order;
+									a.other_access_order = colliders[j].access_order;
+									b.other_access_order = colliders[i].access_order;
+									a.other_tag = colliders[j].tag;
+									b.other_tag = colliders[i].tag;
+									col_res.push_back(a);
+									col_res.push_back(b);
 								}
 								if (colliders[i].layers.any_physics_collision(colliders[j].layers) || true)
 								{
@@ -867,6 +850,20 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 								if (colliders[i].layers.is_collision_against(massive.layers))
 								{
 									// do something with collision info
+									CollisionResult a;
+									CollisionResult b;
+									a.self_entity = colliders[i].entity;
+									b.self_entity = massive.entity;
+									a.other_entity = massive.entity;
+									b.other_entity = colliders[i].entity;
+									a.self_access_order = colliders[i].access_order;
+									b.self_access_order = massive.access_order;
+									a.other_access_order = massive.access_order;
+									b.other_access_order = colliders[i].access_order;
+									a.other_tag = massive.tag;
+									b.other_tag = colliders[i].tag;
+									col_res.push_back(a);
+									col_res.push_back(b);
 								}
 								if (colliders[i].layers.any_physics_collision(massive.layers) || true)
 								{
@@ -1011,25 +1008,130 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 	(const ContactManifold& man_a, const ContactManifold& man_b)
 		{
 			if (man_a.access_order_a == man_b.access_order_a)
-				return man_a.access_order_b < man_b.access_order_b;
-			return man_a.access_order_a < man_b.access_order_a;
+				return man_a.access_order_b > man_b.access_order_b;
+			return man_a.access_order_a > man_b.access_order_a;
 		});
 
 	// now I need to "just" do physics resolve
-	const int solver_iterations = 7; // 5-10 typical
+	
 	ctx.entt_sync();
+	//now is good time to generate all the collision info
+
+	//double dt = ctx.get_delta_time();
+	size_t col_res_count = 0;
+	std::vector<CollisionResult> merged_col_res;
+	{
+		
+		for (const auto& col_res : thread_col_res)
+			col_res_count += col_res.size();
+		merged_col_res.reserve(col_res_count);
+	}
+
+	//ctx.enqueue([this, &thread_col_res, &merged_col_res]()
+	//	{
+
+		//});
+	//and now write the info back to the entities... tricky...
+	if (col_res_count > 0)
+	{
+		ctx.enqueue([&ctx, &thread_col_res, &merged_col_res]()
+			{
+				for (auto& col_res : thread_col_res)
+				{
+					if (!thread_col_res.empty())
+					{
+						merged_col_res.insert(merged_col_res.end(),
+							std::make_move_iterator(col_res.begin()),
+							std::make_move_iterator(col_res.end()));
+					}
+				}
+				//std::sort(merged_col_res.begin(), merged_col_res.end(),
+				//	[](const CollisionResult& a, const CollisionResult& b)
+				//	{
+				//		if (a.self_entity != b.self_entity)
+				//			return a.self_entity < b.self_entity;
+				//		return a.other_entity < b.other_entity;
+				//	}
+				//);
+				std::sort(merged_col_res.begin(), merged_col_res.end(),
+					[](const CollisionResult& a, const CollisionResult& b)
+					{
+						if (a.self_access_order != b.self_access_order)
+							return a.self_access_order > b.self_access_order;
+						return a.other_access_order > b.other_access_order;
+					}
+				);
+
+				//for (const auto& col_res : merged_col_res)
+				//{
+				//	PRINTLN("pre-erase self: {}, other: {}, other tag: {}",
+				//		static_cast<uint32_t>(col_res.self_entity),
+				//		static_cast<uint32_t>(col_res.other_entity), col_res.other_tag);
+				//}
+
+				auto new_end = std::unique(
+					merged_col_res.begin(),
+					merged_col_res.end(),
+					[](const CollisionResult& a, const CollisionResult& b)
+					{
+						return a.self_entity == b.self_entity &&
+							a.other_entity == b.other_entity;
+					}
+				);
+				merged_col_res.erase(new_end, merged_col_res.end());
+				//PRINTLN("erased");
+
+				entt::entity current_entity = merged_col_res[0].self_entity;
+				size_t start = 0;
+				size_t stop = 0;
+				// this cound be multi threaded sorta
+				// but tricky because you want to start on a new entity, and the work is kinda light
+				for (const auto& col_res : merged_col_res)
+				{
+					//PRINTLN("entity: {}", static_cast<uint32_t>(col_res.self_entity));
+					//PRINTLN("self: {}, other: {}, other tag: {}",
+					//	static_cast<uint32_t>(col_res.self_entity),
+					//	static_cast<uint32_t>(col_res.other_entity), col_res.other_tag);
+					if (current_entity != col_res.self_entity)
+					{
+						// other entity ... so report to the old entity
+						if (auto bbox = ctx.try_get<BoundingBoxComponent>(current_entity))
+						{
+							// report
+							bbox->has_collision_info = true;
+							bbox->result_start_index = start;
+							bbox->result_end_index = stop;
+
+						}
+						current_entity = col_res.self_entity;
+						start = stop;
+					}
+					++stop;
+				}
+				if (auto bbox = ctx.try_get<BoundingBoxComponent>(current_entity))
+				{
+					bbox->has_collision_info = true;
+					bbox->result_start_index = start;
+					bbox->result_end_index = stop;
+				}
+				ctx.get_system_storage().add_or_replace_object("CollisionResults", merged_col_res);
+			}
+		);
+	}
+	
+	const int solver_iterations = 5; // 5-10 typical
+	// now realize the rb changes into position and rotation
+	float dt = (float)ctx.get_delta_time();
 	for (int iteration = 0; iteration < solver_iterations; iteration++)
 	{
 		for (auto& manifold : merged_manifolds)
 		{
-			resolve_collision(manifold, landscape_rbs, ctx.get_delta_time());
+			resolve_collision(manifold, landscape_rbs, dt);
 		}
 	}
 	timer.stop();
 	timer_resolve += timer.get_time_us();
-	// now realize the rb changes into position and rotation
-	float dt = (float)ctx.get_delta_time();
-	ctx.enqueue_parallel_each(WithRead<>{},
+	ctx.enqueue_parallel_each(
 		WithWrite<RigidBodyComponent, TransformDynamicComponent>{},
 		WithOut<LandscapeComponent>{},
 		[this, dt](const entt::entity entity, RigidBodyComponent& rb, TransformDynamicComponent& transform)
@@ -1081,7 +1183,7 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 					lin_speed < sleep_linear_threshold &&
 					ang_speed < sleep_angular_threshold;
 
-				if (!slow && rb.asleep)
+				/*if (!slow && rb.asleep)
 				{
 					rb.sleep_strikes = 0;
 					rb.asleep = false;
@@ -1096,10 +1198,12 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 						rb.linear_velocity = glm::vec3(0);
 						rb.angular_velocity = glm::vec3(0);
 					}
-				}
+				}*/
 
 			}
 		}, 512);
+	ctx.gen_sync();
+
 
 	if (count > 100)
 	{
@@ -1466,7 +1570,7 @@ void PhysicsSystem::resolve_collision(ContactManifold& manifold, std::vector<Rig
 	// Solution: Push them apart gradually over several frames.
 
 	const float penetration_slop = 0.01f;    // Allow 1cm of overlap (prevents jitter)
-	const float baumgarte_factor = 0.2f;     // Correct 20% of penetration per iteration
+	const float baumgarte_factor = 0.1f;     // Correct 20% of penetration per iteration
 
 	if (manifold.penetration_depth > penetration_slop)
 	{
@@ -1732,7 +1836,7 @@ void PhysicsSystem::resolve_collision(ContactManifold& manifold, std::vector<Rig
 		//	}
 		//}
 
-		if (rb_a->asleep)
+		/*if (rb_a->asleep)
 		{
 			float lin_speed = glm::length(rb_a->linear_velocity);
 			float ang_speed = glm::length(rb_a->angular_velocity);
@@ -1763,7 +1867,7 @@ void PhysicsSystem::resolve_collision(ContactManifold& manifold, std::vector<Rig
 				rb_a->asleep = false;
 				rb_a->sleep_strikes = 0;
 			}
-		}
+		}*/
 	}
 }
 
@@ -1914,9 +2018,23 @@ bool HeightMapLoadSystem::generate_heightmap(const std::string& path, HeightMap&
 
 bool UIDrawGathering::execute(SystemsContext& ctx)
 {
-	
-	
 	auto& sys_strg = ctx.get_system_storage();
+
+	auto menu_open = sys_strg.get_object<bool>("MenuOpen");
+	if (menu_open)
+	{
+		bool is_open = false;
+		menu_open->read(
+			[this, &is_open](const bool& open)
+			{
+				is_open = open;
+			});
+		if (!is_open)
+			return false;
+	}
+	else return false;
+
+
 	std::vector<UIPreRenderRequest> new_rects;
 	sys_strg.add_or_replace_object("UIRects", new_rects);
 	
@@ -1975,6 +2093,7 @@ bool UIDrawGathering::execute(SystemsContext& ctx)
 							rect.position = r.position;
 							rect.order = r.order;
 							rect.mat_hash = m.material.hash;
+							rect.uv_offset = r.uv_offset;
 							ui_rects.push_back(rect);
 						}
 					);
@@ -2063,4 +2182,154 @@ glm::vec2 UIDrawGathering::char_to_offset(const char& c)
 	float u = 0.1f * col;
 	float v = 1.0f - 0.1f * (row + 1);
 	return glm::vec2(u,v);
+}
+
+bool MenuSystem::execute(SystemsContext& ctx)
+{
+	// should check if a key has been pressed, then toggle the menu mode
+	// if menu mode, draw a UIRect I guess
+	// move UIRect by delta
+	// 
+	// register the position into system context storage
+	// or just straight up iterate through all of the UIs and check em.
+	bool synced = false;
+	auto& input_manager = InputManager::instance();
+	if (input_manager.is_key_pressed(EKey::Escape) && !just_changed)
+	{
+		menu_open = !menu_open;
+		just_changed = true;
+		if (menu_open)
+		{
+			mouse_position = glm::vec2(0);
+		}
+	}
+	else if (input_manager.is_key_released(EKey::Escape) && just_changed)
+	{
+		just_changed = false;
+	}
+
+	auto& strg = ctx.get_system_storage();
+	strg.add_or_replace_object("MenuOpen", menu_open);
+
+	if (menu_open)
+	{
+		auto mouse_delta = glm::vec2(0,0);
+		InputManager::instance().get_mouse_delta(mouse_delta.x, mouse_delta.y);
+		mouse_delta.y *= -1.f;
+		mouse_position += mouse_delta * 0.01f;
+		mouse_position.x = std::max(-1.f, std::min(1.f, mouse_position.x));
+		mouse_position.y = std::max(-1.f, std::min(1.f, mouse_position.y));
+		synced |= ctx.each(WithWrite<CursorComponent, UIRectComponent>{},
+			[this]
+			(const entt::entity entity, CursorComponent& cursor, UIRectComponent& rect)
+			{
+				rect.position = mouse_position;
+			}
+		);
+
+		synced |= ctx.enqueue_each(
+			WithRead<UISelectableComponent>{},
+			WithWrite<UIMenuItemStatusComponent>{},
+			WithRef<UIColorChangeComponent, UIRectComponent, UITextComponent>{},
+			[&ctx, this]
+			(const entt::entity entity, const UISelectableComponent sel, UIMenuItemStatusComponent& stat)
+			{
+				if (auto rect_ptr = ctx.try_get<UIRectComponent>(entity))
+				{
+					auto& rect = *rect_ptr;
+					bool inside =
+						mouse_position.x > rect.position.x &&
+						mouse_position.x < rect.position.x + rect.size.x &&
+						mouse_position.y < rect.position.y &&
+						mouse_position.y > rect.position.y - rect.size.y;
+					if (inside)
+					{
+						stat.hovered = true;
+						if (auto col = ctx.try_get<UIColorChangeComponent>(entity))
+						{
+							rect.color = col->active;
+						}
+						if (InputManager::instance().is_key_pressed(EKey::LeftMouseButton))
+						{
+							stat.pressed = true;
+						}
+						else stat.pressed = false;
+					}
+					else
+					{
+						if (auto col = ctx.try_get<UIColorChangeComponent>(entity))
+						{
+							rect.color = col->inactive;
+						}
+						stat.hovered = false;
+						stat.pressed = false;
+					}
+				}
+				else if (auto txt = ctx.try_get<UITextComponent>(entity))
+				{
+					auto& text = *txt;
+					bool inside =
+						mouse_position.x > text.position.x &&
+						mouse_position.x < text.position.x + text.size.x &&
+						mouse_position.y < text.position.y &&
+						mouse_position.y > text.position.y - text.size.y;
+
+					if (inside)
+					{
+						stat.hovered = true;
+						if (auto col = ctx.try_get<UIColorChangeComponent>(entity))
+						{
+							text.color = col->active;
+						}
+						if (InputManager::instance().is_key_pressed(EKey::LeftMouseButton))
+						{
+							stat.pressed = true;
+							LoadSceneCommand scene_command;
+							scene_command.load = true;
+							scene_command.path = "./assets/scenes/menutest.scn";
+							ctx.get_system_storage().add_or_replace_object("LoadSceneCommand", scene_command);
+						}
+						else stat.pressed = false;
+					}
+					else
+					{
+						if (auto col = ctx.try_get<UIColorChangeComponent>(entity))
+						{
+							text.color = col->inactive;
+						}
+						stat.hovered = false;
+						stat.pressed = false;
+					}
+				}
+				
+			}
+		);
+	}
+	return synced;
+}
+
+bool ReadCollisionResultSystem::execute(SystemsContext& ctx)
+{
+	col_res = ctx.get_system_storage().get_object<std::vector<CollisionResult>>("CollisionResults");
+	if (col_res)
+	{
+		//PRINTLN("new frame");
+		col_res->copy(collisions);
+		ctx.enqueue_each(WithRead<BoundingBoxComponent>{},
+			[this, &ctx](const entt::entity entity, const BoundingBoxComponent& bbox)
+			{
+				if (bbox.has_collision_info)
+				{
+					for (size_t i = bbox.result_start_index; i < bbox.result_end_index; i++)
+					{
+						const auto& res = collisions[i];
+						//PRINTLN("true self: {}, self: {}, other: {}, other tag: {}",
+						//	static_cast<uint32_t>(entity), static_cast<uint32_t>(res.self_entity),
+						//	static_cast<uint32_t>(res.other_entity), res.other_tag);
+					}
+				}
+			}
+		);
+	}
+	return false;
 }

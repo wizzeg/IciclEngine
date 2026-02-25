@@ -109,7 +109,17 @@ struct UIDrawGathering : SystemBase
 	glm::vec2 char_to_offset(const char& c);
 };
 
-struct DrawCursor : SystemBase
+struct MenuSystem : SystemBase
 {
+	bool execute(SystemsContext& ctx) override;
+	bool menu_open = false;
+	bool just_changed = false;
+	glm::vec2 mouse_position = glm::vec2(0);
+};
 
+struct ReadCollisionResultSystem : SystemBase
+{
+	bool execute(SystemsContext& ctx) override;
+	SystemsStorageObject<std::vector<CollisionResult>>* col_res;
+	std::vector<CollisionResult> collisions;
 };

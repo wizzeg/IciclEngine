@@ -48,7 +48,7 @@ struct EngineContext
 {
 	EngineContext(std::shared_ptr<Scene> a_scene/*std::shared_ptr<MeshDataGenStorage> a_storage*/)
 		: /*storage(a_storage), */ /* /*model_storage(std::make_shared<ModelGenStorage>()),*/ scene(a_scene), editor_camera("editor camera", 2560, 1440),
-		input_manager(InputManager::get())
+		input_manager(InputManager::instance())
 	{
 		num_logical_cores = std::thread::hardware_concurrency();
 		num_game_threads = std::max(1, num_logical_cores - 2);
@@ -130,6 +130,11 @@ struct EngineContext
 			scene->stop_runtime();
 			scene->load("./assets/temp/temp_scene.scn");
 		}
+	}
+
+	void update_input()
+	{
+		input_manager.update_input();
 	}
 
 	uint64_t get_job_time() { return job_time++; }

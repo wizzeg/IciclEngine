@@ -14,6 +14,7 @@ uniform mat4 view;
 uniform mat4 proj;
 
 uniform vec3 forced_color;
+uniform float landscape_height = 50.f;
 
 uniform int instance_buffer = 0;
 uniform sampler2D uTexture;
@@ -60,7 +61,7 @@ if (instance_buffer > 0)
         vert_color = aCol;
         
         float height = texture(uTexture, tex_coords).r;
-        world_pos.xyz +=  vec3(0, height * 100.f, 0);
+        world_pos.xyz +=  vec3(0, height * landscape_height, 0);
         // vertex world space
         frag_pos = vec4(world_pos.xyz, 1);
     
@@ -94,7 +95,7 @@ if (instance_buffer > 0)
     vert_color = aCol;
     
     float height = texture(uTexture, tex_coords).r;
-    world_pos.xyz +=  vec3(0, height * 100.f,0);
+    world_pos.xyz +=  vec3(0, height * landscape_height,0);
 
     // vertex world space
     frag_pos = vec4(world_pos.xyz, 1);

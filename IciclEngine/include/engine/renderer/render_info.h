@@ -493,9 +493,9 @@ struct UISSBO
 {
 	glm::vec4 color;
 	glm::vec2 uv_offset;
-	glm::vec2 uv_size;
 	glm::vec2 position;
 	glm::vec2 size;
+	glm::vec2 uv_size;
 };
 
 struct RenderContext
