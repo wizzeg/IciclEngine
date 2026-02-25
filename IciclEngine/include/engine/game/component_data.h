@@ -27,7 +27,7 @@ struct ComponentDataBase
 	virtual void no_runtime() = 0;
 	virtual std::vector<FieldInfo> get_field_info() = 0; // deprecated
 	virtual std::vector<FieldInfo> get_registered_field_info() = 0;
-	virtual const char* get_name() const = 0;
+	virtual const char* get_name() = 0;
 	virtual void destroy_component() = 0;
 	virtual bool is_valid() = 0;
 };
@@ -35,7 +35,7 @@ struct ComponentDataBase
 template <typename TComponent>
 struct ComponentData : ComponentDataBase
 {
-	ComponentData(TComponent a_component) : component(a_component) {};
+	ComponentData(TComponent a_component) : component(a_component), type_name(ComponentRegistry::instance().get_component_name<TComponent>()) {};
 	TComponent& get_component()
 	{
 		if (runtime && entity_handle != entt::null && entity_handle.entity() != entt::null)
@@ -72,19 +72,24 @@ struct ComponentData : ComponentDataBase
 		component = a_component;
 	} // might work at runtime
 
-	const char* get_name() const override 
+	const char* get_name() override 
 	{
-		static std::string name = std::string(typeid(TComponent).name());
-		if (name.rfind("struct ", 0) == 0) {
-			name.erase(0, 7);
-		}
-		else if (name.rfind("class ", 0) == 0) {
-			name.erase(0, 6);
-		}
-		else if (name.rfind("const ", 0) == 0) {
-			name.erase(0, 6);
-		}
-		return name.c_str();
+		return type_name.c_str();
+		//auto& instance = ComponentRegistry::instance();
+		//type_name = instance.get_component_name<TComponent>(); // has to be static for json
+		//return type_name.c_str();
+
+		//static std::string name = std::string(typeid(TComponent).name()); // this is potential problem
+		//if (name.rfind("struct ", 0) == 0) {
+		//	name.erase(0, 7);
+		//}
+		//else if (name.rfind("class ", 0) == 0) {
+		//	name.erase(0, 6);
+		//}
+		//else if (name.rfind("const ", 0) == 0) {
+		//	name.erase(0, 6);
+		//}
+		//return name.c_str();
 	}
 	virtual void to_runtime(entt::handle a_handle) override
 	{
@@ -181,6 +186,7 @@ struct ComponentData : ComponentDataBase
 
 protected:
 	TComponent component;
+	const std::string type_name;
 	entt::handle entity_handle;
 	bool runtime = false;
 

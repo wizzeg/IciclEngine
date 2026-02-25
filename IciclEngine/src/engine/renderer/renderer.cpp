@@ -572,7 +572,7 @@ void Renderer::update_ui_insance_SSBO(const std::vector<UISSBO>& ui_SSBO)
 	int half_models = HALF_MODEL_INSTANCES;
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ui_instance_ssbo);
 	// write to first half
-	glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(int) * 4 + sizeof(ui_SSBO) * MAX_MODEL_INSTANCES, nullptr, GL_DYNAMIC_DRAW);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(int) * 4 + sizeof(UISSBO) * MAX_MODEL_INSTANCES, nullptr, GL_DYNAMIC_DRAW);
 
 	if (ui_SSBO.size() > HALF_MODEL_INSTANCES)
 	{
@@ -938,13 +938,16 @@ void Renderer::deffered_shadowmap_pass(const RenderContext& a_render_context, co
 
 void Renderer::deffered_ui_pass(const RenderContext& a_render_context, const FrameBuffer* a_output)
 {
-
+	// reordered a bunch, became maybe messy.. problem was a typo elsewhere...
 	const auto& mats = a_render_context.ui_materials;
 	const auto& reqs = a_render_context.ui_render_requests;
 
 	a_output->bind();
 	glDisable(GL_DEPTH_TEST);
-	uint64_t bound_mat = 0;
+	glDepthMask(GL_FALSE);
+	uint64_t bound_mat = hashed_string_64("").hash;
+	uint64_t batch_mat = hashed_string_64("").hash;
+	uint64_t invalid_mat = hashed_string_64("").hash;
 	GLuint bound_vao = 0;
 
 	size_t req_index = 0;
@@ -963,11 +966,11 @@ void Renderer::deffered_ui_pass(const RenderContext& a_render_context, const Fra
 	bool issued_instance_batch = false;
 	GLsizei batch_indices_count = 0;
 	bool broke_batch = false;
-	uint64_t batch_mat = hashed_string_64("");
+	
 
 	int draw_calls = 0;
-	size_t start_mat = 0;
-	size_t index_mat = 0;
+	//size_t start_mat = 0;
+	//size_t index_mat = 0;
 	int prev_order = INT_MIN;
 
 	glBindVertexArray(lighting_quad_vao);
@@ -978,7 +981,7 @@ void Renderer::deffered_ui_pass(const RenderContext& a_render_context, const Fra
 	for (; req_index < reqs.size(); req_index++)
 	{
 		const UIRenderRequest& req = reqs[req_index];
-		broke_batch = ui_ssbo.size() >= HALF_MODEL_INSTANCES || batch_mat != req.material;
+		broke_batch = ui_ssbo.size() >= (size_t)HALF_MODEL_INSTANCES || batch_mat != req.material;
 		//if (req.order != prev_order)
 		//{
 		//	index_mat = 0;
@@ -986,70 +989,78 @@ void Renderer::deffered_ui_pass(const RenderContext& a_render_context, const Fra
 		//	broke_batch = true;
 		//}
 		
-		if (broke_batch && started_instance_batch) //draw the instanced before drawing non instanced
+		if (broke_batch)
 		{
-			index_mat = 0; // should be possible to fix this to avoid extra loops... for now no big deal..
-			for (; index_mat < mats.size(); ++index_mat)
+			// draw it before starting on new
+			if (!ui_ssbo.empty())
 			{
-				auto& mat = mats[index_mat];
-				if (batch_mat == mat.hash)
+				update_ui_insance_SSBO(ui_ssbo);
+				glDrawArraysInstanced(GL_TRIANGLES, 0, 6, static_cast<GLsizei>(ui_ssbo.size()));
+				issued_instance_batch = true;
+				started_instance_batch = false;
+				ui_ssbo.clear();
+				//set_vec1i(0, "instance_buffer");
+				draw_calls++;
+			}
+			if (bound_mat != req.material || bound_mat == invalid_mat)
+			{
+				for (size_t i = 0; i < mats.size(); ++i)
 				{
-					if (bound_mat == mat.hash)
+					auto& mat = mats[i];
+					if (req.material == mat.hash)
+					{
+						if (bound_mat == mat.hash)
+							break;
+						if (current_gl_program != mat.gl_program)
+						{
+							current_gl_program = mat.gl_program;
+							glUseProgram(mat.gl_program);
+							set_vec1i(0, "instance_buffer");
+						}
+						// bind mat
+						bound_mat = mat.hash;
+						batch_mat = bound_mat;
+						GLint tex_index = 0;
+						for (const RuntimeUniform& uniform : mat.uniforms)
+						{
+							if (uniform.type == typeid(std::string)) // this means it's texture
+							{
+								GLint combined = (GL_TEXTURE0 + tex_index);
+								glActiveTexture(combined);
+								glBindTexture(GL_TEXTURE_2D, uniform.texture_id);
+								set_vec1i(tex_index, uniform.location.c_str());
+								tex_index++;
+							}
+							else
+							{
+								bind_uniform(uniform.type, uniform.location, uniform.value);
+							}
+						}
+
+						//start_mat = index_mat;
 						break;
-					if (current_gl_program != mat.gl_program)
-					{
-						current_gl_program = mat.gl_program;
-						glUseProgram(mat.gl_program);
 					}
-					// bind mat
-					bound_mat = mat.hash;
-					GLint tex_index = 0;
-					for (const RuntimeUniform& uniform : mat.uniforms)
-					{
-						if (uniform.type == typeid(std::string)) // this means it's texture
-						{
-							GLint combined = (GL_TEXTURE0 + tex_index);
-							glActiveTexture(combined);
-							glBindTexture(GL_TEXTURE_2D, uniform.texture_id);
-							set_vec1i(tex_index, uniform.location.c_str());
-							tex_index++;
-						}
-						else
-						{
-							bind_uniform(uniform.type, uniform.location, uniform.value);
-						}
-					}
-					set_vec1i(0, "instance_buffer");
-					start_mat = index_mat;
 				}
 			}
-			// draw it before starting on new
-			update_ui_insance_SSBO(ui_ssbo);
-			glDrawArraysInstanced(GL_TRIANGLES, 0, 6, static_cast<GLsizei>(ui_ssbo.size()));
-			started_instance_batch = false;
-			issued_instance_batch = true;
-			ui_ssbo.clear();
-			set_vec1i(0, "instance_buffer");
-			draw_calls++;
+
 		}
 		batch_mat = req.material;
 		ui_ssbo.emplace_back(req.color, req.uv_offset, req.position, req.extents, glm::vec2(0.1f, 0.1f));
 		started_instance_batch = true;
 		issued_instance_batch = false;
-		batch_mat = req.material;
+		//batch_mat = req.material;
 	}
 
 	/// check so that there's no lingering batch
 	if (started_instance_batch && !issued_instance_batch)
 	{
-		index_mat = 0;
-		for (; index_mat < mats.size(); ++index_mat)
+		for (size_t i = 0; i < mats.size(); ++i)
 		{
-			auto& mat = mats[index_mat];
+			auto& mat = mats[i];
 			if (batch_mat == mat.hash)
 			{
-				if (bound_mat == mat.hash)
-					break;
+				//if (bound_mat == mat.hash)
+				//	break;
 				if (current_gl_program != mat.gl_program)
 				{
 					current_gl_program = mat.gl_program;
@@ -1076,15 +1087,19 @@ void Renderer::deffered_ui_pass(const RenderContext& a_render_context, const Fra
 				set_vec1i(0, "instance_buffer");
 			}
 		}
-		update_ui_insance_SSBO(ui_ssbo);
-		glDrawArraysInstanced(GL_TRIANGLES, 0, 6, static_cast<GLsizei>(ui_ssbo.size()));
+		if (!ui_ssbo.empty())
+		{
+			update_ui_insance_SSBO(ui_ssbo);
+			glDrawArraysInstanced(GL_TRIANGLES, 0, 6, static_cast<GLsizei>(ui_ssbo.size()));
+		}
 		started_instance_batch = false;
 		issued_instance_batch = true;
 		ui_ssbo.clear();
-		set_vec1i(0, "instance_buffer");
+		//set_vec1i(0, "instance_buffer");
 		draw_calls++;
 	}
 	glEnable(GL_DEPTH_TEST);
+	glDepthMask(GL_TRUE);
 	glUseProgram(0);
 	glBindVertexArray(0);
 	a_output->unbind();

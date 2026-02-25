@@ -243,10 +243,13 @@ REGISTER_TYPE_SERIALIZER(float,
     { value = j.get<float>(); }
 )
 
-REGISTER_TYPE_SERIALIZER(double,
-    { j = value; },
-    { value = j.get<double>(); }
-)
+namespace {
+    const bool _serializer_registered_153 = []() { FieldSerializationRegistry::instance().register_serializable_field(std::type_index(typeid(double)), [](json& j, const void* ptr) { const double& value = *static_cast<const double*>(ptr); {
+        j = value;
+    }; }, [](const json& j, void* ptr) { double& value = *static_cast<double*>(ptr); {
+        value = j.get<double>();
+    }; }); return true; }();
+}
 
 REGISTER_TYPE_SERIALIZER(bool,
     { j = value; },

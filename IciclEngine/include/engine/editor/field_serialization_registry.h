@@ -27,6 +27,10 @@ struct FieldSerializationRegistry
 
 	void register_serializable_field(std::type_index a_type, SerializingFunction a_serializable, DeserializingFunction a_deserializable)
 	{
+		// on register must also take in a name
+		// register name and type id.
+		// the serialisable should now use a string instad of type_index
+
 		auto it = serializables.find(a_type);
 		if (it == serializables.end())
 		{
@@ -38,14 +42,39 @@ struct FieldSerializationRegistry
 		}
 	}
 
+	//std::type_index string_to_type(const std::string& a_name, bool& found)
+	//{
+	//	auto it = name_to_type.find(a_name);
+	//	if (it == name_to_type.end())
+	//	{
+	//		found = true;
+	//		return name_to_type[a_name];
+	//	}
+	//	found = false;
+	//	return typeid(int);
+	//}
+
+	//std::string type_to_string(std::type_index a_type)
+	//{
+	//	auto it = type_to_name.find(a_type);
+	//	if (it == type_to_name.end())
+	//	{
+	//		return type_to_name[a_type];
+	//	}
+	//	return "";
+	//}
+
 	bool is_serializable(std::type_index a_type)
 	{
+		// so now we have to do typeid -> name
 		auto it = serializables.find(a_type);
 		return (it != serializables.end());
 	}
 
 	std::optional<SerializerInfo> get_serializer(std::type_index a_type)
 	{
+
+		// so now we have to do typeid -> name
 		auto it = serializables.find(a_type);
 		if (it != serializables.end())
 		{

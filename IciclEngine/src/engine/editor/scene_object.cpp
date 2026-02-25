@@ -398,7 +398,8 @@ json SceneObject::save()
 			}
 			serialize_field(j_field, field.name, field.type, field.value_ptr);
 			j_field["name"] = field.name;
-			j_field["type"] = field.type.name();
+			//j_field["type"] = field.type.name(); // here might be problem? Actually should work...no this hsould not work...
+			j_field["type"] = field.field_id;
 			j_comp["fields"].push_back(j_field);
 		}
 
@@ -445,12 +446,13 @@ std::shared_ptr<SceneObject> SceneObject::load(const json& a_j, std::weak_ptr<Sc
 					{
 						std::string field_type_name = field.type.name();
 						std::string field_name = field.name;
+						std::string other_name = field.field_id;
 						// for each component field, we look through all json fields until we find match..
 						for (const auto& j_field : j_fields)
 						{
-							if (j_field.contains("name"))
+							if (j_field.contains("type"))
 							{
-								if (j_field["name"] == field_name)
+								if (j_field["type"] == other_name)
 								{
 									deserialize_field(j_field, field_name, field.type, field.value_ptr);
 								}

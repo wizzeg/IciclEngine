@@ -99,13 +99,24 @@ struct ComponentRegistry
 	}
 
 	template <typename TComponent>
-	std::vector<FieldInfo> get_component_name(TComponent* component)
+	std::string get_component_name(TComponent* component)
 	{
 		auto it = component_registry_by_comp_type.find(std::type_index(typeid(TComponent)));
 		if (it != component_registry_by_comp_type.end())
 		{
 			return it->second.comp_name;
 		}
+		return " ";
+	}
+	template <typename TComponent>
+	std::string get_component_name()
+	{
+		auto it = component_registry_by_comp_type.find(std::type_index(typeid(TComponent)));
+		if (it != component_registry_by_comp_type.end())
+		{
+			return it->second.comp_name;
+		}
+		return " ";
 	}
 	//template <typename TComponent>
 	std::vector<std::string> get_all_component_names()

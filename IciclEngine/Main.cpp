@@ -57,7 +57,7 @@
 int main(void)
 {
 	GLFWwindow* window;
-	//PRINTLN("default hash = {}", (hashed_string_64()).hash);
+	PRINTLN("default hash = {}", (hashed_string_64("")).hash);
 	///* Initialize the library */
 	if (!glfwInit())
 		return -1;
