@@ -51,8 +51,8 @@ struct EntityAssembler
 struct EntityCommandBuffer
 {
 	friend struct EntityCommandBuffer;
-	void create_entity(EntityAssembly entity_assembly, entt::entity parent, const std::string& name = "0");
-	void create_entity(EntityAssembly entity_assembly, const std::string& name = "0");
+	void create_entity(EntityAssembly entity_assembly, entt::entity parent, const std::string& name = "");
+	void create_entity(EntityAssembly entity_assembly, const std::string& name = "");
 	void set_parent(entt::entity parent, entt::entity child);
 	void orphan(entt::entity entity);
 	template <typename Component, typename... Args>

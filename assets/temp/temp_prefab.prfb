@@ -7,13 +7,13 @@
                 "fields": [
                     {
                         "name": "entity name: ",
-                        "type": "struct hashed_string_64",
-                        "value": "Menu Item"
+                        "type": "hashed_name",
+                        "value": "scene object (0)"
                     },
                     {
                         "name": "entity id: ",
-                        "type": "struct EntityReference",
-                        "value": 2530
+                        "type": "entity",
+                        "value": 129
                     }
                 ],
                 "type": "EntityComponent"
@@ -22,22 +22,22 @@
                 "fields": [
                     {
                         "name": "parent: ",
-                        "type": "struct EntityReference",
+                        "type": "parent",
                         "value": 0
                     },
                     {
                         "name": "previous sibling: ",
-                        "type": "struct EntityReference",
+                        "type": "previous_sibling",
                         "value": 0
                     },
                     {
                         "name": "next sibling: ",
-                        "type": "struct EntityReference",
+                        "type": "next_sibling",
                         "value": 0
                     },
                     {
                         "name": "child: ",
-                        "type": "struct EntityReference",
+                        "type": "child",
                         "value": 0
                     }
                 ],
@@ -47,23 +47,23 @@
                 "fields": [
                     {
                         "name": "material path: ",
-                        "type": "struct hashed_string_64",
+                        "type": "hashed_path",
                         "value": "./assets/shaders/engine/ui.mat"
                     },
                     {
                         "name": "instanced: ",
-                        "type": "bool",
+                        "type": "instance",
                         "value": false
                     },
                     {
                         "name": "use mipmaps: ",
-                        "type": "bool",
+                        "type": "mipmap",
                         "value": true
                     },
                     {
                         "name": "load material: ",
-                        "type": "bool",
-                        "value": false
+                        "type": "load",
+                        "value": true
                     }
                 ],
                 "type": "MaterialComponent"
@@ -72,64 +72,13 @@
                 "fields": [
                     {
                         "name": "hashed path: ",
-                        "type": "struct hashed_string_64",
+                        "type": "material",
                         "value": "./assets/shaders/engine/ui.mat"
                     }
                 ],
                 "type": "UIMaterialComponent"
-            },
-            {
-                "fields": [
-                    {
-                        "name": "hashed path: ",
-                        "type": "struct hashed_string_64",
-                        "value": ""
-                    },
-                    {
-                        "name": "text: ",
-                        "type": "class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >",
-                        "value": "Level 1"
-                    },
-                    {
-                        "name": "position: ",
-                        "type": "struct glm::vec<2,float,0>",
-                        "value": [
-                            -0.5,
-                            0.5199999809265137
-                        ]
-                    },
-                    {
-                        "name": "size: ",
-                        "type": "struct glm::vec<2,float,0>",
-                        "value": [
-                            0.699999988079071,
-                            0.17000000178813934
-                        ]
-                    },
-                    {
-                        "name": "font_size: ",
-                        "type": "float",
-                        "value": 0.20999999344348907
-                    },
-                    {
-                        "name": "color: ",
-                        "type": "struct glm::vec<4,float,0>",
-                        "value": [
-                            0.0,
-                            0.0,
-                            0.0,
-                            0.0
-                        ]
-                    },
-                    {
-                        "name": "order: ",
-                        "type": "int",
-                        "value": 0
-                    }
-                ],
-                "type": "UITextComponent"
             }
         ],
-        "name": "Menu Item"
+        "name": "scene object (0)"
     }
 }

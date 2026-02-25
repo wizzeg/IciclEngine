@@ -50,6 +50,7 @@ void WorkerThreadPool::start()
 							active_threads--;
 							if (jobs.is_empty() && active_threads == 0)
 								join_cv.notify_all();
+							poll_cv.notify_all();
 						}
 					}
 				});
@@ -61,6 +62,19 @@ bool WorkerThreadPool::wait()
 {
 	std::unique_lock job_lock(jobs_mutex);
 	join_cv.wait(job_lock, [this] { return stop || (jobs.is_empty() && active_threads == 0); });
+	if (stop) return false;
+	return true;
+}
+
+bool WorkerThreadPool::poll()
+{
+	std::unique_lock job_lock(jobs_mutex);
+	if (stop || (jobs.is_empty() && active_threads == 0))
+	{
+		if (stop) return false;
+		return true;
+	}
+	poll_cv.wait(job_lock);
 	if (stop) return false;
 	return true;
 }

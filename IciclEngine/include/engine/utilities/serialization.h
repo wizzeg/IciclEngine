@@ -42,7 +42,7 @@ inline void serialize_field(json& a_json, const std::string& a_field_name, std::
 	}
 }
 
-inline void deserialize_field(const json& j, const std::string& a_field_name, std::type_index a_type, void* a_object)
+inline void deserialize_field(const json& j, std::type_index a_type, void* a_object)
 {
 	if (!j.is_object()) return;
 	else if (!j.contains("value")) return;

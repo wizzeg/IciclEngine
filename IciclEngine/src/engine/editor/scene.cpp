@@ -87,6 +87,7 @@ bool Scene::load(std::string a_path, bool clear_registry)
 	SceneObjectRegistry& id_registry = SceneObjectRegistry::instance();
 	if (clear_registry)
 	{
+		reset();
 		registry.clear();
 		for (auto [entity, name_comp] : registry.view<EntityComponent>().each())
 		{

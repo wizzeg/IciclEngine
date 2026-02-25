@@ -119,8 +119,6 @@ struct SystemsStorageObject : SystemsStorageObjectBase
 	}
 };
 
-
-
 struct ShadowLight
 {
 	glm::mat4 lightspace_matrix = glm::mat4(0);
@@ -208,4 +206,45 @@ struct LoadSceneCommand
 {
 	bool load = false;
 	std::string path;
+};
+
+struct SystemDependency
+{
+	std::type_index type;
+	size_t count = 0;
+
+	bool operator==(const SystemDependency& other) const {
+		return type == other.type;
+	}
+	bool operator==(const std::type_index& other) const {
+		return type == other;
+	}
+	bool operator<(const SystemDependency& other) const {
+		return type < other.type;
+	}
+	bool operator<(const std::type_index& other) const {
+		return type < other;
+	}
+	bool operator<(const size_t& other) const {
+		return count < other;
+	}
+	bool operator>(const SystemDependency& other) const {
+		return type > other.type;
+	}
+	bool operator>(const std::type_index& other) const {
+		return type > other;
+	}
+	bool operator>(const size_t& other) const {
+		return count > other;
+	}
+	SystemDependency& operator++()
+	{
+		++count;
+		return *this;
+	}
+	SystemDependency& operator--()
+	{
+		count = count > 0 ? --count: 0;
+		return *this;
+	}
 };

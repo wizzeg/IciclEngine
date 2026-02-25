@@ -238,7 +238,7 @@ int main(void)
 					}*/
 
 
-					for (size_t i = 0; i < 2500; i++)
+					for (size_t i = 0; i < 100; i++)
 					{
 						float x = -200.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 400.0f));
 						float y = -200.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 400.0f));; // Or random if you want variety

@@ -2176,23 +2176,22 @@ struct SystemsContext
 		general_thread_pool->enqueue(std::forward<Func>(func));
 	}
 
-	// This won't work, because you can't do try_get without registry, and that's not handed out to user.
-	//template <typename...Writes, typename Func>
-	//void enqueue(WithWrite<Writes...> writes, Func&& func) 
-	//{
-	//	general_thread_pool->enqueue(
-	//		[func = std::forward<Func>(func), writes]() {
-	//			while (!systems_dependencies.add(writes))
-	//			{
-	//				synced = true;
-	//				//PRINTLN("Forced sync");
-	//				entt_sync();
-	//			}
-	//			func();
-	//			systems_dependencies.remove(writes)
-	//		}
-	//	);
-	//}
+	// this should work now.
+	template <typename...Refs, typename Func>
+	void enqueue(WithWrite<Refs...> refs, Func&& func) 
+	{
+		general_thread_pool->enqueue(
+			[func = std::forward<Func>(func), refs]() {
+				while (!systems_dependencies.add(refs))
+				{
+					PRINTLN("Forced poll");
+					poll();
+				}
+				func();
+				systems_dependencies.remove(refs);
+			}
+		);
+	}
 
 	template <typename Component>
 	Component* try_get(entt::entity entity)
@@ -2213,10 +2212,25 @@ struct SystemsContext
 		general_thread_pool->wait();
 	}
 
+	void entt_poll()
+	{
+		entt_thread_pool->poll();
+	}
+	void gen_poll()
+	{
+		general_thread_pool->poll();
+	}
+
 	void sync()
 	{
 		gen_sync();
 		entt_sync();
+	}
+
+	void poll()
+	{
+		gen_poll();
+		entt_poll();
 	}
 
 	size_t num_threads()

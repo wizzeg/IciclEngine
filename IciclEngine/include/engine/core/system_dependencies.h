@@ -22,10 +22,9 @@ template<typename...T> struct WithRef {}; // huh... these don't actually work in
 
 struct SystemsContextDependencies
 {
-	std::vector<std::type_index> reading_components;
-	std::vector<std::type_index> writing_components;
+	std::vector<SystemDependency> reading_components;
+	std::vector<SystemDependency> writing_components;
 	std::mutex components_mutex;
-	//std::atomic<bool> block{false};
 
 	template<typename... Reads, typename... Writes>
 	bool add(WithRead<Reads...>, WithWrite<Writes...>, bool check_dependencies = true)
@@ -109,8 +108,6 @@ struct SystemsContextDependencies
 	}
 
 
-
-
 	template<typename... Reads, typename... Writes>
 	void remove(WithRead<Reads...>, WithWrite<Writes...>)
 	{
@@ -171,8 +168,6 @@ struct SystemsContextDependencies
 protected:
 	bool dependency_collision(std::vector<std::type_index>&& a_reads, std::vector<std::type_index>&& a_writes) // have to actually check if component that is going to be added collides
 	{
-		
-		//if (block.load(std::memory_order_acquire)) return true;
 		if (a_reads.size() > 0)
 		{
 			size_t write_index = 0;
@@ -182,7 +177,7 @@ protected:
 				for (; write_index < writing_components.size(); ++write_index)
 				{
 					auto& write = writing_components[write_index];
-					if (read == write)
+					if (write == read && write > 0)
 					{
 						return true;
 					}
@@ -203,7 +198,7 @@ protected:
 				for (; read_index < reading_components.size(); ++read_index)
 				{
 					auto& read = reading_components[read_index];
-					if (write == read)
+					if ( read == write && read > 0)
 					{
 						return true;
 					}
@@ -219,7 +214,7 @@ protected:
 				for (; write_index < writing_components.size(); ++write_index)
 				{
 					auto& comp_write = writing_components[write_index];
-					if (write == comp_write)
+					if (comp_write == write && comp_write > 0)
 					{
 						return true;
 					}
@@ -236,79 +231,77 @@ protected:
 	template<typename... Reads>
 	void add_read_dependency()
 	{
-		// bruv... Why am I ADDING typeindexes? I should increment a counter for them
-		//std::type_index type = typeid(Read);
 		std::vector<std::type_index> types = { typeid(Reads)... };
 		std::sort(types.begin(), types.end());
 		size_t insertion_index = 0;
+		bool insert = true;
 		for (auto& type : types)
 		{
+			insert = true;
 			for (; insertion_index < reading_components.size(); ++insertion_index)
 			{
+				
 				auto& read_comp = reading_components[insertion_index];
-				if (type < read_comp)
+				if (type == read_comp)
+				{
+					insert = false;
+					++read_comp;
+					break;
+				}
+				else if (read_comp > type)
 				{
 					break;
 				}
 			}
-			reading_components.insert(reading_components.begin() + insertion_index, type);
+			if (insert)
+			{
+				reading_components.insert(reading_components.begin() + insertion_index, SystemDependency{ type, 1 });
+				insert = false;
+				++insertion_index;
+			}
+			
 		}
-
-		// change to better insert
-		//std::vector<std::type_index> merged;
-		//merged.reserve(reading_components.size() + types.size());
-
-		//auto it_rc = reading_components.begin();
-		//auto it_t = types.begin();
-
-		//while (it_rc != reading_components.end() &&
-		//	it_t != types.end())
-		//{
-		//	if (*it_t < *it_rc)
-		//	{
-		//		merged.push_back(*it_t++);
-		//	}
-		//	else
-		//	{
-		//		merged.push_back(*it_rc++);
-		//	}
-		//}
-
-		//merged.insert(merged.end(), it_t, types.end());
-		//merged.insert(merged.end(), it_rc, reading_components.end());
-
-		//reading_components.swap(merged);
 	}
 	template<typename... Writes>
 	void add_write_dependency()
 	{
-		// bruv... Why am I ADDING typeindexes? I should increment a counter for them
-		//std::type_index type = typeid(Write);
 		std::vector<std::type_index> types = { typeid(Writes)... };
 		std::sort(types.begin(), types.end());
 		size_t insertion_index = 0;
+		bool insert = true;
 		for (auto& type : types)
 		{
+			insert = true;
 			for (; insertion_index < writing_components.size(); ++insertion_index)
 			{
 				auto& write_comp = writing_components[insertion_index];
-				if (type < write_comp)
+				if (type == write_comp)
+				{
+					insert = false;
+					++write_comp;
+					break;
+				}
+				else if (write_comp > type)
 				{
 					break;
 				}
 			}
-			writing_components.insert(writing_components.begin() + insertion_index, type);
+			if (insert)
+			{
+				writing_components.insert(writing_components.begin() + insertion_index, SystemDependency{ type, 1 });
+				insert = false;
+				++insertion_index;
+			}
 		}
 	}
 
 	template<typename... Reads>
 	void remove_read_dependency()
 	{
-		// bruv... Why am I ADDING typeindexes? I should increment a counter for them
-		//std::type_index type = typeid(Read);
 		std::vector<std::type_index> types = { typeid(Reads)... };
 		std::sort(types.begin(), types.end());
 		size_t removal_index = 0;
+		bool found = false;
 		for (auto& type : types)
 		{
 			for (; removal_index < reading_components.size(); ++removal_index)
@@ -316,39 +309,25 @@ protected:
 				auto& read_comp = reading_components[removal_index];
 				if (type == read_comp)
 				{
-					reading_components.erase(reading_components.begin() + removal_index); // not great..
+					found = true;
+					--read_comp;
 					break;
 				}
 			}
+			if (!found)
+			{
+				PRINTLN("tried to remove read dependency that didn't exist");
+			}
+			found = false;
 		}
-
-		// change this to a std::remove_if
-		//auto erase_end = std::remove_if(reading_components.begin(), reading_components.end(),
-		//	[&](const auto& read_comp)
-		//	{
-		//		if (removal_index >= types.size())
-		//			return false;
-
-		//		while (removal_index < types.size() && read_comp > types[removal_index])
-		//			++removal_index;
-		//			
-		//		if (read_comp == types[removal_index])
-		//		{
-		//			++removal_index;
-		//			return true;
-		//		}
-		//		return false;
-		//	});
-		//reading_components.erase(erase_end, reading_components.end());
-
 	}
 	template<typename... Writes>
 	void remove_write_dependency()
 	{
-		// bruv... Why am I ADDING typeindexes? I should increment a counter for them
 		std::vector<std::type_index> types = { typeid(Writes)... };
 		std::sort(types.begin(), types.end());
 		size_t removal_index = 0;
+		bool found = false;
 		for (auto& type : types)
 		{
 			for (; removal_index < writing_components.size(); ++removal_index)
@@ -356,10 +335,16 @@ protected:
 				auto& write_comp = writing_components[removal_index];
 				if (type == write_comp)
 				{
-					writing_components.erase(writing_components.begin() + removal_index);
+					--write_comp;
+					found = true;
 					break;
 				}
 			}
+			if (!found)
+			{
+				PRINTLN("tried to remove write dependency that didn't exist");
+			}
+			found = false;
 		}
 	}
 };

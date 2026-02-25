@@ -18,6 +18,7 @@ struct WorkerThreadPool
 	}
 
 	bool wait(); // do not add additional jobs from another thread after this is called
+	bool poll();
 	size_t get_num_threads() { return num_threads; }
 	void start();
 protected:
@@ -30,4 +31,5 @@ protected:
 	bool stop = false;
 	int active_threads = 0;
 	std::condition_variable join_cv;
+	std::condition_variable poll_cv;
 };

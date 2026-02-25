@@ -444,17 +444,15 @@ std::shared_ptr<SceneObject> SceneObject::load(const json& a_j, std::weak_ptr<Sc
 
 					for (auto& field : fields)
 					{
-						std::string field_type_name = field.type.name();
-						std::string field_name = field.name;
-						std::string other_name = field.field_id;
+						std::string field_type = field.field_id;
 						// for each component field, we look through all json fields until we find match..
 						for (const auto& j_field : j_fields)
 						{
 							if (j_field.contains("type"))
 							{
-								if (j_field["type"] == other_name)
+								if (j_field["type"] == field_type)
 								{
-									deserialize_field(j_field, field_name, field.type, field.value_ptr);
+									deserialize_field(j_field, field.type, field.value_ptr);
 								}
 							}
 						}
