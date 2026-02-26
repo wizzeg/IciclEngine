@@ -166,7 +166,7 @@ private:
 	void generate_lighting_quad();
 	void generate_lighting_shader();
 	void create_pointlight_SSBO();
-	void update_pointlight_SSBO(const std::vector<PointLightSSBO>& a_point_lights);
+	void update_pointlight_SSBO(const std::vector<LightSSBO>& a_point_lights);
 	void create_shadow_framebuffers();
 	void load_ui_shader();
 

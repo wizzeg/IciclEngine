@@ -28,6 +28,12 @@ namespace EShadowCasterType
 	};
 };
 
+struct RootHierachyTransform
+{
+	entt::entity parent;
+	glm::mat4 model;
+};
+
 struct UIRect
 {
 	glm::vec2 position;
@@ -128,11 +134,12 @@ struct ShadowLight
 	EShadowCasterType::EShadowCasterType type = EShadowCasterType::PointLight;
 };
 
-struct alignas(16) PointLightSSBO
+struct alignas(16) LightSSBO
 {
-	alignas(16) glm::vec4 light_color;
-	alignas(16) glm::vec4 light_positoin;
-	alignas(16) glm::vec4 light_attenuation;
+	glm::vec4 light_color;
+	glm::vec3 light_positoin;
+	int light_type;
+	glm::vec4 light_attenuation;
 };
 
 struct Light

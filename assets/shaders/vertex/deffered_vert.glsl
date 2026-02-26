@@ -64,14 +64,14 @@ void main()
         // texture
         tex_coords = aTexCoord.xy;
         vert_color = aCol;
-        if (instanceID >= 1024)
-        {
-            vert_color = vec4(1, 0, 0, 1);
-        }
-        else
-        {
-            vert_color = vec4(0, 1, 0, 1);
-        }
+//        if (instanceID >= 1024)
+//        {
+//            vert_color = vec4(1, 0, 0, 1);
+//        }
+//        else
+//        {
+//            vert_color = vec4(0, 1, 0, 1);
+//        }
         
     
         // fragment screen pos

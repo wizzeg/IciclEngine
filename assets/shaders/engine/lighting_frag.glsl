@@ -20,7 +20,8 @@ uniform int num_shadow_maps;
 
 struct PointLight {
 	vec4 color;
-    vec4 position;
+    vec3 position;
+	int light_type;
     vec4 attenuation;
 };
 
@@ -97,15 +98,30 @@ void main()
 	frag_color.xyz += albedo_spec.xyz * light_ambient.xyz;
 	for (int i = 0; i < num_pointlights; i++)
 	{ 
-
+		
+		vec3 light_direction = normalize(point_lights[i].position.xyz - frag_pos.xyz);
 		vec3 light_position = point_lights[i].position.xyz;
 
+		if (point_lights[i].light_type == 1)
+		{
+			// directional light ... use attentuation as rotation
+			light_direction = normalize(-point_lights[i].attenuation.xyz);
+			attenuation = point_lights[i].color.w; // just intensity, no falloff
+		}
+		else
+		{
+			// point light
+			light_direction = normalize(point_lights[i].position.xyz - frag_pos.xyz);
+			float light_distance = length(point_lights[i].position.xyz - frag_pos.xyz);
+			float lower_part = max(point_lights[i].attenuation.x  + point_lights[i].attenuation.y * light_distance  + point_lights[i].attenuation.z * pow(light_distance, 2), 0.1);
+			attenuation = point_lights[i].color.w / lower_part;
+		}
 
-		vec3 light_direction = normalize(point_lights[i].position.xyz - frag_pos.xyz);
+		//vec3 light_direction = normalize(point_lights[i].position.xyz - frag_pos.xyz);
 		float light_distance = length(point_lights[i].position.xyz - frag_pos.xyz);
 		vec3 normalized_normal = normalize(frag_normal.xyz);
-		float lower_part = max(point_lights[i].attenuation.x  + point_lights[i].attenuation.y * light_distance  + point_lights[i].attenuation.z * pow(light_distance, 2), 0.1);
-		attenuation = ( point_lights[i].color.w) / lower_part;
+//		float lower_part = max(point_lights[i].attenuation.x  + point_lights[i].attenuation.y * light_distance  + point_lights[i].attenuation.z * pow(light_distance, 2), 0.1);
+//		attenuation = ( point_lights[i].color.w) / lower_part;
 		float diffuse_intensity = dot(normalized_normal, light_direction);
 		if (diffuse_intensity > 0 && attenuation > 0.025)
 		{
@@ -125,6 +141,7 @@ void main()
 			float area_normalization = (mat_shininess + 3)*(mat_shininess + 6 ) / ((16 * PI )*(2-(mat_shininess/2) + mat_shininess));
 			float light_absorption = metallic * clamp(mat_shininess / 32.0, 0.0, 1.0);
 			total_brightness *= light_absorption * area_normalization * roughness;
+			
 			frag_color += vec4(total_brightness * attenuation * diffuse_intensity * point_lights[i].color.xyz * specular.rgb * metallic, 0.0) * frag_pos.w;
 			last_intensity = point_lights[i].color.w;
 			last_color = point_lights[i].color.xyz;
@@ -204,3 +221,109 @@ void main()
 //	//FragColor = vec4(light_colors[1].xyz, 1.0);
 //	//}
 //}
+
+
+
+
+//void main()
+//{
+//	
+//	vec4 albedo_spec = texture(albedo_spec_tex, tex_coords.xy);
+//	vec4 frag_pos = texture(position_tex, tex_coords.xy);
+//	vec4 frag_normal = texture(normal_tex, tex_coords.xy);
+//	vec4 orms = texture(orms_tex, tex_coords.xy);
+//	vec4 specular = texture(spec_tex, tex_coords.xy);
+//	vec4 emissive = texture(emissive_tex, tex_coords.xy);
+//	float shadow_value = 1.0f;
+//	float shadow_found = 0.0;
+//	vec3 shadowed_light = vec3(0);
+//	for (int i = 0; i < num_shadow_maps; i++)
+//	{
+//        vec4 light_space_pos = light_space_matrix[0] * vec4(frag_pos.xyz, 1.0);
+//        vec3 proj_coords = light_space_pos.xyz / light_space_pos.w;
+//        proj_coords = proj_coords * 0.5 + 0.5;
+//        
+//        // Sample shadow map at correct coordinates
+//        shadow_value = texture(shadow_maps, vec3(proj_coords.xy, 0)).r;
+//		if (shadow_value < 0.5f)
+//		{
+//			shadow_value = 0.0f;
+//		}
+//		shadowed_light = light_colors[0].rgb * shadow_value;
+//		//shadow_value = pow(shadow_value, 100);
+//	}
+//
+//	float roughness = orms.y;
+//	float metallic = orms.z;
+//	float ao = orms.x;
+//	float shininess_multiplier = orms.w;
+//	float shininess =  metallic * shininess_multiplier * material_shininess;
+//
+//	float attenuation = 0;
+//	vec4 frag_color = vec4(vec3(0) + shadowed_light, albedo_spec.w);
+//	if (frag_pos.w < 0.5f)
+//	{
+//		//glClearColor(0.45f, 0.55f, 0.75f, 0.0f);
+//		FragColor = vec4(0.45f, 0.55f, 0.75f, 1.0f);
+//		return;
+//	}
+//	float last_intensity = 0;
+//	vec3 last_color = vec3(0);
+//	frag_color.xyz += albedo_spec.xyz * light_ambient.xyz;
+//	for (int i = 0; i < num_pointlights; i++)
+//	{ 
+//		vec3 light_direction;
+//		float attenuation_factor;
+//
+//		if (point_lights[i].light_type == 0)
+//		{
+//			// directional light ... use attentuation as rotation
+//			light_direction = normalize(-point_lights[i].attenuation.xyz);
+//			attenuation_factor = point_lights[i].color.w; // just intensity, no falloff
+//		}
+//		else
+//		{
+//			// point light
+//			light_direction = normalize(point_lights[i].position.xyz - frag_pos.xyz);
+//			float light_distance = length(point_lights[i].position.xyz - frag_pos.xyz);
+//			float lower_part = max(point_lights[i].attenuation.x + point_lights[i].attenuation.y * light_distance + point_lights[i].attenuation.z * pow(light_distance, 2), 0.1);
+//			attenuation_factor = point_lights[i].color.w / lower_part;
+//		}
+//
+//		vec3 normalized_normal = normalize(frag_normal.xyz);
+//		float diffuse_intensity = dot(normalized_normal, light_direction);
+//
+//		if (diffuse_intensity > 0 && (point_lights[i].light_type == 0 || attenuation_factor > 0.025))
+//		{
+//			// diffuse
+//			vec3 diffuse_part = diffuse_intensity * point_lights[i].color.xyz * albedo_spec.xyz * ao;
+//			frag_color += vec4(attenuation_factor * diffuse_part, 0.0);
+//
+//			// specular
+//			float mat_shininess = (1 - roughness) * max(shininess, 1);
+//			vec3 vector_to_camera = normalize(camera_position - frag_pos.xyz);
+//			vec3 half_vector = normalize(light_direction + vector_to_camera);
+//			float initial_brightness = max(dot(half_vector, normalized_normal), 0.0);
+//
+//			float total_brightness = pow(initial_brightness, mat_shininess);
+//			float area_normalization = (mat_shininess + 3) * (mat_shininess + 6) / ((16 * PI) * (2 - (mat_shininess / 2) + mat_shininess));
+//			float light_absorption = metallic * clamp(mat_shininess / 32.0, 0.0, 1.0);
+//			total_brightness *= light_absorption * area_normalization * roughness;
+//			frag_color += vec4(total_brightness * attenuation_factor * diffuse_intensity * point_lights[i].color.xyz * specular.rgb * metallic, 0.0) * frag_pos.w;
+//
+//			last_intensity = point_lights[i].color.w;
+//			last_color = point_lights[i].color.xyz;
+//		}
+//	}
+//	frag_color *= vec4(albedo_spec.rgb, 1);
+//	frag_color.rgb += emissive.rgb * emissive.w;
+//	//frag_color -= vec4(vec3(0.25f) * (metallic * metallic), 0);
+//	FragColor = clamp(frag_color * shadow_value, 0.0, 1.0);
+//	//FragColor = specular;
+//	//FragColor = vec4(last_color, 1);
+//	//FragColor = vec4(point_lights[0].color.xyz, 1);
+//	//FragColor = vec4(attenuation.xxx, 1.0);
+//	//FragColor = vec4(light_colors[1].xyz, 1.0);
+//	//}
+//}
+//

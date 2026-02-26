@@ -365,8 +365,7 @@ void GameThread::game_runtime()
 	ind_timer.stop();
 	mesh_tex_jobs += ind_timer.get_time_ms();
 
-	engine_context->systems_context->gen_sync();
-	engine_context->systems_context->entt_sync();
+	engine_context->systems_context->sync();
 
 	ind_timer.start();
 	/////////////////////////////////////////////////////
@@ -515,14 +514,25 @@ void GameThread::game_runtime()
 
 	for (auto [entity, directional_light, transform] : registry.view<DirectionalLightComponent, TransformDynamicComponent>().each())
 	{
-		if (directional_light.shadow_map)
+		//if (directional_light.shadow_map)
+		//{
+		//	ShadowLight light;
+		//	light.color = glm::vec4(directional_light.color, directional_light.intensity);
+		//	light.lightspace_matrix = glm::mat4(1);
+		//	light.rotation = -transform.rotation_euler_do_not_use;
+		//	light.lightspace_matrix *= -glm::mat4_cast(transform.rotation_quat);
+		//	render_context.shadow_lights.push_back(light);
+		//}
+		//else
+		if (!directional_light.shadow_map)
 		{
-			ShadowLight light;
-			light.color = glm::vec4(directional_light.color, directional_light.intensity);
-			light.lightspace_matrix = glm::mat4(1);
-			light.rotation = -transform.rotation_euler_do_not_use;
-			light.lightspace_matrix *= -glm::mat4_cast(transform.rotation_quat);
-			render_context.shadow_lights.push_back(light);
+			LightSSBO light;
+			light.light_color = glm::vec4(directional_light.color, directional_light.intensity);
+			glm::vec3 direction = glm::normalize(glm::vec3(transform.rotation_quat * glm::vec4(0, 0, -1, 0)));
+			light.light_attenuation = glm::vec4(direction, 0.0f);
+			light.light_positoin = transform.position;
+			light.light_type = 1;
+			render_context.lights.push_back(light);
 		}
 	}
 
@@ -530,10 +540,11 @@ void GameThread::game_runtime()
 	{
 		if (!point_light.shadow_map)
 		{
-			PointLightSSBO light;
+			LightSSBO light;
 			light.light_color = glm::vec4(point_light.color, point_light.intensity);
 			light.light_attenuation = glm::vec4(point_light.attenuation, 0);
-			light.light_positoin = glm::vec4(transform.position, 0);
+			light.light_positoin = transform.position;
+			light.light_type = 0;
 			render_context.lights.push_back(light);
 		}
 	}
@@ -640,6 +651,7 @@ void GameThread::editor_time()
 	// maybe also all materials ??? what? why all materials?
 
 	auto& scene_objects = scene->get_scene_objects();
+	auto& root_scene_objects = scene->get_root_scene_objects();
 	std::vector<TransformDynamicComponent*> transforms;
 	std::vector<RenderComponent*> render_components;
 	
@@ -758,6 +770,40 @@ void GameThread::editor_time()
 	//		}
 	//	}
 	//}
+	std::vector<std::pair<SceneObject*, glm::mat4>> stack;
+	stack.reserve(64);
+	for (auto& root : root_scene_objects)
+	{
+		TransformDynamicComponent* t = root->get_component<TransformDynamicComponent>();
+		if (!t) continue;
+
+		t->calculate_model_matrix(); // local == world for root
+
+		for (const auto& weak_child : root->get_children())
+		{
+			const auto& child = weak_child.lock();
+			stack.push_back({ child.get(), t->model_matrix });
+		}
+			
+
+		while (!stack.empty())
+		{
+			auto [obj, parent_world] = stack.back();
+			stack.pop_back();
+
+			TransformDynamicComponent* ct = obj->get_component<TransformDynamicComponent>();
+			if (!ct) continue;
+
+			ct->calculate_model_matrix();
+			ct->model_matrix = parent_world * ct->model_matrix;
+
+			for (auto& weak_child : obj->get_children())
+			{
+				const auto& child = weak_child.lock();
+				stack.push_back({ child.get(), ct->model_matrix });
+			}
+		}
+	}
 
 	for (auto& scene_object : scene_objects)
 	{
@@ -794,6 +840,12 @@ void GameThread::editor_time()
 			{
 				ComponentData<PointLightComponent>* data = static_cast<ComponentData<PointLightComponent>*>(component_data.get());
 				entity.point_light = &data->get_component();
+				valid_entity = true;
+			}
+			else if (type == typeid(DirectionalLightComponent))
+			{
+				ComponentData<DirectionalLightComponent>* data = static_cast<ComponentData<DirectionalLightComponent>*>(component_data.get());
+				entity.directional_light = &data->get_component();
 				valid_entity = true;
 			}
 		}
@@ -927,36 +979,36 @@ void GameThread::editor_time()
 	}
 
 	// update all the stuff like in ecs for transform
-	for (auto& entity : editor_entities)
-	{
-		
-		if (entity.transform)
-		{
-			auto& world_pos = *entity.transform;
-			if (world_pos.overide_quaternion)
-			{
-				world_pos.rotation_euler_do_not_use.x = std::fmod(world_pos.rotation_euler_do_not_use.x, 360.0f);
-				if (world_pos.rotation_euler_do_not_use.x < 0.0f) world_pos.rotation_euler_do_not_use.x += 360.0f;
-				world_pos.rotation_euler_do_not_use.y = std::fmod(world_pos.rotation_euler_do_not_use.y, 360.0f);
-				if (world_pos.rotation_euler_do_not_use.y < 0.0f) world_pos.rotation_euler_do_not_use.y += 360.0f;
-				world_pos.rotation_euler_do_not_use.z = std::fmod(world_pos.rotation_euler_do_not_use.z, 360.0f);
-				if (world_pos.rotation_euler_do_not_use.z < 0.0f) world_pos.rotation_euler_do_not_use.z += 360.0f;
+	//for (auto& entity : editor_entities)
+	//{
+	//	
+	//	if (entity.transform)
+	//	{
+	//		auto& world_pos = *entity.transform;
+	//		if (world_pos.overide_quaternion)
+	//		{
+	//			world_pos.rotation_euler_do_not_use.x = std::fmod(world_pos.rotation_euler_do_not_use.x, 360.0f);
+	//			if (world_pos.rotation_euler_do_not_use.x < 0.0f) world_pos.rotation_euler_do_not_use.x += 360.0f;
+	//			world_pos.rotation_euler_do_not_use.y = std::fmod(world_pos.rotation_euler_do_not_use.y, 360.0f);
+	//			if (world_pos.rotation_euler_do_not_use.y < 0.0f) world_pos.rotation_euler_do_not_use.y += 360.0f;
+	//			world_pos.rotation_euler_do_not_use.z = std::fmod(world_pos.rotation_euler_do_not_use.z, 360.0f);
+	//			if (world_pos.rotation_euler_do_not_use.z < 0.0f) world_pos.rotation_euler_do_not_use.z += 360.0f;
 
-				world_pos.rotation_quat = glm::quat(glm::radians(world_pos.rotation_euler_do_not_use));
-			}
-			if (world_pos.get_euler_angles) /// 0.5ms
-			{
-				world_pos.rotation_euler_do_not_use = glm::degrees(glm::eulerAngles(world_pos.rotation_quat));
-				//if (world_pos.overide_quaternion)
-				//	world_pos.get_euler_angles = false;
-			}
+	//			world_pos.rotation_quat = glm::quat(glm::radians(world_pos.rotation_euler_do_not_use));
+	//		}
+	//		if (world_pos.get_euler_angles) /// 0.5ms
+	//		{
+	//			world_pos.rotation_euler_do_not_use = glm::degrees(glm::eulerAngles(world_pos.rotation_quat));
+	//			//if (world_pos.overide_quaternion)
+	//			//	world_pos.get_euler_angles = false;
+	//		}
 
-			world_pos.model_matrix = glm::translate(glm::mat4(1.0f), world_pos.position); // 0.47ms
-			world_pos.model_matrix *= glm::mat4_cast(world_pos.rotation_quat); // 1.47ms
-			world_pos.model_matrix = glm::scale(world_pos.model_matrix, world_pos.scale); // 0.4ms
-		}
-		
-	}
+	//		world_pos.model_matrix = glm::translate(glm::mat4(1.0f), world_pos.position); // 0.47ms
+	//		world_pos.model_matrix *= glm::mat4_cast(world_pos.rotation_quat); // 1.47ms
+	//		world_pos.model_matrix = glm::scale(world_pos.model_matrix, world_pos.scale); // 0.4ms
+	//	}
+	//	
+	//}
 
 	// generate all the render requests
 	for ( auto& entity: editor_entities)
@@ -980,10 +1032,25 @@ void GameThread::editor_time()
 			auto& transform = *entity.transform;
 			if (point_light.shadow_map) continue;
 
-			PointLightSSBO light;
+			LightSSBO light;
 			light.light_color = glm::vec4(point_light.color, point_light.intensity);
 			light.light_attenuation = glm::vec4(point_light.attenuation, 0);
-			light.light_positoin = glm::vec4(transform.position, 0);
+			light.light_positoin = glm::vec3(transform.position);
+			light.light_type = 0;
+			render_context.lights.push_back(light);
+		}
+		if (entity.directional_light && entity.transform)
+		{
+			auto& directional_light = *entity.directional_light;
+			auto& transform = *entity.transform;
+			if (directional_light.shadow_map) continue;
+
+			LightSSBO light;
+			light.light_color = glm::vec4(directional_light.color, directional_light.intensity);
+			glm::vec3 direction = glm::normalize(glm::vec3(transform.rotation_quat * glm::vec4(0, 0, -1, 0)));
+			light.light_attenuation = glm::vec4(direction, 0);
+			light.light_positoin = glm::vec3(transform.position);
+			light.light_type = 1;
 			render_context.lights.push_back(light);
 		}
 	}

@@ -14,124 +14,119 @@ bool MoveSystem::execute(SystemsContext& ctx)
 {
 	
 	time += ctx.get_delta_time();
-	//ctx.each_entity<TransformDynamicComponent, SpawnPositionComponent>(
-	//	[&](entt::entity entity, TransformDynamicComponent& transform, SpawnPositionComponent& spawn)
-	//	{
-	//		float amplitude = 5.f;
-	//		float frequency = 5.f;
-	//		float offset = amplitude * glm::sin(frequency * transform.position.x + time);
-	//		transform.position.y = spawn.spawn_position.y + offset;
-	//	});
 	float current_time = time;
-	//ctx.enqueue_parallel_each(
-	//	WithRead<SpawnPositionComponent>{},
-	//	WithWrite<TransformDynamicComponent>{},
-	//	[current_time](entt::entity entity, SpawnPositionComponent& spawn, TransformDynamicComponent& transform)
-	//	{
-	//		float amplitude = 5.f;
-	//		float frequency = 5.f;
-	//		float offset = amplitude * glm::sin(frequency * transform.position.x + current_time);
-	//		transform.position.y = spawn.spawn_position.y + offset;
-	//	}, 256);
-	//ctx.enqueue_parallel_each(
-	//	Group<TransformDynamicComponent, SpawnPositionComponent>{},
-	//	[time = this->time](entt::entity entity, TransformDynamicComponent& transform, SpawnPositionComponent& spawn)
-	//	{
-	//		float amplitude = 5.f;
-	//		float frequency = 5.f;
-	//		float offset = amplitude * glm::sin(frequency * transform.position.x + time);
-	//		transform.position.y = spawn.spawn_position.y + offset;
-	//	}, 256);
 
-	//ctx.enqueue(
-	//	[&ctx, current_time]() {
-			return ctx.enqueue_parallel_each(
-				WithRead<const SpawnPositionComponent, const RenderComponent>{},
-				WithWrite<TransformDynamicComponent>{},
-				[current_time](
-					const entt::entity entity, 
-					const SpawnPositionComponent& spawn, 
-					const RenderComponent& render, 
-					TransformDynamicComponent& transform
-					)
-				{
-					float amplitude = 5.f;
-					float frequency = 5.f;
-					float offset = amplitude * glm::sin(frequency * transform.position.x + current_time);
-					transform.position.y = spawn.spawn_position.y + offset;
-				}, 512);
-		//});
+	return ctx.enqueue_parallel_each(
+		WithRead<SpawnPositionComponent, RenderComponent>{},
+		WithWrite<TransformDynamicComponent>{},
+		[current_time](
+			const entt::entity entity, 
+			const SpawnPositionComponent& spawn, 
+			const RenderComponent& render, 
+			TransformDynamicComponent& transform
+			)
+		{
+			float amplitude = 5.f;
+			float frequency = 5.f;
+			float offset = amplitude * glm::sin(frequency * transform.position.x + current_time);
+			transform.position.y = spawn.spawn_position.y + offset;
+		}, 512);
 }
 
 bool TransformCalculationSystem::execute(SystemsContext& ctx)
 {
-	//ctx.enqueue_parallel_each(
-	//	WithWrite<TransformDynamicComponent>{},
-	//	WithOut<CameraComponent>{},
-	//	[](entt::entity entity, TransformDynamicComponent& world_pos)
-	//	{
-	//		if (world_pos.overide_quaternion)
-	//		{
-	//			world_pos.rotation_euler_do_not_use.x = std::fmod(world_pos.rotation_euler_do_not_use.x, 360.0f);
-	//			if (world_pos.rotation_euler_do_not_use.x < 0.0f) world_pos.rotation_euler_do_not_use.x += 360.0f;
-	//			world_pos.rotation_euler_do_not_use.y = std::fmod(world_pos.rotation_euler_do_not_use.y, 360.0f);
-	//			if (world_pos.rotation_euler_do_not_use.y < 0.0f) world_pos.rotation_euler_do_not_use.y += 360.0f;
-	//			world_pos.rotation_euler_do_not_use.z = std::fmod(world_pos.rotation_euler_do_not_use.z, 360.0f);
-	//			if (world_pos.rotation_euler_do_not_use.z < 0.0f) world_pos.rotation_euler_do_not_use.z += 360.0f;
+	size_t num_threads = ctx.num_threads() * 4;
+	roots.clear();
+	roots.resize(num_threads);
+	for (auto& root : roots)
+	{
+		root.clear();
+		root.reserve(1000);
+	}
+	ctx.enqueue_parallel_data_each(
+		WithRead<HierarchyComponent>{},
+		WithWrite<TransformDynamicComponent>{},
+		[](std::vector<RootHierachyTransform>& roots,
+			const entt::entity entity,
+			const HierarchyComponent hierachy,
+			TransformDynamicComponent& transform)
+		{
+			transform.calculate_model_matrix();
+			if (hierachy.parent.entity == entt::null && hierachy.child.entity != entt::null)
+				roots.emplace_back(entity, transform.model_matrix);
+		}, roots, num_threads);
+	ctx.entt_sync();
 
-	//			world_pos.rotation_quat = glm::quat(glm::radians(world_pos.rotation_euler_do_not_use));
-	//		}
-	//		if (world_pos.get_euler_angles) /// 0.5ms
-	//		{
-	//			world_pos.rotation_euler_do_not_use = glm::degrees(glm::eulerAngles(world_pos.rotation_quat));
-	//			//if (world_pos.overide_quaternion)
-	//			//	world_pos.get_euler_angles = false;
-	//		}
+	for (size_t thread_id = 0; thread_id < num_threads; ++thread_id)
+	{
+		ctx.enqueue([this, &ctx, thread_id]()
+			{
+				std::vector<RootHierachyTransform> stack;
+				stack.reserve(10);
 
-	//		world_pos.model_matrix = glm::translate(glm::mat4(1.0f), world_pos.position); // 0.47ms
-	//		world_pos.model_matrix *= glm::mat4_cast(world_pos.rotation_quat); // 1.47ms
-	//		world_pos.model_matrix = glm::scale(world_pos.model_matrix, world_pos.scale); // 0.4ms
-	//	},256);
-	//ctx.sync();
-
-	//ctx.enqueue(
-	//	[&ctx]() {
-			return ctx.enqueue_parallel_each(
-				WithWrite<TransformDynamicComponent>{},
-				WithOut<CameraComponent>{},
-				[](const entt::entity entity, TransformDynamicComponent& world_pos)
+				for (const auto& root : roots[thread_id])
 				{
-					if (world_pos.overide_quaternion)
+					auto* root_t = ctx.try_get<TransformDynamicComponent>(root.parent);
+					if (!root_t) continue;
+
+					// push its first child
+					auto* root_h = ctx.try_get<HierarchyComponent>(root.parent);
+					if (!root_h || root_h->child.entity == entt::null) continue;
+
+					stack.push_back({ root_h->child.entity, root_t->model_matrix });
+
+					while (!stack.empty())
 					{
-						world_pos.rotation_euler_do_not_use.x = std::fmod(world_pos.rotation_euler_do_not_use.x, 360.0f);
-						if (world_pos.rotation_euler_do_not_use.x < 0.0f) world_pos.rotation_euler_do_not_use.x += 360.0f;
-						world_pos.rotation_euler_do_not_use.y = std::fmod(world_pos.rotation_euler_do_not_use.y, 360.0f);
-						if (world_pos.rotation_euler_do_not_use.y < 0.0f) world_pos.rotation_euler_do_not_use.y += 360.0f;
-						world_pos.rotation_euler_do_not_use.z = std::fmod(world_pos.rotation_euler_do_not_use.z, 360.0f);
-						if (world_pos.rotation_euler_do_not_use.z < 0.0f) world_pos.rotation_euler_do_not_use.z += 360.0f;
+						auto [entity, parent_world] = stack.back();
+						stack.pop_back();
 
-						world_pos.rotation_quat = glm::quat(glm::radians(world_pos.rotation_euler_do_not_use));
+						auto* t = ctx.try_get<TransformDynamicComponent>(entity);
+						auto* h = ctx.try_get<HierarchyComponent>(entity);
+						if (!t || !h) continue;
+
+						// t->model_matrix was written as local in phase 2
+						// now bake in parent
+						t->model_matrix = parent_world * t->model_matrix;
+
+						// push next sibling onto stack (same parent_world)
+						if (h->next_sibling.entity != entt::null)
+							stack.push_back({ h->next_sibling.entity, parent_world });
+
+						// push first child (our freshly computed world is its parent)
+						if (h->child.entity != entt::null)
+							stack.push_back({ h->child.entity, t->model_matrix });
 					}
-					if (world_pos.get_euler_angles) /// 0.5ms
-					{
-						world_pos.rotation_euler_do_not_use = glm::degrees(glm::eulerAngles(world_pos.rotation_quat));
-						//if (world_pos.overide_quaternion)
-						//	world_pos.get_euler_angles = false;
-					}
+				}
+			});
+	}
+	ctx.gen_sync();
 
-					world_pos.model_matrix = glm::translate(glm::mat4(1.0f), world_pos.position); // 0.47ms
-					world_pos.model_matrix *= glm::mat4_cast(world_pos.rotation_quat); // 1.47ms
-					world_pos.model_matrix = glm::scale(world_pos.model_matrix, world_pos.scale); // 0.4ms
-				}, 512);
-			
-		//});
-	//ctx.enqueue_each(
-	//	WithRead<TransformDynamicComponent>{},
-	//	[](entt::entity, TransformDynamicComponent& transform)
-	//	{
+	return true;
+}
 
-	//	}
-	//);
+void TransformCalculationSystem::calculate_model_matrix(TransformDynamicComponent& transform)
+{
+	if (transform.overide_quaternion)
+	{
+		transform.rotation_euler_do_not_use.x = std::fmod(transform.rotation_euler_do_not_use.x, 360.0f);
+		if (transform.rotation_euler_do_not_use.x < 0.0f) transform.rotation_euler_do_not_use.x += 360.0f;
+		transform.rotation_euler_do_not_use.y = std::fmod(transform.rotation_euler_do_not_use.y, 360.0f);
+		if (transform.rotation_euler_do_not_use.y < 0.0f) transform.rotation_euler_do_not_use.y += 360.0f;
+		transform.rotation_euler_do_not_use.z = std::fmod(transform.rotation_euler_do_not_use.z, 360.0f);
+		if (transform.rotation_euler_do_not_use.z < 0.0f) transform.rotation_euler_do_not_use.z += 360.0f;
+
+		transform.rotation_quat = glm::quat(glm::radians(transform.rotation_euler_do_not_use));
+	}
+	if (transform.get_euler_angles) /// 0.5ms
+	{
+		transform.rotation_euler_do_not_use = glm::degrees(glm::eulerAngles(transform.rotation_quat));
+		//if (world_pos.overide_quaternion)
+		//	world_pos.get_euler_angles = false;
+	}
+
+	transform.model_matrix = glm::translate(glm::mat4(1.0f), transform.position); // 0.47ms
+	transform.model_matrix *= glm::mat4_cast(transform.rotation_quat); // 1.47ms
+	transform.model_matrix = glm::scale(transform.model_matrix, transform.scale); // 0.4ms
 }
 
 bool PhysicsSystem::execute(SystemsContext& ctx)

@@ -19,6 +19,7 @@ struct WorkerThreadPool
 
 	bool wait(); // do not add additional jobs from another thread after this is called
 	bool poll();
+	bool notify();
 	size_t get_num_threads() { return num_threads; }
 	void start();
 protected:

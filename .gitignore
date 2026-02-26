@@ -1044,9 +1044,9 @@ dkms.conf
 # Raspberry Pi Pico disassembler file
 *.dis
 
-##files
+# files
 *.obj
 *.scn
 *.mat
 *.shdr
-assets/temp/temp_scene.scn
+./assets/temp/temp_scene.scn

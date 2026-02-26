@@ -78,3 +78,11 @@ bool WorkerThreadPool::poll()
 	if (stop) return false;
 	return true;
 }
+
+bool WorkerThreadPool::notify()
+{
+	std::lock_guard job_lock(jobs_mutex);
+	join_cv.notify_all();
+	poll_cv.notify_all();
+	return true;
+}

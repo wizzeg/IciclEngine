@@ -174,7 +174,7 @@ int main(void)
 
 					std::vector<hashed_string_64> meshes = {  "./assets/obj/cube.obj" }; //"./assets/obj/plane.obj","./assets/obj/triobjmonkey.obj" , "./assets/obj/sizanne.obj", "./assets/obj/robot.obj","./assets/obj/robot2.obj","./assets/obj/robot3.obj"
 					std::vector<hashed_string_64> texes = { "./assets/textures/awesomeface.png", "./assets/textures/wall.jpg", "./assets/textures/container.jpg" };
-					std::vector<hashed_string_64> mats = { "./assets/shaders/white.mat" }; // , "./assets/shaders/test2.mat" "./assets/shaders/test.mat", "./assets/shaders/testcopy.mat"
+					std::vector<hashed_string_64> mats = { "./assets/shaders/testcopy.mat" }; // , "./assets/shaders/test2.mat" "./assets/shaders/test.mat", "./assets/shaders/testcopy.mat"
 					
 					auto processor = scene->new_scene_object("Single thread processor", true);
 					processor.lock()->add_component<SingleProcessorComponent>();
@@ -238,7 +238,7 @@ int main(void)
 					}*/
 
 
-					for (size_t i = 0; i < 100; i++)
+					for (size_t i = 0; i < 1000; i++)
 					{
 						float x = -200.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 400.0f));
 						float y = -200.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 400.0f));; // Or random if you want variety
@@ -273,6 +273,15 @@ int main(void)
 						{
 							rb->set_dynamic_layer(1);
 						}
+
+						auto child_woah = scene->new_scene_object(std::string("child model: ") + std::to_string(i), true);
+						if (auto true_child = child_woah.lock())
+						{
+							true_child->add_component(TransformDynamicComponent{ glm::vec3(0.f, 2.f, 0.f) });
+							true_child->add_component(RenderComponent{ meshes[mesh_idx], mats[mat_idx], true, true, true });
+						}
+						scene->parent_scene_object(scene_object, child_woah);
+
 					}
 
 					for (size_t i = 0; i < 20; i++)

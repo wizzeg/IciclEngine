@@ -234,6 +234,7 @@ void Renderer::deffered_render(const RenderContext& a_render_context, const Deff
 		glBindTexture(GL_TEXTURE_2D, gbuffer->get_emissive_texture());
 		set_vec1i(5, "emissive_tex");
 
+		// no idea what this does ... I guess this is if I've created shadow maps?
 		if (auto* shadow_maps = a_deffered_buffers.shadow_maps)
 		{
 			GLuint shadow_map_array = shadow_maps->get_shadow_maps_texture_array();
@@ -414,7 +415,7 @@ void Renderer::create_pointlight_SSBO()
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, pointlight_ssbo);
 
 	// allocate the gpu space for the num_lights + buffer
-	glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(int) * 4 + sizeof(PointLightSSBO) * MAX_POINT_LIGHTS, nullptr, GL_DYNAMIC_DRAW);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(int) * 4 + sizeof(LightSSBO) * MAX_POINT_LIGHTS, nullptr, GL_DYNAMIC_DRAW);
 
 	// binding to binding point 0 (for now, probably always)
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, pointlight_ssbo);
@@ -422,7 +423,7 @@ void Renderer::create_pointlight_SSBO()
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
-void Renderer::update_pointlight_SSBO(const std::vector<PointLightSSBO>& a_point_lights) // maybe make this generic somehow
+void Renderer::update_pointlight_SSBO(const std::vector<LightSSBO>& a_point_lights) // maybe make this generic somehow
 {
 	if (pointlight_ssbo == 0) return;
 
@@ -431,7 +432,7 @@ void Renderer::update_pointlight_SSBO(const std::vector<PointLightSSBO>& a_point
 
 	// orphan buffer
 	glBufferData(GL_SHADER_STORAGE_BUFFER,
-		sizeof(int) * 4 + sizeof(PointLightSSBO) * MAX_POINT_LIGHTS, nullptr, GL_DYNAMIC_DRAW);
+		sizeof(int) * 4 + sizeof(LightSSBO) * MAX_POINT_LIGHTS, nullptr, GL_DYNAMIC_DRAW);
 
 	// set num lights
 	int num_lights = std::min(static_cast<int>(a_point_lights.size()), MAX_POINT_LIGHTS);
@@ -444,17 +445,17 @@ void Renderer::update_pointlight_SSBO(const std::vector<PointLightSSBO>& a_point
 
 
 			glBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(int) * 4,
-				sizeof(PointLightSSBO) * num_lights, a_point_lights.data());
+				sizeof(LightSSBO) * num_lights, a_point_lights.data());
 		}
 		else
 		{
-			std::vector<PointLightSSBO> new_ssbo(MAX_POINT_LIGHTS);
+			std::vector<LightSSBO> new_ssbo(MAX_POINT_LIGHTS);
 			std::memcpy(new_ssbo.data(), a_point_lights.data(),
-				MAX_POINT_LIGHTS * sizeof(PointLightSSBO));
+				MAX_POINT_LIGHTS * sizeof(LightSSBO));
 			int new_num_lights = static_cast<int>(new_ssbo.size());
 
 			glBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(int) * 4,
-				sizeof(PointLightSSBO) * new_num_lights, new_ssbo.data());
+				sizeof(LightSSBO) * new_num_lights, new_ssbo.data());
 			//PRINTLN("too many lights, does not fit allocation");
 		}
 
@@ -537,9 +538,9 @@ void Renderer::update_insance_SSBO(const std::vector<glm::mat4>& a_model_matrice
 	std::vector<glm::mat4> model_matrices = a_model_matrices;
 	if (model_matrices.size() > HALF_MODEL_INSTANCES)
 	{
-		//std::vector<PointLightSSBO> new_model(MAX_POINT_LIGHTS);
+		//std::vector<LightSSBO> new_model(MAX_POINT_LIGHTS);
 		//std::memcpy(new_model.data(), a_model_matrices.data(),
-		//	MAX_POINT_LIGHTS * sizeof(PointLightSSBO));
+		//	MAX_POINT_LIGHTS * sizeof(LightSSBO));
 		PRINTLN("too many in instance draw");
 		return;
 	}
@@ -576,9 +577,9 @@ void Renderer::update_ui_insance_SSBO(const std::vector<UISSBO>& ui_SSBO)
 
 	if (ui_SSBO.size() > HALF_MODEL_INSTANCES)
 	{
-		//std::vector<PointLightSSBO> new_model(MAX_POINT_LIGHTS);
+		//std::vector<LightSSBO> new_model(MAX_POINT_LIGHTS);
 		//std::memcpy(new_model.data(), a_model_matrices.data(),
-		//	MAX_POINT_LIGHTS * sizeof(PointLightSSBO));
+		//	MAX_POINT_LIGHTS * sizeof(LightSSBO));
 		PRINTLN("too many in instance draw");
 		return;
 	}

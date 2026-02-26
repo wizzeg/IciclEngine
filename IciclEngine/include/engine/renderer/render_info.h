@@ -503,7 +503,7 @@ struct RenderContext
 	std::vector<RenderReq> render_requests;
 	std::vector<RuntimeMaterial> materials;
 
-	std::vector<PointLightSSBO> lights;
+	std::vector<LightSSBO> lights;
 	std::vector<ShadowLight> shadow_lights;
 
 	std::vector<RuntimeMaterial> ui_materials;

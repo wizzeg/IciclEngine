@@ -15,6 +15,12 @@ uniform vec3 forced_color;
 uniform sampler2D uTexture; // change this name later
 uniform int has_texture;
 
+uniform float ao = 0.7;
+uniform float spec = 0.2;
+uniform float roughness = 0.8;
+uniform float metallic = 0.2;
+uniform float shininess = 0.2;
+
 void main()
 {
     gPosition.xyzw = frag_pos;
@@ -24,10 +30,10 @@ void main()
     vec3 albedo;
 //    if (has_texture > 0) {
     albedo = texture(uTexture, tex_coords).rgb;
-//    } else {
-//        albedo = vert_color.rgb;
-//    }
-    gAlbedoSpec.rgb =  vec3(0.7f, 0.7f, 0.7f);//albedo;//forced_color * albedo.x;
-    gAlbedoSpec.a = 1.0f; // a default specular
-    gEmisive = vec4(0.7f, 0.7f, 0.7f, 1.0f);
+    // maybe replace this with a grass texture later... probably never
+    gAlbedoSpec.rgb =  vec3(0.6f, 0.8f, 0.4f);//albedo;//forced_color * albedo.x;
+    gAlbedoSpec.a = 1.0f;
+    gEmisive = vec4(0.0);
+    gORMS = vec4(ao, roughness, metallic, shininess);
+    gSpec = vec4(0.6f, 0.8f, 0.4f, spec);
 }

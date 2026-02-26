@@ -56,6 +56,56 @@ struct TransformDynamicComponent
     bool get_euler_angles = false;
     bool overide_quaternion = false;
     glm::mat4 model_matrix = glm::mat4(1);
+
+    void calculate_model_matrix()
+    {
+        if (overide_quaternion)
+        {
+            rotation_euler_do_not_use.x = std::fmod(rotation_euler_do_not_use.x, 360.0f);
+            if (rotation_euler_do_not_use.x < 0.0f) rotation_euler_do_not_use.x += 360.0f;
+            rotation_euler_do_not_use.y = std::fmod(rotation_euler_do_not_use.y, 360.0f);
+            if (rotation_euler_do_not_use.y < 0.0f) rotation_euler_do_not_use.y += 360.0f;
+            rotation_euler_do_not_use.z = std::fmod(rotation_euler_do_not_use.z, 360.0f);
+            if (rotation_euler_do_not_use.z < 0.0f) rotation_euler_do_not_use.z += 360.0f;
+
+            rotation_quat = glm::quat(glm::radians(rotation_euler_do_not_use));
+        }
+        if (get_euler_angles) /// 0.5ms
+        {
+            rotation_euler_do_not_use = glm::degrees(glm::eulerAngles(rotation_quat));
+            //if (world_pos.overide_quaternion)
+            //	world_pos.get_euler_angles = false;
+        }
+
+        model_matrix = glm::translate(glm::mat4(1.0f), position); // 0.47ms
+        model_matrix *= glm::mat4_cast(rotation_quat); // 1.47ms
+        model_matrix = glm::scale(model_matrix, scale); // 0.4ms
+    }
+
+    void calculate_model_matrix(TransformDynamicComponent& transform)
+    {
+        if (transform.overide_quaternion)
+        {
+            transform.rotation_euler_do_not_use.x = std::fmod(transform.rotation_euler_do_not_use.x, 360.0f);
+            if (transform.rotation_euler_do_not_use.x < 0.0f) transform.rotation_euler_do_not_use.x += 360.0f;
+            transform.rotation_euler_do_not_use.y = std::fmod(transform.rotation_euler_do_not_use.y, 360.0f);
+            if (transform.rotation_euler_do_not_use.y < 0.0f) transform.rotation_euler_do_not_use.y += 360.0f;
+            transform.rotation_euler_do_not_use.z = std::fmod(transform.rotation_euler_do_not_use.z, 360.0f);
+            if (transform.rotation_euler_do_not_use.z < 0.0f) transform.rotation_euler_do_not_use.z += 360.0f;
+
+            transform.rotation_quat = glm::quat(glm::radians(transform.rotation_euler_do_not_use));
+        }
+        if (transform.get_euler_angles) /// 0.5ms
+        {
+            transform.rotation_euler_do_not_use = glm::degrees(glm::eulerAngles(transform.rotation_quat));
+            //if (world_pos.overide_quaternion)
+            //	world_pos.get_euler_angles = false;
+        }
+
+        transform.model_matrix = glm::translate(glm::mat4(1.0f), transform.position); // 0.47ms
+        transform.model_matrix *= glm::mat4_cast(transform.rotation_quat); // 1.47ms
+        transform.model_matrix = glm::scale(transform.model_matrix, transform.scale); // 0.4ms
+    }
 };
 
 struct TransformComponent

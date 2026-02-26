@@ -42,6 +42,7 @@ struct EditorEntity
 	TransformDynamicComponent* transform = nullptr;
 	RenderComponent* render = nullptr;
 	PointLightComponent* point_light = nullptr;
+	DirectionalLightComponent* directional_light = nullptr;
 };
 
 struct EngineContext

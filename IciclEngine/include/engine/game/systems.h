@@ -15,6 +15,9 @@ struct TransformCalculationSystem : SystemBase
 {
 	bool execute(SystemsContext& ctx) override;
 	//const std::string& get_name() override { return "TransformCalculationSystem"; }
+	static void calculate_model_matrix(TransformDynamicComponent& transform);
+
+	std::vector<std::vector<RootHierachyTransform>> roots;
 };
 
 struct PhysicsSystem : SystemBase
@@ -43,8 +46,11 @@ struct PhysicsSystem : SystemBase
 	float sleep_angular_threshold = 0.05f;
 
 	bool execute(SystemsContext& ctx) override;
+
 	bool overlap(const AABB& a, const AABB& b);
 	int divide_int(float input, size_t divisor);
+
+	// these are vibe coded
 	ContactManifold OBB_collision_test(const BroadPhasePair pair);
 	glm::vec3 get_OBB_axis(const OBB& obb, int index) const;
 	float project_OBB_on_axis(const OBB& obb, const glm::vec3& axis) const;
@@ -57,8 +63,6 @@ struct PhysicsSystem : SystemBase
 
 	glm::mat3 calculate_box_inertia_tensor_inverse(float mass, const glm::vec3& half_extents);
 	void resolve_collision(ContactManifold& manifold, std::vector<RigidBodyComponent>& landscape_rbs, float dt);
-
-	void generate_landscape_collision();
 	size_t count = 0;
 };
 

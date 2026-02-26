@@ -153,6 +153,7 @@ struct SystemsContext
 			func(entity, view.template get<Reads>(entity)...);
 		}
 		systems_dependencies.remove(reads);
+		entt_thread_pool->notify();
 		return synced;
 	}
 
@@ -172,6 +173,7 @@ struct SystemsContext
 			func(entity, view.template get<Reads>(entity)...);
 		}
 		systems_dependencies.remove(reads, mods);
+		entt_thread_pool->notify();
 		return synced;
 	}
 
@@ -191,6 +193,7 @@ struct SystemsContext
 			func(entity, view.template get<Reads>(entity)...);
 		}
 		systems_dependencies.remove(reads);
+		entt_thread_pool->notify();
 		return synced;
 	}
 
@@ -210,6 +213,7 @@ struct SystemsContext
 			func(entity, view.template get<Reads>(entity)...);
 		}
 		systems_dependencies.remove(reads, mods);
+		entt_thread_pool->notify();
 		return synced;
 	}
 
@@ -229,6 +233,7 @@ struct SystemsContext
 			func(entity, view.template get<Writes>(entity)...);
 		}
 		systems_dependencies.remove(writes);
+		entt_thread_pool->notify();
 		return synced;
 	}
 
@@ -248,6 +253,7 @@ struct SystemsContext
 			func(entity, view.template get<Writes>(entity)...);
 		}
 		systems_dependencies.remove(writes, mods);
+		entt_thread_pool->notify();
 		return synced;
 	}
 
@@ -267,6 +273,7 @@ struct SystemsContext
 			func(entity, view.template get<Writes>(entity)...);
 		}
 		systems_dependencies.remove(writes);
+		entt_thread_pool->notify();
 		return synced;
 	}
 
@@ -286,6 +293,7 @@ struct SystemsContext
 			func(entity, view.template get<Writes>(entity)...);
 		}
 		systems_dependencies.remove(writes, mods);
+		entt_thread_pool->notify();
 		return synced;
 	}
 
@@ -305,6 +313,7 @@ struct SystemsContext
 			func(entity, view.template get<Reads>(entity)...);
 		}
 		systems_dependencies.remove(reads, writes);
+		entt_thread_pool->notify();
 		return synced;
 	}
 
@@ -324,6 +333,7 @@ struct SystemsContext
 			func(entity, view.template get<Reads>(entity)..., view.template get<Writes>(entity)...);
 		}
 		systems_dependencies.remove(reads, writes, mods);
+		entt_thread_pool->notify();
 		return synced;
 	}
 
@@ -343,6 +353,7 @@ struct SystemsContext
 			func(entity, view.template get<Reads>(entity)..., view.template get<Writes>(entity)...);
 		}
 		systems_dependencies.remove(reads, writes);
+		entt_thread_pool->notify();
 		return synced;
 	}
 
@@ -362,6 +373,7 @@ struct SystemsContext
 			func(entity, view.template get<Reads>(entity)..., view.template get<Writes>(entity)...);
 		}
 		systems_dependencies.remove(reads, writes, mods);
+		entt_thread_pool->notify();
 		return synced;
 	}
 
@@ -2181,7 +2193,7 @@ struct SystemsContext
 	void enqueue(WithWrite<Refs...> refs, Func&& func) 
 	{
 		general_thread_pool->enqueue(
-			[func = std::forward<Func>(func), refs]() {
+			[this, func = std::forward<Func>(func), refs]() {
 				while (!systems_dependencies.add(refs))
 				{
 					PRINTLN("Forced poll");
