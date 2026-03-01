@@ -6,7 +6,7 @@ This engine is primarily using data oriented design, with some use of object ori
 I'm unsure if my gitignore is too aggressive or not, so I might've been blocking too many files for this to build from a pull. Earlier I had problems because it was too lax, making me unable to upload to github.
 
 How to run:
-Install Visual Studio 22, and ensure you have at least C++, but preferably C++ 23 or higher.
+Install Visual Studio 22, and ensure you have at least C++, but preferably C++ 23 or higher. Also ensure you have windows 10, but it might work on windows 11 too (I pray).
 (Projects -> properties -> Configure properties -> general -> C++ language standards)
 
 Download code.
