@@ -3169,7 +3169,7 @@ bool EnemyAttackSystem::execute(SystemsContext& ctx)
 										if (i < cols.size() && cols[i].other_tag == 1)
 										{
 											LoadSceneCommand scene;
-											scene.path = "./assets/levels/mainmenu.scn";
+											scene.path = "./assets/scenes/mainmenu.scn";
 											scene.load = true;
 											ctx.get_system_storage().add_or_replace_object("LoadSceneCommand", scene);
 											break;

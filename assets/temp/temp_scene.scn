@@ -3,6 +3,801 @@
     "next index": 0,
     "root objects": [
         {
+            "children": [],
+            "components": [
+                {
+                    "fields": [
+                        {
+                            "name": "entity name: ",
+                            "type": "hashed_name",
+                            "value": "Floor"
+                        },
+                        {
+                            "name": "entity id: ",
+                            "type": "entity",
+                            "value": 1
+                        }
+                    ],
+                    "type": "EntityComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "parent: ",
+                            "type": "parent",
+                            "value": 0
+                        },
+                        {
+                            "name": "previous sibling: ",
+                            "type": "previous_sibling",
+                            "value": 0
+                        },
+                        {
+                            "name": "next sibling: ",
+                            "type": "next_sibling",
+                            "value": 0
+                        },
+                        {
+                            "name": "child: ",
+                            "type": "child",
+                            "value": 0
+                        }
+                    ],
+                    "type": "HierarchyComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "position: ",
+                            "type": "position",
+                            "value": [
+                                0.0,
+                                -5.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "rotation: ",
+                            "type": "rotation",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "linear_velocity: ",
+                            "type": "linear_velocity",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "angular_velocity: ",
+                            "type": "angular_velocity",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "mass: ",
+                            "type": "mass",
+                            "value": 1000.0
+                        },
+                        {
+                            "name": "inverse_mass: ",
+                            "type": "inverse_mass",
+                            "value": 9.999999747378752e-05
+                        },
+                        {
+                            "name": "restitution: ",
+                            "type": "restitution",
+                            "value": 1.0
+                        },
+                        {
+                            "name": "friction: ",
+                            "type": "friction",
+                            "value": 0.0
+                        },
+                        {
+                            "name": "inverse_inertia_tensor_local",
+                            "type": "inverse_inertia_tensor_local",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "recalculate tensor: ",
+                            "type": "recalculate_inverse_inertia_tensor",
+                            "value": true
+                        },
+                        {
+                            "name": "dynamic layers: ",
+                            "type": "dynamic_layers",
+                            "value": 0
+                        },
+                        {
+                            "name": "static layers: ",
+                            "type": "static_layers",
+                            "value": 3
+                        },
+                        {
+                            "name": "asleep: ",
+                            "type": "asleep",
+                            "value": false
+                        },
+                        {
+                            "name": "sleep strikes: ",
+                            "type": "sleep_strikes",
+                            "value": 0
+                        },
+                        {
+                            "name": "max sleep strikes: ",
+                            "type": "max_sleep_strikes",
+                            "value": 1000
+                        }
+                    ],
+                    "type": "RigidBodyComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "mesh path: ",
+                            "type": "mesh",
+                            "value": "./assets/obj/cube.obj"
+                        },
+                        {
+                            "name": "material path: ",
+                            "type": "material",
+                            "value": "./assets/shaders/plain.mat"
+                        },
+                        {
+                            "name": "instance draw: ",
+                            "type": "instance",
+                            "value": false
+                        },
+                        {
+                            "name": "use mipmaps: ",
+                            "type": "mipmap",
+                            "value": false
+                        },
+                        {
+                            "name": "load component: ",
+                            "type": "load",
+                            "value": false
+                        }
+                    ],
+                    "type": "RenderComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "position: ",
+                            "type": "position",
+                            "value": [
+                                0.0,
+                                -5.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "scale: ",
+                            "type": "scale",
+                            "value": [
+                                200.0,
+                                5.0,
+                                200.0
+                            ]
+                        },
+                        {
+                            "name": "rotation: ",
+                            "type": "rotation_euler_do_not_use",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "overwrite quaternion rotation: ",
+                            "type": "overide_quaternion",
+                            "value": true
+                        },
+                        {
+                            "name": "update euler rotation: ",
+                            "type": "get_euler_angles",
+                            "value": false
+                        },
+                        {
+                            "name": "rotation_quat",
+                            "type": "rotation_quat",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0
+                            ]
+                        },
+                        {
+                            "name": "model_matrix",
+                            "type": "model_matrix",
+                            "value": [
+                                200.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                5.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                200.0,
+                                0.0,
+                                0.0,
+                                -5.0,
+                                0.0,
+                                1.0
+                            ]
+                        }
+                    ],
+                    "type": "TransformDynamicComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "box offset: ",
+                            "type": "offset",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "collision layers: ",
+                            "type": "collision_layers",
+                            "value": 4
+                        },
+                        {
+                            "name": "tag: ",
+                            "type": "tag",
+                            "value": 10
+                        }
+                    ],
+                    "type": "BoundingBoxComponent"
+                }
+            ],
+            "name": "Floor"
+        },
+        {
+            "children": [],
+            "components": [
+                {
+                    "fields": [
+                        {
+                            "name": "entity name: ",
+                            "type": "hashed_name",
+                            "value": "DirectionalLight"
+                        },
+                        {
+                            "name": "entity id: ",
+                            "type": "entity",
+                            "value": 2
+                        }
+                    ],
+                    "type": "EntityComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "parent: ",
+                            "type": "parent",
+                            "value": 0
+                        },
+                        {
+                            "name": "previous sibling: ",
+                            "type": "previous_sibling",
+                            "value": 0
+                        },
+                        {
+                            "name": "next sibling: ",
+                            "type": "next_sibling",
+                            "value": 0
+                        },
+                        {
+                            "name": "child: ",
+                            "type": "child",
+                            "value": 0
+                        }
+                    ],
+                    "type": "HierarchyComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "position: ",
+                            "type": "position",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "scale: ",
+                            "type": "scale",
+                            "value": [
+                                1.0,
+                                1.0,
+                                1.0
+                            ]
+                        },
+                        {
+                            "name": "rotation: ",
+                            "type": "rotation_euler_do_not_use",
+                            "value": [
+                                270.0,
+                                0.0,
+                                351.57000732421875
+                            ]
+                        },
+                        {
+                            "name": "overwrite quaternion rotation: ",
+                            "type": "overide_quaternion",
+                            "value": true
+                        },
+                        {
+                            "name": "update euler rotation: ",
+                            "type": "get_euler_angles",
+                            "value": false
+                        },
+                        {
+                            "name": "rotation_quat",
+                            "type": "rotation_quat",
+                            "value": [
+                                -0.7051942348480225,
+                                0.05197185277938843,
+                                -0.05197185277938843,
+                                0.7051942348480225
+                            ]
+                        },
+                        {
+                            "name": "model_matrix",
+                            "type": "model_matrix",
+                            "value": [
+                                0.989195704460144,
+                                -0.14660100638866425,
+                                0.0,
+                                0.0,
+                                0.0,
+                                5.960464477539063e-08,
+                                -0.9999999403953552,
+                                0.0,
+                                0.14660100638866425,
+                                0.9891956448554993,
+                                5.960464477539063e-08,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0
+                            ]
+                        }
+                    ],
+                    "type": "TransformDynamicComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "color: ",
+                            "type": "color",
+                            "value": [
+                                0.6499999761581421,
+                                0.7099999785423279,
+                                0.6000000238418579
+                            ]
+                        },
+                        {
+                            "name": "intensity: ",
+                            "type": "intensity",
+                            "value": 0.800000011920929
+                        },
+                        {
+                            "name": "create shadow map: ",
+                            "type": "shadow_map",
+                            "value": false
+                        },
+                        {
+                            "name": "rotation: ",
+                            "type": "rotation_euler_do_not_use",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "overwrite quaternion rotation: ",
+                            "type": "overide_quaternion",
+                            "value": false
+                        },
+                        {
+                            "name": "update euler rotation: ",
+                            "type": "get_euler_angles",
+                            "value": false
+                        },
+                        {
+                            "name": "rotation_quat",
+                            "type": "rotation_quat",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0
+                            ]
+                        }
+                    ],
+                    "type": "DirectionalLightComponent"
+                }
+            ],
+            "name": "DirectionalLight"
+        },
+        {
+            "children": [],
+            "components": [
+                {
+                    "fields": [
+                        {
+                            "name": "entity name: ",
+                            "type": "hashed_name",
+                            "value": "Player"
+                        },
+                        {
+                            "name": "entity id: ",
+                            "type": "entity",
+                            "value": 3
+                        }
+                    ],
+                    "type": "EntityComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "parent: ",
+                            "type": "parent",
+                            "value": 0
+                        },
+                        {
+                            "name": "previous sibling: ",
+                            "type": "previous_sibling",
+                            "value": 0
+                        },
+                        {
+                            "name": "next sibling: ",
+                            "type": "next_sibling",
+                            "value": 0
+                        },
+                        {
+                            "name": "child: ",
+                            "type": "child",
+                            "value": 0
+                        }
+                    ],
+                    "type": "HierarchyComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "position: ",
+                            "type": "position",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "scale: ",
+                            "type": "scale",
+                            "value": [
+                                1.0,
+                                1.0,
+                                1.0
+                            ]
+                        },
+                        {
+                            "name": "rotation: ",
+                            "type": "rotation_euler_do_not_use",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "overwrite quaternion rotation: ",
+                            "type": "overide_quaternion",
+                            "value": false
+                        },
+                        {
+                            "name": "update euler rotation: ",
+                            "type": "get_euler_angles",
+                            "value": false
+                        },
+                        {
+                            "name": "rotation_quat",
+                            "type": "rotation_quat",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0
+                            ]
+                        },
+                        {
+                            "name": "model_matrix",
+                            "type": "model_matrix",
+                            "value": [
+                                1.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0
+                            ]
+                        }
+                    ],
+                    "type": "TransformDynamicComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "mesh path: ",
+                            "type": "mesh",
+                            "value": "./assets/obj/cube.obj"
+                        },
+                        {
+                            "name": "material path: ",
+                            "type": "material",
+                            "value": "./assets/shaders/plain2.mat"
+                        },
+                        {
+                            "name": "instance draw: ",
+                            "type": "instance",
+                            "value": false
+                        },
+                        {
+                            "name": "use mipmaps: ",
+                            "type": "mipmap",
+                            "value": false
+                        },
+                        {
+                            "name": "load component: ",
+                            "type": "load",
+                            "value": false
+                        }
+                    ],
+                    "type": "RenderComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "position: ",
+                            "type": "position",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "rotation: ",
+                            "type": "rotation",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "linear_velocity: ",
+                            "type": "linear_velocity",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "angular_velocity: ",
+                            "type": "angular_velocity",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "mass: ",
+                            "type": "mass",
+                            "value": 1.0
+                        },
+                        {
+                            "name": "inverse_mass: ",
+                            "type": "inverse_mass",
+                            "value": 1.0
+                        },
+                        {
+                            "name": "restitution: ",
+                            "type": "restitution",
+                            "value": 0.20000000298023224
+                        },
+                        {
+                            "name": "friction: ",
+                            "type": "friction",
+                            "value": 0.800000011920929
+                        },
+                        {
+                            "name": "inverse_inertia_tensor_local",
+                            "type": "inverse_inertia_tensor_local",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "recalculate tensor: ",
+                            "type": "recalculate_inverse_inertia_tensor",
+                            "value": true
+                        },
+                        {
+                            "name": "dynamic layers: ",
+                            "type": "dynamic_layers",
+                            "value": 2
+                        },
+                        {
+                            "name": "static layers: ",
+                            "type": "static_layers",
+                            "value": 0
+                        },
+                        {
+                            "name": "asleep: ",
+                            "type": "asleep",
+                            "value": false
+                        },
+                        {
+                            "name": "sleep strikes: ",
+                            "type": "sleep_strikes",
+                            "value": 0
+                        },
+                        {
+                            "name": "max sleep strikes: ",
+                            "type": "max_sleep_strikes",
+                            "value": 1000
+                        }
+                    ],
+                    "type": "RigidBodyComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "box offset: ",
+                            "type": "offset",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "collision layers: ",
+                            "type": "collision_layers",
+                            "value": 7
+                        },
+                        {
+                            "name": "tag: ",
+                            "type": "tag",
+                            "value": 1
+                        }
+                    ],
+                    "type": "BoundingBoxComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "gravity: ",
+                            "type": "gravity",
+                            "value": 9.819999694824219
+                        }
+                    ],
+                    "type": "GravityStrengthComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "is player: ",
+                            "type": "is_player",
+                            "value": false
+                        }
+                    ],
+                    "type": "PlayerTagComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "jump_force: ",
+                            "type": "jump_force",
+                            "value": 7.5
+                        },
+                        {
+                            "name": "max_move_speed: ",
+                            "type": "max_move_speed",
+                            "value": 25.0
+                        },
+                        {
+                            "name": "move_force: ",
+                            "type": "move_force",
+                            "value": 50.0
+                        },
+                        {
+                            "name": "time_since_ground: ",
+                            "type": "time_since_ground",
+                            "value": 0.0
+                        },
+                        {
+                            "name": "move_damp: ",
+                            "type": "move_damp",
+                            "value": 10.0
+                        },
+                        {
+                            "name": "ground_time_limit: ",
+                            "type": "ground_time_limit",
+                            "value": 0.15000000596046448
+                        },
+                        {
+                            "name": "jump_time_limit: ",
+                            "type": "jump_time_limit",
+                            "value": 0.20000000298023224
+                        }
+                    ],
+                    "type": "MovementStatsComponent"
+                }
+            ],
+            "name": "Player"
+        },
+        {
             "children": [
                 {
                     "children": [],
@@ -17,7 +812,7 @@
                                 {
                                     "name": "entity id: ",
                                     "type": "entity",
-                                    "value": 9
+                                    "value": 12
                                 }
                             ],
                             "type": "EntityComponent"
@@ -27,7 +822,7 @@
                                 {
                                     "name": "parent: ",
                                     "type": "parent",
-                                    "value": 10
+                                    "value": 13
                                 },
                                 {
                                     "name": "previous sibling: ",
@@ -37,7 +832,7 @@
                                 {
                                     "name": "next sibling: ",
                                     "type": "next_sibling",
-                                    "value": 8
+                                    "value": 11
                                 },
                                 {
                                     "name": "child: ",
@@ -199,7 +994,7 @@
                                 {
                                     "name": "entity id: ",
                                     "type": "entity",
-                                    "value": 8
+                                    "value": 11
                                 }
                             ],
                             "type": "EntityComponent"
@@ -209,12 +1004,12 @@
                                 {
                                     "name": "parent: ",
                                     "type": "parent",
-                                    "value": 10
+                                    "value": 13
                                 },
                                 {
                                     "name": "previous sibling: ",
                                     "type": "previous_sibling",
-                                    "value": 9
+                                    "value": 12
                                 },
                                 {
                                     "name": "next sibling: ",
@@ -391,7 +1186,7 @@
                                 {
                                     "name": "entity id: ",
                                     "type": "entity",
-                                    "value": 7
+                                    "value": 10
                                 }
                             ],
                             "type": "EntityComponent"
@@ -401,7 +1196,7 @@
                                 {
                                     "name": "parent: ",
                                     "type": "parent",
-                                    "value": 10
+                                    "value": 13
                                 },
                                 {
                                     "name": "previous sibling: ",
@@ -411,7 +1206,7 @@
                                 {
                                     "name": "next sibling: ",
                                     "type": "next_sibling",
-                                    "value": 6
+                                    "value": 9
                                 },
                                 {
                                     "name": "child: ",
@@ -583,7 +1378,7 @@
                                 {
                                     "name": "entity id: ",
                                     "type": "entity",
-                                    "value": 6
+                                    "value": 9
                                 }
                             ],
                             "type": "EntityComponent"
@@ -593,17 +1388,17 @@
                                 {
                                     "name": "parent: ",
                                     "type": "parent",
-                                    "value": 10
+                                    "value": 13
                                 },
                                 {
                                     "name": "previous sibling: ",
                                     "type": "previous_sibling",
-                                    "value": 7
+                                    "value": 10
                                 },
                                 {
                                     "name": "next sibling: ",
                                     "type": "next_sibling",
-                                    "value": 5
+                                    "value": 8
                                 },
                                 {
                                     "name": "child: ",
@@ -728,7 +1523,7 @@
                                 {
                                     "name": "entity id: ",
                                     "type": "entity",
-                                    "value": 5
+                                    "value": 8
                                 }
                             ],
                             "type": "EntityComponent"
@@ -738,17 +1533,17 @@
                                 {
                                     "name": "parent: ",
                                     "type": "parent",
-                                    "value": 10
+                                    "value": 13
                                 },
                                 {
                                     "name": "previous sibling: ",
                                     "type": "previous_sibling",
-                                    "value": 6
+                                    "value": 9
                                 },
                                 {
                                     "name": "next sibling: ",
                                     "type": "next_sibling",
-                                    "value": 4
+                                    "value": 7
                                 },
                                 {
                                     "name": "child: ",
@@ -920,7 +1715,7 @@
                                 {
                                     "name": "entity id: ",
                                     "type": "entity",
-                                    "value": 4
+                                    "value": 7
                                 }
                             ],
                             "type": "EntityComponent"
@@ -930,17 +1725,17 @@
                                 {
                                     "name": "parent: ",
                                     "type": "parent",
-                                    "value": 10
+                                    "value": 13
                                 },
                                 {
                                     "name": "previous sibling: ",
                                     "type": "previous_sibling",
-                                    "value": 5
+                                    "value": 8
                                 },
                                 {
                                     "name": "next sibling: ",
                                     "type": "next_sibling",
-                                    "value": 3
+                                    "value": 6
                                 },
                                 {
                                     "name": "child: ",
@@ -1056,7 +1851,7 @@
                                 {
                                     "name": "scene path: ",
                                     "type": "path",
-                                    "value": "./assets/scenes/level3.scn"
+                                    "value": ""
                                 }
                             ],
                             "type": "ScenePathComponent"
@@ -1112,7 +1907,7 @@
                                 {
                                     "name": "entity id: ",
                                     "type": "entity",
-                                    "value": 3
+                                    "value": 6
                                 }
                             ],
                             "type": "EntityComponent"
@@ -1122,17 +1917,17 @@
                                 {
                                     "name": "parent: ",
                                     "type": "parent",
-                                    "value": 10
+                                    "value": 13
                                 },
                                 {
                                     "name": "previous sibling: ",
                                     "type": "previous_sibling",
-                                    "value": 4
+                                    "value": 7
                                 },
                                 {
                                     "name": "next sibling: ",
                                     "type": "next_sibling",
-                                    "value": 2
+                                    "value": 5
                                 },
                                 {
                                     "name": "child: ",
@@ -1248,7 +2043,7 @@
                                 {
                                     "name": "scene path: ",
                                     "type": "path",
-                                    "value": "./assets/scenes/level2.scn"
+                                    "value": ""
                                 }
                             ],
                             "type": "ScenePathComponent"
@@ -1304,7 +2099,7 @@
                                 {
                                     "name": "entity id: ",
                                     "type": "entity",
-                                    "value": 2
+                                    "value": 5
                                 }
                             ],
                             "type": "EntityComponent"
@@ -1314,17 +2109,17 @@
                                 {
                                     "name": "parent: ",
                                     "type": "parent",
-                                    "value": 10
+                                    "value": 13
                                 },
                                 {
                                     "name": "previous sibling: ",
                                     "type": "previous_sibling",
-                                    "value": 3
+                                    "value": 6
                                 },
                                 {
                                     "name": "next sibling: ",
                                     "type": "next_sibling",
-                                    "value": 1
+                                    "value": 4
                                 },
                                 {
                                     "name": "child: ",
@@ -1496,7 +2291,7 @@
                                 {
                                     "name": "entity id: ",
                                     "type": "entity",
-                                    "value": 1
+                                    "value": 4
                                 }
                             ],
                             "type": "EntityComponent"
@@ -1506,12 +2301,12 @@
                                 {
                                     "name": "parent: ",
                                     "type": "parent",
-                                    "value": 10
+                                    "value": 13
                                 },
                                 {
                                     "name": "previous sibling: ",
                                     "type": "previous_sibling",
-                                    "value": 2
+                                    "value": 5
                                 },
                                 {
                                     "name": "next sibling: ",
@@ -1697,7 +2492,7 @@
                         {
                             "name": "entity id: ",
                             "type": "entity",
-                            "value": 10
+                            "value": 13
                         }
                     ],
                     "type": "EntityComponent"
@@ -1722,7 +2517,7 @@
                         {
                             "name": "child: ",
                             "type": "child",
-                            "value": 9
+                            "value": 12
                         }
                     ],
                     "type": "HierarchyComponent"
@@ -1761,401 +2556,39 @@
                         }
                     ],
                     "type": "UIMenuControllerComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "end: ",
+                            "type": "end",
+                            "value": false
+                        },
+                        {
+                            "name": "coins_required: ",
+                            "type": "coins_required",
+                            "value": 1
+                        },
+                        {
+                            "name": "time_score: ",
+                            "type": "time_score",
+                            "value": 0.0
+                        },
+                        {
+                            "name": "this_level: ",
+                            "type": "this_level",
+                            "value": "./assets/scenes/level1.scn"
+                        },
+                        {
+                            "name": "next_level: ",
+                            "type": "next_level",
+                            "value": "./assets/scenes/level2.scn"
+                        }
+                    ],
+                    "type": "EndLevelComponent"
                 }
             ],
             "name": "MenuContainer"
-        },
-        {
-            "children": [
-                {
-                    "children": [],
-                    "components": [
-                        {
-                            "fields": [
-                                {
-                                    "name": "entity name: ",
-                                    "type": "hashed_name",
-                                    "value": "mat plain4"
-                                },
-                                {
-                                    "name": "entity id: ",
-                                    "type": "entity",
-                                    "value": 15
-                                }
-                            ],
-                            "type": "EntityComponent"
-                        },
-                        {
-                            "fields": [
-                                {
-                                    "name": "parent: ",
-                                    "type": "parent",
-                                    "value": 16
-                                },
-                                {
-                                    "name": "previous sibling: ",
-                                    "type": "previous_sibling",
-                                    "value": 0
-                                },
-                                {
-                                    "name": "next sibling: ",
-                                    "type": "next_sibling",
-                                    "value": 14
-                                },
-                                {
-                                    "name": "child: ",
-                                    "type": "child",
-                                    "value": 0
-                                }
-                            ],
-                            "type": "HierarchyComponent"
-                        },
-                        {
-                            "fields": [
-                                {
-                                    "name": "material path: ",
-                                    "type": "hashed_path",
-                                    "value": "./assets/shaders/plain4.mat"
-                                },
-                                {
-                                    "name": "instanced: ",
-                                    "type": "instance",
-                                    "value": false
-                                },
-                                {
-                                    "name": "use mipmaps: ",
-                                    "type": "mipmap",
-                                    "value": true
-                                },
-                                {
-                                    "name": "load material: ",
-                                    "type": "load",
-                                    "value": true
-                                }
-                            ],
-                            "type": "MaterialComponent"
-                        }
-                    ],
-                    "name": "mat plain4"
-                },
-                {
-                    "children": [],
-                    "components": [
-                        {
-                            "fields": [
-                                {
-                                    "name": "entity name: ",
-                                    "type": "hashed_name",
-                                    "value": "mat plain3"
-                                },
-                                {
-                                    "name": "entity id: ",
-                                    "type": "entity",
-                                    "value": 14
-                                }
-                            ],
-                            "type": "EntityComponent"
-                        },
-                        {
-                            "fields": [
-                                {
-                                    "name": "parent: ",
-                                    "type": "parent",
-                                    "value": 16
-                                },
-                                {
-                                    "name": "previous sibling: ",
-                                    "type": "previous_sibling",
-                                    "value": 15
-                                },
-                                {
-                                    "name": "next sibling: ",
-                                    "type": "next_sibling",
-                                    "value": 13
-                                },
-                                {
-                                    "name": "child: ",
-                                    "type": "child",
-                                    "value": 0
-                                }
-                            ],
-                            "type": "HierarchyComponent"
-                        },
-                        {
-                            "fields": [
-                                {
-                                    "name": "material path: ",
-                                    "type": "hashed_path",
-                                    "value": "./assets/shaders/plain3.mat"
-                                },
-                                {
-                                    "name": "instanced: ",
-                                    "type": "instance",
-                                    "value": false
-                                },
-                                {
-                                    "name": "use mipmaps: ",
-                                    "type": "mipmap",
-                                    "value": true
-                                },
-                                {
-                                    "name": "load material: ",
-                                    "type": "load",
-                                    "value": true
-                                }
-                            ],
-                            "type": "MaterialComponent"
-                        }
-                    ],
-                    "name": "mat plain3"
-                },
-                {
-                    "children": [],
-                    "components": [
-                        {
-                            "fields": [
-                                {
-                                    "name": "entity name: ",
-                                    "type": "hashed_name",
-                                    "value": "mesh cube"
-                                },
-                                {
-                                    "name": "entity id: ",
-                                    "type": "entity",
-                                    "value": 13
-                                }
-                            ],
-                            "type": "EntityComponent"
-                        },
-                        {
-                            "fields": [
-                                {
-                                    "name": "parent: ",
-                                    "type": "parent",
-                                    "value": 16
-                                },
-                                {
-                                    "name": "previous sibling: ",
-                                    "type": "previous_sibling",
-                                    "value": 14
-                                },
-                                {
-                                    "name": "next sibling: ",
-                                    "type": "next_sibling",
-                                    "value": 12
-                                },
-                                {
-                                    "name": "child: ",
-                                    "type": "child",
-                                    "value": 0
-                                }
-                            ],
-                            "type": "HierarchyComponent"
-                        },
-                        {
-                            "fields": [
-                                {
-                                    "name": "mesh loaded: ",
-                                    "type": "loaded",
-                                    "value": false
-                                },
-                                {
-                                    "name": "mesh path: ",
-                                    "type": "hashed_path",
-                                    "value": "./assets/obj/cube.obj"
-                                }
-                            ],
-                            "type": "MeshComponent"
-                        }
-                    ],
-                    "name": "mesh cube"
-                },
-                {
-                    "children": [],
-                    "components": [
-                        {
-                            "fields": [
-                                {
-                                    "name": "entity name: ",
-                                    "type": "hashed_name",
-                                    "value": "mat plain2"
-                                },
-                                {
-                                    "name": "entity id: ",
-                                    "type": "entity",
-                                    "value": 12
-                                }
-                            ],
-                            "type": "EntityComponent"
-                        },
-                        {
-                            "fields": [
-                                {
-                                    "name": "parent: ",
-                                    "type": "parent",
-                                    "value": 16
-                                },
-                                {
-                                    "name": "previous sibling: ",
-                                    "type": "previous_sibling",
-                                    "value": 13
-                                },
-                                {
-                                    "name": "next sibling: ",
-                                    "type": "next_sibling",
-                                    "value": 11
-                                },
-                                {
-                                    "name": "child: ",
-                                    "type": "child",
-                                    "value": 0
-                                }
-                            ],
-                            "type": "HierarchyComponent"
-                        },
-                        {
-                            "fields": [
-                                {
-                                    "name": "material path: ",
-                                    "type": "hashed_path",
-                                    "value": "./assets/shaders/plain2.mat"
-                                },
-                                {
-                                    "name": "instanced: ",
-                                    "type": "instance",
-                                    "value": false
-                                },
-                                {
-                                    "name": "use mipmaps: ",
-                                    "type": "mipmap",
-                                    "value": true
-                                },
-                                {
-                                    "name": "load material: ",
-                                    "type": "load",
-                                    "value": true
-                                }
-                            ],
-                            "type": "MaterialComponent"
-                        }
-                    ],
-                    "name": "mat plain2"
-                },
-                {
-                    "children": [],
-                    "components": [
-                        {
-                            "fields": [
-                                {
-                                    "name": "entity name: ",
-                                    "type": "hashed_name",
-                                    "value": "mat plain"
-                                },
-                                {
-                                    "name": "entity id: ",
-                                    "type": "entity",
-                                    "value": 11
-                                }
-                            ],
-                            "type": "EntityComponent"
-                        },
-                        {
-                            "fields": [
-                                {
-                                    "name": "parent: ",
-                                    "type": "parent",
-                                    "value": 16
-                                },
-                                {
-                                    "name": "previous sibling: ",
-                                    "type": "previous_sibling",
-                                    "value": 12
-                                },
-                                {
-                                    "name": "next sibling: ",
-                                    "type": "next_sibling",
-                                    "value": 0
-                                },
-                                {
-                                    "name": "child: ",
-                                    "type": "child",
-                                    "value": 0
-                                }
-                            ],
-                            "type": "HierarchyComponent"
-                        },
-                        {
-                            "fields": [
-                                {
-                                    "name": "material path: ",
-                                    "type": "hashed_path",
-                                    "value": "./assets/shaders/plain.mat"
-                                },
-                                {
-                                    "name": "instanced: ",
-                                    "type": "instance",
-                                    "value": false
-                                },
-                                {
-                                    "name": "use mipmaps: ",
-                                    "type": "mipmap",
-                                    "value": true
-                                },
-                                {
-                                    "name": "load material: ",
-                                    "type": "load",
-                                    "value": true
-                                }
-                            ],
-                            "type": "MaterialComponent"
-                        }
-                    ],
-                    "name": "mat plain"
-                }
-            ],
-            "components": [
-                {
-                    "fields": [
-                        {
-                            "name": "entity name: ",
-                            "type": "hashed_name",
-                            "value": "AssetLoader"
-                        },
-                        {
-                            "name": "entity id: ",
-                            "type": "entity",
-                            "value": 16
-                        }
-                    ],
-                    "type": "EntityComponent"
-                },
-                {
-                    "fields": [
-                        {
-                            "name": "parent: ",
-                            "type": "parent",
-                            "value": 0
-                        },
-                        {
-                            "name": "previous sibling: ",
-                            "type": "previous_sibling",
-                            "value": 0
-                        },
-                        {
-                            "name": "next sibling: ",
-                            "type": "next_sibling",
-                            "value": 0
-                        },
-                        {
-                            "name": "child: ",
-                            "type": "child",
-                            "value": 15
-                        }
-                    ],
-                    "type": "HierarchyComponent"
-                }
-            ],
-            "name": "AssetLoader"
         },
         {
             "children": [],
@@ -2165,12 +2598,12 @@
                         {
                             "name": "entity name: ",
                             "type": "hashed_name",
-                            "value": "Camera"
+                            "value": "Floor2"
                         },
                         {
                             "name": "entity id: ",
                             "type": "entity",
-                            "value": 17
+                            "value": 14
                         }
                     ],
                     "type": "EntityComponent"
@@ -2207,8 +2640,289 @@
                             "type": "position",
                             "value": [
                                 0.0,
+                                -1.5800000429153442,
+                                -8.920000076293945
+                            ]
+                        },
+                        {
+                            "name": "rotation: ",
+                            "type": "rotation",
+                            "value": [
+                                0.0,
+                                0.0,
                                 0.0,
                                 0.0
+                            ]
+                        },
+                        {
+                            "name": "linear_velocity: ",
+                            "type": "linear_velocity",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "angular_velocity: ",
+                            "type": "angular_velocity",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "mass: ",
+                            "type": "mass",
+                            "value": 1000.0
+                        },
+                        {
+                            "name": "inverse_mass: ",
+                            "type": "inverse_mass",
+                            "value": 9.999999747378752e-05
+                        },
+                        {
+                            "name": "restitution: ",
+                            "type": "restitution",
+                            "value": 1.0
+                        },
+                        {
+                            "name": "friction: ",
+                            "type": "friction",
+                            "value": 0.0
+                        },
+                        {
+                            "name": "inverse_inertia_tensor_local",
+                            "type": "inverse_inertia_tensor_local",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "recalculate tensor: ",
+                            "type": "recalculate_inverse_inertia_tensor",
+                            "value": true
+                        },
+                        {
+                            "name": "dynamic layers: ",
+                            "type": "dynamic_layers",
+                            "value": 0
+                        },
+                        {
+                            "name": "static layers: ",
+                            "type": "static_layers",
+                            "value": 3
+                        },
+                        {
+                            "name": "asleep: ",
+                            "type": "asleep",
+                            "value": false
+                        },
+                        {
+                            "name": "sleep strikes: ",
+                            "type": "sleep_strikes",
+                            "value": 0
+                        },
+                        {
+                            "name": "max sleep strikes: ",
+                            "type": "max_sleep_strikes",
+                            "value": 1000
+                        }
+                    ],
+                    "type": "RigidBodyComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "mesh path: ",
+                            "type": "mesh",
+                            "value": "./assets/obj/cube.obj"
+                        },
+                        {
+                            "name": "material path: ",
+                            "type": "material",
+                            "value": "./assets/shaders/plain.mat"
+                        },
+                        {
+                            "name": "instance draw: ",
+                            "type": "instance",
+                            "value": false
+                        },
+                        {
+                            "name": "use mipmaps: ",
+                            "type": "mipmap",
+                            "value": false
+                        },
+                        {
+                            "name": "load component: ",
+                            "type": "load",
+                            "value": false
+                        }
+                    ],
+                    "type": "RenderComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "position: ",
+                            "type": "position",
+                            "value": [
+                                0.0,
+                                -1.5800000429153442,
+                                -8.920000076293945
+                            ]
+                        },
+                        {
+                            "name": "scale: ",
+                            "type": "scale",
+                            "value": [
+                                5.0,
+                                1.2300000190734863,
+                                5.0
+                            ]
+                        },
+                        {
+                            "name": "rotation: ",
+                            "type": "rotation_euler_do_not_use",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "overwrite quaternion rotation: ",
+                            "type": "overide_quaternion",
+                            "value": true
+                        },
+                        {
+                            "name": "update euler rotation: ",
+                            "type": "get_euler_angles",
+                            "value": false
+                        },
+                        {
+                            "name": "rotation_quat",
+                            "type": "rotation_quat",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0
+                            ]
+                        },
+                        {
+                            "name": "model_matrix",
+                            "type": "model_matrix",
+                            "value": [
+                                5.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.2300000190734863,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                5.0,
+                                0.0,
+                                0.0,
+                                -1.5800000429153442,
+                                -8.920000076293945,
+                                1.0
+                            ]
+                        }
+                    ],
+                    "type": "TransformDynamicComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "box offset: ",
+                            "type": "offset",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "collision layers: ",
+                            "type": "collision_layers",
+                            "value": 4
+                        },
+                        {
+                            "name": "tag: ",
+                            "type": "tag",
+                            "value": 10
+                        }
+                    ],
+                    "type": "BoundingBoxComponent"
+                }
+            ],
+            "name": "Floor2"
+        },
+        {
+            "children": [],
+            "components": [
+                {
+                    "fields": [
+                        {
+                            "name": "entity name: ",
+                            "type": "hashed_name",
+                            "value": "PlayerFollowCamera"
+                        },
+                        {
+                            "name": "entity id: ",
+                            "type": "entity",
+                            "value": 15
+                        }
+                    ],
+                    "type": "EntityComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "parent: ",
+                            "type": "parent",
+                            "value": 0
+                        },
+                        {
+                            "name": "previous sibling: ",
+                            "type": "previous_sibling",
+                            "value": 0
+                        },
+                        {
+                            "name": "next sibling: ",
+                            "type": "next_sibling",
+                            "value": 0
+                        },
+                        {
+                            "name": "child: ",
+                            "type": "child",
+                            "value": 0
+                        }
+                    ],
+                    "type": "HierarchyComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "position: ",
+                            "type": "position",
+                            "value": [
+                                6.130000114440918,
+                                15.0,
+                                17.0
                             ]
                         },
                         {
@@ -2265,9 +2979,9 @@
                                 0.0,
                                 1.0,
                                 0.0,
-                                0.0,
-                                0.0,
-                                0.0,
+                                6.130000114440918,
+                                15.0,
+                                17.0,
                                 1.0
                             ]
                         }
@@ -2284,7 +2998,7 @@
                         {
                             "name": "orbital camera: ",
                             "type": "orbit_camera",
-                            "value": false
+                            "value": true
                         },
                         {
                             "name": "orbital point: ",
@@ -2367,7 +3081,7 @@
                         {
                             "name": "target entity: ",
                             "type": "target_entity",
-                            "value": 0
+                            "value": 3
                         },
                         {
                             "name": "near_plane",
@@ -2388,20 +3102,1670 @@
                     "type": "CameraComponent"
                 }
             ],
-            "name": "Camera"
+            "name": "PlayerFollowCamera"
+        },
+        {
+            "children": [],
+            "components": [
+                {
+                    "fields": [
+                        {
+                            "name": "entity name: ",
+                            "type": "hashed_name",
+                            "value": "DestructionFloor"
+                        },
+                        {
+                            "name": "entity id: ",
+                            "type": "entity",
+                            "value": 16
+                        }
+                    ],
+                    "type": "EntityComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "parent: ",
+                            "type": "parent",
+                            "value": 0
+                        },
+                        {
+                            "name": "previous sibling: ",
+                            "type": "previous_sibling",
+                            "value": 0
+                        },
+                        {
+                            "name": "next sibling: ",
+                            "type": "next_sibling",
+                            "value": 0
+                        },
+                        {
+                            "name": "child: ",
+                            "type": "child",
+                            "value": 0
+                        }
+                    ],
+                    "type": "HierarchyComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "position: ",
+                            "type": "position",
+                            "value": [
+                                0.0,
+                                5.0,
+                                -8.920000076293945
+                            ]
+                        },
+                        {
+                            "name": "rotation: ",
+                            "type": "rotation",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "linear_velocity: ",
+                            "type": "linear_velocity",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "angular_velocity: ",
+                            "type": "angular_velocity",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "mass: ",
+                            "type": "mass",
+                            "value": 1000.0
+                        },
+                        {
+                            "name": "inverse_mass: ",
+                            "type": "inverse_mass",
+                            "value": 9.999999747378752e-05
+                        },
+                        {
+                            "name": "restitution: ",
+                            "type": "restitution",
+                            "value": 1.0
+                        },
+                        {
+                            "name": "friction: ",
+                            "type": "friction",
+                            "value": 0.0
+                        },
+                        {
+                            "name": "inverse_inertia_tensor_local",
+                            "type": "inverse_inertia_tensor_local",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "recalculate tensor: ",
+                            "type": "recalculate_inverse_inertia_tensor",
+                            "value": true
+                        },
+                        {
+                            "name": "dynamic layers: ",
+                            "type": "dynamic_layers",
+                            "value": 0
+                        },
+                        {
+                            "name": "static layers: ",
+                            "type": "static_layers",
+                            "value": 3
+                        },
+                        {
+                            "name": "asleep: ",
+                            "type": "asleep",
+                            "value": false
+                        },
+                        {
+                            "name": "sleep strikes: ",
+                            "type": "sleep_strikes",
+                            "value": 0
+                        },
+                        {
+                            "name": "max sleep strikes: ",
+                            "type": "max_sleep_strikes",
+                            "value": 1000
+                        }
+                    ],
+                    "type": "RigidBodyComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "mesh path: ",
+                            "type": "mesh",
+                            "value": "./assets/obj/cube.obj"
+                        },
+                        {
+                            "name": "material path: ",
+                            "type": "material",
+                            "value": "./assets/shaders/plain.mat"
+                        },
+                        {
+                            "name": "instance draw: ",
+                            "type": "instance",
+                            "value": false
+                        },
+                        {
+                            "name": "use mipmaps: ",
+                            "type": "mipmap",
+                            "value": false
+                        },
+                        {
+                            "name": "load component: ",
+                            "type": "load",
+                            "value": false
+                        }
+                    ],
+                    "type": "RenderComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "position: ",
+                            "type": "position",
+                            "value": [
+                                0.0,
+                                5.0,
+                                -8.920000076293945
+                            ]
+                        },
+                        {
+                            "name": "scale: ",
+                            "type": "scale",
+                            "value": [
+                                5.0,
+                                1.2300000190734863,
+                                5.0
+                            ]
+                        },
+                        {
+                            "name": "rotation: ",
+                            "type": "rotation_euler_do_not_use",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "overwrite quaternion rotation: ",
+                            "type": "overide_quaternion",
+                            "value": true
+                        },
+                        {
+                            "name": "update euler rotation: ",
+                            "type": "get_euler_angles",
+                            "value": false
+                        },
+                        {
+                            "name": "rotation_quat",
+                            "type": "rotation_quat",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0
+                            ]
+                        },
+                        {
+                            "name": "model_matrix",
+                            "type": "model_matrix",
+                            "value": [
+                                5.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.2300000190734863,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                5.0,
+                                0.0,
+                                0.0,
+                                5.0,
+                                -8.920000076293945,
+                                1.0
+                            ]
+                        }
+                    ],
+                    "type": "TransformDynamicComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "box offset: ",
+                            "type": "offset",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "collision layers: ",
+                            "type": "collision_layers",
+                            "value": 4
+                        },
+                        {
+                            "name": "tag: ",
+                            "type": "tag",
+                            "value": 10
+                        }
+                    ],
+                    "type": "BoundingBoxComponent"
+                }
+            ],
+            "name": "DestructionFloor"
+        },
+        {
+            "children": [],
+            "components": [
+                {
+                    "fields": [
+                        {
+                            "name": "entity name: ",
+                            "type": "hashed_name",
+                            "value": "Button"
+                        },
+                        {
+                            "name": "entity id: ",
+                            "type": "entity",
+                            "value": 17
+                        }
+                    ],
+                    "type": "EntityComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "parent: ",
+                            "type": "parent",
+                            "value": 0
+                        },
+                        {
+                            "name": "previous sibling: ",
+                            "type": "previous_sibling",
+                            "value": 0
+                        },
+                        {
+                            "name": "next sibling: ",
+                            "type": "next_sibling",
+                            "value": 0
+                        },
+                        {
+                            "name": "child: ",
+                            "type": "child",
+                            "value": 0
+                        }
+                    ],
+                    "type": "HierarchyComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "reference: ",
+                            "type": "reference",
+                            "value": 16
+                        }
+                    ],
+                    "type": "ActivationReferenceComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "active: ",
+                            "type": "active",
+                            "value": false
+                        }
+                    ],
+                    "type": "ButtonObjectTag"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "position: ",
+                            "type": "position",
+                            "value": [
+                                0.0,
+                                -0.7200000286102295,
+                                -9.850000381469727
+                            ]
+                        },
+                        {
+                            "name": "scale: ",
+                            "type": "scale",
+                            "value": [
+                                1.0,
+                                0.3799999952316284,
+                                1.0
+                            ]
+                        },
+                        {
+                            "name": "rotation: ",
+                            "type": "rotation_euler_do_not_use",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "overwrite quaternion rotation: ",
+                            "type": "overide_quaternion",
+                            "value": false
+                        },
+                        {
+                            "name": "update euler rotation: ",
+                            "type": "get_euler_angles",
+                            "value": false
+                        },
+                        {
+                            "name": "rotation_quat",
+                            "type": "rotation_quat",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0
+                            ]
+                        },
+                        {
+                            "name": "model_matrix",
+                            "type": "model_matrix",
+                            "value": [
+                                1.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.3799999952316284,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0,
+                                0.0,
+                                0.0,
+                                -0.7200000286102295,
+                                -9.850000381469727,
+                                1.0
+                            ]
+                        }
+                    ],
+                    "type": "TransformDynamicComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "box offset: ",
+                            "type": "offset",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "collision layers: ",
+                            "type": "collision_layers",
+                            "value": 1
+                        },
+                        {
+                            "name": "tag: ",
+                            "type": "tag",
+                            "value": 7
+                        }
+                    ],
+                    "type": "BoundingBoxComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "mesh path: ",
+                            "type": "mesh",
+                            "value": "./assets/obj/cube.obj"
+                        },
+                        {
+                            "name": "material path: ",
+                            "type": "material",
+                            "value": "./assets/shaders/plain4.mat"
+                        },
+                        {
+                            "name": "instance draw: ",
+                            "type": "instance",
+                            "value": false
+                        },
+                        {
+                            "name": "use mipmaps: ",
+                            "type": "mipmap",
+                            "value": false
+                        },
+                        {
+                            "name": "load component: ",
+                            "type": "load",
+                            "value": false
+                        }
+                    ],
+                    "type": "RenderComponent"
+                }
+            ],
+            "name": "Button"
+        },
+        {
+            "children": [],
+            "components": [
+                {
+                    "fields": [
+                        {
+                            "name": "entity name: ",
+                            "type": "hashed_name",
+                            "value": "Coin"
+                        },
+                        {
+                            "name": "entity id: ",
+                            "type": "entity",
+                            "value": 18
+                        }
+                    ],
+                    "type": "EntityComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "parent: ",
+                            "type": "parent",
+                            "value": 0
+                        },
+                        {
+                            "name": "previous sibling: ",
+                            "type": "previous_sibling",
+                            "value": 0
+                        },
+                        {
+                            "name": "next sibling: ",
+                            "type": "next_sibling",
+                            "value": 0
+                        },
+                        {
+                            "name": "child: ",
+                            "type": "child",
+                            "value": 0
+                        }
+                    ],
+                    "type": "HierarchyComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "position: ",
+                            "type": "position",
+                            "value": [
+                                1.5399999618530273,
+                                6.28000020980835,
+                                -7.25
+                            ]
+                        },
+                        {
+                            "name": "scale: ",
+                            "type": "scale",
+                            "value": [
+                                0.2800000011920929,
+                                1.0,
+                                1.0700000524520874
+                            ]
+                        },
+                        {
+                            "name": "rotation: ",
+                            "type": "rotation_euler_do_not_use",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "overwrite quaternion rotation: ",
+                            "type": "overide_quaternion",
+                            "value": false
+                        },
+                        {
+                            "name": "update euler rotation: ",
+                            "type": "get_euler_angles",
+                            "value": false
+                        },
+                        {
+                            "name": "rotation_quat",
+                            "type": "rotation_quat",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0
+                            ]
+                        },
+                        {
+                            "name": "model_matrix",
+                            "type": "model_matrix",
+                            "value": [
+                                0.2800000011920929,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0700000524520874,
+                                0.0,
+                                1.5399999618530273,
+                                6.28000020980835,
+                                -7.25,
+                                1.0
+                            ]
+                        }
+                    ],
+                    "type": "TransformDynamicComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "mesh path: ",
+                            "type": "mesh",
+                            "value": "./assets/obj/cube.obj"
+                        },
+                        {
+                            "name": "material path: ",
+                            "type": "material",
+                            "value": "./assets/shaders/plain2.mat"
+                        },
+                        {
+                            "name": "instance draw: ",
+                            "type": "instance",
+                            "value": false
+                        },
+                        {
+                            "name": "use mipmaps: ",
+                            "type": "mipmap",
+                            "value": false
+                        },
+                        {
+                            "name": "load component: ",
+                            "type": "load",
+                            "value": false
+                        }
+                    ],
+                    "type": "RenderComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "position: ",
+                            "type": "position",
+                            "value": [
+                                1.5399999618530273,
+                                6.28000020980835,
+                                -7.25
+                            ]
+                        },
+                        {
+                            "name": "rotation: ",
+                            "type": "rotation",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "linear_velocity: ",
+                            "type": "linear_velocity",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "angular_velocity: ",
+                            "type": "angular_velocity",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "mass: ",
+                            "type": "mass",
+                            "value": 1.0
+                        },
+                        {
+                            "name": "inverse_mass: ",
+                            "type": "inverse_mass",
+                            "value": 1.0
+                        },
+                        {
+                            "name": "restitution: ",
+                            "type": "restitution",
+                            "value": 0.20000000298023224
+                        },
+                        {
+                            "name": "friction: ",
+                            "type": "friction",
+                            "value": 0.800000011920929
+                        },
+                        {
+                            "name": "inverse_inertia_tensor_local",
+                            "type": "inverse_inertia_tensor_local",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "recalculate tensor: ",
+                            "type": "recalculate_inverse_inertia_tensor",
+                            "value": true
+                        },
+                        {
+                            "name": "dynamic layers: ",
+                            "type": "dynamic_layers",
+                            "value": 5
+                        },
+                        {
+                            "name": "static layers: ",
+                            "type": "static_layers",
+                            "value": 0
+                        },
+                        {
+                            "name": "asleep: ",
+                            "type": "asleep",
+                            "value": false
+                        },
+                        {
+                            "name": "sleep strikes: ",
+                            "type": "sleep_strikes",
+                            "value": 0
+                        },
+                        {
+                            "name": "max sleep strikes: ",
+                            "type": "max_sleep_strikes",
+                            "value": 1000
+                        }
+                    ],
+                    "type": "RigidBodyComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "box offset: ",
+                            "type": "offset",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "collision layers: ",
+                            "type": "collision_layers",
+                            "value": 1
+                        },
+                        {
+                            "name": "tag: ",
+                            "type": "tag",
+                            "value": 2
+                        }
+                    ],
+                    "type": "BoundingBoxComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "gravity: ",
+                            "type": "gravity",
+                            "value": 9.819999694824219
+                        }
+                    ],
+                    "type": "GravityStrengthComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "is_collectable: ",
+                            "type": "is_collectable",
+                            "value": true
+                        }
+                    ],
+                    "type": "CollectionObjectTag"
+                }
+            ],
+            "name": "Coin"
+        },
+        {
+            "children": [
+                {
+                    "children": [],
+                    "components": [
+                        {
+                            "fields": [
+                                {
+                                    "name": "entity name: ",
+                                    "type": "hashed_name",
+                                    "value": "mat plain5"
+                                },
+                                {
+                                    "name": "entity id: ",
+                                    "type": "entity",
+                                    "value": 24
+                                }
+                            ],
+                            "type": "EntityComponent"
+                        },
+                        {
+                            "fields": [
+                                {
+                                    "name": "parent: ",
+                                    "type": "parent",
+                                    "value": 25
+                                },
+                                {
+                                    "name": "previous sibling: ",
+                                    "type": "previous_sibling",
+                                    "value": 0
+                                },
+                                {
+                                    "name": "next sibling: ",
+                                    "type": "next_sibling",
+                                    "value": 23
+                                },
+                                {
+                                    "name": "child: ",
+                                    "type": "child",
+                                    "value": 0
+                                }
+                            ],
+                            "type": "HierarchyComponent"
+                        },
+                        {
+                            "fields": [
+                                {
+                                    "name": "material path: ",
+                                    "type": "hashed_path",
+                                    "value": "./assets/shaders/plain5.mat"
+                                },
+                                {
+                                    "name": "instanced: ",
+                                    "type": "instance",
+                                    "value": false
+                                },
+                                {
+                                    "name": "use mipmaps: ",
+                                    "type": "mipmap",
+                                    "value": true
+                                },
+                                {
+                                    "name": "load material: ",
+                                    "type": "load",
+                                    "value": true
+                                }
+                            ],
+                            "type": "MaterialComponent"
+                        }
+                    ],
+                    "name": "mat plain5"
+                },
+                {
+                    "children": [],
+                    "components": [
+                        {
+                            "fields": [
+                                {
+                                    "name": "entity name: ",
+                                    "type": "hashed_name",
+                                    "value": "mat plain4"
+                                },
+                                {
+                                    "name": "entity id: ",
+                                    "type": "entity",
+                                    "value": 23
+                                }
+                            ],
+                            "type": "EntityComponent"
+                        },
+                        {
+                            "fields": [
+                                {
+                                    "name": "parent: ",
+                                    "type": "parent",
+                                    "value": 25
+                                },
+                                {
+                                    "name": "previous sibling: ",
+                                    "type": "previous_sibling",
+                                    "value": 24
+                                },
+                                {
+                                    "name": "next sibling: ",
+                                    "type": "next_sibling",
+                                    "value": 22
+                                },
+                                {
+                                    "name": "child: ",
+                                    "type": "child",
+                                    "value": 0
+                                }
+                            ],
+                            "type": "HierarchyComponent"
+                        },
+                        {
+                            "fields": [
+                                {
+                                    "name": "material path: ",
+                                    "type": "hashed_path",
+                                    "value": "./assets/shaders/plain4.mat"
+                                },
+                                {
+                                    "name": "instanced: ",
+                                    "type": "instance",
+                                    "value": false
+                                },
+                                {
+                                    "name": "use mipmaps: ",
+                                    "type": "mipmap",
+                                    "value": true
+                                },
+                                {
+                                    "name": "load material: ",
+                                    "type": "load",
+                                    "value": true
+                                }
+                            ],
+                            "type": "MaterialComponent"
+                        }
+                    ],
+                    "name": "mat plain4"
+                },
+                {
+                    "children": [],
+                    "components": [
+                        {
+                            "fields": [
+                                {
+                                    "name": "entity name: ",
+                                    "type": "hashed_name",
+                                    "value": "mat plain3"
+                                },
+                                {
+                                    "name": "entity id: ",
+                                    "type": "entity",
+                                    "value": 22
+                                }
+                            ],
+                            "type": "EntityComponent"
+                        },
+                        {
+                            "fields": [
+                                {
+                                    "name": "parent: ",
+                                    "type": "parent",
+                                    "value": 25
+                                },
+                                {
+                                    "name": "previous sibling: ",
+                                    "type": "previous_sibling",
+                                    "value": 23
+                                },
+                                {
+                                    "name": "next sibling: ",
+                                    "type": "next_sibling",
+                                    "value": 21
+                                },
+                                {
+                                    "name": "child: ",
+                                    "type": "child",
+                                    "value": 0
+                                }
+                            ],
+                            "type": "HierarchyComponent"
+                        },
+                        {
+                            "fields": [
+                                {
+                                    "name": "material path: ",
+                                    "type": "hashed_path",
+                                    "value": "./assets/shaders/plain3.mat"
+                                },
+                                {
+                                    "name": "instanced: ",
+                                    "type": "instance",
+                                    "value": false
+                                },
+                                {
+                                    "name": "use mipmaps: ",
+                                    "type": "mipmap",
+                                    "value": true
+                                },
+                                {
+                                    "name": "load material: ",
+                                    "type": "load",
+                                    "value": true
+                                }
+                            ],
+                            "type": "MaterialComponent"
+                        }
+                    ],
+                    "name": "mat plain3"
+                },
+                {
+                    "children": [],
+                    "components": [
+                        {
+                            "fields": [
+                                {
+                                    "name": "entity name: ",
+                                    "type": "hashed_name",
+                                    "value": "mesh cube"
+                                },
+                                {
+                                    "name": "entity id: ",
+                                    "type": "entity",
+                                    "value": 21
+                                }
+                            ],
+                            "type": "EntityComponent"
+                        },
+                        {
+                            "fields": [
+                                {
+                                    "name": "parent: ",
+                                    "type": "parent",
+                                    "value": 25
+                                },
+                                {
+                                    "name": "previous sibling: ",
+                                    "type": "previous_sibling",
+                                    "value": 22
+                                },
+                                {
+                                    "name": "next sibling: ",
+                                    "type": "next_sibling",
+                                    "value": 20
+                                },
+                                {
+                                    "name": "child: ",
+                                    "type": "child",
+                                    "value": 0
+                                }
+                            ],
+                            "type": "HierarchyComponent"
+                        },
+                        {
+                            "fields": [
+                                {
+                                    "name": "mesh loaded: ",
+                                    "type": "loaded",
+                                    "value": false
+                                },
+                                {
+                                    "name": "mesh path: ",
+                                    "type": "hashed_path",
+                                    "value": "./assets/obj/cube.obj"
+                                }
+                            ],
+                            "type": "MeshComponent"
+                        }
+                    ],
+                    "name": "mesh cube"
+                },
+                {
+                    "children": [],
+                    "components": [
+                        {
+                            "fields": [
+                                {
+                                    "name": "entity name: ",
+                                    "type": "hashed_name",
+                                    "value": "mat plain2"
+                                },
+                                {
+                                    "name": "entity id: ",
+                                    "type": "entity",
+                                    "value": 20
+                                }
+                            ],
+                            "type": "EntityComponent"
+                        },
+                        {
+                            "fields": [
+                                {
+                                    "name": "parent: ",
+                                    "type": "parent",
+                                    "value": 25
+                                },
+                                {
+                                    "name": "previous sibling: ",
+                                    "type": "previous_sibling",
+                                    "value": 21
+                                },
+                                {
+                                    "name": "next sibling: ",
+                                    "type": "next_sibling",
+                                    "value": 19
+                                },
+                                {
+                                    "name": "child: ",
+                                    "type": "child",
+                                    "value": 0
+                                }
+                            ],
+                            "type": "HierarchyComponent"
+                        },
+                        {
+                            "fields": [
+                                {
+                                    "name": "material path: ",
+                                    "type": "hashed_path",
+                                    "value": "./assets/shaders/plain2.mat"
+                                },
+                                {
+                                    "name": "instanced: ",
+                                    "type": "instance",
+                                    "value": false
+                                },
+                                {
+                                    "name": "use mipmaps: ",
+                                    "type": "mipmap",
+                                    "value": true
+                                },
+                                {
+                                    "name": "load material: ",
+                                    "type": "load",
+                                    "value": true
+                                }
+                            ],
+                            "type": "MaterialComponent"
+                        }
+                    ],
+                    "name": "mat plain2"
+                },
+                {
+                    "children": [],
+                    "components": [
+                        {
+                            "fields": [
+                                {
+                                    "name": "entity name: ",
+                                    "type": "hashed_name",
+                                    "value": "mat plain"
+                                },
+                                {
+                                    "name": "entity id: ",
+                                    "type": "entity",
+                                    "value": 19
+                                }
+                            ],
+                            "type": "EntityComponent"
+                        },
+                        {
+                            "fields": [
+                                {
+                                    "name": "parent: ",
+                                    "type": "parent",
+                                    "value": 25
+                                },
+                                {
+                                    "name": "previous sibling: ",
+                                    "type": "previous_sibling",
+                                    "value": 20
+                                },
+                                {
+                                    "name": "next sibling: ",
+                                    "type": "next_sibling",
+                                    "value": 0
+                                },
+                                {
+                                    "name": "child: ",
+                                    "type": "child",
+                                    "value": 0
+                                }
+                            ],
+                            "type": "HierarchyComponent"
+                        },
+                        {
+                            "fields": [
+                                {
+                                    "name": "material path: ",
+                                    "type": "hashed_path",
+                                    "value": "./assets/shaders/plain.mat"
+                                },
+                                {
+                                    "name": "instanced: ",
+                                    "type": "instance",
+                                    "value": false
+                                },
+                                {
+                                    "name": "use mipmaps: ",
+                                    "type": "mipmap",
+                                    "value": true
+                                },
+                                {
+                                    "name": "load material: ",
+                                    "type": "load",
+                                    "value": true
+                                }
+                            ],
+                            "type": "MaterialComponent"
+                        }
+                    ],
+                    "name": "mat plain"
+                }
+            ],
+            "components": [
+                {
+                    "fields": [
+                        {
+                            "name": "entity name: ",
+                            "type": "hashed_name",
+                            "value": "AssetLoader"
+                        },
+                        {
+                            "name": "entity id: ",
+                            "type": "entity",
+                            "value": 25
+                        }
+                    ],
+                    "type": "EntityComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "parent: ",
+                            "type": "parent",
+                            "value": 0
+                        },
+                        {
+                            "name": "previous sibling: ",
+                            "type": "previous_sibling",
+                            "value": 0
+                        },
+                        {
+                            "name": "next sibling: ",
+                            "type": "next_sibling",
+                            "value": 0
+                        },
+                        {
+                            "name": "child: ",
+                            "type": "child",
+                            "value": 24
+                        }
+                    ],
+                    "type": "HierarchyComponent"
+                }
+            ],
+            "name": "AssetLoader"
+        },
+        {
+            "children": [],
+            "components": [
+                {
+                    "fields": [
+                        {
+                            "name": "entity name: ",
+                            "type": "hashed_name",
+                            "value": "Enemy"
+                        },
+                        {
+                            "name": "entity id: ",
+                            "type": "entity",
+                            "value": 26
+                        }
+                    ],
+                    "type": "EntityComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "parent: ",
+                            "type": "parent",
+                            "value": 0
+                        },
+                        {
+                            "name": "previous sibling: ",
+                            "type": "previous_sibling",
+                            "value": 0
+                        },
+                        {
+                            "name": "next sibling: ",
+                            "type": "next_sibling",
+                            "value": 0
+                        },
+                        {
+                            "name": "child: ",
+                            "type": "child",
+                            "value": 0
+                        }
+                    ],
+                    "type": "HierarchyComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "position: ",
+                            "type": "position",
+                            "value": [
+                                9.550000190734863,
+                                -1.4600000381469727,
+                                -30.34000015258789
+                            ]
+                        },
+                        {
+                            "name": "scale: ",
+                            "type": "scale",
+                            "value": [
+                                1.0,
+                                1.0,
+                                1.0
+                            ]
+                        },
+                        {
+                            "name": "rotation: ",
+                            "type": "rotation_euler_do_not_use",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "overwrite quaternion rotation: ",
+                            "type": "overide_quaternion",
+                            "value": false
+                        },
+                        {
+                            "name": "update euler rotation: ",
+                            "type": "get_euler_angles",
+                            "value": false
+                        },
+                        {
+                            "name": "rotation_quat",
+                            "type": "rotation_quat",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0
+                            ]
+                        },
+                        {
+                            "name": "model_matrix",
+                            "type": "model_matrix",
+                            "value": [
+                                1.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0,
+                                0.0,
+                                9.550000190734863,
+                                -1.4600000381469727,
+                                -30.34000015258789,
+                                1.0
+                            ]
+                        }
+                    ],
+                    "type": "TransformDynamicComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "mesh path: ",
+                            "type": "mesh",
+                            "value": "./assets/obj/cube.obj"
+                        },
+                        {
+                            "name": "material path: ",
+                            "type": "material",
+                            "value": "./assets/shaders/plain5.mat"
+                        },
+                        {
+                            "name": "instance draw: ",
+                            "type": "instance",
+                            "value": false
+                        },
+                        {
+                            "name": "use mipmaps: ",
+                            "type": "mipmap",
+                            "value": false
+                        },
+                        {
+                            "name": "load component: ",
+                            "type": "load",
+                            "value": false
+                        }
+                    ],
+                    "type": "RenderComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "position: ",
+                            "type": "position",
+                            "value": [
+                                9.550000190734863,
+                                -1.4600000381469727,
+                                -30.34000015258789
+                            ]
+                        },
+                        {
+                            "name": "rotation: ",
+                            "type": "rotation",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "linear_velocity: ",
+                            "type": "linear_velocity",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "angular_velocity: ",
+                            "type": "angular_velocity",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "mass: ",
+                            "type": "mass",
+                            "value": 1.0
+                        },
+                        {
+                            "name": "inverse_mass: ",
+                            "type": "inverse_mass",
+                            "value": 1.0
+                        },
+                        {
+                            "name": "restitution: ",
+                            "type": "restitution",
+                            "value": 0.20000000298023224
+                        },
+                        {
+                            "name": "friction: ",
+                            "type": "friction",
+                            "value": 0.800000011920929
+                        },
+                        {
+                            "name": "inverse_inertia_tensor_local",
+                            "type": "inverse_inertia_tensor_local",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "recalculate tensor: ",
+                            "type": "recalculate_inverse_inertia_tensor",
+                            "value": true
+                        },
+                        {
+                            "name": "dynamic layers: ",
+                            "type": "dynamic_layers",
+                            "value": 2
+                        },
+                        {
+                            "name": "static layers: ",
+                            "type": "static_layers",
+                            "value": 0
+                        },
+                        {
+                            "name": "asleep: ",
+                            "type": "asleep",
+                            "value": false
+                        },
+                        {
+                            "name": "sleep strikes: ",
+                            "type": "sleep_strikes",
+                            "value": 0
+                        },
+                        {
+                            "name": "max sleep strikes: ",
+                            "type": "max_sleep_strikes",
+                            "value": 1000
+                        }
+                    ],
+                    "type": "RigidBodyComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "box offset: ",
+                            "type": "offset",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "collision layers: ",
+                            "type": "collision_layers",
+                            "value": 7
+                        },
+                        {
+                            "name": "tag: ",
+                            "type": "tag",
+                            "value": 3
+                        }
+                    ],
+                    "type": "BoundingBoxComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "gravity: ",
+                            "type": "gravity",
+                            "value": 9.819999694824219
+                        }
+                    ],
+                    "type": "GravityStrengthComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "jump_force: ",
+                            "type": "jump_force",
+                            "value": 7.5
+                        },
+                        {
+                            "name": "max_move_speed: ",
+                            "type": "max_move_speed",
+                            "value": 20.0
+                        },
+                        {
+                            "name": "move_force: ",
+                            "type": "move_force",
+                            "value": 40.0
+                        },
+                        {
+                            "name": "time_since_ground: ",
+                            "type": "time_since_ground",
+                            "value": 0.0
+                        },
+                        {
+                            "name": "move_damp: ",
+                            "type": "move_damp",
+                            "value": 10.0
+                        },
+                        {
+                            "name": "ground_time_limit: ",
+                            "type": "ground_time_limit",
+                            "value": 0.15000000596046448
+                        },
+                        {
+                            "name": "jump_time_limit: ",
+                            "type": "jump_time_limit",
+                            "value": 0.20000000298023224
+                        }
+                    ],
+                    "type": "MovementStatsComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "tag: ",
+                            "type": "tag",
+                            "value": false
+                        }
+                    ],
+                    "type": "EnemyTagComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "target: ",
+                            "type": "target",
+                            "value": 3
+                        }
+                    ],
+                    "type": "EnemyTargetComponent"
+                }
+            ],
+            "name": "Enemy"
         }
     ],
     "systems": [
         {
             "enabled": true,
-            "name": "MenuSystem",
+            "name": "ECBCreatorSystem",
             "order": 0,
             "physics": false
         },
         {
             "enabled": true,
+            "name": "EnemyAttackSystem",
+            "order": 4,
+            "physics": false
+        },
+        {
+            "enabled": true,
+            "name": "EndLevelSystem",
+            "order": 5,
+            "physics": false
+        },
+        {
+            "enabled": true,
+            "name": "PhysicsSystem",
+            "order": 7,
+            "physics": false
+        },
+        {
+            "enabled": true,
+            "name": "EnemyGuidanceSystem",
+            "order": 10,
+            "physics": false
+        },
+        {
+            "enabled": true,
+            "name": "MenuSystem",
+            "order": 12,
+            "physics": false
+        },
+        {
+            "enabled": true,
+            "name": "ButtonSystem",
+            "order": 13,
+            "physics": false
+        },
+        {
+            "enabled": true,
+            "name": "PlayerMovementSystem",
+            "order": 14,
+            "physics": false
+        },
+        {
+            "enabled": true,
             "name": "UIDrawGathering",
-            "order": 38,
+            "order": 17,
+            "physics": false
+        },
+        {
+            "enabled": true,
+            "name": "CollectionSystem",
+            "order": 22,
+            "physics": false
+        },
+        {
+            "enabled": true,
+            "name": "GroundingSystem",
+            "order": 41,
+            "physics": false
+        },
+        {
+            "enabled": true,
+            "name": "ECBEndSystem",
+            "order": 67,
             "physics": false
         }
     ]

@@ -3895,7 +3895,7 @@
                                 {
                                     "name": "entity id: ",
                                     "type": "entity",
-                                    "value": 26
+                                    "value": 24
                                 }
                             ],
                             "type": "EntityComponent"
@@ -3905,7 +3905,7 @@
                                 {
                                     "name": "parent: ",
                                     "type": "parent",
-                                    "value": 24
+                                    "value": 25
                                 },
                                 {
                                     "name": "previous sibling: ",
@@ -3976,12 +3976,12 @@
                                 {
                                     "name": "parent: ",
                                     "type": "parent",
-                                    "value": 24
+                                    "value": 25
                                 },
                                 {
                                     "name": "previous sibling: ",
                                     "type": "previous_sibling",
-                                    "value": 26
+                                    "value": 24
                                 },
                                 {
                                     "name": "next sibling: ",
@@ -4047,7 +4047,7 @@
                                 {
                                     "name": "parent: ",
                                     "type": "parent",
-                                    "value": 24
+                                    "value": 25
                                 },
                                 {
                                     "name": "previous sibling: ",
@@ -4118,7 +4118,7 @@
                                 {
                                     "name": "parent: ",
                                     "type": "parent",
-                                    "value": 24
+                                    "value": 25
                                 },
                                 {
                                     "name": "previous sibling: ",
@@ -4179,7 +4179,7 @@
                                 {
                                     "name": "parent: ",
                                     "type": "parent",
-                                    "value": 24
+                                    "value": 25
                                 },
                                 {
                                     "name": "previous sibling: ",
@@ -4250,7 +4250,7 @@
                                 {
                                     "name": "parent: ",
                                     "type": "parent",
-                                    "value": 24
+                                    "value": 25
                                 },
                                 {
                                     "name": "previous sibling: ",
@@ -4310,7 +4310,7 @@
                         {
                             "name": "entity id: ",
                             "type": "entity",
-                            "value": 24
+                            "value": 25
                         }
                     ],
                     "type": "EntityComponent"
@@ -4335,7 +4335,7 @@
                         {
                             "name": "child: ",
                             "type": "child",
-                            "value": 26
+                            "value": 24
                         }
                     ],
                     "type": "HierarchyComponent"
@@ -4356,7 +4356,7 @@
                         {
                             "name": "entity id: ",
                             "type": "entity",
-                            "value": 25
+                            "value": 26
                         }
                     ],
                     "type": "EntityComponent"
@@ -4700,6 +4700,12 @@
             "enabled": true,
             "name": "ECBCreatorSystem",
             "order": 0,
+            "physics": false
+        },
+        {
+            "enabled": true,
+            "name": "EnemyAttackSystem",
+            "order": 4,
             "physics": false
         },
         {
