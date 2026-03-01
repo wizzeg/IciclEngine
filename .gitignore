@@ -1045,8 +1045,8 @@ dkms.conf
 *.dis
 
 # files
-*.obj
-*.scn
-*.mat
-*.shdr
-./assets/temp/temp_scene.scn
+#*.obj
+#*.scn
+#*.mat
+#*.shdr
+#./assets/temp/temp_scene.scn

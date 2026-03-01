@@ -1,0 +1,554 @@
+{
+    "name": "new scene",
+    "next index": 0,
+    "root objects": [
+        {
+            "children": [
+                {
+                    "children": [],
+                    "components": [
+                        {
+                            "fields": [
+                                {
+                                    "name": "entity name: ",
+                                    "type": "struct hashed_string_64",
+                                    "value": "child 5"
+                                },
+                                {
+                                    "name": "entity id: ",
+                                    "type": "struct EntityReference",
+                                    "value": 5
+                                }
+                            ],
+                            "type": "EntityComponent"
+                        },
+                        {
+                            "fields": [
+                                {
+                                    "name": "parent: ",
+                                    "type": "struct EntityReference",
+                                    "value": 1
+                                },
+                                {
+                                    "name": "previous sibling: ",
+                                    "type": "struct EntityReference",
+                                    "value": 0
+                                },
+                                {
+                                    "name": "next sibling: ",
+                                    "type": "struct EntityReference",
+                                    "value": 4
+                                },
+                                {
+                                    "name": "child: ",
+                                    "type": "struct EntityReference",
+                                    "value": 0
+                                }
+                            ],
+                            "type": "HierarchyComponent"
+                        }
+                    ],
+                    "name": "child 5"
+                },
+                {
+                    "children": [],
+                    "components": [
+                        {
+                            "fields": [
+                                {
+                                    "name": "entity name: ",
+                                    "type": "struct hashed_string_64",
+                                    "value": "child 4"
+                                },
+                                {
+                                    "name": "entity id: ",
+                                    "type": "struct EntityReference",
+                                    "value": 4
+                                }
+                            ],
+                            "type": "EntityComponent"
+                        },
+                        {
+                            "fields": [
+                                {
+                                    "name": "parent: ",
+                                    "type": "struct EntityReference",
+                                    "value": 1
+                                },
+                                {
+                                    "name": "previous sibling: ",
+                                    "type": "struct EntityReference",
+                                    "value": 5
+                                },
+                                {
+                                    "name": "next sibling: ",
+                                    "type": "struct EntityReference",
+                                    "value": 2
+                                },
+                                {
+                                    "name": "child: ",
+                                    "type": "struct EntityReference",
+                                    "value": 0
+                                }
+                            ],
+                            "type": "HierarchyComponent"
+                        }
+                    ],
+                    "name": "child 4"
+                },
+                {
+                    "children": [
+                        {
+                            "children": [],
+                            "components": [
+                                {
+                                    "fields": [
+                                        {
+                                            "name": "entity name: ",
+                                            "type": "struct hashed_string_64",
+                                            "value": "child 6"
+                                        },
+                                        {
+                                            "name": "entity id: ",
+                                            "type": "struct EntityReference",
+                                            "value": 6
+                                        }
+                                    ],
+                                    "type": "EntityComponent"
+                                },
+                                {
+                                    "fields": [
+                                        {
+                                            "name": "parent: ",
+                                            "type": "struct EntityReference",
+                                            "value": 2
+                                        },
+                                        {
+                                            "name": "previous sibling: ",
+                                            "type": "struct EntityReference",
+                                            "value": 0
+                                        },
+                                        {
+                                            "name": "next sibling: ",
+                                            "type": "struct EntityReference",
+                                            "value": 3
+                                        },
+                                        {
+                                            "name": "child: ",
+                                            "type": "struct EntityReference",
+                                            "value": 0
+                                        }
+                                    ],
+                                    "type": "HierarchyComponent"
+                                }
+                            ],
+                            "name": "child 6"
+                        },
+                        {
+                            "children": [],
+                            "components": [
+                                {
+                                    "fields": [
+                                        {
+                                            "name": "entity name: ",
+                                            "type": "struct hashed_string_64",
+                                            "value": "child 2"
+                                        },
+                                        {
+                                            "name": "entity id: ",
+                                            "type": "struct EntityReference",
+                                            "value": 3
+                                        }
+                                    ],
+                                    "type": "EntityComponent"
+                                },
+                                {
+                                    "fields": [
+                                        {
+                                            "name": "parent: ",
+                                            "type": "struct EntityReference",
+                                            "value": 2
+                                        },
+                                        {
+                                            "name": "previous sibling: ",
+                                            "type": "struct EntityReference",
+                                            "value": 6
+                                        },
+                                        {
+                                            "name": "next sibling: ",
+                                            "type": "struct EntityReference",
+                                            "value": 0
+                                        },
+                                        {
+                                            "name": "child: ",
+                                            "type": "struct EntityReference",
+                                            "value": 0
+                                        }
+                                    ],
+                                    "type": "HierarchyComponent"
+                                }
+                            ],
+                            "name": "child 2"
+                        }
+                    ],
+                    "components": [
+                        {
+                            "fields": [
+                                {
+                                    "name": "entity name: ",
+                                    "type": "struct hashed_string_64",
+                                    "value": "child "
+                                },
+                                {
+                                    "name": "entity id: ",
+                                    "type": "struct EntityReference",
+                                    "value": 2
+                                }
+                            ],
+                            "type": "EntityComponent"
+                        },
+                        {
+                            "fields": [
+                                {
+                                    "name": "parent: ",
+                                    "type": "struct EntityReference",
+                                    "value": 1
+                                },
+                                {
+                                    "name": "previous sibling: ",
+                                    "type": "struct EntityReference",
+                                    "value": 4
+                                },
+                                {
+                                    "name": "next sibling: ",
+                                    "type": "struct EntityReference",
+                                    "value": 0
+                                },
+                                {
+                                    "name": "child: ",
+                                    "type": "struct EntityReference",
+                                    "value": 6
+                                }
+                            ],
+                            "type": "HierarchyComponent"
+                        }
+                    ],
+                    "name": "child "
+                }
+            ],
+            "components": [
+                {
+                    "fields": [
+                        {
+                            "name": "entity name: ",
+                            "type": "struct hashed_string_64",
+                            "value": "parent "
+                        },
+                        {
+                            "name": "entity id: ",
+                            "type": "struct EntityReference",
+                            "value": 1
+                        }
+                    ],
+                    "type": "EntityComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "parent: ",
+                            "type": "struct EntityReference",
+                            "value": 0
+                        },
+                        {
+                            "name": "previous sibling: ",
+                            "type": "struct EntityReference",
+                            "value": 0
+                        },
+                        {
+                            "name": "next sibling: ",
+                            "type": "struct EntityReference",
+                            "value": 0
+                        },
+                        {
+                            "name": "child: ",
+                            "type": "struct EntityReference",
+                            "value": 5
+                        }
+                    ],
+                    "type": "HierarchyComponent"
+                }
+            ],
+            "name": "parent "
+        },
+        {
+            "children": [],
+            "components": [
+                {
+                    "fields": [
+                        {
+                            "name": "entity name: ",
+                            "type": "struct hashed_string_64",
+                            "value": "model: 0"
+                        },
+                        {
+                            "name": "entity id: ",
+                            "type": "struct EntityReference",
+                            "value": 7
+                        }
+                    ],
+                    "type": "EntityComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "parent: ",
+                            "type": "struct EntityReference",
+                            "value": 0
+                        },
+                        {
+                            "name": "previous sibling: ",
+                            "type": "struct EntityReference",
+                            "value": 0
+                        },
+                        {
+                            "name": "next sibling: ",
+                            "type": "struct EntityReference",
+                            "value": 0
+                        },
+                        {
+                            "name": "child: ",
+                            "type": "struct EntityReference",
+                            "value": 0
+                        }
+                    ],
+                    "type": "HierarchyComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "position: ",
+                            "type": "struct glm::vec<3,float,0>",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "scale: ",
+                            "type": "struct glm::vec<3,float,0>",
+                            "value": [
+                                512.0,
+                                512.0,
+                                512.0
+                            ]
+                        },
+                        {
+                            "name": "rotation: ",
+                            "type": "struct glm::vec<3,float,0>",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "overwrite quaternion rotation: ",
+                            "type": "bool",
+                            "value": false
+                        },
+                        {
+                            "name": "update euler rotation: ",
+                            "type": "bool",
+                            "value": false
+                        },
+                        {
+                            "name": "rotation_quat",
+                            "type": "struct glm::qua<float,0>",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0
+                            ]
+                        },
+                        {
+                            "name": "model_matrix",
+                            "type": "struct glm::mat<4,4,float,0>",
+                            "value": [
+                                512.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                512.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                512.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0
+                            ]
+                        }
+                    ],
+                    "type": "TransformDynamicComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "mesh path: ",
+                            "type": "struct hashed_string_64",
+                            "value": "./assets/obj/landscape/landscape512.obj"
+                        },
+                        {
+                            "name": "material path: ",
+                            "type": "struct hashed_string_64",
+                            "value": "./assets/shaders/landscape/landscape.mat"
+                        },
+                        {
+                            "name": "instance draw: ",
+                            "type": "bool",
+                            "value": true
+                        },
+                        {
+                            "name": "use mipmaps: ",
+                            "type": "bool",
+                            "value": true
+                        },
+                        {
+                            "name": "load component: ",
+                            "type": "bool",
+                            "value": true
+                        }
+                    ],
+                    "type": "RenderComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "spawn position: ",
+                            "type": "struct glm::vec<3,float,0>",
+                            "value": [
+                                3.2395401000976563,
+                                2.987457275390625,
+                                6.4915924072265625
+                            ]
+                        }
+                    ],
+                    "type": "SpawnPositionComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "box offset: ",
+                            "type": "struct glm::vec<3,float,0>",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "box extents: ",
+                            "type": "struct glm::vec<3,float,0>",
+                            "value": [
+                                1.0,
+                                1.0,
+                                1.0
+                            ]
+                        }
+                    ],
+                    "type": "BoundingBoxComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "position: ",
+                            "type": "struct glm::vec<3,float,0>",
+                            "value": [
+                                3.2395401000976563,
+                                2.987457275390625,
+                                6.4915924072265625
+                            ]
+                        },
+                        {
+                            "name": "rotation: ",
+                            "type": "struct glm::qua<float,0>",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0
+                            ]
+                        },
+                        {
+                            "name": "linear_velocity: ",
+                            "type": "struct glm::vec<3,float,0>",
+                            "value": [
+                                -2.064443588256836,
+                                -1.9038002490997314,
+                                -4.1368608474731445
+                            ]
+                        },
+                        {
+                            "name": "angular_velocity: ",
+                            "type": "struct glm::vec<3,float,0>",
+                            "value": [
+                                -0.08257774263620377,
+                                -0.0761520117521286,
+                                -0.16547442972660065
+                            ]
+                        },
+                        {
+                            "name": "mass: ",
+                            "type": "float",
+                            "value": 1.0
+                        },
+                        {
+                            "name": "inverse_mass: ",
+                            "type": "float",
+                            "value": 1.0
+                        },
+                        {
+                            "name": "restitution: ",
+                            "type": "float",
+                            "value": 1.0
+                        },
+                        {
+                            "name": "friction: ",
+                            "type": "float",
+                            "value": 0.0
+                        },
+                        {
+                            "name": "inverse_inertia_tensor_local",
+                            "type": "struct glm::mat<3,3,float,0>",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "recalculate tensor: ",
+                            "type": "bool",
+                            "value": true
+                        }
+                    ],
+                    "type": "RigidBodyComponent"
+                }
+            ],
+            "name": "model: 0"
+        }
+    ],
+    "systems": []
+}
