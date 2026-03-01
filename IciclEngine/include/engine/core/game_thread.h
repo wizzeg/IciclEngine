@@ -128,6 +128,7 @@ struct EngineContext
 			game_paused = false;
 			requested_assets.materials.clear();
 			requested_assets.meshes.clear();
+			systems_context->reset();
 			scene->stop_runtime();
 			scene->load("./assets/temp/temp_scene.scn");
 		}
@@ -136,6 +137,21 @@ struct EngineContext
 	void update_input()
 	{
 		input_manager.update_input();
+	}
+
+	void exit_game()
+	{
+		kill_all = true;
+	}
+
+	void reset_context()
+	{
+		systems_context->reset();
+	}
+
+	std::shared_ptr<AssetManager>& get_asset_manager()
+	{
+		return asset_manager;
 	}
 
 	uint64_t get_job_time() { return job_time++; }
@@ -161,7 +177,7 @@ struct EngineContext
 	Camera editor_camera = Camera("editor camera", 2560, 1440);
 	InputManager& input_manager;
 	//MessageQueue<>
-	std::atomic<bool> kill_all;
+	bool kill_all = false;
 	double delta_time = 0;
 	bool game_thread = false;
 	bool render_thread = false;
@@ -208,6 +224,7 @@ private:
 
 	MoveSystem move_system;
 	TransformCalculationSystem transform_calculation_system;
+	RenderRequestsSystem render_request_system;
 	double accumilated_time = 0;
 	// worker threads
 };

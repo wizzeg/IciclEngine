@@ -9,6 +9,7 @@
 #include <stb_image/stb_image.h>
 #include <glm/gtc/matrix_transform.hpp>  
 #include <engine/core/game_thread.h>
+#include <engine/utilities/layer_masks.h>
 
 bool MoveSystem::execute(SystemsContext& ctx)
 {
@@ -57,49 +58,91 @@ bool TransformCalculationSystem::execute(SystemsContext& ctx)
 		}, roots, num_threads);
 	ctx.entt_sync();
 
-	for (size_t thread_id = 0; thread_id < num_threads; ++thread_id)
-	{
-		ctx.enqueue([this, &ctx, thread_id]()
+	//for (size_t thread_id = 0; thread_id < num_threads; ++thread_id)
+	//{
+	//	ctx.enqueue([this, &ctx, thread_id]()
+	//		{
+	//			std::vector<RootHierachyTransform> stack;
+	//			stack.reserve(10);
+
+	//			for (const auto& root : roots[thread_id])
+	//			{
+	//				auto* root_t = ctx.try_get<TransformDynamicComponent>(root.parent);
+	//				if (!root_t) continue;
+
+	//				// push its first child
+	//				auto* root_h = ctx.try_get<HierarchyComponent>(root.parent);
+	//				if (!root_h || root_h->child.entity == entt::null) continue;
+
+	//				stack.push_back({ root_h->child.entity, root_t->model_matrix });
+
+	//				while (!stack.empty())
+	//				{
+	//					auto [entity, parent_world] = stack.back();
+	//					stack.pop_back();
+
+	//					auto* t = ctx.try_get<TransformDynamicComponent>(entity);
+	//					auto* h = ctx.try_get<HierarchyComponent>(entity);
+	//					if (!t || !h) continue;
+
+	//					// t->model_matrix was written as local in phase 2
+	//					// now bake in parent
+	//					t->model_matrix = parent_world * t->model_matrix;
+
+	//					// push next sibling onto stack (same parent_world)
+	//					if (h->next_sibling.entity != entt::null)
+	//						stack.push_back({ h->next_sibling.entity, parent_world });
+
+	//					// push first child (our freshly computed world is its parent)
+	//					if (h->child.entity != entt::null)
+	//						stack.push_back({ h->child.entity, t->model_matrix });
+	//				}
+	//			}
+	//		});
+	//}
+
+	ctx.enqueue_parallel(
+		WithWrite<TransformDynamicComponent, HierarchyComponent>{},
+		[this, &ctx](size_t thread_id)
+		{
+			std::vector<RootHierachyTransform> stack;
+			stack.reserve(10);
+
+			for (const auto& root : roots[thread_id])
 			{
-				std::vector<RootHierachyTransform> stack;
-				stack.reserve(10);
+				auto* root_t = ctx.try_get<TransformDynamicComponent>(root.parent);
+				if (!root_t) continue;
 
-				for (const auto& root : roots[thread_id])
+				// push its first child
+				auto* root_h = ctx.try_get<HierarchyComponent>(root.parent);
+				if (!root_h || root_h->child.entity == entt::null) continue;
+
+				stack.push_back({ root_h->child.entity, root_t->model_matrix });
+
+				while (!stack.empty())
 				{
-					auto* root_t = ctx.try_get<TransformDynamicComponent>(root.parent);
-					if (!root_t) continue;
+					auto [entity, parent_world] = stack.back();
+					stack.pop_back();
 
-					// push its first child
-					auto* root_h = ctx.try_get<HierarchyComponent>(root.parent);
-					if (!root_h || root_h->child.entity == entt::null) continue;
+					auto* t = ctx.try_get<TransformDynamicComponent>(entity);
+					auto* h = ctx.try_get<HierarchyComponent>(entity);
+					if (!t || !h) continue;
 
-					stack.push_back({ root_h->child.entity, root_t->model_matrix });
+					// t->model_matrix was written as local in phase 2
+					// now bake in parent
+					t->model_matrix = parent_world * t->model_matrix;
 
-					while (!stack.empty())
-					{
-						auto [entity, parent_world] = stack.back();
-						stack.pop_back();
+					// push next sibling onto stack (same parent_world)
+					if (h->next_sibling.entity != entt::null)
+						stack.push_back({ h->next_sibling.entity, parent_world });
 
-						auto* t = ctx.try_get<TransformDynamicComponent>(entity);
-						auto* h = ctx.try_get<HierarchyComponent>(entity);
-						if (!t || !h) continue;
-
-						// t->model_matrix was written as local in phase 2
-						// now bake in parent
-						t->model_matrix = parent_world * t->model_matrix;
-
-						// push next sibling onto stack (same parent_world)
-						if (h->next_sibling.entity != entt::null)
-							stack.push_back({ h->next_sibling.entity, parent_world });
-
-						// push first child (our freshly computed world is its parent)
-						if (h->child.entity != entt::null)
-							stack.push_back({ h->child.entity, t->model_matrix });
-					}
+					// push first child (our freshly computed world is its parent)
+					if (h->child.entity != entt::null)
+						stack.push_back({ h->child.entity, t->model_matrix });
 				}
-			});
-	}
-	ctx.gen_sync();
+			}
+		}, num_threads);
+	//ctx.gen_sync();
 
 	return true;
 }
@@ -363,10 +406,13 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 	// here I can start the landscape stuff ... single threaded? Probably
 	
 	// should maybe make it parallel data each instead, but I don't care anymore, I just want this pain to end
+
+	std::vector<CollisionResult> land_col_res;
+	land_col_res.reserve(merged_cell_entries.small_entries.size() + merged_cell_entries.massive_entries.size());
 	size_t landscapes = 0;
 	ctx.enqueue_each(
 		WithRead<const TransformDynamicComponent, const LandscapeComponent>{},
-		[this, &new_merged_cell_entries, &landscapes](
+		[this, &new_merged_cell_entries, &landscapes, &land_col_res](
 			const entt::entity entity, 
 			const TransformDynamicComponent& transform,
 			const LandscapeComponent& landscape)
@@ -572,6 +618,16 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 						ContactManifold manifold = OBB_collision_test(pair);
 						if (manifold.has_collision)
 						{
+							if (entry.layers.is_collision_against(landscape_layer.collision_layers))
+							{
+								CollisionResult a;
+								a.self_entity = entry.entity;
+								a.other_entity = entt::null;
+								a.self_access_order = entry.access_order;
+								a.other_access_order = entry.access_order;
+								a.other_tag = landscape.tag;
+								land_col_res.push_back(a); // need to put in another collision results
+							}
 							manifold.landscape_index = rb_index;
 							landscape_manifolds.push_back(manifold);
 						}
@@ -717,14 +773,25 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 						// Add to vector and store index
 						landscape_rbs.push_back(fake_rb);
 						size_t rb_index = landscape_rbs.size() - 1;
-
+						
 						// Use existing OBB collision
 						PhysicsLayers landscape_layer(landscape.static_layers, landscape.dynamic_layers, landscape.collision_layers);
 						BroadPhasePair pair(entry.entity, entt::null, entry.access_order, 0, entry.rb, &landscape_rbs.back(),
 							entry.obb, obb, entry.layers, landscape_layer, false, true);
+
 						ContactManifold manifold = OBB_collision_test(pair);
 						if (manifold.has_collision)
 						{
+							if (entry.layers.is_collision_against(landscape_layer.collision_layers))
+							{
+								CollisionResult a;
+								a.self_entity = entry.entity;
+								a.other_entity = entt::null;
+								a.self_access_order = entry.access_order;
+								a.other_access_order = entry.access_order;
+								a.other_tag = landscape.tag;
+								land_col_res.push_back(a); // need to put in another collision results
+							}
 							manifold.landscape_index = rb_index;
 							landscape_manifolds.push_back(manifold);
 						}
@@ -781,28 +848,10 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 							//++its;
 							// here we'de needto check "colliders" what they are.
 							if (colliders[i].entity != colliders[j].entity
-								&& (!colliders[i].asleep || !colliders[j].asleep) && ++its
+								&& (!colliders[i].asleep || !colliders[j].asleep)
 								&& overlap(colliders[i].aabb, colliders[j].aabb)) // check if potential collision
 							{
-								if (colliders[i].layers.is_collision_against(colliders[j].layers))
-								{
-									// do something with collision info
-									CollisionResult a;
-									CollisionResult b;
-									a.self_entity = colliders[i].entity;
-									b.self_entity = colliders[j].entity;
-									a.other_entity = colliders[j].entity;
-									b.other_entity = colliders[i].entity;
-									a.self_access_order = colliders[i].access_order;
-									b.self_access_order = colliders[j].access_order;
-									a.other_access_order = colliders[j].access_order;
-									b.other_access_order = colliders[i].access_order;
-									a.other_tag = colliders[j].tag;
-									b.other_tag = colliders[i].tag;
-									col_res.push_back(a);
-									col_res.push_back(b);
-								}
-								if (colliders[i].layers.any_physics_collision(colliders[j].layers) || true)
+								if (colliders[i].layers.any_collision(colliders[j].layers) || true)
 								{
 									// collision
 									//BroadPhasePair
@@ -812,7 +861,8 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 											colliders[i].access_order, colliders[j].access_order,
 											colliders[i].rb, colliders[j].rb,
 											colliders[i].obb, colliders[j].obb,
-											colliders[i].layers, colliders[j].layers);
+											colliders[i].layers, colliders[j].layers,
+											colliders[i].tag, colliders[j].tag);
 									}
 									else
 									{
@@ -820,7 +870,8 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 											colliders[j].access_order, colliders[i].access_order,
 											colliders[j].rb, colliders[i].rb,
 											colliders[j].obb, colliders[i].obb,
-											colliders[j].layers, colliders[i].layers);
+											colliders[j].layers, colliders[i].layers,
+											colliders[j].tag, colliders[i].tag);
 									}
 								}
 								// I think here is where we generate new info for the landscape... call it entt::null
@@ -834,43 +885,26 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 						{
 							//its++;
 							if (colliders[i].entity != massive.entity
-								&& (!colliders[i].asleep || !massive.asleep) && ++its
+								&& (!colliders[i].asleep || !massive.asleep)
 								&& overlap(colliders[i].aabb, massive.aabb)) // check if potential collision
 							{
-								if (colliders[i].asleep && massive.layers.is_static_against(colliders[i].layers.dynamic_layers) &&
-									massive.rb && glm::length(massive.rb->linear_velocity) < sleep_linear_threshold && glm::length(massive.rb->angular_velocity) < sleep_angular_threshold)
-								{
-									continue;
-								}
-								if (colliders[i].layers.is_collision_against(massive.layers))
-								{
-									// do something with collision info
-									CollisionResult a;
-									CollisionResult b;
-									a.self_entity = colliders[i].entity;
-									b.self_entity = massive.entity;
-									a.other_entity = massive.entity;
-									b.other_entity = colliders[i].entity;
-									a.self_access_order = colliders[i].access_order;
-									b.self_access_order = massive.access_order;
-									a.other_access_order = massive.access_order;
-									b.other_access_order = colliders[i].access_order;
-									a.other_tag = massive.tag;
-									b.other_tag = colliders[i].tag;
-									col_res.push_back(a);
-									col_res.push_back(b);
-								}
-								if (colliders[i].layers.any_physics_collision(massive.layers) || true)
+								//if (colliders[i].asleep && massive.layers.is_static_against(colliders[i].layers.dynamic_layers) &&
+								//	massive.rb && glm::length(massive.rb->linear_velocity) < sleep_linear_threshold && glm::length(massive.rb->angular_velocity) < sleep_angular_threshold)
+								//{
+								//	continue;
+								//}
+								if (colliders[i].layers.any_collision(massive.layers) || true)
 								{
 									// collision
 									//BroadPhasePair
-									if ((uint32_t)colliders[i].entity < (uint32_t)massive.entity)
+									if ((uint32_t)colliders[i].entity < (uint32_t)massive.entity) // why? dumb of me
 									{
 										pairs.emplace_back(colliders[i].entity, massive.entity,
 											colliders[i].access_order, massive.access_order,
 											colliders[i].rb, massive.rb,
 											colliders[i].obb, massive.obb,
-											colliders[i].layers, massive.layers);
+											colliders[i].layers, massive.layers,
+											colliders[i].tag, massive.tag);
 									}
 									else
 									{
@@ -878,7 +912,8 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 											massive.access_order, colliders[i].access_order,
 											massive.rb, colliders[i].rb,
 											massive.obb, colliders[i].obb,
-											massive.layers, colliders[i].layers);
+											massive.layers, colliders[i].layers,
+											massive.tag, colliders[i].tag);
 									}
 								}
 								// I think here is where we generate new info for the landscape... call it entt::null
@@ -924,37 +959,52 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 	timer.start();
 	const size_t pairs_per_thread = (merged_pairs.size() + num_threads - 1) / num_threads;
 	std::vector<std::vector<ContactManifold>> vec_manifolds(num_threads);
+	//std::vector<std::vector<CollisionResult>> vec_col_res(num_threads);
 	for (size_t i = 0; i < num_threads; i++)
 	{
 		size_t thread_id = i;
 
 		auto& manifolds = vec_manifolds[thread_id];
+		auto& col_res = thread_col_res[thread_id];
 		ctx.enqueue(
-			[this, thread_id, pairs_per_thread, &manifolds, &merged_pairs]() 
+			[this, thread_id, pairs_per_thread, &manifolds, &merged_pairs, &col_res]()
 			{
 				
 				size_t start_pair = pairs_per_thread * thread_id;
 				size_t end_pair = std::min(start_pair + pairs_per_thread, merged_pairs.size());
-				//manifolds.reserve(end_pair - start_pair);
+				size_t size = std::max((end_pair - start_pair), (size_t)0);
+				manifolds.reserve(1000);
+				col_res.reserve(1000);
 				for (size_t i = start_pair; i < end_pair; ++i)
 				{
 					bool any_physics = merged_pairs[i].layers_a.any_physics_collision(merged_pairs[i].layers_b);
-					if (merged_pairs[i].rb_a && merged_pairs[i].rb_b && any_physics)
-					{
 						// these should all have rbs.
 						ContactManifold manfild = OBB_collision_test(merged_pairs[i]); // need to check if it has RB or not
 						if (manfild.has_collision)
 						{
+							if (merged_pairs[i].layers_a.is_collision_against(merged_pairs[i].layers_b.collision_layers))
+							{
+								// do something with collision info
+								CollisionResult a;
+								CollisionResult b;
+								a.self_entity = merged_pairs[i].entity_a;
+								b.self_entity = merged_pairs[i].entity_b;
+								a.other_entity = merged_pairs[i].entity_b;
+								b.other_entity = merged_pairs[i].entity_a;
+								a.self_access_order = merged_pairs[i].access_order_a;
+								b.self_access_order = merged_pairs[i].access_order_b;
+								a.other_access_order = merged_pairs[i].access_order_b;
+								b.other_access_order = merged_pairs[i].access_order_a;
+								a.other_tag = merged_pairs[i].tag_b;
+								b.other_tag = merged_pairs[i].tag_a;
+								col_res.push_back(a);
+								col_res.push_back(b);
+							}
+						}
+						if (any_physics && merged_pairs[i].rb_a && merged_pairs[i].rb_b)
+						{
 							manifolds.push_back(manfild);
 						}
-					}
-					if (merged_pairs[i].layers_a.is_collision_against(merged_pairs[i].layers_b))
-					{
-						// both don't have rigidbody, so store collision information only
-						// actually should probably store this info somewhere in both cases
-						//store information for collision info stuff
-						// but where? I'm not sure...
-					}
 
 				}
 			});
@@ -969,16 +1019,15 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 
 	// now the landscapes have to be done.
 	
-	ctx.enqueue_parallel_each(WithRead<TransformDynamicComponent>{},
+	ctx.enqueue_parallel_each(WithRead<GravityStrengthComponent>{},
 		WithWrite<RigidBodyComponent>{},
-		WithOut<LandscapeComponent>{},
-	[delta](const entt::entity entity, const TransformDynamicComponent& transform, RigidBodyComponent& rb)
+	[delta](const entt::entity entity, const GravityStrengthComponent& grav, RigidBodyComponent& rb)
 		{
-			if (!rb.is_static_against(UINT8_MAX) && !rb.asleep)
+			if (!rb.asleep)
 			{
-				if (rb.linear_velocity.y < 30.f)
+				if (rb.linear_velocity.y > -30.f)
 				{
-					rb.linear_velocity -= glm::vec3(0, 9.82f * delta, 0);
+					rb.linear_velocity -= glm::vec3(0, grav.gravity * delta, 0);
 				}
 				//rb.linear_velocity -= glm::vec3(0, 9.82f * delta, 0); // GRAVITY
 			}
@@ -997,6 +1046,8 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 		std::make_move_iterator(landscape_manifolds.begin()),
 		std::make_move_iterator(landscape_manifolds.end())
 	);
+
+
 	// now time for physics solver ... but I should have gathered rigidbodies by now... hm.. done that now
 	// but before this, I should not have put those that lack rb into the manifolds.
 	std::sort(merged_manifolds.begin(), merged_manifolds.end(), []
@@ -1019,6 +1070,7 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 		
 		for (const auto& col_res : thread_col_res)
 			col_res_count += col_res.size();
+		col_res_count += land_col_res.size();
 		merged_col_res.reserve(col_res_count);
 	}
 
@@ -1029,7 +1081,7 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 	//and now write the info back to the entities... tricky...
 	if (col_res_count > 0)
 	{
-		ctx.enqueue([&ctx, &thread_col_res, &merged_col_res]()
+		ctx.enqueue([&ctx, &thread_col_res, &merged_col_res, &land_col_res]()
 			{
 				for (auto& col_res : thread_col_res)
 				{
@@ -1040,6 +1092,9 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 							std::make_move_iterator(col_res.end()));
 					}
 				}
+				merged_col_res.insert(merged_col_res.end(),
+					std::make_move_iterator(land_col_res.begin()),
+					std::make_move_iterator(land_col_res.end()));
 				//std::sort(merged_col_res.begin(), merged_col_res.end(),
 				//	[](const CollisionResult& a, const CollisionResult& b)
 				//	{
@@ -1538,8 +1593,10 @@ void PhysicsSystem::resolve_collision(ContactManifold& manifold, std::vector<Rig
 	if (!rb_a || !rb_b) return;
 
 	// fix for static objects
-	if (manifold.rb_a->is_static_against(manifold.rb_b->static_layers) 
-		|| manifold.rb_b->is_static_against(manifold.rb_a->static_layers)) return; // I think these are the same though
+	if (manifold.rb_b->is_static_against(manifold.rb_a->static_layers) && 
+		!(manifold.rb_a->is_dynamic_against(manifold.rb_b->dynamic_layers) || 
+			manifold.rb_b->is_dynamic_against(manifold.rb_a->static_layers)||
+			manifold.rb_a->is_dynamic_against(manifold.rb_b->static_layers))) return; // I think these are the same though
 	bool dynamic_a = manifold.rb_a->is_dynamic_against(manifold.rb_b->dynamic_layers) || manifold.rb_a->is_dynamic_against(manifold.rb_b->static_layers);
 	bool dynamic_b = manifold.rb_b->is_dynamic_against(manifold.rb_a->dynamic_layers) || manifold.rb_b->is_dynamic_against(manifold.rb_a->static_layers);
 	
@@ -2051,9 +2108,9 @@ bool UIDrawGathering::execute(SystemsContext& ctx)
 					mats.clear();
 					ctx.each(WithRead<const UIMaterialComponent>{},
 						[&invalid, &mats]
-						(const entt::entity, const UIMaterialComponent mat)
+						(const entt::entity entity, const UIMaterialComponent mat)
 						{
-							if (mat.material.hash != invalid)
+							if (mat.draw && mat.material.hash != invalid)
 							{
 								mats.push_back(mat.material);
 							}
@@ -2077,19 +2134,24 @@ bool UIDrawGathering::execute(SystemsContext& ctx)
 				= sys_strg.get_object<std::vector<UIPreRenderRequest>>("UIRects");
 			UIRects->write([&ctx](std::vector<UIPreRenderRequest>& ui_rects)
 				{
+					uint64_t invalid = hashed_string_64("").hash;
 					ui_rects.clear();
 					ctx.each(WithRead<const UIRectComponent, const UIMaterialComponent>{},
-						[&ui_rects](const entt::entity, const UIRectComponent& r, const UIMaterialComponent& m)
+						[&ui_rects, &invalid](const entt::entity entity, const UIRectComponent& r, const UIMaterialComponent& m)
 						{
-							// just want to add necessary data...
-							UIPreRenderRequest rect;
-							rect.color = r.color;
-							rect.extents = r.size;
-							rect.position = r.position;
-							rect.order = r.order;
-							rect.mat_hash = m.material.hash;
-							rect.uv_offset = r.uv_offset;
-							ui_rects.push_back(rect);
+							if (m.draw && m.material.hash != invalid)
+							{
+								// just want to add necessary data...
+								UIPreRenderRequest rect;
+								rect.color = r.color;
+								rect.extents = r.size;
+								rect.position = r.position;
+								rect.order = r.order;
+								rect.mat_hash = m.material.hash;
+								rect.uv_offset = r.uv_offset;
+								ui_rects.push_back(rect);
+							}
+
 						}
 					);
 					if (!ui_rects.empty())
@@ -2111,39 +2173,43 @@ bool UIDrawGathering::execute(SystemsContext& ctx)
 				= sys_strg.get_object<std::vector<UIPreRenderRequest>>("UIWords");
 			UITexts->write([this, &ctx](std::vector<UIPreRenderRequest>& ui_words)
 				{
+					uint64_t invalid = hashed_string_64("").hash;
 					ui_words.clear();
 					ctx.each(WithRead<const UITextComponent, const UIMaterialComponent>{},
-						[this, &ui_words](const entt::entity, const UITextComponent& t, const UIMaterialComponent& m)
+						[this, &ui_words, &invalid](const entt::entity, const UITextComponent& t, const UIMaterialComponent& m)
 						{
-							float fs = t.font_size;
-							int max_row = static_cast<int>(t.size.x / fs);
-							int max_col = static_cast<int>(t.size.y / fs);
-							
-							int row = 0;
-							int col = 0;
-							if (max_row < 1 && max_col < 1 || t.text.length() < 1) return;
-							for (const auto& word : t.text)
+							if (m.draw && m.material.hash != invalid)
 							{
-								UIPreRenderRequest w;
-								w.color = t.color;
-								w.extents = glm::vec2(fs);
+								float fs = t.font_size;
+								int max_row = static_cast<int>(t.size.x / fs);
+								int max_col = static_cast<int>(t.size.y / fs);
 
-								if (word == '\n' || row > max_row)
+								int row = 0;
+								int col = 0;
+								if (max_row < 1 && max_col < 1 || t.text.length() < 1) return;
+								for (const auto& word : t.text)
 								{
-									++col;
-									row = 0;
-								}
-								if (col > max_col) return;
-								
-								w.uv_offset = char_to_offset(word);
-								w.order = t.order;
+									UIPreRenderRequest w;
+									w.color = t.color;
+									w.extents = glm::vec2(fs);
 
-								// ah crap, still have to do the ndc offset
-								w.position = (glm::vec2(1.33f * row * fs, -col * fs * 1.75f)) - (-t.position);
-								// probably right, I pray
-								w.mat_hash = m.material.hash;
-								ui_words.push_back(w);
-								++row;
+									if (word == '\n' || row > max_row)
+									{
+										++col;
+										row = 0;
+									}
+									if (col > max_col) return;
+
+									w.uv_offset = char_to_offset(word);
+									w.order = t.order;
+
+									// ah crap, still have to do the ndc offset
+									w.position = (glm::vec2(1.33f * row * fs, -col * fs * 1.75f)) - (-t.position);
+									// probably right, I pray
+									w.mat_hash = m.material.hash;
+									ui_words.push_back(w);
+									++row;
+								}
 							}
 						});
 					if (!ui_words.empty())
@@ -2203,103 +2269,190 @@ bool MenuSystem::execute(SystemsContext& ctx)
 		just_changed = false;
 	}
 
+	if (InputManager::instance().is_key_pressed(EKey::LeftMouseButton) && just_pressed)
+	{
+		can_press = false;
+		just_pressed = false;
+	}
+	else if (InputManager::instance().is_key_released(EKey::LeftMouseButton) && just_pressed)
+	{
+		can_press = true;
+		just_pressed = true;
+	}
+
 	auto& strg = ctx.get_system_storage();
 	strg.add_or_replace_object("MenuOpen", menu_open);
-
-	if (menu_open)
-	{
-		auto mouse_delta = glm::vec2(0,0);
-		InputManager::instance().get_mouse_delta(mouse_delta.x, mouse_delta.y);
-		mouse_delta.y *= -1.f;
-		mouse_position += mouse_delta * 0.01f;
-		mouse_position.x = std::max(-1.f, std::min(1.f, mouse_position.x));
-		mouse_position.y = std::max(-1.f, std::min(1.f, mouse_position.y));
-		synced |= ctx.each(WithWrite<CursorComponent, UIRectComponent>{},
-			[this]
-			(const entt::entity entity, CursorComponent& cursor, UIRectComponent& rect)
+	ctx.enqueue(
+		[this, &ctx]() 
+		{
+			if (menu_open)
 			{
-				rect.position = mouse_position;
-			}
-		);
+				auto mouse_delta = glm::vec2(0, 0);
+				InputManager::instance().get_mouse_delta(mouse_delta.x, mouse_delta.y);
+				mouse_delta.y *= -1.f;
+				mouse_position += mouse_delta * 0.005f;
+				mouse_position.x = std::max(-1.f, std::min(1.f, mouse_position.x));
+				mouse_position.y = std::max(-1.f, std::min(1.f, mouse_position.y));
 
-		synced |= ctx.enqueue_each(
-			WithRead<UISelectableComponent>{},
-			WithWrite<UIMenuItemStatusComponent>{},
-			WithRef<UIColorChangeComponent, UIRectComponent, UITextComponent>{},
-			[&ctx, this]
-			(const entt::entity entity, const UISelectableComponent sel, UIMenuItemStatusComponent& stat)
-			{
-				if (auto rect_ptr = ctx.try_get<UIRectComponent>(entity))
-				{
-					auto& rect = *rect_ptr;
-					bool inside =
-						mouse_position.x > rect.position.x &&
-						mouse_position.x < rect.position.x + rect.size.x &&
-						mouse_position.y < rect.position.y &&
-						mouse_position.y > rect.position.y - rect.size.y;
-					if (inside)
+				ctx.each(WithRead<CursorComponent>{},
+					WithWrite<UIRectComponent>{},
+					[this]
+					(const entt::entity entity, CursorComponent& cursor, UIRectComponent& rect)
 					{
-						stat.hovered = true;
-						if (auto col = ctx.try_get<UIColorChangeComponent>(entity))
-						{
-							rect.color = col->active;
-						}
-						if (InputManager::instance().is_key_pressed(EKey::LeftMouseButton))
-						{
-							stat.pressed = true;
-						}
-						else stat.pressed = false;
+						// add sensitivity to the cursorcomponent ... or maybe not?
+						rect.position = mouse_position;
 					}
-					else
+				);
+				uint32_t state_layer = 0;
+				entt::entity menu_entity = entt::null;
+				ctx.each(WithRead<UIMenuControllerComponent>{},
+					[&state_layer, &menu_entity](const entt::entity entity, const UIMenuControllerComponent& menu)
 					{
-						if (auto col = ctx.try_get<UIColorChangeComponent>(entity))
-						{
-							rect.color = col->inactive;
-						}
-						stat.hovered = false;
-						stat.pressed = false;
-					}
-				}
-				else if (auto txt = ctx.try_get<UITextComponent>(entity))
-				{
-					auto& text = *txt;
-					bool inside =
-						mouse_position.x > text.position.x &&
-						mouse_position.x < text.position.x + text.size.x &&
-						mouse_position.y < text.position.y &&
-						mouse_position.y > text.position.y - text.size.y;
+						state_layer = menu.active_state_layers;
+						menu_entity = entity;
 
-					if (inside)
+					});
+				bool valid_press = can_press;
+			
+				// technically race condition because we access outside entity, 
+				// but two entities should never modify it at the same time
+				ctx.enqueue_parallel_each(
+					WithRead<UISelectableComponent, UIDependencyComponent, UITypeComponent>{},
+					WithWrite<UIMenuItemStatusComponent, UIMaterialComponent>{},
+					WithRef<UIColorChangeComponent, UIRectComponent, UITextComponent, ScenePathComponent>{},
+					[this, &ctx, state_layer, menu_entity, valid_press]
+					(
+						const entt::entity entity,
+						const UISelectableComponent sel,
+						const UIDependencyComponent dep,
+						const UITypeComponent type,
+						UIMenuItemStatusComponent& stat,
+						UIMaterialComponent& mat
+						)
 					{
-						stat.hovered = true;
-						if (auto col = ctx.try_get<UIColorChangeComponent>(entity))
+						if (!dep.matches(state_layer))
 						{
-							text.color = col->active;
+							mat.draw = false;
+							return;
 						}
-						if (InputManager::instance().is_key_pressed(EKey::LeftMouseButton))
+						mat.draw = true;
+
+						if (auto rect_ptr = ctx.try_get<UIRectComponent>(entity))
 						{
-							stat.pressed = true;
-							LoadSceneCommand scene_command;
-							scene_command.load = true;
-							scene_command.path = "./assets/scenes/menutest.scn";
-							ctx.get_system_storage().add_or_replace_object("LoadSceneCommand", scene_command);
+							auto& rect = *rect_ptr;
+							bool inside =
+								mouse_position.x > rect.position.x &&
+								mouse_position.x < rect.position.x + rect.size.x &&
+								mouse_position.y < rect.position.y &&
+								mouse_position.y > rect.position.y - rect.size.y;
+							if (inside)
+							{
+								stat.hovered = true;
+								if (auto col = ctx.try_get<UIColorChangeComponent>(entity))
+								{
+									rect.color = col->active;
+								}
+								if (InputManager::instance().is_key_pressed(EKey::LeftMouseButton))
+								{
+									stat.pressed = true;
+								}
+								else stat.pressed = false;
+							}
+							else
+							{
+								if (auto col = ctx.try_get<UIColorChangeComponent>(entity))
+								{
+									rect.color = col->inactive;
+								}
+								stat.hovered = false;
+								stat.pressed = false;
+							}
 						}
-						else stat.pressed = false;
+						else if (auto txt = ctx.try_get<UITextComponent>(entity))
+						{
+							auto& text = *txt;
+							bool inside =
+								mouse_position.x > text.position.x &&
+								mouse_position.x < text.position.x + text.size.x &&
+								mouse_position.y < text.position.y &&
+								mouse_position.y > text.position.y - text.size.y;
+
+							if (inside)
+							{
+								stat.hovered = true;
+								if (auto col = ctx.try_get<UIColorChangeComponent>(entity))
+								{
+									text.color = col->active;
+								}
+								if (InputManager::instance().is_key_pressed(EKey::LeftMouseButton) && valid_press)
+								{
+									stat.pressed = true;
+
+									if (auto menu_cont = ctx.try_get<UIMenuControllerComponent>(menu_entity))
+									{
+										auto& new_layers = menu_cont->active_state_layers;
+										switch (type.type)
+										{
+											//I think go back to main menu
+										case 0:
+											// I think?
+											new_layers = 0;
+											new_layers |= UIMainMenu;
+											break;
+											// now I think display layers
+										case 1:
+											new_layers = 0;
+											new_layers |= UILevels;
+											break;
+										case 2:
+											new_layers = 0;
+											new_layers |= UIHighScores;
+											break;
+										case 5:
+											if (auto path = ctx.try_get<ScenePathComponent>(entity))
+											{
+												if (!path->path.empty())
+												{
+													LoadSceneCommand scene_command;
+													scene_command.load = true;
+													scene_command.path = path->path;
+													ctx.get_system_storage().add_or_replace_object("LoadSceneCommand", scene_command);
+												}
+											}
+											break;
+										case 10:
+											ctx.get_system_storage().add_or_replace_object("ExitGame", true);
+											break;
+
+										default:
+											break;
+										}
+									}
+									// ok now here we do this thing...
+									//LoadSceneCommand scene_command;
+									//scene_command.load = true;
+									//scene_command.path = "./assets/scenes/menutest.scn";
+									//ctx.get_system_storage().add_or_replace_object("LoadSceneCommand", scene_command);
+								}
+								else stat.pressed = false;
+							}
+							else
+							{
+								if (auto col = ctx.try_get<UIColorChangeComponent>(entity))
+								{
+									text.color = col->inactive;
+								}
+								stat.hovered = false;
+								stat.pressed = false;
+							}
+						}
+
 					}
-					else
-					{
-						if (auto col = ctx.try_get<UIColorChangeComponent>(entity))
-						{
-							text.color = col->inactive;
-						}
-						stat.hovered = false;
-						stat.pressed = false;
-					}
-				}
-				
+				);
 			}
-		);
-	}
+		});
+
+	
 	return synced;
 }
 
@@ -2318,13 +2471,436 @@ bool ReadCollisionResultSystem::execute(SystemsContext& ctx)
 					for (size_t i = bbox.result_start_index; i < bbox.result_end_index; i++)
 					{
 						const auto& res = collisions[i];
-						//PRINTLN("true self: {}, self: {}, other: {}, other tag: {}",
-						//	static_cast<uint32_t>(entity), static_cast<uint32_t>(res.self_entity),
-						//	static_cast<uint32_t>(res.other_entity), res.other_tag);
+						PRINTLN("true self: {}, self: {}, other: {}, other tag: {}",
+							static_cast<uint32_t>(entity), static_cast<uint32_t>(res.self_entity),
+							static_cast<uint32_t>(res.other_entity), res.other_tag);
 					}
 				}
 			}
 		);
 	}
+	return false;
+}
+
+bool RenderRequestsSystem::execute(SystemsContext& ctx)
+{
+
+	ctx.enqueue(
+		[this, &ctx]()
+		{
+			auto& sys_strg = ctx.get_system_storage();
+
+			auto menu_open = sys_strg.get_object<bool>("MenuOpen");
+			if (menu_open)
+			{
+				bool is_open = false;
+				menu_open->read(
+					[this, &is_open](const bool& open)
+					{
+						is_open = open;
+					});
+				if (!is_open)
+					return false;
+			}
+			else return false;
+
+
+			std::vector<UIPreRenderRequest> new_rects;
+			sys_strg.add_or_replace_object("UIRects", new_rects);
+
+			std::vector<UIPreRenderRequest> new_texts;
+			sys_strg.add_or_replace_object("UIWords", new_texts);
+
+			std::vector<hashed_string_64> ui_mats;
+			sys_strg.add_or_replace_object("UIMats", ui_mats);
+
+			auto engine_context = ctx.get_engine_context();
+			ctx.enqueue([&ctx, engine_context]()
+				{
+					uint64_t invalid = hashed_string_64("").hash;
+					auto& sys_strg = ctx.get_system_storage();
+					SystemsStorageObject<std::vector<hashed_string_64>>* UIMats
+						= sys_strg.get_object<std::vector<hashed_string_64>>("UIMats");
+					UIMats->write([&ctx, &invalid](std::vector<hashed_string_64>& mats)
+						{
+							mats.clear();
+							ctx.each(WithRead<const UIMaterialComponent>{},
+								[&invalid, &mats]
+								(const entt::entity entity, const UIMaterialComponent mat)
+								{
+									if (mat.draw && mat.material.hash != invalid)
+									{
+										mats.push_back(mat.material);
+									}
+								});
+							if (!mats.empty())
+							{
+								std::sort(mats.begin(), mats.end());
+								auto last = unique(mats.begin(), mats.end());
+								mats.erase(last, mats.end());
+							}
+
+						});
+				}
+			);
+
+			// from now on I don't care about stupid naming, vars will just be letters
+			ctx.enqueue([&ctx]()
+				{
+					auto& sys_strg = ctx.get_system_storage();
+					SystemsStorageObject<std::vector<UIPreRenderRequest>>* UIRects
+						= sys_strg.get_object<std::vector<UIPreRenderRequest>>("UIRects");
+					UIRects->write([&ctx](std::vector<UIPreRenderRequest>& ui_rects)
+						{
+							uint64_t invalid = hashed_string_64("").hash;
+							ui_rects.clear();
+							ctx.each(WithRead<const UIRectComponent, const UIMaterialComponent>{},
+								[&ui_rects, &invalid](const entt::entity entity, const UIRectComponent& r, const UIMaterialComponent& m)
+								{
+									if (m.draw && m.material.hash != invalid)
+									{
+										// just want to add necessary data...
+										UIPreRenderRequest rect;
+										rect.color = r.color;
+										rect.extents = r.size;
+										rect.position = r.position;
+										rect.order = r.order;
+										rect.mat_hash = m.material.hash;
+										rect.uv_offset = r.uv_offset;
+										ui_rects.push_back(rect);
+									}
+
+								}
+							);
+							if (!ui_rects.empty())
+							{
+								std::sort(ui_rects.begin(), ui_rects.end(),
+									[](const auto& a, const auto& b)
+									{
+										return a.order < b.order;
+									});
+							}
+						});
+
+				}
+			);
+			ctx.enqueue([this, &ctx]()
+				{
+					auto& sys_strg = ctx.get_system_storage();
+					SystemsStorageObject<std::vector<UIPreRenderRequest>>* UITexts
+						= sys_strg.get_object<std::vector<UIPreRenderRequest>>("UIWords");
+					UITexts->write([this, &ctx](std::vector<UIPreRenderRequest>& ui_words)
+						{
+							uint64_t invalid = hashed_string_64("").hash;
+							ui_words.clear();
+							ctx.each(WithRead<const UITextComponent, const UIMaterialComponent>{},
+								[this, &ui_words, &invalid](const entt::entity, const UITextComponent& t, const UIMaterialComponent& m)
+								{
+									if (m.draw && m.material.hash != invalid)
+									{
+										float fs = t.font_size;
+										int max_row = static_cast<int>(t.size.x / fs);
+										int max_col = static_cast<int>(t.size.y / fs);
+
+										int row = 0;
+										int col = 0;
+										if (max_row < 1 && max_col < 1 || t.text.length() < 1) return;
+										for (const auto& word : t.text)
+										{
+											UIPreRenderRequest w;
+											w.color = t.color;
+											w.extents = glm::vec2(fs);
+
+											if (word == '\n' || row > max_row)
+											{
+												++col;
+												row = 0;
+											}
+											if (col > max_col) return;
+
+											w.uv_offset = char_to_offset(word);
+											w.order = t.order;
+
+											// ah crap, still have to do the ndc offset
+											w.position = (glm::vec2(1.33f * row * fs, -col * fs * 1.75f)) - (-t.position);
+											// probably right, I pray
+											w.mat_hash = m.material.hash;
+											ui_words.push_back(w);
+											++row;
+										}
+									}
+								});
+							if (!ui_words.empty())
+							{
+								std::sort(ui_words.begin(), ui_words.end(),
+									[](const auto& a, const auto& b)
+									{
+										return a.order < b.order;
+									});
+							}
+						});
+				}
+			);
+		});
+
+	size_t num_threads = ctx.num_threads();
+	vec_pre_render_reqs.resize(num_threads);
+	for (auto& vec : vec_pre_render_reqs)
+	{
+		vec.reserve(prev_size);
+	}
+	ctx.enqueue_parallel_data_each(
+	WithRead<RenderComponent, TransformDynamicComponent>{},
+	[](
+		std::vector<PreRenderReq>& pre_render_reqs, 
+		const entt::entity entity, 
+		const RenderComponent& render, 
+		const TransformDynamicComponent& transform
+		)
+	{
+			pre_render_reqs.emplace_back(transform.model_matrix, render.mesh.hash,
+				render.material.hash, render.instance, render.mipmap);
+	}, vec_pre_render_reqs, num_threads);
+	ctx.enqueue(WithWrite<RenderComponent>{},
+		[this, &ctx]()
+		{
+				size_t total_size = 0;
+				prev_size = 0;
+				for (const auto& vec : vec_pre_render_reqs)
+				{
+					prev_size = std::max(prev_size, vec.size());
+					total_size += vec.size();
+				}
+				std::vector<PreRenderReq> pre_render_reqs;
+				pre_render_reqs.reserve(total_size);
+				for (auto& vec : vec_pre_render_reqs)
+				{
+					pre_render_reqs.insert(pre_render_reqs.end(),
+						std::make_move_iterator(vec.begin()),
+						std::make_move_iterator(vec.end()));
+				}
+				ctx.get_system_storage().add_or_replace_object("PreRenderReqs", pre_render_reqs);
+				vec_pre_render_reqs.clear();
+		});
+
+	return false;
+}
+
+glm::vec2 RenderRequestsSystem::char_to_offset(const char& c)
+{
+	int i = static_cast<int>(c - 32);
+	if (i < 0 || i > 95) // well can't be over 95...
+	{
+		// return special error character
+		return glm::vec2(0.9f, 0.9f);
+	}
+
+	// we'll do a 10x10 atlas I guess
+	int col = i % 10;
+	int row = i / 10;
+
+	float u = 0.1f * col;
+	float v = 1.0f - 0.1f * (row + 1);
+	return glm::vec2(u, v);
+}
+
+bool PlayerMovementSystem::execute(SystemsContext& ctx)
+{
+	float dt = (float)ctx.get_delta_time();
+	ctx.each(
+		WithRead<PlayerTagComponent, MovementStatsComponent>{},
+		WithWrite<RigidBodyComponent>{},
+		[dt](const entt::entity entity, const PlayerTagComponent& tag, const MovementStatsComponent& mov, RigidBodyComponent& rb)
+		{
+
+			rb.linear_velocity.x -= (rb.linear_velocity.x * mov.move_damp * dt);
+			rb.linear_velocity.z -= (rb.linear_velocity.z * mov.move_damp * dt);
+
+			if (InputManager::instance().is_key_pressed(EKey::Space) && mov.time_since_ground < 0.1f)
+			{
+				rb.linear_velocity.y += mov.jump_force;
+			}
+			if (InputManager::instance().is_key_held(EKey::S))
+			{
+				rb.linear_velocity.z = std::min(rb.linear_velocity.z + mov.move_force * dt, mov.max_move_speed);
+			}
+			if (InputManager::instance().is_key_held(EKey::W))
+			{
+				rb.linear_velocity.z = std::max(rb.linear_velocity.z - mov.move_force * dt, -mov.max_move_speed);
+			}
+			if (InputManager::instance().is_key_held(EKey::D))
+			{
+				rb.linear_velocity.x = std::min(rb.linear_velocity.x + mov.move_force * dt, mov.max_move_speed);
+			}
+			if (InputManager::instance().is_key_held(EKey::A))
+			{
+				rb.linear_velocity.x = std::max(rb.linear_velocity.x - mov.move_force * dt, -mov.max_move_speed);
+			}
+			
+		});
+	return false;
+}
+
+bool GroundingSystem::execute(SystemsContext& ctx)
+{
+	
+	ctx.enqueue(
+		[this, &ctx]()
+		{
+			col_res.clear();
+			float dt = (float)ctx.get_delta_time();
+			if (auto res = ctx.get_system_storage().get_object<std::vector<CollisionResult>>("CollisionResults"))
+			{
+				res->copy(col_res); // not great to copy, but this would be a parallel job, so kinda have to
+			}
+			if (!col_res.empty())
+			{
+				size_t size = col_res.size();
+				ctx.enqueue_parallel_each(
+					WithRead<BoundingBoxComponent>{},
+					WithWrite<MovementStatsComponent>{},
+					[this, size, dt](const entt::entity entity, const BoundingBoxComponent& bbox, MovementStatsComponent& mov)
+					{
+						mov.time_since_ground += dt;
+						if (bbox.has_collision_info)
+						{
+							for (size_t i = bbox.result_start_index; i < bbox.result_end_index; ++i)
+							{
+								if (i < size && col_res[i].other_tag == 10)
+								{
+									mov.time_since_ground = 0.f;
+									break;
+								}
+							}
+						}
+					});
+			}
+		});
+
+
+	return false;
+}
+
+bool ButtonSystem::execute(SystemsContext& ctx)
+{
+	ctx.enqueue(WithWrite<EntityCommandBufferComponent>{},
+		[this, &ctx]()
+		{
+			if (auto res = ctx.get_system_storage().get_object<std::vector<CollisionResult>>("CollisionResults"))
+			{
+				res->read([&ctx](const std::vector<CollisionResult>& cols)
+					{
+						if (!cols.empty())
+						{
+							ctx.each(WithRead<BoundingBoxComponent, ActivationReferenceComponent>{},
+								WithWrite<ButtonObjectTag>{},
+								[&ctx, &cols](const entt::entity entity, const BoundingBoxComponent& bbox, const ActivationReferenceComponent& a, ButtonObjectTag& bt)
+								{
+									if (!bt.active && bbox.has_collision_info)
+									{
+										for (size_t i = bbox.result_start_index; i < bbox.result_end_index; i++)
+										{
+											if (i < cols.size() && cols[i].other_tag == 1)
+											{
+												if (auto ent = ctx.try_get<EntityComponent>(a.reference.entity))
+												{
+													bt.active = true;
+													if (auto ecb = ctx.get_ecb("end_frame_ecb"))
+													{
+														ecb->destroy_entity(a.reference.entity);
+													}
+													else
+													{
+														PRINTLN("ecb didn't exist");
+													}
+													break;
+												}
+											}
+										}
+									}
+								});
+						}
+						
+					});
+			}
+		});
+
+	return false;
+}
+
+bool CollectionSystem::execute(SystemsContext& ctx)
+{
+	// will need a "point counter" component or something, for the coin counter manager
+	// or just store the value in a systemstorageobject
+	
+	// get all collection things
+	// destroy self if you found collection
+	// but also +1 on the shared object
+
+	ctx.enqueue(
+		WithWrite<EntityCommandBufferComponent>{},
+		[this, &ctx]()
+		{
+			size_t coins_collected = 0;
+			if (auto res = ctx.get_system_storage().get_object<std::vector<CollisionResult>>("CollisionResults"))
+			{
+				res->read(
+					[&ctx, &coins_collected](const std::vector<CollisionResult>& cols)
+					{
+						if (!cols.empty())
+						{
+							
+							ctx.each(WithRead<BoundingBoxComponent>{},
+								WithWrite<CollectionObjectTag>{},
+								[&ctx, &cols, &coins_collected](const entt::entity entity, const BoundingBoxComponent& bbox, CollectionObjectTag& coin)
+								{
+									if (bbox.has_collision_info)
+									{
+										for (size_t i = bbox.result_start_index; i < bbox.result_end_index; i++)
+										{
+											if (i < cols.size() && cols[i].other_tag == 1)
+											{
+												++coins_collected;
+												if (auto ecb = ctx.get_ecb("end_frame_ecb"))
+												{
+													ecb->destroy_entity(entity);
+												}
+												else
+												{
+													PRINTLN("ecb didn't exist");
+												}
+												break;
+											}
+										}
+									}
+								});
+						}
+					});
+				if (coins_collected > 0)
+				{
+					if (auto coins = ctx.get_system_storage().get_object<size_t>("CollectedCoins"))
+					{
+						coins->write([&coins_collected](size_t& tot_coins)
+							{
+								tot_coins += coins_collected;
+							});
+					}
+					else
+					{
+						ctx.get_system_storage().add_or_replace_object("CollectedCoins", coins_collected);
+					}
+				}
+				}
+
+		});
+
+	//ctx.enqueue_each(WithRead<>);
+	return false;
+}
+
+bool ECBEndSystem::execute(SystemsContext& ctx)
+{
+	ctx.sync();
+	ctx.execute_ecb("end_frame_ecb");
 	return false;
 }

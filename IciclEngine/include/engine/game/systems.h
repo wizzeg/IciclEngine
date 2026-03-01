@@ -116,8 +116,10 @@ struct UIDrawGathering : SystemBase
 struct MenuSystem : SystemBase
 {
 	bool execute(SystemsContext& ctx) override;
-	bool menu_open = false;
+	bool menu_open = true;
 	bool just_changed = false;
+	bool can_press = true;
+	bool just_pressed = false;
 	glm::vec2 mouse_position = glm::vec2(0);
 };
 
@@ -126,4 +128,44 @@ struct ReadCollisionResultSystem : SystemBase
 	bool execute(SystemsContext& ctx) override;
 	SystemsStorageObject<std::vector<CollisionResult>>* col_res;
 	std::vector<CollisionResult> collisions;
+};
+
+struct RenderRequestsSystem : SystemBase
+{
+	bool execute(SystemsContext& ctx) override;
+	std::vector<std::vector<PreRenderReq>> vec_pre_render_reqs;
+	size_t prev_size = 1000;
+
+	glm::vec2 char_to_offset(const char& c);
+};
+
+struct PlayerMovementSystem : SystemBase
+{
+	bool execute(SystemsContext& ctx) override;
+};
+
+struct GroundingSystem : SystemBase
+{
+	std::vector<CollisionResult> col_res;
+	bool execute(SystemsContext& ctx) override;
+};
+
+struct ButtonSystem : SystemBase
+{
+	bool execute(SystemsContext& ctx) override;
+};
+struct CollectionSystem : SystemBase
+{
+
+	bool execute(SystemsContext& ctx) override;
+};
+
+struct ECBEndSystem : SystemBase
+{
+	bool execute(SystemsContext& ctx) override;
+};
+
+struct EndLevelSystem : SystemBase
+{
+	bool execute(SystemsContext& ctx) override;
 };

@@ -1,0 +1,1731 @@
+{
+    "name": " ",
+    "root object": {
+        "children": [
+            {
+                "children": [],
+                "components": [
+                    {
+                        "fields": [
+                            {
+                                "name": "entity name: ",
+                                "type": "hashed_name",
+                                "value": "Exit"
+                            },
+                            {
+                                "name": "entity id: ",
+                                "type": "entity",
+                                "value": 9
+                            }
+                        ],
+                        "type": "EntityComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "parent: ",
+                                "type": "parent",
+                                "value": 10
+                            },
+                            {
+                                "name": "previous sibling: ",
+                                "type": "previous_sibling",
+                                "value": 0
+                            },
+                            {
+                                "name": "next sibling: ",
+                                "type": "next_sibling",
+                                "value": 8
+                            },
+                            {
+                                "name": "child: ",
+                                "type": "child",
+                                "value": 0
+                            }
+                        ],
+                        "type": "HierarchyComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "hashed path: ",
+                                "type": "material",
+                                "value": "./assets/shaders/engine/ui.mat"
+                            },
+                            {
+                                "name": "draw: ",
+                                "type": "draw",
+                                "value": true
+                            }
+                        ],
+                        "type": "UIMaterialComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "hashed path: ",
+                                "type": "material",
+                                "value": ""
+                            },
+                            {
+                                "name": "text: ",
+                                "type": "text",
+                                "value": "Exit"
+                            },
+                            {
+                                "name": "position: ",
+                                "type": "position",
+                                "value": [
+                                    -0.699999988079071,
+                                    -0.30000001192092896
+                                ]
+                            },
+                            {
+                                "name": "size: ",
+                                "type": "size",
+                                "value": [
+                                    0.8500000238418579,
+                                    0.28999999165534973
+                                ]
+                            },
+                            {
+                                "name": "font_size: ",
+                                "type": "font_size",
+                                "value": 0.07500000298023224
+                            },
+                            {
+                                "name": "color: ",
+                                "type": "color",
+                                "value": [
+                                    0.5,
+                                    0.5,
+                                    0.5,
+                                    1.0
+                                ]
+                            },
+                            {
+                                "name": "order: ",
+                                "type": "order",
+                                "value": 0
+                            }
+                        ],
+                        "type": "UITextComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "selectable",
+                                "type": "selectable",
+                                "value": false
+                            }
+                        ],
+                        "type": "UISelectableComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "active color: ",
+                                "type": "active",
+                                "value": [
+                                    1.0,
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            },
+                            {
+                                "name": "inactive color: ",
+                                "type": "inactive",
+                                "value": [
+                                    0.5,
+                                    0.5,
+                                    0.5,
+                                    1.0
+                                ]
+                            }
+                        ],
+                        "type": "UIColorChangeComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "state depenency layers: ",
+                                "type": "state_layers",
+                                "value": 1
+                            }
+                        ],
+                        "type": "UIDependencyComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "pressed: ",
+                                "type": "pressed",
+                                "value": false
+                            },
+                            {
+                                "name": "hovered: ",
+                                "type": "hovered",
+                                "value": false
+                            }
+                        ],
+                        "type": "UIMenuItemStatusComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "ui type: ",
+                                "type": "type",
+                                "value": 10
+                            }
+                        ],
+                        "type": "UITypeComponent"
+                    }
+                ],
+                "name": "Exit"
+            },
+            {
+                "children": [],
+                "components": [
+                    {
+                        "fields": [
+                            {
+                                "name": "entity name: ",
+                                "type": "hashed_name",
+                                "value": "HighScores"
+                            },
+                            {
+                                "name": "entity id: ",
+                                "type": "entity",
+                                "value": 8
+                            }
+                        ],
+                        "type": "EntityComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "parent: ",
+                                "type": "parent",
+                                "value": 10
+                            },
+                            {
+                                "name": "previous sibling: ",
+                                "type": "previous_sibling",
+                                "value": 9
+                            },
+                            {
+                                "name": "next sibling: ",
+                                "type": "next_sibling",
+                                "value": 0
+                            },
+                            {
+                                "name": "child: ",
+                                "type": "child",
+                                "value": 0
+                            }
+                        ],
+                        "type": "HierarchyComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "hashed path: ",
+                                "type": "material",
+                                "value": "./assets/shaders/engine/ui.mat"
+                            },
+                            {
+                                "name": "draw: ",
+                                "type": "draw",
+                                "value": true
+                            }
+                        ],
+                        "type": "UIMaterialComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "hashed path: ",
+                                "type": "material",
+                                "value": ""
+                            },
+                            {
+                                "name": "text: ",
+                                "type": "text",
+                                "value": "HighScores"
+                            },
+                            {
+                                "name": "position: ",
+                                "type": "position",
+                                "value": [
+                                    -0.699999988079071,
+                                    0.0
+                                ]
+                            },
+                            {
+                                "name": "size: ",
+                                "type": "size",
+                                "value": [
+                                    0.8500000238418579,
+                                    0.20000000298023224
+                                ]
+                            },
+                            {
+                                "name": "font_size: ",
+                                "type": "font_size",
+                                "value": 0.07500000298023224
+                            },
+                            {
+                                "name": "color: ",
+                                "type": "color",
+                                "value": [
+                                    0.5,
+                                    0.5,
+                                    0.5,
+                                    1.0
+                                ]
+                            },
+                            {
+                                "name": "order: ",
+                                "type": "order",
+                                "value": 0
+                            }
+                        ],
+                        "type": "UITextComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "selectable",
+                                "type": "selectable",
+                                "value": false
+                            }
+                        ],
+                        "type": "UISelectableComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "active color: ",
+                                "type": "active",
+                                "value": [
+                                    1.0,
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            },
+                            {
+                                "name": "inactive color: ",
+                                "type": "inactive",
+                                "value": [
+                                    0.5,
+                                    0.5,
+                                    0.5,
+                                    1.0
+                                ]
+                            }
+                        ],
+                        "type": "UIColorChangeComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "scene path: ",
+                                "type": "path",
+                                "value": ""
+                            }
+                        ],
+                        "type": "ScenePathComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "state depenency layers: ",
+                                "type": "state_layers",
+                                "value": 1
+                            }
+                        ],
+                        "type": "UIDependencyComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "pressed: ",
+                                "type": "pressed",
+                                "value": false
+                            },
+                            {
+                                "name": "hovered: ",
+                                "type": "hovered",
+                                "value": false
+                            }
+                        ],
+                        "type": "UIMenuItemStatusComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "ui type: ",
+                                "type": "type",
+                                "value": 2
+                            }
+                        ],
+                        "type": "UITypeComponent"
+                    }
+                ],
+                "name": "HighScores"
+            },
+            {
+                "children": [],
+                "components": [
+                    {
+                        "fields": [
+                            {
+                                "name": "entity name: ",
+                                "type": "hashed_name",
+                                "value": "Back"
+                            },
+                            {
+                                "name": "entity id: ",
+                                "type": "entity",
+                                "value": 7
+                            }
+                        ],
+                        "type": "EntityComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "parent: ",
+                                "type": "parent",
+                                "value": 10
+                            },
+                            {
+                                "name": "previous sibling: ",
+                                "type": "previous_sibling",
+                                "value": 0
+                            },
+                            {
+                                "name": "next sibling: ",
+                                "type": "next_sibling",
+                                "value": 6
+                            },
+                            {
+                                "name": "child: ",
+                                "type": "child",
+                                "value": 0
+                            }
+                        ],
+                        "type": "HierarchyComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "hashed path: ",
+                                "type": "material",
+                                "value": "./assets/shaders/engine/ui.mat"
+                            },
+                            {
+                                "name": "draw: ",
+                                "type": "draw",
+                                "value": true
+                            }
+                        ],
+                        "type": "UIMaterialComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "hashed path: ",
+                                "type": "material",
+                                "value": ""
+                            },
+                            {
+                                "name": "text: ",
+                                "type": "text",
+                                "value": "Back"
+                            },
+                            {
+                                "name": "position: ",
+                                "type": "position",
+                                "value": [
+                                    -0.5799999833106995,
+                                    -0.4000000059604645
+                                ]
+                            },
+                            {
+                                "name": "size: ",
+                                "type": "size",
+                                "value": [
+                                    1.0399999618530273,
+                                    0.2199999988079071
+                                ]
+                            },
+                            {
+                                "name": "font_size: ",
+                                "type": "font_size",
+                                "value": 0.05000000074505806
+                            },
+                            {
+                                "name": "color: ",
+                                "type": "color",
+                                "value": [
+                                    0.5,
+                                    0.5,
+                                    0.5,
+                                    1.0
+                                ]
+                            },
+                            {
+                                "name": "order: ",
+                                "type": "order",
+                                "value": 0
+                            }
+                        ],
+                        "type": "UITextComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "selectable",
+                                "type": "selectable",
+                                "value": false
+                            }
+                        ],
+                        "type": "UISelectableComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "active color: ",
+                                "type": "active",
+                                "value": [
+                                    1.0,
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            },
+                            {
+                                "name": "inactive color: ",
+                                "type": "inactive",
+                                "value": [
+                                    0.5,
+                                    0.5,
+                                    0.5,
+                                    1.0
+                                ]
+                            }
+                        ],
+                        "type": "UIColorChangeComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "scene path: ",
+                                "type": "path",
+                                "value": ""
+                            }
+                        ],
+                        "type": "ScenePathComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "state depenency layers: ",
+                                "type": "state_layers",
+                                "value": 6
+                            }
+                        ],
+                        "type": "UIDependencyComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "pressed: ",
+                                "type": "pressed",
+                                "value": false
+                            },
+                            {
+                                "name": "hovered: ",
+                                "type": "hovered",
+                                "value": false
+                            }
+                        ],
+                        "type": "UIMenuItemStatusComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "ui type: ",
+                                "type": "type",
+                                "value": 0
+                            }
+                        ],
+                        "type": "UITypeComponent"
+                    }
+                ],
+                "name": "Back"
+            },
+            {
+                "children": [],
+                "components": [
+                    {
+                        "fields": [
+                            {
+                                "name": "entity name: ",
+                                "type": "hashed_name",
+                                "value": "Cursor"
+                            },
+                            {
+                                "name": "entity id: ",
+                                "type": "entity",
+                                "value": 6
+                            }
+                        ],
+                        "type": "EntityComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "parent: ",
+                                "type": "parent",
+                                "value": 10
+                            },
+                            {
+                                "name": "previous sibling: ",
+                                "type": "previous_sibling",
+                                "value": 7
+                            },
+                            {
+                                "name": "next sibling: ",
+                                "type": "next_sibling",
+                                "value": 5
+                            },
+                            {
+                                "name": "child: ",
+                                "type": "child",
+                                "value": 0
+                            }
+                        ],
+                        "type": "HierarchyComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "hashed path: ",
+                                "type": "material",
+                                "value": "./assets/shaders/engine/ui_cursor.mat"
+                            },
+                            {
+                                "name": "draw: ",
+                                "type": "draw",
+                                "value": true
+                            }
+                        ],
+                        "type": "UIMaterialComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "material path: ",
+                                "type": "hashed_path",
+                                "value": "./assets/shaders/engine/ui_cursor.mat"
+                            },
+                            {
+                                "name": "instanced: ",
+                                "type": "instance",
+                                "value": false
+                            },
+                            {
+                                "name": "use mipmaps: ",
+                                "type": "mipmap",
+                                "value": true
+                            },
+                            {
+                                "name": "load material: ",
+                                "type": "load",
+                                "value": true
+                            }
+                        ],
+                        "type": "MaterialComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "hashed path: ",
+                                "type": "material",
+                                "value": ""
+                            },
+                            {
+                                "name": "position: ",
+                                "type": "position",
+                                "value": [
+                                    0.0,
+                                    0.0
+                                ]
+                            },
+                            {
+                                "name": "size: ",
+                                "type": "size",
+                                "value": [
+                                    0.07500000298023224,
+                                    0.07500000298023224
+                                ]
+                            },
+                            {
+                                "name": "uv_offset: ",
+                                "type": "uv_offset",
+                                "value": [
+                                    0.0,
+                                    0.0
+                                ]
+                            },
+                            {
+                                "name": "color: ",
+                                "type": "color",
+                                "value": [
+                                    1.0,
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            },
+                            {
+                                "name": "order: ",
+                                "type": "order",
+                                "value": 1
+                            }
+                        ],
+                        "type": "UIRectComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "active: ",
+                                "type": "active",
+                                "value": false
+                            }
+                        ],
+                        "type": "CursorComponent"
+                    }
+                ],
+                "name": "Cursor"
+            },
+            {
+                "children": [],
+                "components": [
+                    {
+                        "fields": [
+                            {
+                                "name": "entity name: ",
+                                "type": "hashed_name",
+                                "value": "Levels"
+                            },
+                            {
+                                "name": "entity id: ",
+                                "type": "entity",
+                                "value": 5
+                            }
+                        ],
+                        "type": "EntityComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "parent: ",
+                                "type": "parent",
+                                "value": 10
+                            },
+                            {
+                                "name": "previous sibling: ",
+                                "type": "previous_sibling",
+                                "value": 6
+                            },
+                            {
+                                "name": "next sibling: ",
+                                "type": "next_sibling",
+                                "value": 4
+                            },
+                            {
+                                "name": "child: ",
+                                "type": "child",
+                                "value": 0
+                            }
+                        ],
+                        "type": "HierarchyComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "hashed path: ",
+                                "type": "material",
+                                "value": "./assets/shaders/engine/ui.mat"
+                            },
+                            {
+                                "name": "draw: ",
+                                "type": "draw",
+                                "value": true
+                            }
+                        ],
+                        "type": "UIMaterialComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "hashed path: ",
+                                "type": "material",
+                                "value": ""
+                            },
+                            {
+                                "name": "text: ",
+                                "type": "text",
+                                "value": "Levels"
+                            },
+                            {
+                                "name": "position: ",
+                                "type": "position",
+                                "value": [
+                                    -0.699999988079071,
+                                    0.25
+                                ]
+                            },
+                            {
+                                "name": "size: ",
+                                "type": "size",
+                                "value": [
+                                    1.0399999618530273,
+                                    0.20000000298023224
+                                ]
+                            },
+                            {
+                                "name": "font_size: ",
+                                "type": "font_size",
+                                "value": 0.07500000298023224
+                            },
+                            {
+                                "name": "color: ",
+                                "type": "color",
+                                "value": [
+                                    0.5,
+                                    0.5,
+                                    0.5,
+                                    1.0
+                                ]
+                            },
+                            {
+                                "name": "order: ",
+                                "type": "order",
+                                "value": 0
+                            }
+                        ],
+                        "type": "UITextComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "selectable",
+                                "type": "selectable",
+                                "value": false
+                            }
+                        ],
+                        "type": "UISelectableComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "active color: ",
+                                "type": "active",
+                                "value": [
+                                    1.0,
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            },
+                            {
+                                "name": "inactive color: ",
+                                "type": "inactive",
+                                "value": [
+                                    0.5,
+                                    0.5,
+                                    0.5,
+                                    1.0
+                                ]
+                            }
+                        ],
+                        "type": "UIColorChangeComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "scene path: ",
+                                "type": "path",
+                                "value": ""
+                            }
+                        ],
+                        "type": "ScenePathComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "state depenency layers: ",
+                                "type": "state_layers",
+                                "value": 1
+                            }
+                        ],
+                        "type": "UIDependencyComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "pressed: ",
+                                "type": "pressed",
+                                "value": false
+                            },
+                            {
+                                "name": "hovered: ",
+                                "type": "hovered",
+                                "value": false
+                            }
+                        ],
+                        "type": "UIMenuItemStatusComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "ui type: ",
+                                "type": "type",
+                                "value": 1
+                            }
+                        ],
+                        "type": "UITypeComponent"
+                    }
+                ],
+                "name": "Levels"
+            },
+            {
+                "children": [],
+                "components": [
+                    {
+                        "fields": [
+                            {
+                                "name": "entity name: ",
+                                "type": "hashed_name",
+                                "value": "Level3"
+                            },
+                            {
+                                "name": "entity id: ",
+                                "type": "entity",
+                                "value": 4
+                            }
+                        ],
+                        "type": "EntityComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "parent: ",
+                                "type": "parent",
+                                "value": 10
+                            },
+                            {
+                                "name": "previous sibling: ",
+                                "type": "previous_sibling",
+                                "value": 5
+                            },
+                            {
+                                "name": "next sibling: ",
+                                "type": "next_sibling",
+                                "value": 3
+                            },
+                            {
+                                "name": "child: ",
+                                "type": "child",
+                                "value": 0
+                            }
+                        ],
+                        "type": "HierarchyComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "hashed path: ",
+                                "type": "material",
+                                "value": "./assets/shaders/engine/ui.mat"
+                            },
+                            {
+                                "name": "draw: ",
+                                "type": "draw",
+                                "value": true
+                            }
+                        ],
+                        "type": "UIMaterialComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "hashed path: ",
+                                "type": "material",
+                                "value": ""
+                            },
+                            {
+                                "name": "text: ",
+                                "type": "text",
+                                "value": "Level 3"
+                            },
+                            {
+                                "name": "position: ",
+                                "type": "position",
+                                "value": [
+                                    -0.699999988079071,
+                                    -0.10000000149011612
+                                ]
+                            },
+                            {
+                                "name": "size: ",
+                                "type": "size",
+                                "value": [
+                                    0.5,
+                                    0.10000000149011612
+                                ]
+                            },
+                            {
+                                "name": "font_size: ",
+                                "type": "font_size",
+                                "value": 0.05000000074505806
+                            },
+                            {
+                                "name": "color: ",
+                                "type": "color",
+                                "value": [
+                                    0.5,
+                                    0.5,
+                                    0.5,
+                                    1.0
+                                ]
+                            },
+                            {
+                                "name": "order: ",
+                                "type": "order",
+                                "value": 0
+                            }
+                        ],
+                        "type": "UITextComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "selectable",
+                                "type": "selectable",
+                                "value": false
+                            }
+                        ],
+                        "type": "UISelectableComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "active color: ",
+                                "type": "active",
+                                "value": [
+                                    1.0,
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            },
+                            {
+                                "name": "inactive color: ",
+                                "type": "inactive",
+                                "value": [
+                                    0.5,
+                                    0.5,
+                                    0.5,
+                                    1.0
+                                ]
+                            }
+                        ],
+                        "type": "UIColorChangeComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "scene path: ",
+                                "type": "path",
+                                "value": ""
+                            }
+                        ],
+                        "type": "ScenePathComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "state depenency layers: ",
+                                "type": "state_layers",
+                                "value": 2
+                            }
+                        ],
+                        "type": "UIDependencyComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "pressed: ",
+                                "type": "pressed",
+                                "value": false
+                            },
+                            {
+                                "name": "hovered: ",
+                                "type": "hovered",
+                                "value": false
+                            }
+                        ],
+                        "type": "UIMenuItemStatusComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "ui type: ",
+                                "type": "type",
+                                "value": 3
+                            }
+                        ],
+                        "type": "UITypeComponent"
+                    }
+                ],
+                "name": "Level3"
+            },
+            {
+                "children": [],
+                "components": [
+                    {
+                        "fields": [
+                            {
+                                "name": "entity name: ",
+                                "type": "hashed_name",
+                                "value": "Level2"
+                            },
+                            {
+                                "name": "entity id: ",
+                                "type": "entity",
+                                "value": 3
+                            }
+                        ],
+                        "type": "EntityComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "parent: ",
+                                "type": "parent",
+                                "value": 10
+                            },
+                            {
+                                "name": "previous sibling: ",
+                                "type": "previous_sibling",
+                                "value": 4
+                            },
+                            {
+                                "name": "next sibling: ",
+                                "type": "next_sibling",
+                                "value": 2
+                            },
+                            {
+                                "name": "child: ",
+                                "type": "child",
+                                "value": 0
+                            }
+                        ],
+                        "type": "HierarchyComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "hashed path: ",
+                                "type": "material",
+                                "value": "./assets/shaders/engine/ui.mat"
+                            },
+                            {
+                                "name": "draw: ",
+                                "type": "draw",
+                                "value": true
+                            }
+                        ],
+                        "type": "UIMaterialComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "hashed path: ",
+                                "type": "material",
+                                "value": ""
+                            },
+                            {
+                                "name": "text: ",
+                                "type": "text",
+                                "value": "Level 2"
+                            },
+                            {
+                                "name": "position: ",
+                                "type": "position",
+                                "value": [
+                                    -0.699999988079071,
+                                    0.20000000298023224
+                                ]
+                            },
+                            {
+                                "name": "size: ",
+                                "type": "size",
+                                "value": [
+                                    0.5,
+                                    0.10000000149011612
+                                ]
+                            },
+                            {
+                                "name": "font_size: ",
+                                "type": "font_size",
+                                "value": 0.05000000074505806
+                            },
+                            {
+                                "name": "color: ",
+                                "type": "color",
+                                "value": [
+                                    0.5,
+                                    0.5,
+                                    0.5,
+                                    1.0
+                                ]
+                            },
+                            {
+                                "name": "order: ",
+                                "type": "order",
+                                "value": 0
+                            }
+                        ],
+                        "type": "UITextComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "selectable",
+                                "type": "selectable",
+                                "value": false
+                            }
+                        ],
+                        "type": "UISelectableComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "active color: ",
+                                "type": "active",
+                                "value": [
+                                    1.0,
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            },
+                            {
+                                "name": "inactive color: ",
+                                "type": "inactive",
+                                "value": [
+                                    0.5,
+                                    0.5,
+                                    0.5,
+                                    1.0
+                                ]
+                            }
+                        ],
+                        "type": "UIColorChangeComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "scene path: ",
+                                "type": "path",
+                                "value": ""
+                            }
+                        ],
+                        "type": "ScenePathComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "state depenency layers: ",
+                                "type": "state_layers",
+                                "value": 2
+                            }
+                        ],
+                        "type": "UIDependencyComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "pressed: ",
+                                "type": "pressed",
+                                "value": false
+                            },
+                            {
+                                "name": "hovered: ",
+                                "type": "hovered",
+                                "value": false
+                            }
+                        ],
+                        "type": "UIMenuItemStatusComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "ui type: ",
+                                "type": "type",
+                                "value": 3
+                            }
+                        ],
+                        "type": "UITypeComponent"
+                    }
+                ],
+                "name": "Level2"
+            },
+            {
+                "children": [],
+                "components": [
+                    {
+                        "fields": [
+                            {
+                                "name": "entity name: ",
+                                "type": "hashed_name",
+                                "value": "Level1"
+                            },
+                            {
+                                "name": "entity id: ",
+                                "type": "entity",
+                                "value": 2
+                            }
+                        ],
+                        "type": "EntityComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "parent: ",
+                                "type": "parent",
+                                "value": 10
+                            },
+                            {
+                                "name": "previous sibling: ",
+                                "type": "previous_sibling",
+                                "value": 3
+                            },
+                            {
+                                "name": "next sibling: ",
+                                "type": "next_sibling",
+                                "value": 1
+                            },
+                            {
+                                "name": "child: ",
+                                "type": "child",
+                                "value": 0
+                            }
+                        ],
+                        "type": "HierarchyComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "hashed path: ",
+                                "type": "material",
+                                "value": "./assets/shaders/engine/ui.mat"
+                            },
+                            {
+                                "name": "draw: ",
+                                "type": "draw",
+                                "value": true
+                            }
+                        ],
+                        "type": "UIMaterialComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "hashed path: ",
+                                "type": "material",
+                                "value": ""
+                            },
+                            {
+                                "name": "text: ",
+                                "type": "text",
+                                "value": "Level 1"
+                            },
+                            {
+                                "name": "position: ",
+                                "type": "position",
+                                "value": [
+                                    -0.699999988079071,
+                                    0.5
+                                ]
+                            },
+                            {
+                                "name": "size: ",
+                                "type": "size",
+                                "value": [
+                                    0.5,
+                                    0.10000000149011612
+                                ]
+                            },
+                            {
+                                "name": "font_size: ",
+                                "type": "font_size",
+                                "value": 0.05000000074505806
+                            },
+                            {
+                                "name": "color: ",
+                                "type": "color",
+                                "value": [
+                                    0.5,
+                                    0.5,
+                                    0.5,
+                                    1.0
+                                ]
+                            },
+                            {
+                                "name": "order: ",
+                                "type": "order",
+                                "value": 0
+                            }
+                        ],
+                        "type": "UITextComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "selectable",
+                                "type": "selectable",
+                                "value": false
+                            }
+                        ],
+                        "type": "UISelectableComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "active color: ",
+                                "type": "active",
+                                "value": [
+                                    1.0,
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            },
+                            {
+                                "name": "inactive color: ",
+                                "type": "inactive",
+                                "value": [
+                                    0.5,
+                                    0.5,
+                                    0.5,
+                                    1.0
+                                ]
+                            }
+                        ],
+                        "type": "UIColorChangeComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "scene path: ",
+                                "type": "path",
+                                "value": ""
+                            }
+                        ],
+                        "type": "ScenePathComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "state depenency layers: ",
+                                "type": "state_layers",
+                                "value": 2
+                            }
+                        ],
+                        "type": "UIDependencyComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "pressed: ",
+                                "type": "pressed",
+                                "value": false
+                            },
+                            {
+                                "name": "hovered: ",
+                                "type": "hovered",
+                                "value": false
+                            }
+                        ],
+                        "type": "UIMenuItemStatusComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "ui type: ",
+                                "type": "type",
+                                "value": 3
+                            }
+                        ],
+                        "type": "UITypeComponent"
+                    }
+                ],
+                "name": "Level1"
+            },
+            {
+                "children": [],
+                "components": [
+                    {
+                        "fields": [
+                            {
+                                "name": "entity name: ",
+                                "type": "hashed_name",
+                                "value": "HighScoreView"
+                            },
+                            {
+                                "name": "entity id: ",
+                                "type": "entity",
+                                "value": 1
+                            }
+                        ],
+                        "type": "EntityComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "parent: ",
+                                "type": "parent",
+                                "value": 10
+                            },
+                            {
+                                "name": "previous sibling: ",
+                                "type": "previous_sibling",
+                                "value": 2
+                            },
+                            {
+                                "name": "next sibling: ",
+                                "type": "next_sibling",
+                                "value": 0
+                            },
+                            {
+                                "name": "child: ",
+                                "type": "child",
+                                "value": 0
+                            }
+                        ],
+                        "type": "HierarchyComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "hashed path: ",
+                                "type": "material",
+                                "value": "./assets/shaders/engine/ui.mat"
+                            },
+                            {
+                                "name": "draw: ",
+                                "type": "draw",
+                                "value": true
+                            }
+                        ],
+                        "type": "UIMaterialComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "hashed path: ",
+                                "type": "material",
+                                "value": ""
+                            },
+                            {
+                                "name": "text: ",
+                                "type": "text",
+                                "value": ""
+                            },
+                            {
+                                "name": "position: ",
+                                "type": "position",
+                                "value": [
+                                    -0.8299999833106995,
+                                    0.699999988079071
+                                ]
+                            },
+                            {
+                                "name": "size: ",
+                                "type": "size",
+                                "value": [
+                                    1.600000023841858,
+                                    0.7099999785423279
+                                ]
+                            },
+                            {
+                                "name": "font_size: ",
+                                "type": "font_size",
+                                "value": 0.05000000074505806
+                            },
+                            {
+                                "name": "color: ",
+                                "type": "color",
+                                "value": [
+                                    0.5,
+                                    0.5,
+                                    0.5,
+                                    1.0
+                                ]
+                            },
+                            {
+                                "name": "order: ",
+                                "type": "order",
+                                "value": 0
+                            }
+                        ],
+                        "type": "UITextComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "selectable",
+                                "type": "selectable",
+                                "value": false
+                            }
+                        ],
+                        "type": "UISelectableComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "active color: ",
+                                "type": "active",
+                                "value": [
+                                    1.0,
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            },
+                            {
+                                "name": "inactive color: ",
+                                "type": "inactive",
+                                "value": [
+                                    0.5,
+                                    0.5,
+                                    0.5,
+                                    1.0
+                                ]
+                            }
+                        ],
+                        "type": "UIColorChangeComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "scene path: ",
+                                "type": "path",
+                                "value": ""
+                            }
+                        ],
+                        "type": "ScenePathComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "state depenency layers: ",
+                                "type": "state_layers",
+                                "value": 4
+                            }
+                        ],
+                        "type": "UIDependencyComponent"
+                    }
+                ],
+                "name": "HighScoreView"
+            }
+        ],
+        "components": [
+            {
+                "fields": [
+                    {
+                        "name": "entity name: ",
+                        "type": "hashed_name",
+                        "value": "MenuContainer"
+                    },
+                    {
+                        "name": "entity id: ",
+                        "type": "entity",
+                        "value": 10
+                    }
+                ],
+                "type": "EntityComponent"
+            },
+            {
+                "fields": [
+                    {
+                        "name": "parent: ",
+                        "type": "parent",
+                        "value": 0
+                    },
+                    {
+                        "name": "previous sibling: ",
+                        "type": "previous_sibling",
+                        "value": 0
+                    },
+                    {
+                        "name": "next sibling: ",
+                        "type": "next_sibling",
+                        "value": 0
+                    },
+                    {
+                        "name": "child: ",
+                        "type": "child",
+                        "value": 9
+                    }
+                ],
+                "type": "HierarchyComponent"
+            },
+            {
+                "fields": [
+                    {
+                        "name": "material path: ",
+                        "type": "hashed_path",
+                        "value": "./assets/shaders/engine/ui.mat"
+                    },
+                    {
+                        "name": "instanced: ",
+                        "type": "instance",
+                        "value": false
+                    },
+                    {
+                        "name": "use mipmaps: ",
+                        "type": "mipmap",
+                        "value": true
+                    },
+                    {
+                        "name": "load material: ",
+                        "type": "load",
+                        "value": true
+                    }
+                ],
+                "type": "MaterialComponent"
+            },
+            {
+                "fields": [
+                    {
+                        "name": "active state layers: ",
+                        "type": "active_state_layers",
+                        "value": 1
+                    }
+                ],
+                "type": "UIMenuControllerComponent"
+            }
+        ],
+        "name": "MenuContainer"
+    }
+}

@@ -15,7 +15,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <mutex>
-class EngineContext;
+struct EngineContext;
 enum class EKey
 {
 	// Numbers
@@ -71,7 +71,7 @@ struct InputBuffer
 
 struct InputManager
 {
-	friend class EngineContext;
+	friend struct EngineContext;
 	static InputManager& instance()
 	{
 		static InputManager instance;

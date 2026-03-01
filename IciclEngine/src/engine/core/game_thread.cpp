@@ -225,6 +225,7 @@ void GameThread::game_runtime()
 	ind_timer.stop();
 	complex_movement += ind_timer.get_time_ms();
 
+	//render_request_system.execute(*engine_context->systems_context);
 	
 	// all of this takes like 2ms
 	//if (runs == 1000)
@@ -398,12 +399,15 @@ void GameThread::game_runtime()
 	//		material_component.hashed_path.hash, material_component.instance, material_component.mipmap);
 	//}
 	std::vector<UIPreRenderRequest> ui_requests;
+	auto& asset_manager = engine_context->get_asset_manager();
 	ui_requests.reserve(100);
-	{
-		ctx.enqueue([&ctx, &ui_requests]()
+	
+		ctx.enqueue(WithWrite<UITextComponent, UIRectComponent>{},
+			[&ctx, &ui_requests]()
 			{
 				std::unique_ptr<std::vector<UIPreRenderRequest>> rects = ctx.get_system_storage().consume_object<std::vector<UIPreRenderRequest>>("UIRects");
 				auto words = ctx.get_system_storage().consume_object<std::vector<UIPreRenderRequest>>("UIWords");
+				
 				if (rects)
 				{
 					for (size_t i = 0; i < rects->size(); i++)
@@ -418,9 +422,27 @@ void GameThread::game_runtime()
 						ui_requests.push_back((*words)[i]);
 					}
 				}
-			});
 
-	}
+			});
+		//ctx.enqueue(WithWrite<RenderComponent>{},
+		//	[&ctx, &pre_render_reqs]()
+		//	{
+		//		auto pre_reqs = ctx.get_system_storage().consume_object<std::vector<PreRenderReq>>("PreRenderReqs");
+		//		if (pre_reqs)
+		//		{
+		//			pre_render_reqs.clear();
+		//			pre_render_reqs.reserve(pre_reqs->size());
+		//			pre_render_reqs.insert(pre_render_reqs.end(),
+		//				std::make_move_iterator(pre_reqs->begin()),
+		//				std::make_move_iterator(pre_reqs->end()));
+		//			//pre_render_reqs.reserve(pre_reqs->size());
+		//			//for (auto& req : *pre_reqs)
+		//			//{
+		//			//	pre_render_reqs.push_back(std::move(req));
+		//			//}
+		//		}
+		//	});
+	
 
 
 	for (auto [entity, render, transform] :
@@ -446,6 +468,21 @@ void GameThread::game_runtime()
 	{
 		if (camera_comp.wants_to_render)
 		{
+			glm::mat4 model = world_pos.model_matrix;
+
+			glm::vec3 position{
+				model[3][0],
+				model[3][1],
+				model[3][2]
+			}; // translation = last column
+
+			glm::mat3 rot3{
+				model[0][0], model[0][1], model[0][2],
+				model[1][0], model[1][1], model[1][2],
+				model[2][0], model[2][1], model[2][2]
+			};
+			glm::quat rotation = glm::quat_cast(rot3);
+
 			if (camera_comp.orbit_camera)
 			{
 				if (camera_comp.target_entity.entity != entt::null)
@@ -457,19 +494,19 @@ void GameThread::game_runtime()
 						PRINTLN("Failed to get target loction, whaaaat.");
 					}
 				}
-				direction = glm::normalize(world_pos.position - camera_comp.target_location);
+				direction = glm::normalize(position - camera_comp.target_location);
 				right = glm::normalize(glm::cross(direction, glm::vec3(0.f, 1.f, 0.f)));
 				up = glm::cross(right, direction);
-				camera_comp.view_matrix = glm::lookAt(world_pos.position, camera_comp.target_location, up);
+				camera_comp.view_matrix = glm::lookAt(position, camera_comp.target_location, up);
 			}
 			else
 			{
-				glm::mat4 translation_matrix = glm::translate(glm::mat4(1.0f), -world_pos.position);
-				glm::mat4 rotation_matrix = glm::mat4_cast(world_pos.rotation_quat);
+				glm::mat4 translation_matrix = glm::translate(glm::mat4(1.0f), -position);
+				glm::mat4 rotation_matrix = glm::mat4_cast(rotation);
 				camera_comp.view_matrix = glm::transpose(rotation_matrix) * translation_matrix;
 			}
 			camera_comp.projection_matrix = glm::perspective(glm::radians(camera_comp.field_of_view), camera_comp.aspect_ratio, 0.1f, 300.0f);
-			cameras.emplace_back(camera_comp.view_matrix, camera_comp.projection_matrix, camera_comp.frame_buffer_target, camera_comp.render_priority, true, true, world_pos.position);
+			cameras.emplace_back(camera_comp.view_matrix, camera_comp.projection_matrix, camera_comp.frame_buffer_target, camera_comp.render_priority, true, true, position);
 		}
 	}
 	if (!cameras.empty())

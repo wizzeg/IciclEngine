@@ -274,6 +274,7 @@
     <ClInclude Include="include\engine\utilities\base_serializers.h" />
     <ClInclude Include="include\engine\utilities\entt_modified.h" />
     <ClInclude Include="include\engine\utilities\hashed_string_64.h" />
+    <ClInclude Include="include\engine\utilities\layer_masks.h" />
     <ClInclude Include="include\engine\utilities\macros.h" />
     <ClInclude Include="include\engine\utilities\memory_checking.h" />
     <ClInclude Include="include\engine\utilities\serialization.h" />

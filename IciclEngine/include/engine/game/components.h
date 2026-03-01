@@ -494,9 +494,10 @@ struct LandscapeComponent
     uint8_t static_layers = 0b00000000;
     uint8_t dynamic_layers = 0b00000000;
     uint8_t collision_layers = 0b00000000;
-    float max_height = 100.0f;
     bool has_loaded_height_map = false;
+    float max_height = 100.0f;
     HeightMap map;
+    uint16_t tag;
 
 };
 // soooo... landscape... transform + landscape + rendercomponent
@@ -545,6 +546,7 @@ struct UIRenderComponent
 struct UIMaterialComponent
 {
     hashed_string_64 material;
+    bool draw = true;
 };
 
 struct UIMenuItemStatusComponent
@@ -567,4 +569,76 @@ struct CursorComponent
 struct UISelectableComponent
 {
     bool selectable;
+};
+
+struct ScenePathComponent
+{
+    std::string path;
+};
+struct UIDependencyComponent
+{
+    uint32_t state_layers;
+    bool matches(uint32_t state) const
+    {
+        return (state_layers & state) != 0;
+    }
+};
+struct UIMenuControllerComponent
+{
+    uint32_t active_state_layers;
+    bool matches(uint32_t state) const
+    {
+        return (active_state_layers & state) != 0;
+    }
+};
+struct UITypeComponent
+{
+    uint8_t type;
+};
+
+struct PlayerTagComponent
+{
+    bool is_player;
+};
+
+struct GravityStrengthComponent
+{
+    float gravity = 9.82f;
+};
+
+struct MovementStatsComponent
+{
+    float jump_force = 1000.f;
+    float max_move_speed = 10.f;
+    float move_force = 500.f;
+    float time_since_ground = 0.f;
+    float move_damp = 10.f;
+};
+
+struct ButtonObjectTag
+{
+    bool active = false;
+};
+struct EntityCommandBufferComponent
+{
+    bool active = false;
+};
+
+struct CollectionObjectTag
+{
+    bool is_collectable = true;
+};
+
+struct ActivationReferenceComponent
+{
+    EntityReference reference;
+};
+
+struct EndLevelComponent
+{
+    std::string next_level = "";
+    std::string this_level = "";
+    uint8_t coins_required = 1;
+    float time_score = 0;
+    bool end = false;
 };

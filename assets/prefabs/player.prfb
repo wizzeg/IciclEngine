@@ -1,7 +1,241 @@
 {
     "name": " ",
     "root object": {
-        "children": [],
+        "children": [
+            {
+                "children": [],
+                "components": [
+                    {
+                        "fields": [
+                            {
+                                "name": "entity name: ",
+                                "type": "hashed_name",
+                                "value": "PlayerFollowCamera"
+                            },
+                            {
+                                "name": "entity id: ",
+                                "type": "entity",
+                                "value": 3
+                            }
+                        ],
+                        "type": "EntityComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "parent: ",
+                                "type": "parent",
+                                "value": 4
+                            },
+                            {
+                                "name": "previous sibling: ",
+                                "type": "previous_sibling",
+                                "value": 0
+                            },
+                            {
+                                "name": "next sibling: ",
+                                "type": "next_sibling",
+                                "value": 0
+                            },
+                            {
+                                "name": "child: ",
+                                "type": "child",
+                                "value": 0
+                            }
+                        ],
+                        "type": "HierarchyComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "position: ",
+                                "type": "position",
+                                "value": [
+                                    0.0,
+                                    5.0,
+                                    5.0
+                                ]
+                            },
+                            {
+                                "name": "scale: ",
+                                "type": "scale",
+                                "value": [
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            },
+                            {
+                                "name": "rotation: ",
+                                "type": "rotation_euler_do_not_use",
+                                "value": [
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ]
+                            },
+                            {
+                                "name": "overwrite quaternion rotation: ",
+                                "type": "overide_quaternion",
+                                "value": false
+                            },
+                            {
+                                "name": "update euler rotation: ",
+                                "type": "get_euler_angles",
+                                "value": false
+                            },
+                            {
+                                "name": "rotation_quat",
+                                "type": "rotation_quat",
+                                "value": [
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0
+                                ]
+                            },
+                            {
+                                "name": "model_matrix",
+                                "type": "model_matrix",
+                                "value": [
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    5.0,
+                                    5.0,
+                                    1.0
+                                ]
+                            }
+                        ],
+                        "type": "TransformDynamicComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "camera active: ",
+                                "type": "wants_to_render",
+                                "value": true
+                            },
+                            {
+                                "name": "orbital camera: ",
+                                "type": "orbit_camera",
+                                "value": true
+                            },
+                            {
+                                "name": "orbital point: ",
+                                "type": "target_location",
+                                "value": [
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ]
+                            },
+                            {
+                                "name": "priority: ",
+                                "type": "render_priority",
+                                "value": 5000
+                            },
+                            {
+                                "name": "frame_buffer_target",
+                                "type": "frame_buffer_target",
+                                "value": "main_camera_buffer"
+                            },
+                            {
+                                "name": "field of view: ",
+                                "type": "field_of_view",
+                                "value": 70.0
+                            },
+                            {
+                                "name": "projection_matrix",
+                                "type": "projection_matrix",
+                                "value": [
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0
+                                ]
+                            },
+                            {
+                                "name": "view_matrix",
+                                "type": "view_matrix",
+                                "value": [
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0
+                                ]
+                            },
+                            {
+                                "name": "clear_color_buffer",
+                                "type": "clear_color_buffer",
+                                "value": true
+                            },
+                            {
+                                "name": "clear_depth_buffer",
+                                "type": "clear_depth_buffer",
+                                "value": true
+                            },
+                            {
+                                "name": "target entity: ",
+                                "type": "target_entity",
+                                "value": 4
+                            },
+                            {
+                                "name": "near_plane",
+                                "type": "near_plane",
+                                "value": 300.0
+                            },
+                            {
+                                "name": "far_plane",
+                                "type": "far_plane",
+                                "value": 0.10000000149011612
+                            },
+                            {
+                                "name": "aspect_ratio",
+                                "type": "aspect_ratio",
+                                "value": 1.5
+                            }
+                        ],
+                        "type": "CameraComponent"
+                    }
+                ],
+                "name": "PlayerFollowCamera"
+            }
+        ],
         "components": [
             {
                 "fields": [
@@ -13,7 +247,7 @@
                     {
                         "name": "entity id: ",
                         "type": "entity",
-                        "value": 3
+                        "value": 4
                     }
                 ],
                 "type": "EntityComponent"
@@ -38,7 +272,7 @@
                     {
                         "name": "child: ",
                         "type": "child",
-                        "value": 0
+                        "value": 3
                     }
                 ],
                 "type": "HierarchyComponent"
@@ -127,7 +361,7 @@
                     {
                         "name": "material path: ",
                         "type": "material",
-                        "value": "./assets/shaders/plain2.mat"
+                        "value": "./assets/shaders/plain.mat"
                     },
                     {
                         "name": "instance draw: ",
@@ -308,12 +542,12 @@
                     {
                         "name": "max_move_speed: ",
                         "type": "max_move_speed",
-                        "value": 15.0
+                        "value": 10.0
                     },
                     {
                         "name": "move_force: ",
                         "type": "move_force",
-                        "value": 25.0
+                        "value": 10.0
                     },
                     {
                         "name": "time_since_ground: ",

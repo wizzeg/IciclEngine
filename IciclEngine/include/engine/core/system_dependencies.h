@@ -1,3 +1,4 @@
+#pragma once
 #include <engine/core/worker_thread.h>
 #include <engine/editor/scene.h>
 #include <engine/utilities/entt_modified.h>
@@ -14,6 +15,8 @@
 #include <type_traits>
 #include <engine/core/entity_command_buffer.h>
 
+
+
 template<typename...T> struct WithWrite {};
 template<typename...T> struct WithRead {};
 template<typename...T> struct WithOut {};
@@ -22,6 +25,7 @@ template<typename...T> struct WithRef {}; // huh... these don't actually work in
 
 struct SystemsContextDependencies
 {
+	friend struct SystemsContext;
 	std::vector<SystemDependency> reading_components;
 	std::vector<SystemDependency> writing_components;
 	std::mutex components_mutex;
@@ -347,4 +351,6 @@ protected:
 			found = false;
 		}
 	}
+
+	void clear_all();
 };

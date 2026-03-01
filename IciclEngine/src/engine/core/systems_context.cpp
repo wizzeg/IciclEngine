@@ -14,3 +14,8 @@ const std::shared_ptr<EngineContext> SystemsContext::get_engine_context()
 {
 	return engine_context;
 }
+
+std::shared_ptr<AssetManager>& SystemsContext::get_asset_manager()
+{
+	return engine_context->get_asset_manager();
+}

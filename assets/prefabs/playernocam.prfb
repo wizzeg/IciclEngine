@@ -127,7 +127,7 @@
                     {
                         "name": "material path: ",
                         "type": "material",
-                        "value": "./assets/shaders/plain2.mat"
+                        "value": "./assets/shaders/plain.mat"
                     },
                     {
                         "name": "instance draw: ",

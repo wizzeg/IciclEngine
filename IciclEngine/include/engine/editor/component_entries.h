@@ -151,16 +151,16 @@ REGISTER_COMPONENT(RigidBodyComponent, ("Physics"),
 	FIELD_CUSTOM("linear_velocity: ", comp, linear_velocity, 1.75f, false),
 	FIELD_CUSTOM("angular_velocity: ", comp, angular_velocity, 1.75f, false),
 	FIELD_CUSTOM("mass: ", comp, mass, 1.75f, false),
-	FIELD_CUSTOM("inverse_mass: ", comp, inverse_mass, 1.75f, false),
-	FIELD_CUSTOM("restitution: ", comp, restitution, 1.75f, false),
-	FIELD_CUSTOM("friction: ", comp, friction, 1.75f, false),
+	FIELD_CUSTOM("inverse_mass: ", comp, inverse_mass, 1.25f, false),
+	FIELD_CUSTOM("restitution: ", comp, restitution, 1.25f, false),
+	FIELD_CUSTOM("friction: ", comp, friction, 1.25f, false),
 	FIELD_HIDDEN(comp, inverse_inertia_tensor_local),
 	FIELD_CUSTOM("recalculate tensor: ", comp, recalculate_inverse_inertia_tensor, 1.f, false),
-	FIELD_CUSTOM("dynamic layers: ", comp, dynamic_layers, 1.f, false),
-	FIELD_CUSTOM("static layers: ", comp, static_layers, 1.f, false),
+	FIELD_CUSTOM("dynamic layers: ", comp, dynamic_layers, 1.25f, false),
+	FIELD_CUSTOM("static layers: ", comp, static_layers, 1.25f, false),
 	FIELD_CUSTOM("asleep: ", comp, asleep, 1.f, false),
-	FIELD_CUSTOM("sleep strikes: ", comp, sleep_strikes, 1.75f, false),
-	FIELD_CUSTOM("max sleep strikes: ", comp, max_sleep_strikes, 175.f, false),
+	FIELD_CUSTOM("sleep strikes: ", comp, sleep_strikes, 1.f, false),
+	FIELD_CUSTOM("max sleep strikes: ", comp, max_sleep_strikes, 1.f, false),
 	)
 
 REGISTER_COMPONENT(LandscapeComponent, ("Physics"),
@@ -170,21 +170,23 @@ REGISTER_COMPONENT(LandscapeComponent, ("Physics"),
 	FIELD_CUSTOM("dynamic_layers: ", comp, dynamic_layers, 1.75f, false),
 	FIELD_CUSTOM("collision_layers: ", comp, collision_layers, 1.75f, false),
 	FIELD_CUSTOM("max_height: ", comp, max_height, 1.75f, false),
-	FIELD_CUSTOM("has_loaded_height_map: ", comp, has_loaded_height_map, 1.75f, false)
+	FIELD_CUSTOM("has_loaded_height_map: ", comp, has_loaded_height_map, 1.75f, false),
+	FIELD_CUSTOM("tag: ", comp, tag, 1.25f, false)
 )
 
-REGISTER_COMPONENT(UIMaterialComponent, ("Render"),
-	FIELD_CUSTOM("hashed path: ", comp, material, 1.75f, false)
+REGISTER_COMPONENT(UIMaterialComponent, ("UI"),
+	FIELD_CUSTOM("hashed path: ", comp, material, 1.75f, false),
+	FIELD_DEFAULT("draw: ", comp, draw)
 )
 
 REGISTER_COMPONENT(CursorComponent, ("Render"),
 	FIELD_CUSTOM("active: ", comp, active, 1.75f, false)
 )
-REGISTER_COMPONENT(UISelectableComponent, ("Render"),
+REGISTER_COMPONENT(UISelectableComponent, ("UI"),
 	FIELD_HIDDEN(comp, selectable)
 )
 
-REGISTER_COMPONENT(UITextComponent, ("Render"),
+REGISTER_COMPONENT(UITextComponent, ("Render", "UI"),
 	FIELD_CUSTOM("hashed path: ", comp, material, 1.75f, false),
 	FIELD_CUSTOM("text: ", comp, text, 1.75f, false),
 	FIELD_CUSTOM("position: ", comp, position, 1.75f, false),
@@ -194,20 +196,68 @@ REGISTER_COMPONENT(UITextComponent, ("Render"),
 	FIELD_CUSTOM("order: ", comp, order, 1.75f, false)
 )
 
-REGISTER_COMPONENT(UIRectComponent, ("Render"),
+REGISTER_COMPONENT(UIRectComponent, ("Render", "UI"),
 	FIELD_CUSTOM("hashed path: ", comp, material, 1.75f, false),
 	FIELD_CUSTOM("position: ", comp, position, 1.75f, false),
-	FIELD_CUSTOM("size: ", comp, size, 1.75f, false),
-	FIELD_CUSTOM("uv_offset: ", comp, uv_offset, 1.75f, false),
-	FIELD_CUSTOM("color: ", comp, color, 1.75f, false),
-	FIELD_CUSTOM("order: ", comp, order, 1.75f, false)
+	FIELD_CUSTOM("size: ", comp, size, 1.25f, false),
+	FIELD_CUSTOM("uv_offset: ", comp, uv_offset, 1.25f, false),
+	FIELD_CUSTOM("color: ", comp, color, 1.25f, false),
+	FIELD_CUSTOM("order: ", comp, order, 1.25f, false)
 )
 
-REGISTER_COMPONENT(UIMenuItemStatusComponent, ("Render"),
-	FIELD_CUSTOM("pressed: ", comp, pressed, 1.75f, false),
-	FIELD_CUSTOM("hovered: ", comp, hovered, 1.75f, false)
+REGISTER_COMPONENT(UIMenuItemStatusComponent, ("UI"),
+	FIELD_CUSTOM("pressed: ", comp, pressed, 1.25f, false),
+	FIELD_CUSTOM("hovered: ", comp, hovered, 1.25f, false)
 )
-REGISTER_COMPONENT(UIColorChangeComponent, ("Render"),
+REGISTER_COMPONENT(UIColorChangeComponent, ("UI"),
 	FIELD_CUSTOM("active color: ", comp, active, 1.75f, false),
 	FIELD_CUSTOM("inactive color: ", comp, inactive, 1.75f, false)
+)
+REGISTER_COMPONENT(ScenePathComponent, ("Default"),
+	FIELD_CUSTOM("scene path: ", comp, path, 1.25f, false)
+)
+REGISTER_COMPONENT(UIDependencyComponent, ("UI"),
+	FIELD_CUSTOM("state depenency layers: ", comp, state_layers, 1.25f, false)
+)
+REGISTER_COMPONENT(UIMenuControllerComponent, ("UI"),
+	FIELD_CUSTOM("active state layers: ", comp, active_state_layers, 1.25f, false)
+)
+REGISTER_COMPONENT(UITypeComponent, ("UI"),
+	FIELD_CUSTOM("ui type: ", comp, type, 1.25f, false)
+)
+REGISTER_COMPONENT(PlayerTagComponent, ("Default"),
+	FIELD_CUSTOM("is player: ", comp, is_player, 1.25f, false)
+)
+REGISTER_COMPONENT(EntityCommandBufferComponent, ("Default"),
+	FIELD_CUSTOM("active: ", comp, active, 1.25f, false)
+)
+REGISTER_COMPONENT(GravityStrengthComponent, ("Physics"),
+	FIELD_CUSTOM("gravity: ", comp, gravity, 1.25f, false)
+)
+REGISTER_COMPONENT(MovementStatsComponent, ("Physics"),
+	FIELD_CUSTOM("jump_force: ", comp, jump_force, 1.75f, false),
+	FIELD_CUSTOM("max_move_speed: ", comp, max_move_speed, 1.75f, false),
+	FIELD_CUSTOM("move_force: ", comp, move_force, 1.75f, false),
+	FIELD_CUSTOM("time_since_ground: ", comp, time_since_ground, 1.75f, false),
+	FIELD_CUSTOM("move_damp: ", comp, move_damp, 1.75f, false)
+)
+
+REGISTER_COMPONENT(ButtonObjectTag, ("Default"),
+	FIELD_CUSTOM("active: ", comp, active, 1.25f, false)
+)
+
+REGISTER_COMPONENT(CollectionObjectTag, ("Default"),
+	FIELD_CUSTOM("is_collectable: ", comp, is_collectable, 1.25f, false)
+)
+
+REGISTER_COMPONENT(ActivationReferenceComponent, ("Default"),
+	FIELD_CUSTOM("reference: ", comp, reference, 1.25f, false)
+)
+
+REGISTER_COMPONENT(EndLevelComponent, ("Default"),
+	FIELD_CUSTOM("end: ", comp, end, 1.25f, false),
+	FIELD_CUSTOM("coins_required: ", comp, coins_required, 1.25f, false),
+	FIELD_CUSTOM("time_score: ", comp, time_score, 1.25f, false),
+	FIELD_CUSTOM("this_level: ", comp, this_level, 1.25f, false),
+	FIELD_CUSTOM("next_level: ", comp, next_level, 1.25f, false)
 )

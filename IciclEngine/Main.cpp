@@ -176,37 +176,40 @@ int main(void)
 					std::vector<hashed_string_64> texes = { "./assets/textures/awesomeface.png", "./assets/textures/wall.jpg", "./assets/textures/container.jpg" };
 					std::vector<hashed_string_64> mats = { "./assets/shaders/testcopy.mat" }; // , "./assets/shaders/test2.mat" "./assets/shaders/test.mat", "./assets/shaders/testcopy.mat"
 					
-					auto processor = scene->new_scene_object("Single thread processor", true);
-					processor.lock()->add_component<SingleProcessorComponent>();
+					//auto processor = scene->new_scene_object("Single thread processor", true);
+					//processor.lock()->add_component<SingleProcessorComponent>();
 
 					auto landscape = scene->new_scene_object("landscape", true);
 					auto ls = landscape.lock();
 					ls->add_component(TransformDynamicComponent{ glm::vec3(0, -200, 0), glm::vec3(512, 1, 512) });
-					ls->add_component(LandscapeComponent{ hashed_string_64("./assets/textures/landscape/heightmap.png"), 2, 0, 0 });
+					ls->add_component(LandscapeComponent{ hashed_string_64("./assets/textures/landscape/heightmap.png"), 2, 0, 2 });
 					ls->add_component(RenderComponent{hashed_string_64("./assets/obj/landscape/landscape256.obj"), hashed_string_64("./assets/shaders/landscape/landscape.mat"), false, false, true});
-
+					if (auto lands = ls->get_component<LandscapeComponent>())
 					{
-						auto obj = scene->new_scene_object("parent ", true);
-						auto scene_object = obj.lock();
-						auto obj2 = scene->new_scene_object("child ", true);
-						auto scene_object2 = obj2.lock();
-						auto obj3 = scene->new_scene_object("child 2", true);
-						auto scene_object3 = obj3.lock();
-						auto obj4 = scene->new_scene_object("child 4", true);
-						auto scene_object4 = obj4.lock();
-						auto obj5 = scene->new_scene_object("child 5", true);
-						auto scene_object5 = obj5.lock();
-						auto obj6 = scene->new_scene_object("child 6", true);
-						auto scene_object6 = obj6.lock();
-						scene->parent_scene_object(obj, obj2);
-						scene->parent_scene_object(obj, obj3);
-						//scene_object->paren(scene_object2);
-						scene->parent_scene_object(obj2, obj3);
-						//scene->parent_scene_object(obj3, obj2);
-						scene->parent_scene_object(obj, obj4);
-						scene->parent_scene_object(obj, obj5);
-						scene->parent_scene_object(obj2, obj6);
+						lands->tag = 5;
 					}
+					//{
+					//	auto obj = scene->new_scene_object("parent ", true);
+					//	auto scene_object = obj.lock();
+					//	auto obj2 = scene->new_scene_object("child ", true);
+					//	auto scene_object2 = obj2.lock();
+					//	auto obj3 = scene->new_scene_object("child 2", true);
+					//	auto scene_object3 = obj3.lock();
+					//	auto obj4 = scene->new_scene_object("child 4", true);
+					//	auto scene_object4 = obj4.lock();
+					//	auto obj5 = scene->new_scene_object("child 5", true);
+					//	auto scene_object5 = obj5.lock();
+					//	auto obj6 = scene->new_scene_object("child 6", true);
+					//	auto scene_object6 = obj6.lock();
+					//	scene->parent_scene_object(obj, obj2);
+					//	scene->parent_scene_object(obj, obj3);
+					//	//scene_object->paren(scene_object2);
+					//	scene->parent_scene_object(obj2, obj3);
+					//	//scene->parent_scene_object(obj3, obj2);
+					//	scene->parent_scene_object(obj, obj4);
+					//	scene->parent_scene_object(obj, obj5);
+					//	scene->parent_scene_object(obj2, obj6);
+					//}
 
 					/*{
 						for (auto mesh : meshes)
@@ -268,7 +271,7 @@ int main(void)
 							linear_velocity = glm::vec3(0.f);
 							rotation_velocity = glm::vec3(0.f);
 						}
-						scene_object->add_component(RigidBodyComponent{ glm::vec3(x, y, z), glm::quat(1.0f, 0.f, 0.f, 0.f), linear_velocity, rotation_velocity, mass, inverse_mass, glm::mat3(0), 1.0f, 0.4f});
+						scene_object->add_component(RigidBodyComponent{ glm::vec3(x, y, z), glm::quat(1.0f, 0.f, 0.f, 0.f), linear_velocity, rotation_velocity, mass, inverse_mass, glm::mat3(0), 1.0f, 0.8f});
 						if (auto rb = scene_object->try_get_component<RigidBodyComponent>())
 						{
 							rb->set_dynamic_layer(1);
@@ -284,7 +287,7 @@ int main(void)
 
 					}
 
-					for (size_t i = 0; i < 20; i++)
+					for (size_t i = 0; i < 0; i++)
 					{
 						float x = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));
 						float y = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));; // Or random if you want variety
@@ -468,6 +471,23 @@ int main(void)
 			if (load_scene && load_scene->load)
 			{
 				scene->load(load_scene->path);
+				engine_context->reset_context();
+				// maybe I shouldn't reset context?
+			}
+			auto exit_game = engine_context->systems_context->get_system_storage().get_object<bool>("ExitGame");
+			if (exit_game)
+			{
+				bool do_exit = false;
+				exit_game->read([&engine_context, &do_exit](const bool& exit)
+					{
+						do_exit = exit;
+					});
+				if (do_exit)
+				{
+
+					//engine_context->kill_all = true;
+					engine_context->start_game_thread(false);
+				}
 			}
 			engine_context->systems_context->get_system_storage().perform_erase();
 			

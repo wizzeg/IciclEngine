@@ -196,7 +196,6 @@ void EntityCommandBuffer::execute_queue(entt::registry& registry)
 void EntityCommandBuffer::recursive_create(entt::registry& registry, const EntityAssembly entity_assembly, entt::entity parent)
 {
 	entt::entity entity = registry.create();
-	// it's too bad that I have put a hashed string into here... but too much work to remove now
 	registry.emplace<EntityComponent>(entity, entity_assembly.name.c_str(), EntityReference{ entity, 0});
 	for (auto& comp_modifier : entity_assembly.component_modifiers)
 	{

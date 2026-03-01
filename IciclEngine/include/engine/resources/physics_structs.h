@@ -121,6 +121,11 @@ struct PhysicsLayers
 	{
 		return any_physics_collision(other);
 	}
+
+	bool const any_collision(const PhysicsLayers& b) const
+	{
+		return (any_physics_collision(b) || is_collision_against(b));
+	}
 };
 
 
@@ -136,6 +141,8 @@ struct BroadPhasePair
 	OBB obb_b;
 	PhysicsLayers layers_a;
 	PhysicsLayers layers_b;
+	uint16_t tag_a;
+	uint16_t tag_b;
 	bool landscape_a;
 	bool landscape_b;
 

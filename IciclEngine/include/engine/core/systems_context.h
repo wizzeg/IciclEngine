@@ -18,6 +18,7 @@
 #include <engine/core/system_dependencies.h>
 
 struct EngineContext;
+struct AssetManager;
 
 struct SystemsContextStorage
 {
@@ -93,21 +94,20 @@ struct SystemsContextStorage
 		
 	}
 
-	template <typename T>
-	SystemsStorageObject<T>* new_or_get_object(std::type_index a_type, const std::string& a_name, T&& value, size_t index)
-	{
-		std::unique_lock storage_lock(storage_mutex);
-		if (auto it = storage.find(storage_key(typeid(std::decay_t<T>), a_name, index)); it != storage.end())
-		{
-			return static_cast<SystemsStorageObject<std::decay_t<T>>*>(it->second.get());
-		}
-		else
-		{
-			storage[storage_key(a_type, a_name, index)] = std::make_unique<SystemsStorageObject<std::decay_t<T>>>(value);
-			return nullptr;
-		}
-
-	}
+	//template <typename T>
+	//SystemsStorageObject<T>* new_or_get_object(const std::string& a_name, size_t index = 0)
+	//{
+	//	std::unique_lock storage_lock(storage_mutex);
+	//	if (auto it = storage.find(storage_key(typeid(std::decay_t<T>), a_name, index)); it != storage.end())
+	//	{
+	//		return static_cast<SystemsStorageObject<std::decay_t<T>>*>(it->second.get());
+	//	}
+	//	else
+	//	{
+	//		storage[storage_key(typeid(std::decay_t<T>), a_name, index)] = std::make_unique<SystemsStorageObject<std::decay_t<T>>>();
+	//		return nullptr;
+	//	}
+	//}
 
 
 
@@ -128,7 +128,9 @@ struct SystemsContextStorage
 	void clear_all()
 	{
 		std::lock_guard storage_guard(storage_mutex);
+		std::lock_guard deletion_guard(deletion_mutex);
 		storage.clear();
+		storage_object_deletions.clear();
 	}
 };
 
@@ -136,6 +138,8 @@ struct SystemsContext
 {
 	SystemsContext(entt::registry& a_registry, std::shared_ptr<WorkerThreadPool> a_thread_pool, std::shared_ptr<WorkerThreadPool> a_general_thread_pool);
 	~SystemsContext();
+
+	friend struct EngineContext;
 
 	template<typename... Reads, typename Func>
 	bool each(WithRead<Reads...> reads, Func&& func)
@@ -310,7 +314,7 @@ struct SystemsContext
 		auto view = registry.view<Reads..., Writes...>();
 		for (const auto entity : view)
 		{
-			func(entity, view.template get<Reads>(entity)...);
+			func(entity, view.template get<Reads>(entity)..., view.template get<Writes>(entity)...);
 		}
 		systems_dependencies.remove(reads, writes);
 		entt_thread_pool->notify();
@@ -2185,7 +2189,7 @@ struct SystemsContext
 	template <typename Func>
 	void enqueue(Func&& func) 
 	{
-		general_thread_pool->enqueue(std::forward<Func>(func));
+		general_thread_pool->enqueue(func);
 	}
 
 	// this should work now.
@@ -2193,16 +2197,47 @@ struct SystemsContext
 	void enqueue(WithWrite<Refs...> refs, Func&& func) 
 	{
 		general_thread_pool->enqueue(
-			[this, func = std::forward<Func>(func), refs]() {
+			[this, func, refs]() {
 				while (!systems_dependencies.add(refs))
 				{
-					PRINTLN("Forced poll");
-					poll();
+					//PRINTLN("Forced poll");
+					entt_poll();
 				}
 				func();
 				systems_dependencies.remove(refs);
+				general_thread_pool->notify();
+				entt_thread_pool->notify();
+				
 			}
 		);
+	}
+
+	template <typename...Refs, typename Func>
+	void enqueue_parallel(WithWrite<Refs...> refs, Func&& func, size_t num_threads) 
+	{
+		while (!systems_dependencies.add(refs))
+		{
+			//PRINTLN("Forced poll");
+			entt_poll();
+		}
+		for (size_t i = 0; i < num_threads; ++i)
+		{
+			size_t thread_id = i;
+			systems_dependencies.add(refs, false);
+			general_thread_pool->enqueue(
+				[this, func, refs, thread_id]() {
+
+					func(thread_id);
+					systems_dependencies.remove(refs);
+					general_thread_pool->notify();
+					entt_thread_pool->notify();
+					
+				} 
+			);
+		}
+		systems_dependencies.remove(refs);
+		general_thread_pool->notify();
+		entt_thread_pool->notify();
 	}
 
 	template <typename Component>
@@ -2281,6 +2316,10 @@ struct SystemsContext
 		}
 	}
 
+	std::shared_ptr<AssetManager>& get_asset_manager();
+
+
+
 	void set_delta_time(double a_dt) { delta_time = a_dt; }
 	double get_delta_time() const { return delta_time; }
 	const std::shared_ptr<EngineContext> get_engine_context();
@@ -2293,6 +2332,14 @@ struct SystemsContext
 
 	uint32_t order = 5000;
 private:
+
+	void reset()
+	{
+		systems_storage.clear_all();
+		systems_dependencies.clear_all();
+		ecbs.clear();
+	}
+
 	double delta_time = 0;
 	
 	std::unordered_map<std::string, EntityCommandBuffer> ecbs;

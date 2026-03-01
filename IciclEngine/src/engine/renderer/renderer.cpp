@@ -983,12 +983,11 @@ void Renderer::deffered_ui_pass(const RenderContext& a_render_context, const Fra
 	{
 		const UIRenderRequest& req = reqs[req_index];
 		broke_batch = ui_ssbo.size() >= (size_t)HALF_MODEL_INSTANCES || batch_mat != req.material;
-		//if (req.order != prev_order)
-		//{
-		//	index_mat = 0;
-		//	prev_order = req.order;
-		//	broke_batch = true;
-		//}
+		if (req.order != prev_order)
+		{
+			prev_order = req.order;
+			broke_batch = true;
+		}
 		
 		if (broke_batch)
 		{

@@ -509,6 +509,9 @@
     <ClInclude Include="include\engine\core\system_dependencies.h">
       <Filter>Header Files\engine\core</Filter>
     </ClInclude>
+    <ClInclude Include="include\engine\utilities\layer_masks.h">
+      <Filter>Header Files\engine\utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\assets\shaders\fragment\frag.glsl">
