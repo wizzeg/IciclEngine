@@ -1,0 +1,22 @@
+{
+    "name": "test",
+    "shader_path": "./assets/shaders/landscape/landscape.shdr",
+    "lit": true,
+    "instanced": false,
+    "recieves_shadows": false,
+    "casts_shadows": false,
+    "transparent": false,
+    "deffered": true,
+    "uniforms": [
+        {
+            "location": "landscape_height",
+            "type": "float",
+            "value": 50.0
+        },
+        {
+            "location": "uTexture",
+            "type": "texture",
+            "value": "./assets/textures/landscape/heightmap.png"
+        }
+    ]
+}

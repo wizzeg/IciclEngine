@@ -1,0 +1,25 @@
+{
+    "name": "ui",
+    "shader_path": "./assets/shaders/engine/ui.shdr",
+    "lit": true,
+    "instanced": true,
+    "recieves_shadows": true,
+    "casts_shadows": true,
+    "transparent": true,
+    "deffered": true,
+    "uniforms": [
+        {
+            "location": "uv_size",
+            "type": "vec2",
+            "value": [
+                0.1,
+                0.1
+            ]
+        },
+        {
+            "location": "uLetters",
+            "type": "texture",
+            "value": "./assets/textures/engine/abcde.png"
+        }
+    ]
+}

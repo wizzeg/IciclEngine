@@ -1,0 +1,17 @@
+{
+    "name": "ui",
+    "shader_path": "./assets/shaders/engine/ui_cursor.shdr",
+    "lit": true,
+    "instanced": true,
+    "recieves_shadows": true,
+    "casts_shadows": true,
+    "transparent": true,
+    "deffered": true,
+    "uniforms": [
+        {
+            "location": "uCursor",
+            "type": "texture",
+            "value": "./assets/textures/engine/cursor.png"
+        }
+    ]
+}

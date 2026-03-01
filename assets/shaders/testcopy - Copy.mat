@@ -11,27 +11,27 @@
         {
             "location": "uTexture",
             "type": "texture",
-            "value": "./assets/textures/robot/DefaultMaterial_Base_Color.png"
+            "value": "./assets/textures/white.png"
         },
         {
             "location": "uNormalMap",
             "type": "texture",
-            "value": "./assets/textures/robot/DefaultMaterial_Normal_OpenGL.png"
+            "value": "./assets/textures/robot/DefaultMaterial_Normal_OpenGLflat.png"
         },
         {
             "location": "uAO",
             "type": "texture",
-            "value": "./assets/textures/robot/DefaultMaterial_Mixed_AO.png"
+            "value": "./assets/textures/white.png"
         },
         {
             "location": "uRoughness",
             "type": "texture",
-            "value": "./assets/textures/robot/DefaultMaterial_Roughness.png"
+            "value": "./assets/textures/white.png"
         },
         {
             "location": "uMetallic",
             "type": "texture",
-            "value": "./assets/textures/robot/DefaultMaterial_Metallic.png"
+            "value": "./assets/textures/white.png"
         },
         {
             "location": "uEmissive",
@@ -41,7 +41,7 @@
         {
             "location": "uSpecular",
             "type": "texture",
-            "value": "./assets/textures/robot/specular2.png"
+            "value": "./assets/textures/white.png"
         },
         {
             "location": "max_shininess",
