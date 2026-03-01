@@ -6,7 +6,7 @@ This engine is primarily using data oriented design, with some use of object ori
 I'm unsure if my gitignore is too aggressive or not, so I might've been blocking too many files for this to build from a pull. Earlier I had problems because it was too lax, making me unable to upload to github.
 
 How to run:
-Install Visual Studio 22, and ensure you have at least C++, but preferably C++ 23 or higher.
+Install Visual Studio 22, and ensure you have at least C++, but preferably C++ 23 or higher. Also ensure you have windows 10, but it might work on windows 11 too (I pray).
 (Projects -> properties -> Configure properties -> general -> C++ language standards)
 
 Download code.
@@ -20,3 +20,6 @@ Then exit.
 Then take all of the contents in "MOVE THESE" and go into the x64 folder that lives in the same folder as the .sln file. And paste them into both the Release and Debug folder (this should give you a prepared layout for imgui).
 Then also copy the assets folder from the .sln file folder, into the x64 -> Release and Debug folders.
 
+Go into the x64 folder, then into Release or Debug, ensure all the files above are there, and run the .exe
+
+Note, Assimp .dlls should not be necessary.
