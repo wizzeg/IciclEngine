@@ -1,0 +1,52 @@
+{
+    "name": "test",
+    "shader_path": "./assets/shaders/deffered.shdr",
+    "lit": true,
+    "instanced": true,
+    "recieves_shadows": true,
+    "casts_shadows": true,
+    "transparent": true,
+    "deffered": true,
+    "uniforms": [
+        {
+            "location": "uTexture",
+            "type": "texture",
+            "value": "./assets/textures/awesomeface.png"
+        },
+        {
+            "location": "uNormalMap",
+            "type": "texture",
+            "value": "./assets/textures/robot/DefaultMaterial_Normal_OpenGLflat.png"
+        },
+        {
+            "location": "uAO",
+            "type": "texture",
+            "value": "./assets/textures/white.png"
+        },
+        {
+            "location": "uRoughness",
+            "type": "texture",
+            "value": "./assets/textures/white.png"
+        },
+        {
+            "location": "uMetallic",
+            "type": "texture",
+            "value": "./assets/textures/white.png"
+        },
+        {
+            "location": "uEmissive",
+            "type": "texture",
+            "value": "./assets/textures/robot/DefaultMaterial_Emissive.png"
+        },
+        {
+            "location": "uSpecular",
+            "type": "texture",
+            "value": "./assets/textures/white.png"
+        },
+        {
+            "location": "max_shininess",
+            "type": "float",
+            "value": 0.5
+        }
+    ]
+}
