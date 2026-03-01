@@ -11,6 +11,10 @@
 #include <engine/core/game_thread.h>
 #include <engine/utilities/layer_masks.h>
 
+#include <nlohmann/json.hpp>
+#include <fstream>
+using json = nlohmann::json;
+
 bool MoveSystem::execute(SystemsContext& ctx)
 {
 	
@@ -181,7 +185,7 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 	vectored_spatial_collider_partitioning.clear();
 	vectored_spatial_collider_partitioning.resize(num_threads);
 
-	count++;
+	//count++;
 	if (count > 100)
 	{
 		PRINTLN("launching threads");
@@ -626,6 +630,7 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 								a.self_access_order = entry.access_order;
 								a.other_access_order = entry.access_order;
 								a.other_tag = landscape.tag;
+								a.other_positoin = center;
 								land_col_res.push_back(a); // need to put in another collision results
 							}
 							manifold.landscape_index = rb_index;
@@ -790,6 +795,7 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 								a.self_access_order = entry.access_order;
 								a.other_access_order = entry.access_order;
 								a.other_tag = landscape.tag;
+								a.other_positoin = position;
 								land_col_res.push_back(a); // need to put in another collision results
 							}
 							manifold.landscape_index = rb_index;
@@ -997,6 +1003,8 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 								b.other_access_order = merged_pairs[i].access_order_a;
 								a.other_tag = merged_pairs[i].tag_b;
 								b.other_tag = merged_pairs[i].tag_a;
+								a.other_positoin = merged_pairs[i].obb_b.obb_center;
+								b.other_positoin = merged_pairs[i].obb_a.obb_center;
 								col_res.push_back(a);
 								col_res.push_back(b);
 							}
@@ -2319,7 +2327,7 @@ bool MenuSystem::execute(SystemsContext& ctx)
 				ctx.enqueue_parallel_each(
 					WithRead<UISelectableComponent, UIDependencyComponent, UITypeComponent>{},
 					WithWrite<UIMenuItemStatusComponent, UIMaterialComponent>{},
-					WithRef<UIColorChangeComponent, UIRectComponent, UITextComponent, ScenePathComponent>{},
+					WithRef<UIColorChangeComponent, UIRectComponent, UITextComponent, ScenePathComponent, HighScoreLoaderComponent>{},
 					[this, &ctx, state_layer, menu_entity, valid_press]
 					(
 						const entt::entity entity,
@@ -2408,7 +2416,7 @@ bool MenuSystem::execute(SystemsContext& ctx)
 											new_layers = 0;
 											new_layers |= UIHighScores;
 											break;
-										case 5:
+										case 3:
 											if (auto path = ctx.try_get<ScenePathComponent>(entity))
 											{
 												if (!path->path.empty())
@@ -2419,6 +2427,7 @@ bool MenuSystem::execute(SystemsContext& ctx)
 													ctx.get_system_storage().add_or_replace_object("LoadSceneCommand", scene_command);
 												}
 											}
+											PRINTLN("tried to change scene");
 											break;
 										case 10:
 											ctx.get_system_storage().add_or_replace_object("ExitGame", true);
@@ -2445,7 +2454,67 @@ bool MenuSystem::execute(SystemsContext& ctx)
 								stat.hovered = false;
 								stat.pressed = false;
 							}
+
+							if (auto high_scr = ctx.try_get<HighScoreLoaderComponent>(entity))
+							{
+								if (!high_scr->has_loaded)
+								{
+									// load the high score and set text.
+									std::ifstream file("./assets/extras/scores.stats");
+									if (file)
+									{
+										file.seekg(0, std::ios::end);
+										if (file.tellg() > 0) {  // ONLY parse if not empty
+											file.seekg(0);
+											json j = json::array();
+											file >> j;
+											std::string text = "";
+											if (j.is_array())
+											{
+												const auto& levels = j;
+												for (const auto& level : levels)
+												{
+													if (!level.is_object()) continue;
+													if (level.contains("level name:"))
+													{
+														text += "\n";
+														text += level["level name:"].get<std::string>();
+														text += "\n";
+													}
+														
+													for (const auto& placement : {"1st", "2nd", "3rd"})
+													{
+														if (level.contains(placement))
+														{
+															text += " ";
+															text += placement;
+															text += ": ";
+															text += std::to_string(level[placement].get<float>());
+															text += ",";
+														}
+													}
+													text += "\n";
+												}
+											}
+											txt->text = text;
+										}
+										else
+										{
+											PRINTLN("Failed to load at: {}", "./assets/extras/scores.stats");
+										}
+
+										
+									}
+									else
+									{
+										PRINTLN("Failed to load at: {}", "./assets/extras/scores.stats");
+									}
+									
+								}
+								high_scr->has_loaded = true;
+							}
 						}
+
 
 					}
 				);
@@ -2708,17 +2777,20 @@ bool PlayerMovementSystem::execute(SystemsContext& ctx)
 {
 	float dt = (float)ctx.get_delta_time();
 	ctx.each(
-		WithRead<PlayerTagComponent, MovementStatsComponent>{},
-		WithWrite<RigidBodyComponent>{},
-		[dt](const entt::entity entity, const PlayerTagComponent& tag, const MovementStatsComponent& mov, RigidBodyComponent& rb)
+		WithRead<PlayerTagComponent>{},
+		WithWrite<MovementStatsComponent, RigidBodyComponent>{},
+		[dt](const entt::entity entity, const PlayerTagComponent& tag, MovementStatsComponent& mov, RigidBodyComponent& rb)
 		{
 
 			rb.linear_velocity.x -= (rb.linear_velocity.x * mov.move_damp * dt);
 			rb.linear_velocity.z -= (rb.linear_velocity.z * mov.move_damp * dt);
 
-			if (InputManager::instance().is_key_pressed(EKey::Space) && mov.time_since_ground < 0.1f)
+			if (InputManager::instance().is_key_pressed(EKey::Space) 
+				&& mov.time_since_ground < mov.ground_time_limit
+				&& mov.time_since_jump > mov.jump_time_limit)
 			{
 				rb.linear_velocity.y += mov.jump_force;
+				mov.time_since_jump = 0.0f;
 			}
 			if (InputManager::instance().is_key_held(EKey::S))
 			{
@@ -2762,6 +2834,7 @@ bool GroundingSystem::execute(SystemsContext& ctx)
 					[this, size, dt](const entt::entity entity, const BoundingBoxComponent& bbox, MovementStatsComponent& mov)
 					{
 						mov.time_since_ground += dt;
+						mov.time_since_jump += dt;
 						if (bbox.has_collision_info)
 						{
 							for (size_t i = bbox.result_start_index; i < bbox.result_end_index; ++i)
@@ -2902,5 +2975,211 @@ bool ECBEndSystem::execute(SystemsContext& ctx)
 {
 	ctx.sync();
 	ctx.execute_ecb("end_frame_ecb");
+	return false;
+}
+
+bool EndLevelSystem::execute(SystemsContext& ctx)
+{
+	// gotta check coins
+	size_t collected_coins = 0;
+	float dt = static_cast<float>(ctx.get_delta_time());
+	if (auto get_coins = ctx.get_system_storage().get_object<size_t>("CollectedCoins"))
+	{
+		get_coins->read([&collected_coins](const size_t coins) {
+			collected_coins = coins;
+			});
+	}
+
+	ctx.each(
+		WithWrite<EndLevelComponent>{},
+		[&ctx, collected_coins, dt](const entt::entity entity, EndLevelComponent& lvl)
+		{
+			lvl.time_score += dt;
+			if (collected_coins >= lvl.coins_required)
+			{
+				bool failed = true;
+				// now we have to open file... and write to it..
+				std::ifstream file("./assets/extras/scores.stats");
+				if (!file)
+				{
+					PRINTLN("Failed to load at: {}", "./assets/extras/scores.stats");
+					return false;
+				}
+				failed = false;
+				json j;
+				file.seekg(0, std::ios::end);
+				if (file.tellg() > 0) { 
+					file.seekg(0);
+					
+					file >> j;
+
+					float current_replace_score = lvl.time_score;
+					if (j.is_array())
+					{
+						auto& levels = j;
+						bool found_level = false;
+						for (auto& level : levels)
+						{
+							if (level.is_object() && level.contains("level name:") && level["level name:"] == lvl.this_level)
+							{
+								found_level = true;
+								for (const auto& placement : { "1st", "2nd", "3rd" })
+								{
+									if (level.contains(placement))
+									{
+										float saved_score = level[placement].get<float>();
+										if (saved_score > current_replace_score)
+										{
+											level[placement] = current_replace_score;
+											current_replace_score = saved_score;
+										}
+									}
+									else
+									{
+										level[placement] = 99999999.f;
+									}
+								}
+							}
+						}
+						if (!found_level)
+						{
+							auto level = json::object();
+							level["level name:"] = lvl.this_level;
+							level["1st"] = lvl.time_score;
+							for (const auto& placement : {"2nd", "3rd" })
+							{
+								level[placement] = 99999999.f;
+							}
+							levels.push_back(level);
+						}
+					}
+					else
+					{
+						j = json::array();
+						auto& levels = j;
+						auto level = json::object();
+						level["level name:"] = lvl.this_level;
+						level["1st"] = lvl.time_score;
+						for (const auto& placement : { "2nd", "3rd" })
+						{
+							level[placement] = 99999999.f;
+						}
+						levels.push_back(level);
+					}
+				}
+				else
+				{
+					j = json::array();
+					auto& levels = j;
+					auto level = json::object();
+					level["level name:"] = lvl.this_level;
+					level["1st"] = lvl.time_score;
+					for (const auto& placement : { "2nd", "3rd" })
+					{
+						level[placement] = 99999999.f;
+					}
+					levels.push_back(level);
+				}
+				
+				if (!lvl.next_level.empty())
+				{
+					LoadSceneCommand scn;
+					scn.load = true;
+					scn.path = lvl.next_level;
+					ctx.get_system_storage().add_or_replace_object("LoadSceneCommand", scn);
+				}
+				if (!failed)
+				{
+					std::ofstream file_out("./assets/extras/scores.stats");
+					if (!file_out) {
+						PRINTLN("Failed to open for write: {}", "./assets/extras/scores.stats");
+					}
+					else {
+						file_out << j.dump(4);
+					}
+				}
+				size_t zeroed = 0;
+				ctx.get_system_storage().add_or_replace_object("CollectedCoins", zeroed);
+			}
+		});
+
+	// if enough coins... then we have to load file path
+	return false;
+}
+
+bool EnemyGuidanceSystem::execute(SystemsContext& ctx)
+{
+	float dt = static_cast<float>(ctx.get_delta_time());
+	ctx.enqueue_each(
+		WithRead<EnemyTagComponent, EnemyTargetComponent, TransformDynamicComponent, BoundingBoxComponent>{},
+		WithWrite<MovementStatsComponent, RigidBodyComponent>{},
+		[&ctx, dt](const entt::entity, const EnemyTagComponent& tag,
+			const EnemyTargetComponent& target,
+			const TransformDynamicComponent& transform,
+			const BoundingBoxComponent bbox,
+			MovementStatsComponent& mov,
+			RigidBodyComponent& rb)
+		{
+			if (auto target_transform = ctx.try_get<TransformDynamicComponent>(target.target.entity))
+			{
+				// now choose direction to go.
+				glm::vec3 target_position{
+					target_transform->model_matrix[3][0],
+					target_transform->model_matrix[3][1],
+					target_transform->model_matrix[3][2]
+				};
+				glm::vec3 position{
+					transform.model_matrix[3][0],
+					transform.model_matrix[3][1],
+					transform.model_matrix[3][2]
+				};
+				glm::vec3 direction = glm::normalize(target_position - position);
+				if (glm::length(rb.linear_velocity) < mov.max_move_speed * 0.333f)
+				{
+					rb.linear_velocity += (mov.move_force * dt * 0.5f) * direction;
+				}
+			}
+		}
+	);
+
+	return false;
+}
+
+bool EnemyAttackSystem::execute(SystemsContext& ctx)
+{
+	// just reload the level if enemy hits player
+
+	ctx.enqueue([&ctx]()
+		{
+			if (auto col_res = ctx.get_system_storage().get_object<std::vector<CollisionResult>>("CollisionResults"))
+			{
+				col_res->read([&ctx](const std::vector<CollisionResult>& cols)
+					{
+						ctx.each(
+							WithRead<EnemyTagComponent, BoundingBoxComponent>{},
+							[&ctx, &cols](
+								const entt::entity, 
+								const EnemyTagComponent& tag,
+								const BoundingBoxComponent bbox)
+							{
+								if (bbox.has_collision_info)
+								{
+									for (size_t i = bbox.result_start_index; i < bbox.result_end_index; i++)
+									{
+										if (i < cols.size() && cols[i].other_tag == 1)
+										{
+											LoadSceneCommand scene;
+											scene.path = "./assets/levels/mainmenu.scn";
+											scene.load = true;
+											ctx.get_system_storage().add_or_replace_object("LoadSceneCommand", scene);
+											break;
+										}
+									}
+								}
+							}
+						);
+					});
+			}
+		});
 	return false;
 }

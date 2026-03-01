@@ -169,3 +169,13 @@ struct EndLevelSystem : SystemBase
 {
 	bool execute(SystemsContext& ctx) override;
 };
+
+struct EnemyGuidanceSystem :SystemBase
+{
+	bool execute(SystemsContext& ctx) override;
+};
+
+struct EnemyAttackSystem : SystemBase
+{
+	bool execute(SystemsContext& ctx) override;
+}; 

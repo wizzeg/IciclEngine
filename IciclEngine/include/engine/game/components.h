@@ -417,8 +417,8 @@ struct alignas(8) BoundingBoxComponent
 
 struct alignas(8) RigidBodyComponent
 {
-    glm::vec3 position;
-    glm::quat rotation;
+    glm::vec3 position = glm::vec3(0);
+    glm::quat rotation = glm::quat(1, 0, 0, 0);
 
     glm::vec3 linear_velocity = glm::vec3(0);
     glm::vec3 angular_velocity = glm::vec3(0);
@@ -613,6 +613,9 @@ struct MovementStatsComponent
     float move_force = 500.f;
     float time_since_ground = 0.f;
     float move_damp = 10.f;
+    float time_since_jump = 0.f;
+    float ground_time_limit = 0.15f;
+    float jump_time_limit = 0.2f;
 };
 
 struct ButtonObjectTag
@@ -641,4 +644,19 @@ struct EndLevelComponent
     uint8_t coins_required = 1;
     float time_score = 0;
     bool end = false;
+};
+
+struct HighScoreLoaderComponent
+{
+    bool has_loaded = false;
+};
+
+struct EnemyTargetComponent
+{
+    EntityReference target;
+};
+
+struct EnemyTagComponent
+{
+    bool tag;
 };

@@ -1,0 +1,395 @@
+{
+    "name": " ",
+    "root object": {
+        "children": [
+            {
+                "children": [],
+                "components": [
+                    {
+                        "fields": [
+                            {
+                                "name": "entity name: ",
+                                "type": "hashed_name",
+                                "value": "mat plain4"
+                            },
+                            {
+                                "name": "entity id: ",
+                                "type": "entity",
+                                "value": 16
+                            }
+                        ],
+                        "type": "EntityComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "parent: ",
+                                "type": "parent",
+                                "value": 15
+                            },
+                            {
+                                "name": "previous sibling: ",
+                                "type": "previous_sibling",
+                                "value": 0
+                            },
+                            {
+                                "name": "next sibling: ",
+                                "type": "next_sibling",
+                                "value": 13
+                            },
+                            {
+                                "name": "child: ",
+                                "type": "child",
+                                "value": 0
+                            }
+                        ],
+                        "type": "HierarchyComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "material path: ",
+                                "type": "hashed_path",
+                                "value": "./assets/shaders/plain4.mat"
+                            },
+                            {
+                                "name": "instanced: ",
+                                "type": "instance",
+                                "value": false
+                            },
+                            {
+                                "name": "use mipmaps: ",
+                                "type": "mipmap",
+                                "value": true
+                            },
+                            {
+                                "name": "load material: ",
+                                "type": "load",
+                                "value": true
+                            }
+                        ],
+                        "type": "MaterialComponent"
+                    }
+                ],
+                "name": "mat plain4"
+            },
+            {
+                "children": [],
+                "components": [
+                    {
+                        "fields": [
+                            {
+                                "name": "entity name: ",
+                                "type": "hashed_name",
+                                "value": "mat plain3"
+                            },
+                            {
+                                "name": "entity id: ",
+                                "type": "entity",
+                                "value": 13
+                            }
+                        ],
+                        "type": "EntityComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "parent: ",
+                                "type": "parent",
+                                "value": 15
+                            },
+                            {
+                                "name": "previous sibling: ",
+                                "type": "previous_sibling",
+                                "value": 16
+                            },
+                            {
+                                "name": "next sibling: ",
+                                "type": "next_sibling",
+                                "value": 14
+                            },
+                            {
+                                "name": "child: ",
+                                "type": "child",
+                                "value": 0
+                            }
+                        ],
+                        "type": "HierarchyComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "material path: ",
+                                "type": "hashed_path",
+                                "value": "./assets/shaders/plain3.mat"
+                            },
+                            {
+                                "name": "instanced: ",
+                                "type": "instance",
+                                "value": false
+                            },
+                            {
+                                "name": "use mipmaps: ",
+                                "type": "mipmap",
+                                "value": true
+                            },
+                            {
+                                "name": "load material: ",
+                                "type": "load",
+                                "value": true
+                            }
+                        ],
+                        "type": "MaterialComponent"
+                    }
+                ],
+                "name": "mat plain3"
+            },
+            {
+                "children": [],
+                "components": [
+                    {
+                        "fields": [
+                            {
+                                "name": "entity name: ",
+                                "type": "hashed_name",
+                                "value": "mesh cube"
+                            },
+                            {
+                                "name": "entity id: ",
+                                "type": "entity",
+                                "value": 14
+                            }
+                        ],
+                        "type": "EntityComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "parent: ",
+                                "type": "parent",
+                                "value": 15
+                            },
+                            {
+                                "name": "previous sibling: ",
+                                "type": "previous_sibling",
+                                "value": 13
+                            },
+                            {
+                                "name": "next sibling: ",
+                                "type": "next_sibling",
+                                "value": 12
+                            },
+                            {
+                                "name": "child: ",
+                                "type": "child",
+                                "value": 0
+                            }
+                        ],
+                        "type": "HierarchyComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "mesh loaded: ",
+                                "type": "loaded",
+                                "value": false
+                            },
+                            {
+                                "name": "mesh path: ",
+                                "type": "hashed_path",
+                                "value": "./assets/obj/cube.obj"
+                            }
+                        ],
+                        "type": "MeshComponent"
+                    }
+                ],
+                "name": "mesh cube"
+            },
+            {
+                "children": [],
+                "components": [
+                    {
+                        "fields": [
+                            {
+                                "name": "entity name: ",
+                                "type": "hashed_name",
+                                "value": "mat plain2"
+                            },
+                            {
+                                "name": "entity id: ",
+                                "type": "entity",
+                                "value": 12
+                            }
+                        ],
+                        "type": "EntityComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "parent: ",
+                                "type": "parent",
+                                "value": 15
+                            },
+                            {
+                                "name": "previous sibling: ",
+                                "type": "previous_sibling",
+                                "value": 14
+                            },
+                            {
+                                "name": "next sibling: ",
+                                "type": "next_sibling",
+                                "value": 11
+                            },
+                            {
+                                "name": "child: ",
+                                "type": "child",
+                                "value": 0
+                            }
+                        ],
+                        "type": "HierarchyComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "material path: ",
+                                "type": "hashed_path",
+                                "value": "./assets/shaders/plain2.mat"
+                            },
+                            {
+                                "name": "instanced: ",
+                                "type": "instance",
+                                "value": false
+                            },
+                            {
+                                "name": "use mipmaps: ",
+                                "type": "mipmap",
+                                "value": true
+                            },
+                            {
+                                "name": "load material: ",
+                                "type": "load",
+                                "value": true
+                            }
+                        ],
+                        "type": "MaterialComponent"
+                    }
+                ],
+                "name": "mat plain2"
+            },
+            {
+                "children": [],
+                "components": [
+                    {
+                        "fields": [
+                            {
+                                "name": "entity name: ",
+                                "type": "hashed_name",
+                                "value": "mat plain"
+                            },
+                            {
+                                "name": "entity id: ",
+                                "type": "entity",
+                                "value": 11
+                            }
+                        ],
+                        "type": "EntityComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "parent: ",
+                                "type": "parent",
+                                "value": 15
+                            },
+                            {
+                                "name": "previous sibling: ",
+                                "type": "previous_sibling",
+                                "value": 12
+                            },
+                            {
+                                "name": "next sibling: ",
+                                "type": "next_sibling",
+                                "value": 0
+                            },
+                            {
+                                "name": "child: ",
+                                "type": "child",
+                                "value": 0
+                            }
+                        ],
+                        "type": "HierarchyComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "material path: ",
+                                "type": "hashed_path",
+                                "value": "./assets/shaders/plain.mat"
+                            },
+                            {
+                                "name": "instanced: ",
+                                "type": "instance",
+                                "value": false
+                            },
+                            {
+                                "name": "use mipmaps: ",
+                                "type": "mipmap",
+                                "value": true
+                            },
+                            {
+                                "name": "load material: ",
+                                "type": "load",
+                                "value": true
+                            }
+                        ],
+                        "type": "MaterialComponent"
+                    }
+                ],
+                "name": "mat plain"
+            }
+        ],
+        "components": [
+            {
+                "fields": [
+                    {
+                        "name": "entity name: ",
+                        "type": "hashed_name",
+                        "value": "AssetLoader"
+                    },
+                    {
+                        "name": "entity id: ",
+                        "type": "entity",
+                        "value": 15
+                    }
+                ],
+                "type": "EntityComponent"
+            },
+            {
+                "fields": [
+                    {
+                        "name": "parent: ",
+                        "type": "parent",
+                        "value": 0
+                    },
+                    {
+                        "name": "previous sibling: ",
+                        "type": "previous_sibling",
+                        "value": 0
+                    },
+                    {
+                        "name": "next sibling: ",
+                        "type": "next_sibling",
+                        "value": 0
+                    },
+                    {
+                        "name": "child: ",
+                        "type": "child",
+                        "value": 16
+                    }
+                ],
+                "type": "HierarchyComponent"
+            }
+        ],
+        "name": "AssetLoader"
+    }
+}

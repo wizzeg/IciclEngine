@@ -1,3 +1,4 @@
+#pragma once
 #include <iostream>
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui-docking/imgui.h>
@@ -23,6 +24,7 @@
 #include <engine/editor/scene.h>
 #include <engine/editor/scene_object.h>
 #include <engine/utilities/macros.h>
+#include <engine/utilities/entt_modified.h>
 #include <engine/game/components.h>
 
 //#ifndef ASSIMP_LOAD_FLAGS
@@ -107,7 +109,7 @@ int main(void)
 	shader_load.save("./assets/shaders/test_shader2.shdr");
 	//std::shared_ptr<MeshDataGenStorage> storage = std::make_shared<MeshDataGenStorage>(2);
 	std::shared_ptr<EngineContext> engine_context = std::make_shared<EngineContext>(scene/*storage*/);
-	
+	scene->load("./assets/temp/temp_scene.scn");
 	//RenderThread render_thread(engine_context, *shader_program, glfw_context);
 	GameThread game_thread(engine_context, scene);
 	//EngineThread engine_thread(engine_context, imgui_manager, ui_mananger);
@@ -145,7 +147,7 @@ int main(void)
 	////AssetJob asset_job = std::move(job);
 	//asset_manager.add_asset_job(std::move(job));
 
-	uint64_t wait_time = 0;
+	uint64_t wait_time = 1;
 	glfwSetWindowFocusCallback(window, [](GLFWwindow* window, int focused)
 		{
 			if (!focused)
@@ -157,187 +159,189 @@ int main(void)
 	while (engine_context->run())
 	{
 		timer2.start();
-		if (wait_time > 45)
-		{
-			if (!game_playing)
-			{
-				{
-					
-					std::lock_guard<std::mutex> guard(engine_context->mutex);
-					//scene->start_runtime(); // deal with making a runtime copy later -------- runtime thing works at least, entities are created
-					// for now I need to be able to see changes to entities -> handle signaling
-					game_playing = true;
-					//engine_context->game_playing = true;
-					std::srand(static_cast<unsigned>(std::time(nullptr)));
-					hashed_string_64 monkey_mesh = hashed_string_64("./assets/obj/triobjmonkey.obj");
-					hashed_string_64 tex = hashed_string_64("./assets/textures/awesomeface.png");
+		//if (wait_time > 0)
+		//{
+		//	if (!game_playing)
+		//	{
+		//		{
+		//			
+		//			std::lock_guard<std::mutex> guard(engine_context->mutex);
+		//			//scene->start_runtime(); // deal with making a runtime copy later -------- runtime thing works at least, entities are created
+		//			// for now I need to be able to see changes to entities -> handle signaling
+		//			game_playing = true;
+		//			//engine_context->game_playing = true;
+		//			std::srand(static_cast<unsigned>(std::time(nullptr)));
+		//			hashed_string_64 monkey_mesh = hashed_string_64("./assets/obj/triobjmonkey.obj");
+		//			hashed_string_64 tex = hashed_string_64("./assets/textures/awesomeface.png");
 
-					std::vector<hashed_string_64> meshes = {  "./assets/obj/cube.obj" }; //"./assets/obj/plane.obj","./assets/obj/triobjmonkey.obj" , "./assets/obj/sizanne.obj", "./assets/obj/robot.obj","./assets/obj/robot2.obj","./assets/obj/robot3.obj"
-					std::vector<hashed_string_64> texes = { "./assets/textures/awesomeface.png", "./assets/textures/wall.jpg", "./assets/textures/container.jpg" };
-					std::vector<hashed_string_64> mats = { "./assets/shaders/testcopy.mat" }; // , "./assets/shaders/test2.mat" "./assets/shaders/test.mat", "./assets/shaders/testcopy.mat"
-					
-					//auto processor = scene->new_scene_object("Single thread processor", true);
-					//processor.lock()->add_component<SingleProcessorComponent>();
+		//			std::vector<hashed_string_64> meshes = {  "./assets/obj/cube.obj" }; //"./assets/obj/plane.obj","./assets/obj/triobjmonkey.obj" , "./assets/obj/sizanne.obj", "./assets/obj/robot.obj","./assets/obj/robot2.obj","./assets/obj/robot3.obj"
+		//			std::vector<hashed_string_64> texes = { "./assets/textures/awesomeface.png", "./assets/textures/wall.jpg", "./assets/textures/container.jpg" };
+		//			std::vector<hashed_string_64> mats = { "./assets/shaders/testcopy.mat" }; // , "./assets/shaders/test2.mat" "./assets/shaders/test.mat", "./assets/shaders/testcopy.mat"
+		//			
+		//			//auto processor = scene->new_scene_object("Single thread processor", true);
+		//			//processor.lock()->add_component<SingleProcessorComponent>();
 
-					auto landscape = scene->new_scene_object("landscape", true);
-					auto ls = landscape.lock();
-					ls->add_component(TransformDynamicComponent{ glm::vec3(0, -200, 0), glm::vec3(512, 1, 512) });
-					ls->add_component(LandscapeComponent{ hashed_string_64("./assets/textures/landscape/heightmap.png"), 2, 0, 2 });
-					ls->add_component(RenderComponent{hashed_string_64("./assets/obj/landscape/landscape256.obj"), hashed_string_64("./assets/shaders/landscape/landscape.mat"), false, false, true});
-					if (auto lands = ls->get_component<LandscapeComponent>())
-					{
-						lands->tag = 5;
-					}
-					//{
-					//	auto obj = scene->new_scene_object("parent ", true);
-					//	auto scene_object = obj.lock();
-					//	auto obj2 = scene->new_scene_object("child ", true);
-					//	auto scene_object2 = obj2.lock();
-					//	auto obj3 = scene->new_scene_object("child 2", true);
-					//	auto scene_object3 = obj3.lock();
-					//	auto obj4 = scene->new_scene_object("child 4", true);
-					//	auto scene_object4 = obj4.lock();
-					//	auto obj5 = scene->new_scene_object("child 5", true);
-					//	auto scene_object5 = obj5.lock();
-					//	auto obj6 = scene->new_scene_object("child 6", true);
-					//	auto scene_object6 = obj6.lock();
-					//	scene->parent_scene_object(obj, obj2);
-					//	scene->parent_scene_object(obj, obj3);
-					//	//scene_object->paren(scene_object2);
-					//	scene->parent_scene_object(obj2, obj3);
-					//	//scene->parent_scene_object(obj3, obj2);
-					//	scene->parent_scene_object(obj, obj4);
-					//	scene->parent_scene_object(obj, obj5);
-					//	scene->parent_scene_object(obj2, obj6);
-					//}
+		//			/*auto landscape = scene->new_scene_object("landscape", true);
+		//			auto ls = landscape.lock();
+		//			ls->add_component(TransformDynamicComponent{ glm::vec3(0, -200, 0), glm::vec3(512, 1, 512) });
+		//			ls->add_component(LandscapeComponent{ hashed_string_64("./assets/textures/landscape/heightmap.png"), 2, 0, 2 });
+		//			ls->add_component(RenderComponent{hashed_string_64("./assets/obj/landscape/landscape256.obj"), hashed_string_64("./assets/shaders/landscape/landscape.mat"), false, false, true});
+		//			if (auto lands = ls->get_component<LandscapeComponent>())
+		//			{
+		//				lands->tag = 5;
+		//			}*/
+		//			//{
+		//			//	auto obj = scene->new_scene_object("parent ", true);
+		//			//	auto scene_object = obj.lock();
+		//			//	auto obj2 = scene->new_scene_object("child ", true);
+		//			//	auto scene_object2 = obj2.lock();
+		//			//	auto obj3 = scene->new_scene_object("child 2", true);
+		//			//	auto scene_object3 = obj3.lock();
+		//			//	auto obj4 = scene->new_scene_object("child 4", true);
+		//			//	auto scene_object4 = obj4.lock();
+		//			//	auto obj5 = scene->new_scene_object("child 5", true);
+		//			//	auto scene_object5 = obj5.lock();
+		//			//	auto obj6 = scene->new_scene_object("child 6", true);
+		//			//	auto scene_object6 = obj6.lock();
+		//			//	scene->parent_scene_object(obj, obj2);
+		//			//	scene->parent_scene_object(obj, obj3);
+		//			//	//scene_object->paren(scene_object2);
+		//			//	scene->parent_scene_object(obj2, obj3);
+		//			//	//scene->parent_scene_object(obj3, obj2);
+		//			//	scene->parent_scene_object(obj, obj4);
+		//			//	scene->parent_scene_object(obj, obj5);
+		//			//	scene->parent_scene_object(obj2, obj6);
+		//			//}
 
-					/*{
-						for (auto mesh : meshes)
-						{
-							auto obj = scene->new_scene_object(std::string("mesh loader for: ") + mesh.string, true);
-							auto scene_object = obj.lock();
-							scene_object->add_component(MeshComponent{false, mesh});
-						}
-						{
-							auto obj = scene->new_scene_object(std::string("mesh loader for: ") + "./assets/obj/triobjmonkey.obj", true);
-							auto scene_object = obj.lock();
-							scene_object->add_component(MeshComponent{ false, "./assets/obj/triobjmonkey.obj" });
-						}
-						
-						for (auto mat : mats)
-						{
-							auto obj = scene->new_scene_object(std::string("mat loader for: ") + mat.string, true);
-							auto scene_object = obj.lock();
-							scene_object->add_component(MaterialComponent{ mat, true, true, true });
-						}
+		//			/*{
+		//				for (auto mesh : meshes)
+		//				{
+		//					auto obj = scene->new_scene_object(std::string("mesh loader for: ") + mesh.string, true);
+		//					auto scene_object = obj.lock();
+		//					scene_object->add_component(MeshComponent{false, mesh});
+		//				}
+		//				{
+		//					auto obj = scene->new_scene_object(std::string("mesh loader for: ") + "./assets/obj/triobjmonkey.obj", true);
+		//					auto scene_object = obj.lock();
+		//					scene_object->add_component(MeshComponent{ false, "./assets/obj/triobjmonkey.obj" });
+		//				}
+		//				
+		//				for (auto mat : mats)
+		//				{
+		//					auto obj = scene->new_scene_object(std::string("mat loader for: ") + mat.string, true);
+		//					auto scene_object = obj.lock();
+		//					scene_object->add_component(MaterialComponent{ mat, true, true, true });
+		//				}
 
-						std::vector<hashed_string_64> bleh({ "./assets/shaders/red.mat", "./assets/shaders/green.mat", "./assets/shaders/blue.mat", "./assets/shaders/white.mat" });
-						for (auto mat : bleh)
-						{
-							auto obj = scene->new_scene_object(std::string("mat loader for: ") + mat.string, true);
-							auto scene_object = obj.lock();
-							scene_object->add_component(MaterialComponent{ mat, true, true, true });
-						}
-					}*/
+		//				std::vector<hashed_string_64> bleh({ "./assets/shaders/red.mat", "./assets/shaders/green.mat", "./assets/shaders/blue.mat", "./assets/shaders/white.mat" });
+		//				for (auto mat : bleh)
+		//				{
+		//					auto obj = scene->new_scene_object(std::string("mat loader for: ") + mat.string, true);
+		//					auto scene_object = obj.lock();
+		//					scene_object->add_component(MaterialComponent{ mat, true, true, true });
+		//				}
+		//			}*/
 
 
-					for (size_t i = 0; i < 1000; i++)
-					{
-						float x = -200.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 400.0f));
-						float y = -200.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 400.0f));; // Or random if you want variety
-						float z = -200.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 400.0f));; // Same here
-						auto obj = scene->new_scene_object(std::string("model: ") + std::to_string(i), true);
-						auto scene_object = obj.lock();
-						size_t mesh_idx = std::rand() % meshes.size();
-						size_t tex_idx = std::rand() % texes.size();
-						size_t mat_idx = std::rand() % mats.size();
-						scene_object->add_component(TransformDynamicComponent{ glm::vec3(x, y, z)}); //(glm::normalize(glm::abs(glm::vec3(x, y, z))) + glm::vec3(0.5f))
-						//scene_object->add_component(MeshComponent{ false, meshes[mesh_idx]});
-						//scene_object->add_component(MaterialComponent{mats[mat_idx], false, false, true});
-						scene_object->add_component(RenderComponent{ meshes[mesh_idx], mats[mat_idx], true, true, true });
-						//scene_object->add_component(TextureComponent{ false, texes[tex_idx]});
-						scene_object->add_component(SpawnPositionComponent{ glm::vec3(x, y, z) });
-						scene_object->add_component(BoundingBoxComponent{ glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.f), false, 2, 32 });
+		//			for (size_t i = 0; i < 0; i++)
+		//			{
+		//				float x = -200.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 400.0f));
+		//				float y = -200.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 400.0f));; // Or random if you want variety
+		//				float z = -200.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 400.0f));; // Same here
+		//				auto obj = scene->new_scene_object(std::string("model: ") + std::to_string(i), true);
+		//				auto scene_object = obj.lock();
+		//				size_t mesh_idx = std::rand() % meshes.size();
+		//				size_t tex_idx = std::rand() % texes.size();
+		//				size_t mat_idx = std::rand() % mats.size();
+		//				scene_object->add_component(TransformDynamicComponent{ glm::vec3(x, y, z)}); //(glm::normalize(glm::abs(glm::vec3(x, y, z))) + glm::vec3(0.5f))
+		//				//scene_object->add_component(MeshComponent{ false, meshes[mesh_idx]});
+		//				//scene_object->add_component(MaterialComponent{mats[mat_idx], false, false, true});
+		//				scene_object->add_component(RenderComponent{ meshes[mesh_idx], mats[mat_idx], true, true, true });
+		//				//scene_object->add_component(TextureComponent{ false, texes[tex_idx]});
+		//				scene_object->add_component(SpawnPositionComponent{ glm::vec3(x, y, z) });
+		//				scene_object->add_component(BoundingBoxComponent{ glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.f), false, 2, 32 });
 
-						float mass = 1.f;
-						float inverse_mass = 1.f;
-						float random = std::rand() % 50;
-						glm::vec3 linear_velocity = normalize(glm::vec3(x, y, z)) * -0.f;
-						glm::vec3 rotation_velocity = normalize(glm::vec3(x, y, z)) * -0.2f;
-						if (glm::length(glm::vec3(x, y, z)) < 0.f)
-						{
-							mass = 100.f;	
-							inverse_mass = 0.01f;
-							linear_velocity = glm::vec3(0.f);
-							rotation_velocity = glm::vec3(0.f);
-						}
-						scene_object->add_component(RigidBodyComponent{ glm::vec3(x, y, z), glm::quat(1.0f, 0.f, 0.f, 0.f), linear_velocity, rotation_velocity, mass, inverse_mass, glm::mat3(0), 1.0f, 0.8f});
-						if (auto rb = scene_object->try_get_component<RigidBodyComponent>())
-						{
-							rb->set_dynamic_layer(1);
-						}
+		//				float mass = 1.f;
+		//				float inverse_mass = 1.f;
+		//				float random = std::rand() % 50;
+		//				glm::vec3 linear_velocity = normalize(glm::vec3(x, y, z)) * -0.f;
+		//				glm::vec3 rotation_velocity = normalize(glm::vec3(x, y, z)) * -0.2f;
+		//				if (glm::length(glm::vec3(x, y, z)) < 0.f)
+		//				{
+		//					mass = 100.f;	
+		//					inverse_mass = 0.01f;
+		//					linear_velocity = glm::vec3(0.f);
+		//					rotation_velocity = glm::vec3(0.f);
+		//				}
+		//				scene_object->add_component(RigidBodyComponent{ glm::vec3(x, y, z), glm::quat(1.0f, 0.f, 0.f, 0.f), linear_velocity, rotation_velocity, mass, inverse_mass, glm::mat3(0), 1.0f, 0.8f});
+		//				if (auto rb = scene_object->try_get_component<RigidBodyComponent>())
+		//				{
+		//					rb->set_dynamic_layer(1);
+		//				}
 
-						auto child_woah = scene->new_scene_object(std::string("child model: ") + std::to_string(i), true);
-						if (auto true_child = child_woah.lock())
-						{
-							true_child->add_component(TransformDynamicComponent{ glm::vec3(0.f, 2.f, 0.f) });
-							true_child->add_component(RenderComponent{ meshes[mesh_idx], mats[mat_idx], true, true, true });
-						}
-						scene->parent_scene_object(scene_object, child_woah);
+		//				auto child_woah = scene->new_scene_object(std::string("child model: ") + std::to_string(i), true);
+		//				if (auto true_child = child_woah.lock())
+		//				{
+		//					true_child->add_component(TransformDynamicComponent{ glm::vec3(0.f, 2.f, 0.f) });
+		//					true_child->add_component(RenderComponent{ meshes[mesh_idx], mats[mat_idx], true, true, true });
+		//				}
+		//				scene->parent_scene_object(scene_object, child_woah);
 
-					}
+		//			}
 
-					for (size_t i = 0; i < 0; i++)
-					{
-						float x = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));
-						float y = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));; // Or random if you want variety
-						float z = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));; // Same here
-						auto obj = scene->new_scene_object(std::string("light: ") + std::to_string(i), true);
-						auto scene_object = obj.lock();
-						int col = (std::rand() % 3);
-						glm::vec3 color(0);
-						std::string mat;
-						switch (col)
-						{
-						case 1:
-							color = glm::vec3(1,0,0);
-							mat = "./assets/shaders/red.mat";
-							break;
-						case 2:
-							color = glm::vec3(0, 1, 0);
-							mat = "./assets/shaders/green.mat";
-							break;
-						case 0:
-							color = glm::vec3(0, 0, 1);
-							mat = "./assets/shaders/blue.mat";
-							break;
-						default:
-							color = glm::vec3(1);
-							mat = "./assets/shaders/white.mat";
-							break;
-						}
-						//glm::vec3 color((std::rand() % 1000)* 0.001f, (std::rand() % 1000) * 0.001f, (std::rand() % 1000) * 0.001f);
-						float intensity = 0.75f + (std::rand() % 250) * 0.001;
-						glm::vec3 attenuation = glm::vec3(0.75f, 0.1f, 0.01f);
-						hashed_string_64 name(mat.c_str());
-						scene_object->add_component(TransformDynamicComponent{ glm::vec3(x, y, z), glm::vec3(0.5f)});
-						scene_object->add_component(PointLightComponent{color, attenuation, intensity, false});
-						//scene_object->add_component(MeshComponent{ false, "./assets/obj/triobjmonkey.obj" });
-						//scene_object->add_component(MaterialComponent{ name, false, false, true});
-						scene_object->add_component(RenderComponent{ "./assets/obj/triobjmonkey.obj", name, false, true, true });
-					}
+		//			for (size_t i = 0; i < 0; i++)
+		//			{
+		//				float x = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));
+		//				float y = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));; // Or random if you want variety
+		//				float z = -50.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / 100.0f));; // Same here
+		//				auto obj = scene->new_scene_object(std::string("light: ") + std::to_string(i), true);
+		//				auto scene_object = obj.lock();
+		//				int col = (std::rand() % 3);
+		//				glm::vec3 color(0);
+		//				std::string mat;
+		//				switch (col)
+		//				{
+		//				case 1:
+		//					color = glm::vec3(1,0,0);
+		//					mat = "./assets/shaders/red.mat";
+		//					break;
+		//				case 2:
+		//					color = glm::vec3(0, 1, 0);
+		//					mat = "./assets/shaders/green.mat";
+		//					break;
+		//				case 0:
+		//					color = glm::vec3(0, 0, 1);
+		//					mat = "./assets/shaders/blue.mat";
+		//					break;
+		//				default:
+		//					color = glm::vec3(1);
+		//					mat = "./assets/shaders/white.mat";
+		//					break;
+		//				}
+		//				//glm::vec3 color((std::rand() % 1000)* 0.001f, (std::rand() % 1000) * 0.001f, (std::rand() % 1000) * 0.001f);
+		//				float intensity = 0.75f + (std::rand() % 250) * 0.001;
+		//				glm::vec3 attenuation = glm::vec3(0.75f, 0.1f, 0.01f);
+		//				hashed_string_64 name(mat.c_str());
+		//				scene_object->add_component(TransformDynamicComponent{ glm::vec3(x, y, z), glm::vec3(0.5f)});
+		//				scene_object->add_component(PointLightComponent{color, attenuation, intensity, false});
+		//				//scene_object->add_component(MeshComponent{ false, "./assets/obj/triobjmonkey.obj" });
+		//				//scene_object->add_component(MaterialComponent{ name, false, false, true});
+		//				scene_object->add_component(RenderComponent{ "./assets/obj/triobjmonkey.obj", name, false, true, true });
+		//			}
 
-				}
-				//scene->start_runtime(); // deal with making a runtime copy later -------- runtime thing works at least, entities are created
-				//// for now I need to be able to see changes to entities -> handle signaling
-				//game_playing = true;
-				//engine_context->game_playing = true;
-			}
-		}
-		else
-		{
-			wait_time++;
-		}
+		//		}
+		//		//scene->start_runtime(); // deal with making a runtime copy later -------- runtime thing works at least, entities are created
+		//		//// for now I need to be able to see changes to entities -> handle signaling
+		//		//game_playing = true;
+		//		//engine_context->game_playing = true;
+
+		//		scene->load("./assets/temp/temp_scene.scn");
+		//	}
+		//}
+		//else
+		//{
+		//	wait_time++;
+		//}
 		////////////////////////////////////////////////////
 		// RENDERING 
 		glfw_context->swap_buffers();

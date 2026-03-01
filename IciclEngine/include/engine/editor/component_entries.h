@@ -232,14 +232,16 @@ REGISTER_COMPONENT(EntityCommandBufferComponent, ("Default"),
 	FIELD_CUSTOM("active: ", comp, active, 1.25f, false)
 )
 REGISTER_COMPONENT(GravityStrengthComponent, ("Physics"),
-	FIELD_CUSTOM("gravity: ", comp, gravity, 1.25f, false)
+	FIELD_CUSTOM("gravity: ", comp, gravity, 1.75f, false)
 )
 REGISTER_COMPONENT(MovementStatsComponent, ("Physics"),
 	FIELD_CUSTOM("jump_force: ", comp, jump_force, 1.75f, false),
 	FIELD_CUSTOM("max_move_speed: ", comp, max_move_speed, 1.75f, false),
 	FIELD_CUSTOM("move_force: ", comp, move_force, 1.75f, false),
 	FIELD_CUSTOM("time_since_ground: ", comp, time_since_ground, 1.75f, false),
-	FIELD_CUSTOM("move_damp: ", comp, move_damp, 1.75f, false)
+	FIELD_CUSTOM("move_damp: ", comp, move_damp, 1.75f, false),
+	FIELD_CUSTOM("ground_time_limit: ", comp, ground_time_limit, 1.75f, false),
+	FIELD_CUSTOM("jump_time_limit: ", comp, jump_time_limit, 1.75f, false)
 )
 
 REGISTER_COMPONENT(ButtonObjectTag, ("Default"),
@@ -252,6 +254,15 @@ REGISTER_COMPONENT(CollectionObjectTag, ("Default"),
 
 REGISTER_COMPONENT(ActivationReferenceComponent, ("Default"),
 	FIELD_CUSTOM("reference: ", comp, reference, 1.25f, false)
+)
+REGISTER_COMPONENT(HighScoreLoaderComponent, ("Default"),
+	FIELD_CUSTOM("has_loaded: ", comp, has_loaded, 1.25f, false)
+)
+REGISTER_COMPONENT(EnemyTargetComponent, ("Default"),
+	FIELD_CUSTOM("target: ", comp, target, 2.5f, false)
+)
+REGISTER_COMPONENT(EnemyTagComponent, ("Default"),
+	FIELD_CUSTOM("tag: ", comp, tag, 1.25f, false)
 )
 
 REGISTER_COMPONENT(EndLevelComponent, ("Default"),

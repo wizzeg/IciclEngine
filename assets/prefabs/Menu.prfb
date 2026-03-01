@@ -15,7 +15,7 @@
                             {
                                 "name": "entity id: ",
                                 "type": "entity",
-                                "value": 9
+                                "value": 12
                             }
                         ],
                         "type": "EntityComponent"
@@ -25,7 +25,7 @@
                             {
                                 "name": "parent: ",
                                 "type": "parent",
-                                "value": 10
+                                "value": 13
                             },
                             {
                                 "name": "previous sibling: ",
@@ -35,7 +35,7 @@
                             {
                                 "name": "next sibling: ",
                                 "type": "next_sibling",
-                                "value": 8
+                                "value": 11
                             },
                             {
                                 "name": "child: ",
@@ -197,7 +197,7 @@
                             {
                                 "name": "entity id: ",
                                 "type": "entity",
-                                "value": 8
+                                "value": 11
                             }
                         ],
                         "type": "EntityComponent"
@@ -207,12 +207,12 @@
                             {
                                 "name": "parent: ",
                                 "type": "parent",
-                                "value": 10
+                                "value": 13
                             },
                             {
                                 "name": "previous sibling: ",
                                 "type": "previous_sibling",
-                                "value": 9
+                                "value": 12
                             },
                             {
                                 "name": "next sibling: ",
@@ -389,7 +389,7 @@
                             {
                                 "name": "entity id: ",
                                 "type": "entity",
-                                "value": 7
+                                "value": 10
                             }
                         ],
                         "type": "EntityComponent"
@@ -399,7 +399,7 @@
                             {
                                 "name": "parent: ",
                                 "type": "parent",
-                                "value": 10
+                                "value": 13
                             },
                             {
                                 "name": "previous sibling: ",
@@ -409,7 +409,7 @@
                             {
                                 "name": "next sibling: ",
                                 "type": "next_sibling",
-                                "value": 6
+                                "value": 9
                             },
                             {
                                 "name": "child: ",
@@ -581,7 +581,7 @@
                             {
                                 "name": "entity id: ",
                                 "type": "entity",
-                                "value": 6
+                                "value": 9
                             }
                         ],
                         "type": "EntityComponent"
@@ -591,17 +591,17 @@
                             {
                                 "name": "parent: ",
                                 "type": "parent",
-                                "value": 10
+                                "value": 13
                             },
                             {
                                 "name": "previous sibling: ",
                                 "type": "previous_sibling",
-                                "value": 7
+                                "value": 10
                             },
                             {
                                 "name": "next sibling: ",
                                 "type": "next_sibling",
-                                "value": 5
+                                "value": 8
                             },
                             {
                                 "name": "child: ",
@@ -726,7 +726,7 @@
                             {
                                 "name": "entity id: ",
                                 "type": "entity",
-                                "value": 5
+                                "value": 8
                             }
                         ],
                         "type": "EntityComponent"
@@ -736,17 +736,17 @@
                             {
                                 "name": "parent: ",
                                 "type": "parent",
-                                "value": 10
+                                "value": 13
                             },
                             {
                                 "name": "previous sibling: ",
                                 "type": "previous_sibling",
-                                "value": 6
+                                "value": 9
                             },
                             {
                                 "name": "next sibling: ",
                                 "type": "next_sibling",
-                                "value": 4
+                                "value": 7
                             },
                             {
                                 "name": "child: ",
@@ -918,7 +918,7 @@
                             {
                                 "name": "entity id: ",
                                 "type": "entity",
-                                "value": 4
+                                "value": 7
                             }
                         ],
                         "type": "EntityComponent"
@@ -928,17 +928,17 @@
                             {
                                 "name": "parent: ",
                                 "type": "parent",
-                                "value": 10
+                                "value": 13
                             },
                             {
                                 "name": "previous sibling: ",
                                 "type": "previous_sibling",
-                                "value": 5
+                                "value": 8
                             },
                             {
                                 "name": "next sibling: ",
                                 "type": "next_sibling",
-                                "value": 3
+                                "value": 6
                             },
                             {
                                 "name": "child: ",
@@ -1054,7 +1054,7 @@
                             {
                                 "name": "scene path: ",
                                 "type": "path",
-                                "value": ""
+                                "value": "./assets/scenes/level3.scn"
                             }
                         ],
                         "type": "ScenePathComponent"
@@ -1110,7 +1110,7 @@
                             {
                                 "name": "entity id: ",
                                 "type": "entity",
-                                "value": 3
+                                "value": 6
                             }
                         ],
                         "type": "EntityComponent"
@@ -1120,17 +1120,17 @@
                             {
                                 "name": "parent: ",
                                 "type": "parent",
-                                "value": 10
+                                "value": 13
                             },
                             {
                                 "name": "previous sibling: ",
                                 "type": "previous_sibling",
-                                "value": 4
+                                "value": 7
                             },
                             {
                                 "name": "next sibling: ",
                                 "type": "next_sibling",
-                                "value": 2
+                                "value": 5
                             },
                             {
                                 "name": "child: ",
@@ -1246,7 +1246,7 @@
                             {
                                 "name": "scene path: ",
                                 "type": "path",
-                                "value": ""
+                                "value": "./assets/scenes/level2.scn"
                             }
                         ],
                         "type": "ScenePathComponent"
@@ -1302,7 +1302,7 @@
                             {
                                 "name": "entity id: ",
                                 "type": "entity",
-                                "value": 2
+                                "value": 5
                             }
                         ],
                         "type": "EntityComponent"
@@ -1312,17 +1312,17 @@
                             {
                                 "name": "parent: ",
                                 "type": "parent",
-                                "value": 10
+                                "value": 13
                             },
                             {
                                 "name": "previous sibling: ",
                                 "type": "previous_sibling",
-                                "value": 3
+                                "value": 6
                             },
                             {
                                 "name": "next sibling: ",
                                 "type": "next_sibling",
-                                "value": 1
+                                "value": 4
                             },
                             {
                                 "name": "child: ",
@@ -1438,7 +1438,7 @@
                             {
                                 "name": "scene path: ",
                                 "type": "path",
-                                "value": ""
+                                "value": "./assets/scenes/level1.scn"
                             }
                         ],
                         "type": "ScenePathComponent"
@@ -1494,7 +1494,7 @@
                             {
                                 "name": "entity id: ",
                                 "type": "entity",
-                                "value": 1
+                                "value": 4
                             }
                         ],
                         "type": "EntityComponent"
@@ -1504,12 +1504,12 @@
                             {
                                 "name": "parent: ",
                                 "type": "parent",
-                                "value": 10
+                                "value": 13
                             },
                             {
                                 "name": "previous sibling: ",
                                 "type": "previous_sibling",
-                                "value": 2
+                                "value": 5
                             },
                             {
                                 "name": "next sibling: ",
@@ -1555,7 +1555,7 @@
                                 "name": "position: ",
                                 "type": "position",
                                 "value": [
-                                    -0.8299999833106995,
+                                    -0.8999999761581421,
                                     0.699999988079071
                                 ]
                             },
@@ -1570,7 +1570,7 @@
                             {
                                 "name": "font_size: ",
                                 "type": "font_size",
-                                "value": 0.05000000074505806
+                                "value": 0.019999999552965164
                             },
                             {
                                 "name": "color: ",
@@ -1644,6 +1644,41 @@
                             }
                         ],
                         "type": "UIDependencyComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "has_loaded: ",
+                                "type": "has_loaded",
+                                "value": false
+                            }
+                        ],
+                        "type": "HighScoreLoaderComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "pressed: ",
+                                "type": "pressed",
+                                "value": false
+                            },
+                            {
+                                "name": "hovered: ",
+                                "type": "hovered",
+                                "value": false
+                            }
+                        ],
+                        "type": "UIMenuItemStatusComponent"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "ui type: ",
+                                "type": "type",
+                                "value": 5
+                            }
+                        ],
+                        "type": "UITypeComponent"
                     }
                 ],
                 "name": "HighScoreView"
@@ -1660,7 +1695,7 @@
                     {
                         "name": "entity id: ",
                         "type": "entity",
-                        "value": 10
+                        "value": 13
                     }
                 ],
                 "type": "EntityComponent"
@@ -1685,7 +1720,7 @@
                     {
                         "name": "child: ",
                         "type": "child",
-                        "value": 9
+                        "value": 12
                     }
                 ],
                 "type": "HierarchyComponent"
@@ -1724,6 +1759,36 @@
                     }
                 ],
                 "type": "UIMenuControllerComponent"
+            },
+            {
+                "fields": [
+                    {
+                        "name": "end: ",
+                        "type": "end",
+                        "value": false
+                    },
+                    {
+                        "name": "coins_required: ",
+                        "type": "coins_required",
+                        "value": 1
+                    },
+                    {
+                        "name": "time_score: ",
+                        "type": "time_score",
+                        "value": 0.0
+                    },
+                    {
+                        "name": "this_level: ",
+                        "type": "this_level",
+                        "value": "./assets/scenes/level1.scn"
+                    },
+                    {
+                        "name": "next_level: ",
+                        "type": "next_level",
+                        "value": "./assets/scenes/level2.scn"
+                    }
+                ],
+                "type": "EndLevelComponent"
             }
         ],
         "name": "MenuContainer"

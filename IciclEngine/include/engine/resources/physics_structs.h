@@ -291,4 +291,5 @@ struct CollisionResult
 	uint32_t self_access_order;
 	uint32_t other_access_order;
 	uint16_t other_tag;
+	glm::vec3 other_positoin;
 };
