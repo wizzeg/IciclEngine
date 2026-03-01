@@ -10,7 +10,10 @@ Install Visual Studio 22, and ensure you have at least C++, but preferably C++ 2
 (Projects -> properties -> Configure properties -> general -> C++ language standards)
 
 Download code.
-After extracting, take the contents of "MOVE THESE OUTSIDE" and move them into the same folder as you extracted initially into.
+After extracting, take the imgui.ini in the contents of "MOVE THESE" and move it into the same folder as the .sln.
+Then take all of the contents in "MOVE THESE" and go into the x64 folder that lives in the same folder as the .sln file. And paste them into both the Release and Debug folder (this should give you a prepared layout for imgui).
+
+Then also copy the assets folder from the .sln file folder, into the x64 -> Release and Debug fulders.
+
 Run the .sln.
 Press the Play button in either release or debug.
-If you want to play the game through the editor outside of the .sln you must ensure you copy the assets folder into the debug/release folder where it is exported.
