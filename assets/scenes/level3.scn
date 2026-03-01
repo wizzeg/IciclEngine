@@ -10,7 +10,7 @@
                         {
                             "name": "entity name: ",
                             "type": "hashed_name",
-                            "value": "Floor"
+                            "value": "Landscape"
                         },
                         {
                             "name": "entity id: ",
@@ -218,7 +218,7 @@
                     "type": "LandscapeComponent"
                 }
             ],
-            "name": "Floor"
+            "name": "Landscape"
         },
         {
             "children": [],
@@ -3827,12 +3827,12 @@
                                 {
                                     "name": "entity name: ",
                                     "type": "hashed_name",
-                                    "value": "mat plain4"
+                                    "value": "mesh landscape"
                                 },
                                 {
                                     "name": "entity id: ",
                                     "type": "entity",
-                                    "value": 23
+                                    "value": 26
                                 }
                             ],
                             "type": "EntityComponent"
@@ -3852,6 +3852,128 @@
                                 {
                                     "name": "next sibling: ",
                                     "type": "next_sibling",
+                                    "value": 21
+                                },
+                                {
+                                    "name": "child: ",
+                                    "type": "child",
+                                    "value": 0
+                                }
+                            ],
+                            "type": "HierarchyComponent"
+                        },
+                        {
+                            "fields": [
+                                {
+                                    "name": "mesh loaded: ",
+                                    "type": "loaded",
+                                    "value": false
+                                },
+                                {
+                                    "name": "mesh path: ",
+                                    "type": "hashed_path",
+                                    "value": "./assets/obj/landscape/landscape256.obj"
+                                }
+                            ],
+                            "type": "MeshComponent"
+                        }
+                    ],
+                    "name": "mesh landscape"
+                },
+                {
+                    "children": [],
+                    "components": [
+                        {
+                            "fields": [
+                                {
+                                    "name": "entity name: ",
+                                    "type": "hashed_name",
+                                    "value": "mesh cube"
+                                },
+                                {
+                                    "name": "entity id: ",
+                                    "type": "entity",
+                                    "value": 21
+                                }
+                            ],
+                            "type": "EntityComponent"
+                        },
+                        {
+                            "fields": [
+                                {
+                                    "name": "parent: ",
+                                    "type": "parent",
+                                    "value": 24
+                                },
+                                {
+                                    "name": "previous sibling: ",
+                                    "type": "previous_sibling",
+                                    "value": 26
+                                },
+                                {
+                                    "name": "next sibling: ",
+                                    "type": "next_sibling",
+                                    "value": 25
+                                },
+                                {
+                                    "name": "child: ",
+                                    "type": "child",
+                                    "value": 0
+                                }
+                            ],
+                            "type": "HierarchyComponent"
+                        },
+                        {
+                            "fields": [
+                                {
+                                    "name": "mesh loaded: ",
+                                    "type": "loaded",
+                                    "value": false
+                                },
+                                {
+                                    "name": "mesh path: ",
+                                    "type": "hashed_path",
+                                    "value": "./assets/obj/cube.obj"
+                                }
+                            ],
+                            "type": "MeshComponent"
+                        }
+                    ],
+                    "name": "mesh cube"
+                },
+                {
+                    "children": [],
+                    "components": [
+                        {
+                            "fields": [
+                                {
+                                    "name": "entity name: ",
+                                    "type": "hashed_name",
+                                    "value": "mat landscape"
+                                },
+                                {
+                                    "name": "entity id: ",
+                                    "type": "entity",
+                                    "value": 25
+                                }
+                            ],
+                            "type": "EntityComponent"
+                        },
+                        {
+                            "fields": [
+                                {
+                                    "name": "parent: ",
+                                    "type": "parent",
+                                    "value": 24
+                                },
+                                {
+                                    "name": "previous sibling: ",
+                                    "type": "previous_sibling",
+                                    "value": 21
+                                },
+                                {
+                                    "name": "next sibling: ",
+                                    "type": "next_sibling",
                                     "value": 22
                                 },
                                 {
@@ -3867,7 +3989,7 @@
                                 {
                                     "name": "material path: ",
                                     "type": "hashed_path",
-                                    "value": "./assets/shaders/plain4.mat"
+                                    "value": "./assets/shaders/landscape/landscape.mat"
                                 },
                                 {
                                     "name": "instanced: ",
@@ -3888,7 +4010,7 @@
                             "type": "MaterialComponent"
                         }
                     ],
-                    "name": "mat plain4"
+                    "name": "mat landscape"
                 },
                 {
                     "children": [],
@@ -3918,12 +4040,12 @@
                                 {
                                     "name": "previous sibling: ",
                                     "type": "previous_sibling",
-                                    "value": 23
+                                    "value": 25
                                 },
                                 {
                                     "name": "next sibling: ",
                                     "type": "next_sibling",
-                                    "value": 21
+                                    "value": 23
                                 },
                                 {
                                     "name": "child: ",
@@ -3969,12 +4091,12 @@
                                 {
                                     "name": "entity name: ",
                                     "type": "hashed_name",
-                                    "value": "mesh cube"
+                                    "value": "mat plain4"
                                 },
                                 {
                                     "name": "entity id: ",
                                     "type": "entity",
-                                    "value": 21
+                                    "value": 23
                                 }
                             ],
                             "type": "EntityComponent"
@@ -4007,20 +4129,30 @@
                         {
                             "fields": [
                                 {
-                                    "name": "mesh loaded: ",
-                                    "type": "loaded",
+                                    "name": "material path: ",
+                                    "type": "hashed_path",
+                                    "value": "./assets/shaders/plain4.mat"
+                                },
+                                {
+                                    "name": "instanced: ",
+                                    "type": "instance",
                                     "value": false
                                 },
                                 {
-                                    "name": "mesh path: ",
-                                    "type": "hashed_path",
-                                    "value": "./assets/obj/cube.obj"
+                                    "name": "use mipmaps: ",
+                                    "type": "mipmap",
+                                    "value": true
+                                },
+                                {
+                                    "name": "load material: ",
+                                    "type": "load",
+                                    "value": true
                                 }
                             ],
-                            "type": "MeshComponent"
+                            "type": "MaterialComponent"
                         }
                     ],
-                    "name": "mesh cube"
+                    "name": "mat plain4"
                 },
                 {
                     "children": [],
@@ -4050,7 +4182,7 @@
                                 {
                                     "name": "previous sibling: ",
                                     "type": "previous_sibling",
-                                    "value": 21
+                                    "value": 23
                                 },
                                 {
                                     "name": "next sibling: ",
@@ -4201,7 +4333,7 @@
                         {
                             "name": "child: ",
                             "type": "child",
-                            "value": 23
+                            "value": 26
                         }
                     ],
                     "type": "HierarchyComponent"

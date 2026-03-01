@@ -8,12 +8,12 @@
                     {
                         "name": "entity name: ",
                         "type": "hashed_name",
-                        "value": "Player"
+                        "value": "mesh cube"
                     },
                     {
                         "name": "entity id: ",
                         "type": "entity",
-                        "value": 3
+                        "value": 21
                     }
                 ],
                 "type": "EntityComponent"
@@ -46,299 +46,19 @@
             {
                 "fields": [
                     {
-                        "name": "position: ",
-                        "type": "position",
-                        "value": [
-                            0.0,
-                            0.0,
-                            0.0
-                        ]
-                    },
-                    {
-                        "name": "scale: ",
-                        "type": "scale",
-                        "value": [
-                            1.0,
-                            1.0,
-                            1.0
-                        ]
-                    },
-                    {
-                        "name": "rotation: ",
-                        "type": "rotation_euler_do_not_use",
-                        "value": [
-                            0.0,
-                            0.0,
-                            0.0
-                        ]
-                    },
-                    {
-                        "name": "overwrite quaternion rotation: ",
-                        "type": "overide_quaternion",
+                        "name": "mesh loaded: ",
+                        "type": "loaded",
                         "value": false
                     },
-                    {
-                        "name": "update euler rotation: ",
-                        "type": "get_euler_angles",
-                        "value": false
-                    },
-                    {
-                        "name": "rotation_quat",
-                        "type": "rotation_quat",
-                        "value": [
-                            0.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ]
-                    },
-                    {
-                        "name": "model_matrix",
-                        "type": "model_matrix",
-                        "value": [
-                            1.0,
-                            0.0,
-                            0.0,
-                            0.0,
-                            0.0,
-                            1.0,
-                            0.0,
-                            0.0,
-                            0.0,
-                            0.0,
-                            1.0,
-                            0.0,
-                            0.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ]
-                    }
-                ],
-                "type": "TransformDynamicComponent"
-            },
-            {
-                "fields": [
                     {
                         "name": "mesh path: ",
-                        "type": "mesh",
+                        "type": "hashed_path",
                         "value": "./assets/obj/cube.obj"
-                    },
-                    {
-                        "name": "material path: ",
-                        "type": "material",
-                        "value": "./assets/shaders/plain2.mat"
-                    },
-                    {
-                        "name": "instance draw: ",
-                        "type": "instance",
-                        "value": false
-                    },
-                    {
-                        "name": "use mipmaps: ",
-                        "type": "mipmap",
-                        "value": false
-                    },
-                    {
-                        "name": "load component: ",
-                        "type": "load",
-                        "value": false
                     }
                 ],
-                "type": "RenderComponent"
-            },
-            {
-                "fields": [
-                    {
-                        "name": "position: ",
-                        "type": "position",
-                        "value": [
-                            0.0,
-                            0.0,
-                            0.0
-                        ]
-                    },
-                    {
-                        "name": "rotation: ",
-                        "type": "rotation",
-                        "value": [
-                            0.0,
-                            0.0,
-                            0.0,
-                            0.0
-                        ]
-                    },
-                    {
-                        "name": "linear_velocity: ",
-                        "type": "linear_velocity",
-                        "value": [
-                            0.0,
-                            0.0,
-                            0.0
-                        ]
-                    },
-                    {
-                        "name": "angular_velocity: ",
-                        "type": "angular_velocity",
-                        "value": [
-                            0.0,
-                            0.0,
-                            0.0
-                        ]
-                    },
-                    {
-                        "name": "mass: ",
-                        "type": "mass",
-                        "value": 1.0
-                    },
-                    {
-                        "name": "inverse_mass: ",
-                        "type": "inverse_mass",
-                        "value": 1.0
-                    },
-                    {
-                        "name": "restitution: ",
-                        "type": "restitution",
-                        "value": 0.20000000298023224
-                    },
-                    {
-                        "name": "friction: ",
-                        "type": "friction",
-                        "value": 0.800000011920929
-                    },
-                    {
-                        "name": "inverse_inertia_tensor_local",
-                        "type": "inverse_inertia_tensor_local",
-                        "value": [
-                            0.0,
-                            0.0,
-                            0.0,
-                            0.0,
-                            0.0,
-                            0.0,
-                            0.0,
-                            0.0,
-                            0.0
-                        ]
-                    },
-                    {
-                        "name": "recalculate tensor: ",
-                        "type": "recalculate_inverse_inertia_tensor",
-                        "value": true
-                    },
-                    {
-                        "name": "dynamic layers: ",
-                        "type": "dynamic_layers",
-                        "value": 2
-                    },
-                    {
-                        "name": "static layers: ",
-                        "type": "static_layers",
-                        "value": 0
-                    },
-                    {
-                        "name": "asleep: ",
-                        "type": "asleep",
-                        "value": false
-                    },
-                    {
-                        "name": "sleep strikes: ",
-                        "type": "sleep_strikes",
-                        "value": 0
-                    },
-                    {
-                        "name": "max sleep strikes: ",
-                        "type": "max_sleep_strikes",
-                        "value": 1000
-                    }
-                ],
-                "type": "RigidBodyComponent"
-            },
-            {
-                "fields": [
-                    {
-                        "name": "box offset: ",
-                        "type": "offset",
-                        "value": [
-                            0.0,
-                            0.0,
-                            0.0
-                        ]
-                    },
-                    {
-                        "name": "collision layers: ",
-                        "type": "collision_layers",
-                        "value": 7
-                    },
-                    {
-                        "name": "tag: ",
-                        "type": "tag",
-                        "value": 1
-                    }
-                ],
-                "type": "BoundingBoxComponent"
-            },
-            {
-                "fields": [
-                    {
-                        "name": "gravity: ",
-                        "type": "gravity",
-                        "value": 9.819999694824219
-                    }
-                ],
-                "type": "GravityStrengthComponent"
-            },
-            {
-                "fields": [
-                    {
-                        "name": "is player: ",
-                        "type": "is_player",
-                        "value": false
-                    }
-                ],
-                "type": "PlayerTagComponent"
-            },
-            {
-                "fields": [
-                    {
-                        "name": "jump_force: ",
-                        "type": "jump_force",
-                        "value": 7.5
-                    },
-                    {
-                        "name": "max_move_speed: ",
-                        "type": "max_move_speed",
-                        "value": 25.0
-                    },
-                    {
-                        "name": "move_force: ",
-                        "type": "move_force",
-                        "value": 50.0
-                    },
-                    {
-                        "name": "time_since_ground: ",
-                        "type": "time_since_ground",
-                        "value": 0.0
-                    },
-                    {
-                        "name": "move_damp: ",
-                        "type": "move_damp",
-                        "value": 10.0
-                    },
-                    {
-                        "name": "ground_time_limit: ",
-                        "type": "ground_time_limit",
-                        "value": 0.15000000596046448
-                    },
-                    {
-                        "name": "jump_time_limit: ",
-                        "type": "jump_time_limit",
-                        "value": 0.20000000298023224
-                    }
-                ],
-                "type": "MovementStatsComponent"
+                "type": "MeshComponent"
             }
         ],
-        "name": "Player"
+        "name": "mesh cube"
     }
 }

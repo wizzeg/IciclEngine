@@ -1,6 +1,6 @@
 {
     "name": "new scene",
-    "next index": 1,
+    "next index": 0,
     "root objects": [
         {
             "children": [],
@@ -3890,6 +3890,77 @@
                                 {
                                     "name": "entity name: ",
                                     "type": "hashed_name",
+                                    "value": "mat plain5"
+                                },
+                                {
+                                    "name": "entity id: ",
+                                    "type": "entity",
+                                    "value": 26
+                                }
+                            ],
+                            "type": "EntityComponent"
+                        },
+                        {
+                            "fields": [
+                                {
+                                    "name": "parent: ",
+                                    "type": "parent",
+                                    "value": 24
+                                },
+                                {
+                                    "name": "previous sibling: ",
+                                    "type": "previous_sibling",
+                                    "value": 0
+                                },
+                                {
+                                    "name": "next sibling: ",
+                                    "type": "next_sibling",
+                                    "value": 23
+                                },
+                                {
+                                    "name": "child: ",
+                                    "type": "child",
+                                    "value": 0
+                                }
+                            ],
+                            "type": "HierarchyComponent"
+                        },
+                        {
+                            "fields": [
+                                {
+                                    "name": "material path: ",
+                                    "type": "hashed_path",
+                                    "value": "./assets/shaders/plain5.mat"
+                                },
+                                {
+                                    "name": "instanced: ",
+                                    "type": "instance",
+                                    "value": false
+                                },
+                                {
+                                    "name": "use mipmaps: ",
+                                    "type": "mipmap",
+                                    "value": true
+                                },
+                                {
+                                    "name": "load material: ",
+                                    "type": "load",
+                                    "value": true
+                                }
+                            ],
+                            "type": "MaterialComponent"
+                        }
+                    ],
+                    "name": "mat plain5"
+                },
+                {
+                    "children": [],
+                    "components": [
+                        {
+                            "fields": [
+                                {
+                                    "name": "entity name: ",
+                                    "type": "hashed_name",
                                     "value": "mat plain4"
                                 },
                                 {
@@ -3910,7 +3981,7 @@
                                 {
                                     "name": "previous sibling: ",
                                     "type": "previous_sibling",
-                                    "value": 0
+                                    "value": 26
                                 },
                                 {
                                     "name": "next sibling: ",
@@ -4264,7 +4335,7 @@
                         {
                             "name": "child: ",
                             "type": "child",
-                            "value": 23
+                            "value": 26
                         }
                     ],
                     "type": "HierarchyComponent"
