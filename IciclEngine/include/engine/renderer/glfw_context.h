@@ -92,6 +92,20 @@ struct GLFWContext
 			}
 		}
 	}
+	void resize_framebuffers(int a_width, int a_height)
+	{
+		
+		for (size_t i = 0; i < frame_buffers.size(); i++)
+		{
+			if (frame_buffers[i].get_height() == a_height ||
+				frame_buffers[i].get_width() == a_width)
+			{
+				return;
+			}
+			frame_buffers[i].resize(a_width, a_height);
+		}
+		glfwSetWindowAspectRatio(window, 16, 9);
+	}
 
 	void create_framebuffer(const std::string name, int a_width, int a_height, EFramebufferType a_type)
 	{

@@ -55,6 +55,10 @@
 
 #include <algorithm>
 
+#include <engine/core/build_state.h>
+
+#define HEIGHT 1080;
+#define WIDTH 1920;
 
 int main(void)
 {
@@ -63,23 +67,24 @@ int main(void)
 	///* Initialize the library */
 	if (!glfwInit())
 		return -1;
-
-	std::shared_ptr<GLFWContext> glfw_context = std::make_shared<GLFWContext>(1920, 1080, "Icicl engine", true, true, true);
+	int height = HEIGHT;
+	int width = WIDTH;
+	std::shared_ptr<GLFWContext> glfw_context = std::make_shared<GLFWContext>(width, height, "Icicl engine", true, true, true);
 	glfw_context->deactivate();
 	std::shared_ptr<ImGuiManager> imgui_manager = std::make_shared<ImGuiManager>(glfw_context);
 	glfw_context->activate();
-	glfw_context->create_framebuffer("editor_frame_buffer", 2560, 1440, Output);
+	glfw_context->create_framebuffer("editor_frame_buffer", width, height, Output);
 	glfw_context->bind_framebuffer("editor_frame_buffer"); // Need to do this every frame really, when I'm changing framebuffers
 	//glEnable(GL_CULL_FACE);
 	glfw_context->unbind_framebuffer();
-	glfw_context->create_framebuffer("main_camera_buffer", 2560, 1440, Output);
+	glfw_context->create_framebuffer("main_camera_buffer", width, height, Output);
 
 	glfw_context->unbind_framebuffer();
-	glfw_context->create_framebuffer("editor_camera_gbuffer", 2560, 1440, GBuffer);
+	glfw_context->create_framebuffer("editor_camera_gbuffer", width, height, GBuffer);
 
 
 	glfw_context->unbind_framebuffer();
-	glfw_context->create_framebuffer("main_camera_gbuffer", 2560, 1440, GBuffer);
+	glfw_context->create_framebuffer("main_camera_gbuffer", width, height, GBuffer);
 
 	glfw_context->create_framebuffer("shadow_map_array", 2048, 2048, EFramebufferType::ShadowMapArray);
 	FrameBuffer* shadow_maps = glfw_context->get_framebuffer("shadow_map_array");
@@ -109,7 +114,7 @@ int main(void)
 	shader_load.save("./assets/shaders/test_shader2.shdr");
 	//std::shared_ptr<MeshDataGenStorage> storage = std::make_shared<MeshDataGenStorage>(2);
 	std::shared_ptr<EngineContext> engine_context = std::make_shared<EngineContext>(scene/*storage*/);
-	scene->load("./assets/temp/temp_scene.scn");
+	scene->load(DEFAULT_PATH);
 	//RenderThread render_thread(engine_context, *shader_program, glfw_context);
 	GameThread game_thread(engine_context, scene);
 	//EngineThread engine_thread(engine_context, imgui_manager, ui_mananger);
@@ -148,6 +153,29 @@ int main(void)
 	//asset_manager.add_asset_job(std::move(job));
 
 	uint64_t wait_time = 1;
+
+#ifdef GAME_BUILD
+	glfwSetWindowFocusCallback(window, [](GLFWwindow* window, int focused)
+		{
+			if (!focused)
+			{
+				InputManager::instance().unlock_mouse();
+			}
+			else
+			{
+				float height = HEIGHT;
+				float width = WIDTH;
+				InputManager::instance().lock_mouse(width, height);
+			}
+		});
+	float temp_height = HEIGHT;
+	float temp_width = WIDTH;
+	int temp_win_width;
+	int temp_win_height;
+	glfwGetWindowPos(window, &temp_win_width, &temp_win_height);
+	InputManager::instance().lock_mouse(temp_width, temp_height);
+	engine_context->start_game_thread(true);
+#else
 	glfwSetWindowFocusCallback(window, [](GLFWwindow* window, int focused)
 		{
 			if (!focused)
@@ -155,6 +183,7 @@ int main(void)
 				InputManager::instance().unlock_mouse();
 			}
 		});
+#endif // GAME_BUILD
 
 	while (engine_context->run())
 	{
@@ -374,7 +403,9 @@ int main(void)
 		deffered_buffer.output = glfw_context->get_framebuffer("editor_frame_buffer");
 		deffered_buffer.shadow_maps = glfw_context->get_framebuffer("shadow_map_array");
 		render_call_timer.start();
+#ifndef GAME_BUILD
 		renderer.deffered_render(render_context, deffered_buffer);
+#endif
 		render_call_timer.stop();
 		render_call_time += render_call_timer.get_time_ms();
 
@@ -468,6 +499,7 @@ int main(void)
 		{
 			std::lock_guard<std::mutex> guard(engine_context->mutex);
 			timer2.start();
+			engine_context->update_input();
 			engine_context->swap_render_requests();
 			engine_context->render_thread = true;
 			engine_context->game_thread = true;
@@ -488,16 +520,42 @@ int main(void)
 					});
 				if (do_exit)
 				{
-
+#ifdef GAME_BUILD
+					engine_context->exit_game();
+#else
 					//engine_context->kill_all = true;
 					engine_context->start_game_thread(false);
+#endif
 				}
 			}
+//#ifdef GAME_BUILD
+//			input_manager.lock_mouse(520, 520);
+//#endif
 			engine_context->systems_context->get_system_storage().perform_erase();
-			
-			// do all ui drawing.
-			imgui_manager->new_frame();
 
+			// this would be neat, but I'd have to update ingame cameras too...
+#ifdef GAME_BUILD
+			int fb_width, fb_height;
+			glfwGetFramebufferSize(window, &fb_width, &fb_height);
+			int win_width, win_height;
+			glfwGetWindowPos(window, &win_width, &win_height);
+			if (fb_width != temp_width || fb_height != temp_height ||
+				win_width != temp_win_width || win_height != temp_win_height)
+			{
+				glfw_context->resize_framebuffers(fb_width, fb_height);
+				input_manager.lock_mouse(((float)win_width) + ((float)fb_width) * 0.5f, (((float)win_height) + ((float)fb_height) * 0.5f));
+				temp_width = fb_width;
+				temp_height = fb_height;
+				temp_win_width = win_width;
+				temp_win_height = win_height;
+			}
+#endif
+			imgui_manager->new_frame();
+#ifndef GAME_BUILD
+
+
+			// do all ui drawing.
+			
 			imgui_manager->make_dockspace();
 			ImGui::Begin("editor_frame_buffer");
 			ImVec2 available_content = ImGui::GetContentRegionAvail() - ImVec2(5, 5);
@@ -710,8 +768,10 @@ int main(void)
 			//ui_mananger->RenderToolbar();
 
 			//input_manager.update_input();
-			engine_context->update_input();
+			
 
+			
+#endif // GAME_BUILD
 			imgui_manager->render();
 			timer2.stop();
 			ui_manager_time += timer2.get_time_ms();

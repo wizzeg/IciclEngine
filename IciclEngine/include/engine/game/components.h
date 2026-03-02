@@ -57,7 +57,7 @@ struct TransformDynamicComponent
     bool overide_quaternion = false;
     glm::mat4 model_matrix = glm::mat4(1);
 
-    glm::vec3 get_position()
+    glm::vec3 get_position() const
     {
         return{
     model_matrix[3][0],
@@ -684,4 +684,16 @@ struct ScaleBySpeedComponent
     glm::vec3 max_scale = glm::vec3(1.f);
     float min_linear_speed = 0.1f;
     glm::vec3 min_scale = glm::vec3(0.1f);
+};
+
+struct ActivateMenuComponent
+{
+    bool actiavte = false;
+};
+struct ObjectSpawnerComponent
+{
+    uint32_t spawn_count = 50;
+    uint32_t spawns_at_time = 1;
+    float spawn_interval = 0.5f;
+    float time_since_last_spawn = 0;
 };

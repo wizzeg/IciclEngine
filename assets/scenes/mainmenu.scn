@@ -1,6 +1,6 @@
 {
     "name": "new scene",
-    "next index": 2,
+    "next index": 0,
     "root objects": [
         {
             "children": [
@@ -1761,6 +1761,16 @@
                         }
                     ],
                     "type": "UIMenuControllerComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "actiavte: ",
+                            "type": "actiavte",
+                            "value": true
+                        }
+                    ],
+                    "type": "ActivateMenuComponent"
                 }
             ],
             "name": "MenuContainer"

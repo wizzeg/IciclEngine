@@ -2261,6 +2261,16 @@ bool MenuSystem::execute(SystemsContext& ctx)
 	// 
 	// register the position into system context storage
 	// or just straight up iterate through all of the UIs and check em.
+	if (initialize)
+	{
+		ctx.each(
+			WithRead<UIMenuControllerComponent, ActivateMenuComponent>{},
+			[this](const entt::entity entity, const UIMenuControllerComponent& menu, const ActivateMenuComponent& act) {
+				menu_open = act.actiavte;
+			});
+		initialize = false;
+	}
+
 	bool synced = false;
 	auto& input_manager = InputManager::instance();
 	if (input_manager.is_key_pressed(EKey::Escape) && !just_changed)
@@ -3232,5 +3242,43 @@ bool ScaleBySpeedSystem::execute(SystemsContext& ctx)
 			}
 
 		});
+	return false;
+}
+
+bool ObjectSpawnerSystem::execute(SystemsContext& ctx)
+{
+	auto ecb = ctx.get_ecb("end_frame_ecb");
+	float dt = (float)ctx.get_delta_time();
+	ctx.enqueue_each(
+		WithRead<TransformDynamicComponent>{},
+		WithWrite<ObjectSpawnerComponent>{},
+		WithRef<EntityCommandBufferComponent>{},
+		[this, ecb, dt](
+			const entt::entity entity,
+			const TransformDynamicComponent& trans,
+			ObjectSpawnerComponent& spwn
+			)
+		{
+			spwn.time_since_last_spawn += dt;
+			if (dt < 0.01f && spwn.spawn_count > 0 && spwn.spawn_interval < spwn.time_since_last_spawn)
+			{
+				spwn.time_since_last_spawn = 0.f;
+				for (size_t i = 0; i < spwn.spawns_at_time && spwn.spawn_count > 0; i++)
+				{
+					ecb->create_entity(new_entity()
+						.with_component<RenderComponent>(hashed_string_64("./assets/obj/cube.obj"), hashed_string_64("./assets/shaders/plain3.mat"), false, true, true)
+						.with_component<TransformDynamicComponent>(trans)
+						.with_component<RigidBodyComponent>(RigidBodyComponent{ trans.get_position(), glm::quat(1, 0, 0, 0),
+							glm::vec3(0), glm::vec3(0), 1.f, 1.f, glm::mat3(0.f), 0.8f, 0.5f, true, 7, 0, false, 0, 1000 })
+						.with_component<BoundingBoxComponent>(BoundingBoxComponent{ glm::vec3(0.0f) , glm::vec3(1.0f), false, 7, 10 })
+						.with_component<GravityStrengthComponent>(GravityStrengthComponent{ 9.82f })
+						.assemble(), "new_entity");
+					--spwn.spawn_count;
+				}
+				
+			}
+			
+		}
+		);
 	return false;
 }

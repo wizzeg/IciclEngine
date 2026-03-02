@@ -42,12 +42,15 @@ struct FrameBuffer
 			create_g_buffer();
 			break;
 		case ShadowMap:
+			resize_with_window = false;
 			create_shadow_buffer();
 			break;
 		case ShadowMapArray:
+			resize_with_window = false;
 			create_shadowmap_buffer_array();
 			break;
 		case RenderTexture:
+			resize_with_window = false;
 			create_render_texture();
 			break;
 		case Output:
@@ -88,6 +91,7 @@ struct FrameBuffer
 
 	void resize(int a_width, int a_height)
 	{
+		if (!resize_with_window) return;
 		if (a_width == width && a_height == height) return;
 		width = a_width;
 		height = a_height;
@@ -319,5 +323,7 @@ private:
 
 	GLint width = 1;
 	GLint height = 1;
+
+	bool resize_with_window = true;
 };
 

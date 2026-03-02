@@ -25,8 +25,8 @@ public:
 
 	void reset();
 
-	bool save(std::string a_path);
-	bool load(std::string a_path, bool clear_registry = true);
+	bool save(const std::string& a_path);
+	bool load(const std::string& a_path, bool clear_registry = true);
 
 	bool save_prefab(const std::string& a_path, std::weak_ptr<SceneObject> a_scene_ptr, const std::string& a_name = " ");
 	bool load_prefab(const std::string& a_path);

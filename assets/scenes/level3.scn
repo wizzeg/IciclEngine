@@ -4581,6 +4581,151 @@
                 }
             ],
             "name": "SpeedScale"
+        },
+        {
+            "children": [],
+            "components": [
+                {
+                    "fields": [
+                        {
+                            "name": "entity name: ",
+                            "type": "hashed_name",
+                            "value": "PhysicsObject"
+                        },
+                        {
+                            "name": "entity id: ",
+                            "type": "entity",
+                            "value": 28
+                        }
+                    ],
+                    "type": "EntityComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "parent: ",
+                            "type": "parent",
+                            "value": 0
+                        },
+                        {
+                            "name": "previous sibling: ",
+                            "type": "previous_sibling",
+                            "value": 0
+                        },
+                        {
+                            "name": "next sibling: ",
+                            "type": "next_sibling",
+                            "value": 0
+                        },
+                        {
+                            "name": "child: ",
+                            "type": "child",
+                            "value": 0
+                        }
+                    ],
+                    "type": "HierarchyComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "position: ",
+                            "type": "position",
+                            "value": [
+                                1.840000033378601,
+                                19.25,
+                                -21.75
+                            ]
+                        },
+                        {
+                            "name": "scale: ",
+                            "type": "scale",
+                            "value": [
+                                1.0,
+                                1.0,
+                                1.0
+                            ]
+                        },
+                        {
+                            "name": "rotation: ",
+                            "type": "rotation_euler_do_not_use",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "overwrite quaternion rotation: ",
+                            "type": "overide_quaternion",
+                            "value": false
+                        },
+                        {
+                            "name": "update euler rotation: ",
+                            "type": "get_euler_angles",
+                            "value": false
+                        },
+                        {
+                            "name": "rotation_quat",
+                            "type": "rotation_quat",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0
+                            ]
+                        },
+                        {
+                            "name": "model_matrix",
+                            "type": "model_matrix",
+                            "value": [
+                                1.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0,
+                                0.0,
+                                1.840000033378601,
+                                19.25,
+                                -21.75,
+                                1.0
+                            ]
+                        }
+                    ],
+                    "type": "TransformDynamicComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "spawn_count: ",
+                            "type": "spawn_count",
+                            "value": 10000
+                        },
+                        {
+                            "name": "spawns_at_time: ",
+                            "type": "spawns_at_time",
+                            "value": 5
+                        },
+                        {
+                            "name": "spawn_interval: ",
+                            "type": "spawn_interval",
+                            "value": 0.20000000298023224
+                        },
+                        {
+                            "name": "time_since_last_spawn: ",
+                            "type": "time_since_last_spawn",
+                            "value": 0.0
+                        }
+                    ],
+                    "type": "ObjectSpawnerComponent"
+                }
+            ],
+            "name": "PhysicsObject"
         }
     ],
     "systems": [
@@ -4592,13 +4737,13 @@
         },
         {
             "enabled": true,
-            "name": "SmoothFollowSystem",
+            "name": "HeightMapLoadSystem",
             "order": 1,
             "physics": false
         },
         {
             "enabled": true,
-            "name": "HeightMapLoadSystem",
+            "name": "SmoothFollowSystem",
             "order": 1,
             "physics": false
         },
@@ -4612,6 +4757,12 @@
             "enabled": true,
             "name": "PhysicsSystem",
             "order": 7,
+            "physics": false
+        },
+        {
+            "enabled": true,
+            "name": "ObjectSpawnerSystem",
+            "order": 8,
             "physics": false
         },
         {

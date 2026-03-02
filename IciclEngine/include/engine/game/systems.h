@@ -116,7 +116,8 @@ struct UIDrawGathering : SystemBase
 struct MenuSystem : SystemBase
 {
 	bool execute(SystemsContext& ctx) override;
-	bool menu_open = true;
+	bool initialize = true;
+	bool menu_open = false;
 	bool just_changed = false;
 	bool can_press = true;
 	bool just_pressed = false;
@@ -185,6 +186,11 @@ struct SmoothFollowSystem : SystemBase
 }; 
 
 struct ScaleBySpeedSystem :SystemBase
+{
+	bool execute(SystemsContext& ctx) override;
+};
+
+struct ObjectSpawnerSystem : SystemBase
 {
 	bool execute(SystemsContext& ctx) override;
 };

@@ -43,7 +43,7 @@ void Scene::reset()
 	ComponentRegistry::instance().init_storages(registry);
 }
 
-bool Scene::save(std::string a_path)
+bool Scene::save(const std::string& a_path)
 {
 	json j = json::object();
 	j["name"] = name;
@@ -76,7 +76,7 @@ bool Scene::save(std::string a_path)
 	return true;
 }
 
-bool Scene::load(std::string a_path, bool clear_registry)
+bool Scene::load(const std::string& a_path, bool clear_registry)
 {
 	std::ifstream file(a_path);
 	if (!file)

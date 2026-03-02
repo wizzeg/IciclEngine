@@ -276,11 +276,20 @@ REGISTER_COMPONENT(SmoothFollowComponent, ("Default"),
 	FIELD_CUSTOM("target: ", comp, target, 2.5f, false),
 	FIELD_CUSTOM("offset: ", comp, offset, 1.75f, false),
 	FIELD_CUSTOM("follow_speed: ", comp, follow_speed, 1.755f, false),
-	FIELD_CUSTOM("laxness: ", comp, laxness, 1.75f, false)
+	FIELD_CUSTOM("laxness: ", comp, laxness, 2.5f, false)
 )
 REGISTER_COMPONENT(ScaleBySpeedComponent, ("Default"),
 	FIELD_CUSTOM("max_linear_speed: ", comp, max_linear_speed, 2.5f, false),
 	FIELD_CUSTOM("max_scale: ", comp, max_scale, 1.75f, false),
 	FIELD_CUSTOM("min_linear_speed: ", comp, min_linear_speed, 2.5f, false),
-	FIELD_CUSTOM("min_scale: ", comp, min_scale, 1.75f, false)
+	FIELD_CUSTOM("min_scale: ", comp, min_scale, 2.5f, false)
+)
+REGISTER_COMPONENT(ActivateMenuComponent, ("Default"),
+	FIELD_CUSTOM("actiavte: ", comp, actiavte, 1.25f, false)
+)
+REGISTER_COMPONENT(ObjectSpawnerComponent, ("Default"),
+	FIELD_CUSTOM("spawn_count: ", comp, spawn_count, 1.25f, false),
+	FIELD_CUSTOM("spawns_at_time: ", comp, spawns_at_time, 1.25f, false),
+	FIELD_CUSTOM("spawn_interval: ", comp, spawn_interval, 2.25f, false),
+	FIELD_CUSTOM("time_since_last_spawn: ", comp, time_since_last_spawn, 1.75f, false)
 )

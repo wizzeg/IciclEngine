@@ -5,6 +5,7 @@
 #include <engine/game/components.h>
 #include <engine/renderer/shader_loader.h>
 #include <algorithm>
+#include <engine/core/build_state.h>
 constexpr auto MAX_POINT_LIGHTS = 512;
 constexpr auto MAX_MODEL_INSTANCES = 4096; // 1024 and 512 makes weird bug with instanced renders, at 25/26k entities
 constexpr auto HALF_MODEL_INSTANCES = 2048;
@@ -189,6 +190,7 @@ void Renderer::deffered_render(const RenderContext& a_render_context, const Deff
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 	// do shadow passes here for each light that needs shadowing
 	const FrameBuffer* gbuffer = a_deffered_buffers.gbuffer;
+
 	const FrameBuffer* output = a_deffered_buffers.output;
 	if (!gbuffer) return;
 	deffered_geometry_pass(a_render_context, gbuffer);
@@ -208,8 +210,17 @@ void Renderer::deffered_render(const RenderContext& a_render_context, const Deff
 
 		current_gl_program = lighting_program;
 		glUseProgram(current_gl_program);
+#ifdef GAME_BUILD
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport(0, 0, output->get_width(), output->get_height());
+		glClearColor(0.45f, 0.55f, 0.75f, 0.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+#else
 		output->bind();
 		output->clear();
+#endif // !GAME_BUILD
+
+
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, gbuffer->get_position_texture());
 		set_vec1i(0, "position_tex");
@@ -255,8 +266,12 @@ void Renderer::deffered_render(const RenderContext& a_render_context, const Deff
 		render_lighting_quad();
 
 		deffered_ui_pass(a_render_context, output);
+#ifdef GAME_BUILD
 
+#else
 		output->unbind();
+#endif // !GAME_BUILD
+		
 		/// lighting pass end
 		//////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -943,7 +958,13 @@ void Renderer::deffered_ui_pass(const RenderContext& a_render_context, const Fra
 	const auto& mats = a_render_context.ui_materials;
 	const auto& reqs = a_render_context.ui_render_requests;
 
+#ifdef GAME_BUILD
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, a_output->get_width(), a_output->get_height());
+#else
 	a_output->bind();
+#endif // !GAME_BUILD
+	
 	glDisable(GL_DEPTH_TEST);
 	glDepthMask(GL_FALSE);
 	uint64_t bound_mat = hashed_string_64("").hash;

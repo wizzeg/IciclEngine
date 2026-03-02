@@ -7,6 +7,7 @@ void InputManager::update_input()
     input_buffer->time = ImGui::GetTime();
     if (mouse_locked)
     {
+        ImGui::SetMouseCursor(ImGuiMouseCursor_None);
         input_buffer->mouse_delta = ImGui::GetMousePos() - ImVec2(locked_x, locked_y);
         SetCursorPos((int)locked_x, (int)locked_y);
     }
