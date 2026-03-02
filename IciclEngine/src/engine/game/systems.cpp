@@ -3260,7 +3260,7 @@ bool ObjectSpawnerSystem::execute(SystemsContext& ctx)
 			)
 		{
 			spwn.time_since_last_spawn += dt;
-			if (dt < 0.01f && spwn.spawn_count > 0 && spwn.spawn_interval < spwn.time_since_last_spawn)
+			if (dt < 0.016f && spwn.spawn_count > 0 && spwn.spawn_interval < spwn.time_since_last_spawn)
 			{
 				spwn.time_since_last_spawn = 0.f;
 				for (size_t i = 0; i < spwn.spawns_at_time && spwn.spawn_count > 0; i++)

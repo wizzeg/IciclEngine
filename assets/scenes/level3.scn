@@ -4714,7 +4714,7 @@
                         {
                             "name": "spawn_interval: ",
                             "type": "spawn_interval",
-                            "value": 0.20000000298023224
+                            "value": 0.15000000596046448
                         },
                         {
                             "name": "time_since_last_spawn: ",
@@ -4737,13 +4737,13 @@
         },
         {
             "enabled": true,
-            "name": "HeightMapLoadSystem",
+            "name": "SmoothFollowSystem",
             "order": 1,
             "physics": false
         },
         {
             "enabled": true,
-            "name": "SmoothFollowSystem",
+            "name": "HeightMapLoadSystem",
             "order": 1,
             "physics": false
         },
