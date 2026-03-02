@@ -3,7 +3,7 @@ NOTE! I will wake up very late on monday march 2nd. So I cannot showcase it that
 C++ 20 is required, there is a macro for print incase you use C++23+
 using entt ([see skypjack](https://github.com/skypjack/entt)), imgui-docking, opengl through glad, glfw, and glm.
 
-This engine is primarily using data oriented design, with some use of object oriented programming where it makes more sense (or will not impact game performance). Everything that can be multi-threaded is multi-threaded.
+This engine is primarily using data oriented design, with some use of object oriented programming where it makes more sense (or will not impact game performance). Everything that is reasonbly simple to make multi-threaded is multi-threaded.
 
 How to run:
 Install Visual Studio 22, and ensure you have at least C++, but preferably C++ 23 or higher. Also ensure you have windows 10, but it might work on windows 11 too (I pray).
