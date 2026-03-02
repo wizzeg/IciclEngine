@@ -273,6 +273,9 @@
     <ClCompile Include="src\engine\core\system_dependencies.cpp">
       <Filter>Source Files\engine\core</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\resources\data_structs.cpp">
+      <Filter>Source Files\engine\resources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\imgui-docking\imconfig.h">

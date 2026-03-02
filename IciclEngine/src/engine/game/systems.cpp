@@ -2537,14 +2537,16 @@ bool MenuSystem::execute(SystemsContext& ctx)
 
 bool ReadCollisionResultSystem::execute(SystemsContext& ctx)
 {
-	col_res = ctx.get_system_storage().get_object<std::vector<CollisionResult>>("CollisionResults");
-	if (col_res)
+
+	if (auto obj = ctx.get_system_storage().get_object<std::vector<CollisionResult>>("CollisionResults"))
 	{
-		//PRINTLN("new frame");
-		col_res->copy(collisions);
-		ctx.enqueue_each(WithRead<BoundingBoxComponent>{},
-			[this, &ctx](const entt::entity entity, const BoundingBoxComponent& bbox)
+		std::shared_ptr<ReadLock<std::vector<CollisionResult>>> shared_read_lock
+			= std::make_shared<ReadLock<std::vector<CollisionResult>>>(obj);
+
+		ctx.enqueue_parallel_each(WithRead<BoundingBoxComponent>{},
+			[shared_read_lock](const entt::entity entity, const BoundingBoxComponent& bbox)
 			{
+				const auto& collisions = shared_read_lock->get_data();
 				if (bbox.has_collision_info)
 				{
 					for (size_t i = bbox.result_start_index; i < bbox.result_end_index; i++)
@@ -2555,9 +2557,30 @@ bool ReadCollisionResultSystem::execute(SystemsContext& ctx)
 							static_cast<uint32_t>(res.other_entity), res.other_tag);
 					}
 				}
-			}
-		);
+			});
 	}
+
+	//col_res = ctx.get_system_storage().get_object<std::vector<CollisionResult>>("CollisionResults");
+	//if (col_res)
+	//{
+	//	//PRINTLN("new frame");
+	//	col_res->copy(collisions);
+	//	ctx.enqueue_each(WithRead<BoundingBoxComponent>{},
+	//		[this, &ctx](const entt::entity entity, const BoundingBoxComponent& bbox)
+	//		{
+	//			if (bbox.has_collision_info)
+	//			{
+	//				for (size_t i = bbox.result_start_index; i < bbox.result_end_index; i++)
+	//				{
+	//					const auto& res = collisions[i];
+	//					PRINTLN("true self: {}, self: {}, other: {}, other tag: {}",
+	//						static_cast<uint32_t>(entity), static_cast<uint32_t>(res.self_entity),
+	//						static_cast<uint32_t>(res.other_entity), res.other_tag);
+	//				}
+	//			}
+	//		}
+	//	);
+	//}
 	return false;
 }
 
@@ -2826,39 +2849,34 @@ bool PlayerMovementSystem::execute(SystemsContext& ctx)
 bool GroundingSystem::execute(SystemsContext& ctx)
 {
 	
-	ctx.enqueue(
-		[this, &ctx]()
-		{
-			col_res.clear();
-			float dt = (float)ctx.get_delta_time();
-			if (auto res = ctx.get_system_storage().get_object<std::vector<CollisionResult>>("CollisionResults"))
+	if (auto obj = ctx.get_system_storage().get_object<std::vector<CollisionResult>>("CollisionResults"))
+	{
+		std::shared_ptr<ReadLock<std::vector<CollisionResult>>> shared_read_lock 
+			= std::make_shared<ReadLock<std::vector<CollisionResult>>>(obj);
+
+		float dt = (float)ctx.get_delta_time();
+		ctx.enqueue_parallel_each(
+			WithRead<BoundingBoxComponent>{},
+			WithWrite<MovementStatsComponent>{},
+			[dt, shared_read_lock](const entt::entity entity, const BoundingBoxComponent& bbox, MovementStatsComponent& mov)
 			{
-				res->copy(col_res); // not great to copy, but this would be a parallel job, so kinda have to
-			}
-			if (!col_res.empty())
-			{
-				size_t size = col_res.size();
-				ctx.enqueue_parallel_each(
-					WithRead<BoundingBoxComponent>{},
-					WithWrite<MovementStatsComponent>{},
-					[this, size, dt](const entt::entity entity, const BoundingBoxComponent& bbox, MovementStatsComponent& mov)
+				mov.time_since_ground += dt;
+				mov.time_since_jump += dt;
+				if (bbox.has_collision_info)
+				{
+					const std::vector<CollisionResult>& cols = shared_read_lock->get_data();
+					size_t size = cols.size();
+					for (size_t i = bbox.result_start_index; i < bbox.result_end_index; ++i)
 					{
-						mov.time_since_ground += dt;
-						mov.time_since_jump += dt;
-						if (bbox.has_collision_info)
+						if (i < size && cols[i].other_tag == 10)
 						{
-							for (size_t i = bbox.result_start_index; i < bbox.result_end_index; ++i)
-							{
-								if (i < size && col_res[i].other_tag == 10)
-								{
-									mov.time_since_ground = 0.f;
-									break;
-								}
-							}
+							mov.time_since_ground = 0.f;
+							break;
 						}
-					});
-			}
-		});
+					}
+				}
+			});
+	}
 
 
 	return false;
@@ -2866,49 +2884,87 @@ bool GroundingSystem::execute(SystemsContext& ctx)
 
 bool ButtonSystem::execute(SystemsContext& ctx)
 {
-	ctx.enqueue(WithWrite<EntityCommandBufferComponent>{},
-		[this, &ctx]()
-		{
-			if (auto res = ctx.get_system_storage().get_object<std::vector<CollisionResult>>("CollisionResults"))
+
+
+	if (auto obj = ctx.get_system_storage().get_object<std::vector<CollisionResult>>("CollisionResults"))
+	{
+		// use this for easy read access
+		std::shared_ptr<ReadLock<std::vector<CollisionResult>>> shared_read_lock
+			= std::make_shared<ReadLock<std::vector<CollisionResult>>>(obj);
+
+		ctx.enqueue_each(WithRead<BoundingBoxComponent, ActivationReferenceComponent>{},
+			WithWrite<ButtonObjectTag>{},
+			[&ctx, shared_read_lock](const entt::entity entity, const BoundingBoxComponent& bbox, const ActivationReferenceComponent& a, ButtonObjectTag& bt)
 			{
-				//ReadLock<std::vector<CollisionResult>> lock(res);
-				//auto& cols = lock.get_data();
-				res->read([&ctx](const std::vector<CollisionResult>& cols)
+				const auto& cols = shared_read_lock->get_data();
+				if (!bt.active && bbox.has_collision_info)
+				{
+					for (size_t i = bbox.result_start_index; i < bbox.result_end_index; i++)
 					{
-						if (!cols.empty())
+						if (i < cols.size() && cols[i].other_tag == 1)
 						{
-							ctx.each(WithRead<BoundingBoxComponent, ActivationReferenceComponent>{},
-								WithWrite<ButtonObjectTag>{},
-								[&ctx, &cols](const entt::entity entity, const BoundingBoxComponent& bbox, const ActivationReferenceComponent& a, ButtonObjectTag& bt)
+							if (auto ent = ctx.try_get<EntityComponent>(a.reference.entity))
+							{
+								bt.active = true;
+								if (auto ecb = ctx.get_ecb("end_frame_ecb"))
 								{
-									if (!bt.active && bbox.has_collision_info)
-									{
-										for (size_t i = bbox.result_start_index; i < bbox.result_end_index; i++)
-										{
-											if (i < cols.size() && cols[i].other_tag == 1)
-											{
-												if (auto ent = ctx.try_get<EntityComponent>(a.reference.entity))
-												{
-													bt.active = true;
-													if (auto ecb = ctx.get_ecb("end_frame_ecb"))
-													{
-														ecb->destroy_entity(a.reference.entity);
-													}
-													else
-													{
-														PRINTLN("ecb didn't exist");
-													}
-													break;
-												}
-											}
-										}
-									}
-								});
+									ecb->destroy_entity(a.reference.entity);
+								}
+								else
+								{
+									PRINTLN("ecb didn't exist");
+								}
+								break;
+							}
 						}
-						
-					});
-			}
-		});
+					}
+				}
+			});
+	}
+
+	//ctx.enqueue(WithWrite<EntityCommandBufferComponent>{},
+	//	[this, &ctx]()
+	//	{
+	//		if (auto res = ctx.get_system_storage().get_object<std::vector<CollisionResult>>("CollisionResults"))
+	//		{
+	//			//ReadLock<std::vector<CollisionResult>> lock(res);
+	//			//auto& cols = lock.get_data();
+	//			res->read([&ctx](const std::vector<CollisionResult>& cols)
+	//				{
+	//					if (!cols.empty())
+	//					{
+	//						ctx.each(WithRead<BoundingBoxComponent, ActivationReferenceComponent>{},
+	//							WithWrite<ButtonObjectTag>{},
+	//							[&ctx, &cols](const entt::entity entity, const BoundingBoxComponent& bbox, const ActivationReferenceComponent& a, ButtonObjectTag& bt)
+	//							{
+	//								if (!bt.active && bbox.has_collision_info)
+	//								{
+	//									for (size_t i = bbox.result_start_index; i < bbox.result_end_index; i++)
+	//									{
+	//										if (i < cols.size() && cols[i].other_tag == 1)
+	//										{
+	//											if (auto ent = ctx.try_get<EntityComponent>(a.reference.entity))
+	//											{
+	//												bt.active = true;
+	//												if (auto ecb = ctx.get_ecb("end_frame_ecb"))
+	//												{
+	//													ecb->destroy_entity(a.reference.entity);
+	//												}
+	//												else
+	//												{
+	//													PRINTLN("ecb didn't exist");
+	//												}
+	//												break;
+	//											}
+	//										}
+	//									}
+	//								}
+	//							});
+	//					}
+	//					
+	//				});
+	//		}
+	//	});
 
 	return false;
 }
@@ -2921,6 +2977,46 @@ bool CollectionSystem::execute(SystemsContext& ctx)
 	// get all collection things
 	// destroy self if you found collection
 	// but also +1 on the shared object
+
+
+	// NOTE! In this case using the read_lock doesn't make sense, because we need to do work after.
+	// 
+	//if (auto obj = ctx.get_system_storage().get_object<std::vector<CollisionResult>>("CollisionResults"))
+	//{
+	//	std::shared_ptr<ReadLock<std::vector<CollisionResult>>> shared_read_lock
+	//		= std::make_shared<ReadLock<std::vector<CollisionResult>>>(obj);
+
+	//	if (!shared_read_lock->get_data().empty())
+	//	{
+	//		ctx.enqueue_each(WithRead<BoundingBoxComponent>{},
+	//			WithWrite<CollectionObjectTag>{},
+	//			[&ctx, shared_read_lock](const entt::entity entity, const BoundingBoxComponent& bbox, CollectionObjectTag& coin)
+	//			{
+	//				const auto& cols = shared_read_lock->get_data();
+	//				if (bbox.has_collision_info)
+	//				{
+	//					for (size_t i = bbox.result_start_index; i < bbox.result_end_index; i++)
+	//					{
+	//						if (i < cols.size() && cols[i].other_tag == 1)
+	//						{
+	//							++coins_collected;
+	//							if (auto ecb = ctx.get_ecb("end_frame_ecb"))
+	//							{
+	//								ecb->destroy_entity(entity);
+	//							}
+	//							else
+	//							{
+	//								PRINTLN("ecb didn't exist");
+	//							}
+	//							break;
+	//						}
+	//					}
+	//				}
+	//			});
+	//	}
+
+	//	
+	//}
 
 	ctx.enqueue(
 		WithWrite<EntityCommandBufferComponent>{},

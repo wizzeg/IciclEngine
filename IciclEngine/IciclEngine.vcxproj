@@ -190,6 +190,7 @@
     <ClCompile Include="src\engine\resources\asset_loader.cpp" />
     <ClCompile Include="src\engine\resources\asset_manager.cpp" />
     <ClCompile Include="src\engine\resources\data_storage.cpp" />
+    <ClCompile Include="src\engine\resources\data_structs.cpp" />
     <ClCompile Include="src\engine\resources\material_loader.cpp" />
     <ClCompile Include="src\engine\resources\message_queue.cpp" />
     <ClCompile Include="src\engine\resources\model_loader.cpp" />

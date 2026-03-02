@@ -71,41 +71,16 @@ struct SystemsStorageObjectBase
 	bool invalid = false;
 };
 //circular dependencey
-//template <typename T>
-//struct ReadLock
-//{
-//	ReadLock(SystemsStorageObject<T>* a_object) :
-//		object(a_object), lock(a_object->mutex)
-//	{
-//		object->waiting_readers++;
-//		object->cv.wait(lock, [this]() { return !object->writing && object->waiting_writers == 0; }); // maybe remove this
-//		object->waiting_readers--;
-//		object->readers++;
-//		lock.unlock();
-//		object->cv.notify_all();
-//	}
-//	T& get_data()
-//	{
-//		return object->data;
-//	}
-//	~ReadLock()
-//	{
-//		lock.lock();
-//		object->readers--;
-//		lock.unlock();
-//		object->cv.notify_all();
-//	}
-//	SystemsStorageObjectBase* object;
-//	std::unique_lock<std::mutex> lock;
-//};
-
+template<typename T> struct ReadLock;
+struct SystemsContextStorage;
 
 template<typename T>
 struct SystemsStorageObject : SystemsStorageObjectBase
 {
-	//friend struct ReadLock<T>;
+	friend struct ReadLock<T>;
+	friend struct SystemsContextStorage;
 	SystemsStorageObject(T a_data) : data(a_data) {}
-	T data;
+	//T data;
 	void read(std::function <void(const T&)>&& func)
 	{
 		std::unique_lock<std::mutex> read_lock(mutex);
@@ -157,8 +132,36 @@ struct SystemsStorageObject : SystemsStorageObjectBase
 	//	return ReadLock<T>(*this);
 	//}
 
-//protected:
-	//T data;
+protected:
+	T data;
+};
+
+template <typename T>
+struct ReadLock
+{
+	ReadLock(SystemsStorageObject<T>* a_object) :
+		object(a_object), lock(a_object->mutex)
+	{
+		object->waiting_readers++;
+		object->cv.wait(lock, [this]() { return !object->writing && object->waiting_writers == 0; }); // maybe remove this
+		object->waiting_readers--;
+		object->readers++;
+		lock.unlock();
+		object->cv.notify_all();
+	}
+	const T& get_data()
+	{
+		return object->data;
+	}
+	~ReadLock()
+	{
+		lock.lock();
+		object->readers--;
+		lock.unlock();
+		object->cv.notify_all();
+	}
+	SystemsStorageObject<T>* object;
+	std::unique_lock<std::mutex> lock;
 };
 
 struct ShadowLight
