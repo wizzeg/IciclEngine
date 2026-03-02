@@ -45,3 +45,11 @@ That is:
 
 
 Note, Assimp .dlls should not be necessary.
+
+How to use engine:
+
+You must manually save scenes, right click on a scene object in the scene hierarchy to get up an extra menu, for things like pre-fabs and duplicate etc.
+
+If you press on the main camera buffer the mouse will be locked and invisible in the game window. To get out of it, press ~ (alt + esc?), or alt-tab or press the windows key so that the editor loses focus.
+
+To move the editor camera, hover the editor camera buffer, and hold right click. Then you can move the camera with WASD, Shift to move up, and ctrl to move down, and move the mouse to look around.
