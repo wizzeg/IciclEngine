@@ -60,7 +60,6 @@ struct UIWord
 };
 
 
-
 struct SystemsStorageObjectBase
 {
 	std::condition_variable cv;
@@ -71,11 +70,40 @@ struct SystemsStorageObjectBase
 	bool writing = false;
 	bool invalid = false;
 };
+//circular dependencey
+//template <typename T>
+//struct ReadLock
+//{
+//	ReadLock(SystemsStorageObject<T>* a_object) :
+//		object(a_object), lock(a_object->mutex)
+//	{
+//		object->waiting_readers++;
+//		object->cv.wait(lock, [this]() { return !object->writing && object->waiting_writers == 0; }); // maybe remove this
+//		object->waiting_readers--;
+//		object->readers++;
+//		lock.unlock();
+//		object->cv.notify_all();
+//	}
+//	T& get_data()
+//	{
+//		return object->data;
+//	}
+//	~ReadLock()
+//	{
+//		lock.lock();
+//		object->readers--;
+//		lock.unlock();
+//		object->cv.notify_all();
+//	}
+//	SystemsStorageObjectBase* object;
+//	std::unique_lock<std::mutex> lock;
+//};
 
 
 template<typename T>
 struct SystemsStorageObject : SystemsStorageObjectBase
 {
+	//friend struct ReadLock<T>;
 	SystemsStorageObject(T a_data) : data(a_data) {}
 	T data;
 	void read(std::function <void(const T&)>&& func)
@@ -123,6 +151,14 @@ struct SystemsStorageObject : SystemsStorageObjectBase
 		readers--;
 		cv.notify_all();
 	}
+
+	//ReadLock<T> get_read_lock()
+	//{
+	//	return ReadLock<T>(*this);
+	//}
+
+//protected:
+	//T data;
 };
 
 struct ShadowLight

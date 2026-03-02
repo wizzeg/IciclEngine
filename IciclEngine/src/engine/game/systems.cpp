@@ -2871,6 +2871,8 @@ bool ButtonSystem::execute(SystemsContext& ctx)
 		{
 			if (auto res = ctx.get_system_storage().get_object<std::vector<CollisionResult>>("CollisionResults"))
 			{
+				//ReadLock<std::vector<CollisionResult>> lock(res);
+				//auto& cols = lock.get_data();
 				res->read([&ctx](const std::vector<CollisionResult>& cols)
 					{
 						if (!cols.empty())
