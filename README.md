@@ -22,4 +22,16 @@ Then also copy the assets folder from the .sln file folder, into the x64 -> Rele
 
 Go into the x64 folder, then into Release or Debug, ensure all the files above are there, and run the .exe
 
+To build to game:
+
+Go into engine -> core -> build_state.h
+Uncomment //#define GAME_BUILD
+uncomment //#define DEFAULT_PATH "./assets/scenes/mainmenu.scn"
+comment #define DEFAULT_PATH "./assets/temp/temp_scene.scn"
+
+That is:
+#define GAME_BUILD
+//#define DEFAULT_PATH "./assets/temp/temp_scene.scn"
+#define DEFAULT_PATH "./assets/scenes/mainmenu.scn"
+
 Note, Assimp .dlls should not be necessary.
