@@ -57,6 +57,15 @@ struct TransformDynamicComponent
     bool overide_quaternion = false;
     glm::mat4 model_matrix = glm::mat4(1);
 
+    glm::vec3 get_position()
+    {
+        return{
+    model_matrix[3][0],
+    model_matrix[3][1],
+    model_matrix[3][2]
+        };
+    }
+
     void calculate_model_matrix()
     {
         if (overide_quaternion)
@@ -659,4 +668,20 @@ struct EnemyTargetComponent
 struct EnemyTagComponent
 {
     bool tag;
+};
+
+struct SmoothFollowComponent
+{
+    EntityReference target;
+    glm::vec3 offset = glm::vec3(0);
+    float follow_speed = 0.25f;
+    float laxness = 2.5f;
+};
+
+struct ScaleBySpeedComponent
+{
+    float max_linear_speed = 10.f;
+    glm::vec3 max_scale = glm::vec3(1.f);
+    float min_linear_speed = 0.1f;
+    glm::vec3 min_scale = glm::vec3(0.1f);
 };

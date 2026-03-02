@@ -272,3 +272,15 @@ REGISTER_COMPONENT(EndLevelComponent, ("Default"),
 	FIELD_CUSTOM("this_level: ", comp, this_level, 1.25f, false),
 	FIELD_CUSTOM("next_level: ", comp, next_level, 1.25f, false)
 )
+REGISTER_COMPONENT(SmoothFollowComponent, ("Default"),
+	FIELD_CUSTOM("target: ", comp, target, 2.5f, false),
+	FIELD_CUSTOM("offset: ", comp, offset, 1.75f, false),
+	FIELD_CUSTOM("follow_speed: ", comp, follow_speed, 1.755f, false),
+	FIELD_CUSTOM("laxness: ", comp, laxness, 1.75f, false)
+)
+REGISTER_COMPONENT(ScaleBySpeedComponent, ("Default"),
+	FIELD_CUSTOM("max_linear_speed: ", comp, max_linear_speed, 2.5f, false),
+	FIELD_CUSTOM("max_scale: ", comp, max_scale, 1.75f, false),
+	FIELD_CUSTOM("min_linear_speed: ", comp, min_linear_speed, 2.5f, false),
+	FIELD_CUSTOM("min_scale: ", comp, min_scale, 1.75f, false)
+)

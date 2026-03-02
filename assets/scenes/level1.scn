@@ -3100,6 +3100,35 @@
                         }
                     ],
                     "type": "CameraComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "target: ",
+                            "type": "target",
+                            "value": 3
+                        },
+                        {
+                            "name": "offset: ",
+                            "type": "offset",
+                            "value": [
+                                5.0,
+                                10.0,
+                                13.0
+                            ]
+                        },
+                        {
+                            "name": "follow_speed: ",
+                            "type": "follow_speed",
+                            "value": 5.0
+                        },
+                        {
+                            "name": "laxness: ",
+                            "type": "laxness",
+                            "value": 1.0
+                        }
+                    ],
+                    "type": "SmoothFollowComponent"
                 }
             ],
             "name": "PlayerFollowCamera"
@@ -4693,6 +4722,218 @@
                 }
             ],
             "name": "Enemy"
+        },
+        {
+            "children": [],
+            "components": [
+                {
+                    "fields": [
+                        {
+                            "name": "entity name: ",
+                            "type": "hashed_name",
+                            "value": "SpeedScale"
+                        },
+                        {
+                            "name": "entity id: ",
+                            "type": "entity",
+                            "value": 27
+                        }
+                    ],
+                    "type": "EntityComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "parent: ",
+                            "type": "parent",
+                            "value": 0
+                        },
+                        {
+                            "name": "previous sibling: ",
+                            "type": "previous_sibling",
+                            "value": 0
+                        },
+                        {
+                            "name": "next sibling: ",
+                            "type": "next_sibling",
+                            "value": 0
+                        },
+                        {
+                            "name": "child: ",
+                            "type": "child",
+                            "value": 0
+                        }
+                    ],
+                    "type": "HierarchyComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "position: ",
+                            "type": "position",
+                            "value": [
+                                0.0,
+                                1.100000023841858,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "scale: ",
+                            "type": "scale",
+                            "value": [
+                                0.10000000149011612,
+                                0.10000000149011612,
+                                0.10000000149011612
+                            ]
+                        },
+                        {
+                            "name": "rotation: ",
+                            "type": "rotation_euler_do_not_use",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "overwrite quaternion rotation: ",
+                            "type": "overide_quaternion",
+                            "value": false
+                        },
+                        {
+                            "name": "update euler rotation: ",
+                            "type": "get_euler_angles",
+                            "value": false
+                        },
+                        {
+                            "name": "rotation_quat",
+                            "type": "rotation_quat",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0
+                            ]
+                        },
+                        {
+                            "name": "model_matrix",
+                            "type": "model_matrix",
+                            "value": [
+                                0.10000000149011612,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.10000000149011612,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.10000000149011612,
+                                0.0,
+                                0.0,
+                                1.100000023841858,
+                                0.0,
+                                1.0
+                            ]
+                        }
+                    ],
+                    "type": "TransformDynamicComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "mesh path: ",
+                            "type": "mesh",
+                            "value": "./assets/obj/cube.obj"
+                        },
+                        {
+                            "name": "material path: ",
+                            "type": "material",
+                            "value": "./assets/shaders/plain2.mat"
+                        },
+                        {
+                            "name": "instance draw: ",
+                            "type": "instance",
+                            "value": false
+                        },
+                        {
+                            "name": "use mipmaps: ",
+                            "type": "mipmap",
+                            "value": false
+                        },
+                        {
+                            "name": "load component: ",
+                            "type": "load",
+                            "value": false
+                        }
+                    ],
+                    "type": "RenderComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "target: ",
+                            "type": "target",
+                            "value": 3
+                        },
+                        {
+                            "name": "offset: ",
+                            "type": "offset",
+                            "value": [
+                                0.0,
+                                1.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "name": "follow_speed: ",
+                            "type": "follow_speed",
+                            "value": 15.0
+                        },
+                        {
+                            "name": "laxness: ",
+                            "type": "laxness",
+                            "value": 0.10000000149011612
+                        }
+                    ],
+                    "type": "SmoothFollowComponent"
+                },
+                {
+                    "fields": [
+                        {
+                            "name": "max_linear_speed: ",
+                            "type": "max_linear_speed",
+                            "value": 15.0
+                        },
+                        {
+                            "name": "max_scale: ",
+                            "type": "max_scale",
+                            "value": [
+                                1.0,
+                                0.10000000149011612,
+                                1.0
+                            ]
+                        },
+                        {
+                            "name": "min_linear_speed: ",
+                            "type": "min_linear_speed",
+                            "value": 0.10000000149011612
+                        },
+                        {
+                            "name": "min_scale: ",
+                            "type": "min_scale",
+                            "value": [
+                                0.10000000149011612,
+                                0.10000000149011612,
+                                0.10000000149011612
+                            ]
+                        }
+                    ],
+                    "type": "ScaleBySpeedComponent"
+                }
+            ],
+            "name": "SpeedScale"
         }
     ],
     "systems": [
@@ -4700,6 +4941,12 @@
             "enabled": true,
             "name": "ECBCreatorSystem",
             "order": 0,
+            "physics": false
+        },
+        {
+            "enabled": true,
+            "name": "SmoothFollowSystem",
+            "order": 1,
             "physics": false
         },
         {
@@ -4712,6 +4959,12 @@
             "enabled": true,
             "name": "EndLevelSystem",
             "order": 5,
+            "physics": false
+        },
+        {
+            "enabled": true,
+            "name": "ScaleBySpeedSystem",
+            "order": 6,
             "physics": false
         },
         {

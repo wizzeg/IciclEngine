@@ -3183,3 +3183,54 @@ bool EnemyAttackSystem::execute(SystemsContext& ctx)
 		});
 	return false;
 }
+
+bool SmoothFollowSystem::execute(SystemsContext& ctx)
+{
+	float dt = (float)ctx.get_delta_time();
+	ctx.enqueue_each(WithRead<SmoothFollowComponent>{},
+		WithWrite<TransformDynamicComponent>{},
+		[&ctx, dt](const entt::entity entity, const SmoothFollowComponent& fol, TransformDynamicComponent& transform)
+		{
+			if (auto fol_transform = ctx.try_get<TransformDynamicComponent>(fol.target.entity))
+			{
+				glm::vec3 target = fol_transform->get_position() + fol.offset;
+				glm::vec3 direction = target - transform.get_position();  
+				if (glm::length(direction) > fol.laxness)
+				{
+					direction = glm::normalize(direction);
+					transform.position += fol.follow_speed * direction * dt;
+				}
+			}
+		});
+	return false;
+}
+
+bool ScaleBySpeedSystem::execute(SystemsContext& ctx)
+{
+	ctx.enqueue_each(
+		WithRead<ScaleBySpeedComponent, SmoothFollowComponent>{},
+		WithWrite<TransformDynamicComponent>{},
+		WithRef<RigidBodyComponent>{},
+		[&ctx](
+			const entt::entity entity,
+			const ScaleBySpeedComponent& scl,
+			const SmoothFollowComponent& fol,
+			TransformDynamicComponent& trans
+			)
+		{
+			if (scl.min_linear_speed > 0 && scl.max_linear_speed > scl.min_linear_speed &&
+				glm::length(scl.min_scale) > 0 && glm::length(scl.max_scale) > glm::length(scl.min_scale))
+			{
+				if (auto fol_rb = ctx.try_get<RigidBodyComponent>(fol.target.entity))
+				{
+					float speed = std::max(std::min(glm::length(fol_rb->linear_velocity), scl.max_linear_speed), scl.min_linear_speed);
+					float normalize = 1.f / scl.max_linear_speed;
+					trans.scale.x = std::max((normalize * speed) * scl.max_scale.x, scl.min_scale.x);
+					trans.scale.y = std::max((normalize * speed) * scl.max_scale.y, scl.min_scale.y);
+					trans.scale.z = std::max((normalize * speed) * scl.max_scale.z, scl.min_scale.z);
+				}
+			}
+
+		});
+	return false;
+}

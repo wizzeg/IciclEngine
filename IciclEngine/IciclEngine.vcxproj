@@ -174,7 +174,10 @@
     <ClCompile Include="src\engine\game\components.cpp" />
     <ClCompile Include="src\engine\game\component_data.cpp" />
     <ClCompile Include="src\engine\game\input_manager.cpp" />
-    <ClCompile Include="src\engine\game\systems.cpp" />
+    <ClCompile Include="src\engine\game\systems.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">/bigobj %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
     <ClCompile Include="src\engine\game\system_base.cpp" />
     <ClCompile Include="src\engine\renderer\frame_buffer.cpp" />
     <ClCompile Include="src\engine\renderer\glfw_context.cpp" />

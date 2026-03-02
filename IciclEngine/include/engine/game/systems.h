@@ -179,3 +179,12 @@ struct EnemyAttackSystem : SystemBase
 {
 	bool execute(SystemsContext& ctx) override;
 }; 
+struct SmoothFollowSystem : SystemBase
+{
+	bool execute(SystemsContext& ctx) override;
+}; 
+
+struct ScaleBySpeedSystem :SystemBase
+{
+	bool execute(SystemsContext& ctx) override;
+};
