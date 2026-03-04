@@ -1,4 +1,4 @@
-NOTE! I will wake up very late on monday march 2nd. So I cannot showcase it that day.
+Note! You can play around with the engine with the Demo Game in releases!
 
 C++ 20 is required, there is a macro for print incase you use C++23+
 using entt ([see skypjack](https://github.com/skypjack/entt)), imgui-docking, opengl through glad, glfw, and glm.
