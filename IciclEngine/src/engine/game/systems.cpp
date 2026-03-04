@@ -3364,7 +3364,7 @@ bool ObjectSpawnerSystem::execute(SystemsContext& ctx)
 				for (size_t i = 0; i < spwn.spawns_at_time && spwn.spawn_count > 0; i++)
 				{
 					ecb->create_entity(new_entity()
-						.with_component<RenderComponent>(hashed_string_64("./assets/obj/cube.obj"), hashed_string_64("./assets/shaders/plain3.mat"), false, true, true)
+						.with_component<RenderComponent>(hashed_string_64("./assets/obj/cube.obj"), hashed_string_64("./assets/shaders/plain3.mat"), true, true, true)
 						.with_component<TransformDynamicComponent>(trans)
 						.with_component<RigidBodyComponent>(RigidBodyComponent{ trans.get_position(), glm::quat(1, 0, 0, 0),
 							glm::vec3(0), glm::vec3(0), 1.f, 1.f, glm::mat3(0.f), 0.8f, 0.5f, true, 7, 0, false, 0, 1000 })
