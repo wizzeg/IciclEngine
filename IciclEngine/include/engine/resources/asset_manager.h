@@ -124,7 +124,7 @@ protected:
 	void process_dependency(ValidateMatDependencies& a_job);
 	void process_material_uniform(MaterialUniformJob& a_job);
 
-	void insert_runtime_material(uint64_t a_mat_hash) {}; // would've been cool if I could get to do this... But no, have to do some dumb game instead
+	void insert_runtime_material(uint64_t a_mat_hash) {}; 
 	AssetStorage& asset_storage;
 	AssetMessages& asset_messages;
 };

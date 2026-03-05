@@ -8,12 +8,12 @@
                     {
                         "name": "entity name: ",
                         "type": "hashed_name",
-                        "value": "PhysicsObject2"
+                        "value": "Player"
                     },
                     {
                         "name": "entity id: ",
                         "type": "entity",
-                        "value": 28
+                        "value": 3
                     }
                 ],
                 "type": "EntityComponent"
@@ -49,9 +49,9 @@
                         "name": "position: ",
                         "type": "position",
                         "value": [
-                            1.840000033378601,
-                            19.25,
-                            -21.75
+                            5.4619317054748535,
+                            -4.477850437164307,
+                            14.09113597869873
                         ]
                     },
                     {
@@ -86,31 +86,31 @@
                         "name": "rotation_quat",
                         "type": "rotation_quat",
                         "value": [
-                            0.0,
-                            0.0,
-                            0.0,
-                            1.0
+                            -0.21698546409606934,
+                            0.6778814196586609,
+                            0.6763350367546082,
+                            0.18964475393295288
                         ]
                     },
                     {
                         "name": "model_matrix",
                         "type": "model_matrix",
                         "value": [
-                            1.0,
+                            -0.8339046239852905,
+                            -0.03765404224395752,
+                            -0.5506230592727661,
                             0.0,
+                            -0.5507076382637024,
+                            -0.009023547172546387,
+                            0.8346496224403381,
                             0.0,
+                            -0.03639644384384155,
+                            0.9992502331733704,
+                            -0.013211846351623535,
                             0.0,
-                            0.0,
-                            1.0,
-                            0.0,
-                            0.0,
-                            0.0,
-                            0.0,
-                            1.0,
-                            0.0,
-                            1.840000033378601,
-                            19.25,
-                            -21.75,
+                            5.4619317054748535,
+                            -4.477850437164307,
+                            14.09113597869873,
                             1.0
                         ]
                     }
@@ -127,7 +127,7 @@
                     {
                         "name": "material path: ",
                         "type": "material",
-                        "value": "./assets/shaders/plain3.mat"
+                        "value": "./assets/shaders/plain2.mat"
                     },
                     {
                         "name": "instance draw: ",
@@ -153,37 +153,37 @@
                         "name": "position: ",
                         "type": "position",
                         "value": [
-                            1.840000033378601,
-                            19.25,
-                            -21.75
+                            5.4619317054748535,
+                            -4.477850437164307,
+                            14.09113597869873
                         ]
                     },
                     {
                         "name": "rotation: ",
                         "type": "rotation",
                         "value": [
-                            0.0,
-                            0.0,
-                            0.0,
-                            0.0
+                            -0.21698546409606934,
+                            0.6778814196586609,
+                            0.6763350367546082,
+                            0.18964475393295288
                         ]
                     },
                     {
                         "name": "linear_velocity: ",
                         "type": "linear_velocity",
                         "value": [
-                            0.0,
-                            0.0,
-                            0.0
+                            0.003505311207845807,
+                            0.009656863287091255,
+                            0.012817321345210075
                         ]
                     },
                     {
                         "name": "angular_velocity: ",
                         "type": "angular_velocity",
                         "value": [
-                            0.0,
-                            0.0,
-                            0.0
+                            0.015532939694821835,
+                            0.012468568049371243,
+                            0.00871245563030243
                         ]
                     },
                     {
@@ -210,26 +210,26 @@
                         "name": "inverse_inertia_tensor_local",
                         "type": "inverse_inertia_tensor_local",
                         "value": [
+                            24.0,
                             0.0,
                             0.0,
                             0.0,
+                            24.0,
                             0.0,
                             0.0,
                             0.0,
-                            0.0,
-                            0.0,
-                            0.0
+                            24.0
                         ]
                     },
                     {
                         "name": "recalculate tensor: ",
                         "type": "recalculate_inverse_inertia_tensor",
-                        "value": true
+                        "value": false
                     },
                     {
                         "name": "dynamic layers: ",
                         "type": "dynamic_layers",
-                        "value": 7
+                        "value": 2
                     },
                     {
                         "name": "static layers: ",
@@ -268,12 +268,12 @@
                     {
                         "name": "collision layers: ",
                         "type": "collision_layers",
-                        "value": 5
+                        "value": 7
                     },
                     {
                         "name": "tag: ",
                         "type": "tag",
-                        "value": 4
+                        "value": 1
                     }
                 ],
                 "type": "BoundingBoxComponent"
@@ -287,8 +287,58 @@
                     }
                 ],
                 "type": "GravityStrengthComponent"
+            },
+            {
+                "fields": [
+                    {
+                        "name": "is player: ",
+                        "type": "is_player",
+                        "value": false
+                    }
+                ],
+                "type": "PlayerTagComponent"
+            },
+            {
+                "fields": [
+                    {
+                        "name": "jump_force: ",
+                        "type": "jump_force",
+                        "value": 7.5
+                    },
+                    {
+                        "name": "max_move_speed: ",
+                        "type": "max_move_speed",
+                        "value": 25.0
+                    },
+                    {
+                        "name": "move_force: ",
+                        "type": "move_force",
+                        "value": 50.0
+                    },
+                    {
+                        "name": "time_since_ground: ",
+                        "type": "time_since_ground",
+                        "value": 0.0
+                    },
+                    {
+                        "name": "move_damp: ",
+                        "type": "move_damp",
+                        "value": 10.0
+                    },
+                    {
+                        "name": "ground_time_limit: ",
+                        "type": "ground_time_limit",
+                        "value": 0.15000000596046448
+                    },
+                    {
+                        "name": "jump_time_limit: ",
+                        "type": "jump_time_limit",
+                        "value": 0.20000000298023224
+                    }
+                ],
+                "type": "MovementStatsComponent"
             }
         ],
-        "name": "PhysicsObject2"
+        "name": "Player"
     }
 }

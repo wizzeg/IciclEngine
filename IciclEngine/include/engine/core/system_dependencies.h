@@ -106,7 +106,7 @@ struct SystemsContextDependencies
 			if (check_dependencies)
 				if (dependency_collision({ }, { typeid(Writes)..., typeid(Mods)... }))
 					return false;
-			add_write_dependency<Writes..., typeid(Mods)...>();
+			add_write_dependency<Writes..., Mods...>();
 		}
 		return true;
 	}

@@ -287,6 +287,11 @@ REGISTER_COMPONENT(ScaleBySpeedComponent, ("Default"),
 REGISTER_COMPONENT(ActivateMenuComponent, ("Default"),
 	FIELD_CUSTOM("actiavte: ", comp, actiavte, 1.25f, false)
 )
+REGISTER_COMPONENT(ObjectDeletionComponent, ("Default"),
+	FIELD_CUSTOM("life_time: ", comp, life_time, 1.25f, false),
+	FIELD_CUSTOM("life_span: ", comp, life_span, 1.25f, false)
+)
+
 REGISTER_COMPONENT(ObjectSpawnerComponent, ("Default"),
 	FIELD_CUSTOM("spawn_count: ", comp, spawn_count, 1.25f, false),
 	FIELD_CUSTOM("spawns_at_time: ", comp, spawns_at_time, 1.25f, false),

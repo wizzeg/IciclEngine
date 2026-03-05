@@ -697,3 +697,9 @@ struct ObjectSpawnerComponent
     float spawn_interval = 0.5f;
     float time_since_last_spawn = 0;
 };
+
+struct ObjectDeletionComponent
+{
+    float life_time = 0.f;
+    float life_span = 10.f;
+};

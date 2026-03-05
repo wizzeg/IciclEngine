@@ -3363,20 +3363,43 @@ bool ObjectSpawnerSystem::execute(SystemsContext& ctx)
 				spwn.time_since_last_spawn = 0.f;
 				for (size_t i = 0; i < spwn.spawns_at_time && spwn.spawn_count > 0; i++)
 				{
-					ecb->create_entity(new_entity()
-						.with_component<RenderComponent>(hashed_string_64("./assets/obj/cube.obj"), hashed_string_64("./assets/shaders/plain3.mat"), true, true, true)
-						.with_component<TransformDynamicComponent>(trans)
-						.with_component<RigidBodyComponent>(RigidBodyComponent{ trans.get_position(), glm::quat(1, 0, 0, 0),
-							glm::vec3(0), glm::vec3(0), 1.f, 1.f, glm::mat3(0.f), 0.8f, 0.5f, true, 7, 0, false, 0, 1000 })
-						.with_component<BoundingBoxComponent>(BoundingBoxComponent{ glm::vec3(0.0f) , glm::vec3(1.0f), false, 7, 10 })
-						.with_component<GravityStrengthComponent>(GravityStrengthComponent{ 9.82f })
-						.assemble(), "new_entity");
-					--spwn.spawn_count;
+					if (ecb)
+					{
+						ecb->create_entity(new_entity()
+							.with_component<RenderComponent>(hashed_string_64("./assets/obj/cube.obj"), hashed_string_64("./assets/shaders/plain3.mat"), true, true, true)
+							.with_component<TransformDynamicComponent>(trans)
+							.with_component<RigidBodyComponent>(RigidBodyComponent{ trans.get_position(), glm::quat(1, 0, 0, 0),
+								glm::vec3(0), glm::vec3(0), 1.f, 1.f, glm::mat3(0.f), 0.8f, 0.5f, true, 7, 0, false, 0, 1000 })
+							.with_component<BoundingBoxComponent>(BoundingBoxComponent{ glm::vec3(0.0f) , glm::vec3(1.0f), false, 7, 10 })
+							.with_component<GravityStrengthComponent>(GravityStrengthComponent{ 9.82f })
+							.with_component<ObjectDeletionComponent>(ObjectDeletionComponent{0.f, 10.f})
+							.assemble(), "new_entity");
+						--spwn.spawn_count;
+					}
+
 				}
 				
 			}
 			
 		}
 		);
+	return false;
+}
+
+bool ObjectDeleterSystem::execute(SystemsContext& ctx)
+{
+	auto ecb = ctx.get_ecb("end_frame_ecb");
+	float dt = (float)ctx.get_delta_time();
+	ctx.enqueue_each(
+		WithWrite<ObjectDeletionComponent>{},
+		WithRef<EntityCommandBufferComponent>{},
+		[ecb, dt](const entt::entity entity, ObjectDeletionComponent& obj)
+		{
+			obj.life_time += dt;
+			if (obj.life_time > obj.life_span && ecb)
+			{
+				ecb->destroy_entity(entity);
+			}
+		});
 	return false;
 }
