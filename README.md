@@ -15,7 +15,7 @@ open .sln, go into Project -> properties -> Configure Properties -> Debugging ->
 
 Take the imgui.ini in the contents of "MOVE THESE" and move it into the same folder as the .sln.
 
-Then take all of the contents in "MOVE THESE" and go into the x64 folder that lives in the same folder as the .sln file. And paste them into both the Release and Debug folder (this should give you a prepared layout for imgui).
+Then take all of the contents in "MOVE THESE" and go into the x64 folder that lives in the same folder as the .sln file. And paste them into both the x64 -> Release and Debug folder (this should give you a prepared layout for imgui).
 Then you may also copy the assets folder from the .sln file folder, into the x64 -> Release and Debug folders.
 
 Run the .sln.
