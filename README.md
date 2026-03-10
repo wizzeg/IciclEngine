@@ -76,4 +76,4 @@ To use SystemStorage, use e.g. ctx.get_systemstorage().get_object<ObjectType>("o
 
 If you wish to read from a SystemObjectStorage, you may use a ReadLock, for which you copy into each lambda in a ctx.enqueue_. Create it like this.
 
-std::shared_ptr<ReadLock<ObjectType>> shared_read_lock = std::make_shared<ReadLock<ObjectType>(strg_obj_ptr); -> when they are copied into the lambda the ReadLock will automatically unlock when the last thread is finished with the reading (as the ReadLock goes out of scope).
+std::shared_ptr<ReadLock<ObjectType>> shared_read_lock = std::make_shared<ReadLock<ObjectType>>(strg_obj_ptr); -> when they are copied into the lambda the ReadLock will automatically unlock when the last thread is finished with the reading (as the ReadLock goes out of scope).
