@@ -104,7 +104,7 @@ then in a spawning/destroyer/modifier system, use
 	
 The ecb is NOT thread safe.
 
-To use the ecb you can do as following. You may use new_entity() to create in parallel, and only after add them to the ecb.
+To use the ecb you can do as following. You may use new_entity() to create in parallel, and only after add them to the ecb single-threaded with ecb->create_entity(paralleled_entity).
 
 		ecb->create_entity(new_entity()
 		.with_component<TransformDynamicComponent>(transform)
