@@ -56,3 +56,24 @@ To move the editor camera, hover the editor camera buffer, and hold right click.
 To add Components, add them in components.h or elsewhere, but components_data.h must include that directory (if you place them elsewhere you'll have to figure it out). Then go into component_entries and REGISTER_COMPONENT, follow the examples to figure out how to do it.
 
 To add Systems, add them in systems.h or elsewhere, then in system_entires use REGISTER_SYSTEM macro.
+
+To make systems.
+
+Use WithRead<Components...>{}, WithWrite<Components...>{}, WithOut<Components...>{} and WithRef<Components...>. What you will itterate over are entities with the components in WithRead and WithWrite, but without entities with components in WithOut. WithRef is to signify that you will use ctx.try_get<Component>(entity) to the dependency checking (so that there's no read/write collision).
+
+In your arguments for the lambda, use the following format (const entt::entity entity, const ReadComponent& read_component, const WriteComponent& write_component).
+
+For entt iteration you have the following.
+ctx.each -> simple immediate iteration of the requested entities.
+
+ctx.enqueue_each -> placing the .each iteration in a seperate thread.
+
+ctx.enqueue_parallel_each -> launches parallel threads with chunk_size number of entities.
+
+ctx.enqueue_parallel_data_each ->supply a vector of num_threads number of vectors, all initialized, and supply num_threads and if you wish to record iteration order. When sorting for recorded iteration order, sort by > rather than, as the order appears to be reversed when using entt::handle instead of entt::view for iteration (and recording in parallel_data_each).
+
+To use SystemStorage, use e.g. ctx.get_systemstorage().get_object<ObjectType>("object_name"), with option to use a size_t if you have multiple entires with same name and type.
+
+If you wish to read from a SystemObjectStorage, you may use a ReadLock, for which you copy into each lambda in a ctx.enqueue_. Create it like this.
+
+std::shared_ptr<ReadLock<ObjectType>> shared_read_lock = std::make_shared<ReadLock<ObjectType>(strg_obj_ptr); -> when they are copied into the lambda the ReadLock will automatically unlock when the last thread is finished with the reading (as the ReadLock goes out of scope).
