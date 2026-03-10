@@ -77,3 +77,16 @@ To use SystemStorage, use e.g. ctx.get_systemstorage().get_object<ObjectType>("o
 If you wish to read from a SystemObjectStorage, you may use a ReadLock, for which you copy into each lambda in a ctx.enqueue_. Create it like this.
 
 std::shared_ptr<ReadLock<ObjectType>> shared_read_lock = std::make_shared<ReadLock<ObjectType>>(strg_obj_ptr); -> when they are copied into the lambda the ReadLock will automatically unlock when the last thread is finished with the reading (as the ReadLock goes out of scope).
+
+To spawn entities, use an ecb. First create a system for which you set enabled = false after running. In the system, ensure you do ctx.create_ecb("name);, then in a spawning/destroyer/modifier system, use ctx.get_ecb("name);. The ecb is NOT thread safe.
+
+To use the ecb you can do as following.
+
+            ecb->create_entity(new_entity()
+							.with_component<TransformDynamicComponent>(transform)
+							.with_child(new_entity()
+								.with_component<TransformDynamicComponent>(trans)
+								.assemble(), "new_child")
+							.assemble(), "new_entity");
+              
+You can also use ecb->add_component<Component>(entity) or add_component(entity, Component{}), ecb->orphan(entity), ecb->remove_component<Component>(entity), ecb->set_parent(parent, child), ecb->orphan(entity)
