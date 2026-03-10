@@ -60,6 +60,7 @@ struct Renderer
 	void initialize();
 private:
 
+	// AI test to see how simple it'd be to implement... but no time to really do it
     // Helper function
     std::vector<glm::vec4> get_frustum_corners_world_space(
         const glm::mat4& projection,
