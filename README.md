@@ -98,11 +98,18 @@ To spawn entities, use an ecb. First create a system for which you set enabled =
 
 To use the ecb you can do as following.
 
-            ecb->create_entity(new_entity()
-							.with_component<TransformDynamicComponent>(transform)
-							.with_child(new_entity()
-								.with_component<TransformDynamicComponent>(trans)
-								.assemble(), "new_child")
-							.assemble(), "new_entity");
+		ecb->create_entity(new_entity()
+		.with_component<TransformDynamicComponent>(transform)
+		.with_child(new_entity()
+			.with_component<TransformDynamicComponent>(trans)
+			.assemble(), "new_child")
+		.assemble(), "new_entity");
               
-You can also use ecb->add_component<Component>(entity) or add_component(entity, Component{}), ecb->orphan(entity), ecb->remove_component<Component>(entity), ecb->set_parent(parent, child), ecb->orphan(entity)
+You can also use 
+
+	ecb->add_component<Component>(entity)
+	add_component(entity, Component{})
+	ecb->orphan(entity)
+	ecb->remove_component<Component>(entity)
+	ecb->set_parent(parent, child)
+	ecb->orphan(entity)
