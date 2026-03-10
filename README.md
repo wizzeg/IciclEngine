@@ -63,8 +63,8 @@ Use
 
 	WithRead<Components...>{}, 
 	WithWrite<Components...>{}, 
-	WithOut<Components...>{} 
-	and WithRef<Components...>. 
+	WithOut<Components...>{},
+	WithRef<Components...>{} 
 	
 What you will itterate over are entities with the components in WithRead and WithWrite, but without entities with components in WithOut. WithRef is to signify that you will use ctx.try_get<Component>(entity) to the dependency checking (so that there's no read/write collision).
 
