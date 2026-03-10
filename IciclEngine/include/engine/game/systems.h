@@ -22,7 +22,7 @@ struct TransformCalculationSystem : SystemBase
 
 struct PhysicsSystem : SystemBase
 {
-	float cell_size = 2.f;
+	float cell_size = 5.f;
 	uint8_t max_cells = 9; // if object spans more than 9 cells, register it in seperate container
 	size_t chunk_size = 1;
 	std::vector<SpatialColliderPartitioning> vectored_spatial_collider_partitioning;

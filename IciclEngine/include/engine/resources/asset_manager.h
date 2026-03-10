@@ -3,14 +3,14 @@
 #include <string>
 #include <engine/renderer/render_info.h>
 #include <engine/game/components.h>
-#include "obj_parser.h"
+#include <engine/resources/obj_parser.h>
 #include <mutex>
 #include <thread>
 #include <functional>
 #include <unordered_map>
 #include <atomic>
 #include <engine/resources/message_queue.h>
-#include "job_info.h"
+#include <engine/resources/job_info.h>
 
 using AssetJob = std::variant<MeshDataJob, VAOLoadInfo, TextureDataJob, TextureGenInfo, ShaderDataJob, ValidateMatDependencies, ProgramLoadRequest, ProgramLoadInfo, MaterialDataJob, MaterialUniformJob>;
 

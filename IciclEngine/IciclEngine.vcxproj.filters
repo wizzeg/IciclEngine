@@ -103,12 +103,6 @@
     <Filter Include="Header Files\vendor\nlohmann">
       <UniqueIdentifier>{0e4d4fc5-d0f5-4dc4-b897-2d1979dbd0d6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\vendor\imguizmo">
-      <UniqueIdentifier>{4ea0ca21-475a-4ce4-9644-34d87e85dcdd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\vendor\imguizmo">
-      <UniqueIdentifier>{d61c7fae-bfca-452a-a532-b5aa3dd76fc6}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Shaders\engine">
       <UniqueIdentifier>{1cd15715-9e8c-44a9-b228-d1d4a2b90200}</UniqueIdentifier>
     </Filter>
@@ -168,9 +162,6 @@
     <ClCompile Include="src\engine\ui\ui_scene_hierarchy_drawer.cpp">
       <Filter>Source Files\engine\ui</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\resources\asset_loader.cpp">
-      <Filter>Source Files\engine\resources</Filter>
-    </ClCompile>
     <ClCompile Include="src\engine\resources\asset_manager.cpp">
       <Filter>Source Files\engine\resources</Filter>
     </ClCompile>
@@ -197,9 +188,6 @@
     </ClCompile>
     <ClCompile Include="src\engine\resources\data_storage.cpp">
       <Filter>Source Files\engine\resources</Filter>
-    </ClCompile>
-    <ClCompile Include="game_engine.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\resources\message_queue.cpp">
       <Filter>Source Files\engine\resources</Filter>
@@ -245,9 +233,6 @@
     </ClCompile>
     <ClCompile Include="src\engine\resources\shader_loader.cpp">
       <Filter>Source Files\engine\resources</Filter>
-    </ClCompile>
-    <ClCompile Include="content_browser.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\core\game_thread.cpp">
       <Filter>Source Files\engine\core</Filter>
@@ -335,9 +320,6 @@
     <ClInclude Include="include\engine\game\components.h">
       <Filter>Header Files\engine\game</Filter>
     </ClInclude>
-    <ClInclude Include="include\engine\resources\asset_loader.h">
-      <Filter>Header Files\engine\resources</Filter>
-    </ClInclude>
     <ClInclude Include="include\engine\resources\asset_manager.h">
       <Filter>Header Files\engine\resources</Filter>
     </ClInclude>
@@ -360,9 +342,6 @@
       <Filter>Header Files\engine\ui</Filter>
     </ClInclude>
     <ClInclude Include="include\engine\utilities\macros.h">
-      <Filter>Header Files\engine\utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="include\engine\utilities\static_conversions.h">
       <Filter>Header Files\engine\utilities</Filter>
     </ClInclude>
     <ClInclude Include="include\engine\utilities\utilities.h">

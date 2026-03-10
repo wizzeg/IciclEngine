@@ -119,7 +119,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opengl32.lib;GLFW\glfw3.lib;assimp\assimp-vc143-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;GLFW\glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -140,7 +140,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opengl32.lib;GLFW\glfw3.lib;assimp\assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;GLFW\glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -154,8 +154,6 @@
     <ClCompile Include="..\vendor\imgui-docking\imgui_tables.cpp" />
     <ClCompile Include="..\vendor\imgui-docking\imgui_widgets.cpp" />
     <ClCompile Include="..\vendor\stb_image\stb_image.cpp" />
-    <ClCompile Include="content_browser.cpp" />
-    <ClCompile Include="game_engine.cpp" />
     <ClCompile Include="Main.cpp">
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">/bigobj %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">/bigobj %(AdditionalOptions)</AdditionalOptions>
@@ -187,9 +185,7 @@
     <ClCompile Include="src\engine\renderer\texture.cpp" />
     <ClCompile Include="src\engine\renderer\texture_loader.cpp" />
     <ClCompile Include="src\engine\renderer\vao_loader.cpp" />
-    <ClCompile Include="src\engine\resources\asset_loader.cpp" />
     <ClCompile Include="src\engine\resources\asset_manager.cpp" />
-    <ClCompile Include="src\engine\resources\data_storage.cpp" />
     <ClCompile Include="src\engine\resources\data_structs.cpp" />
     <ClCompile Include="src\engine\resources\material_loader.cpp" />
     <ClCompile Include="src\engine\resources\message_queue.cpp" />
@@ -256,9 +252,7 @@
     <ClInclude Include="include\engine\renderer\texture.h" />
     <ClInclude Include="include\engine\renderer\texture_loader.h" />
     <ClInclude Include="include\engine\renderer\vao_loader.h" />
-    <ClInclude Include="include\engine\resources\asset_loader.h" />
     <ClInclude Include="include\engine\resources\asset_manager.h" />
-    <ClInclude Include="include\engine\resources\data_storage.h" />
     <ClInclude Include="include\engine\resources\data_structs.h" />
     <ClInclude Include="include\engine\resources\job_info.h" />
     <ClInclude Include="include\engine\resources\material_loader.h" />
@@ -282,7 +276,6 @@
     <ClInclude Include="include\engine\utilities\macros.h" />
     <ClInclude Include="include\engine\utilities\memory_checking.h" />
     <ClInclude Include="include\engine\utilities\serialization.h" />
-    <ClInclude Include="include\engine\utilities\static_conversions.h" />
     <ClInclude Include="include\engine\utilities\utilities.h" />
   </ItemGroup>
   <ItemGroup>

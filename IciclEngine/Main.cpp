@@ -10,16 +10,6 @@
 #include <GLFW/glfw3.h>
 
 #include <chrono>
-//
-//#include <glm/glm.hpp>
-//#include <glm/gtc/matrix_transform.hpp>
-//#include <glm/gtc/type_ptr.hpp>
-
-//#include <assimp/Importer.hpp>
-//#include <assimp/scene.h>
-//#include <assimp/postprocess.h>
-//#include <engine/utilities/entt_modified.h>
-//#include <entt/entt.hpp>
 
 #include <engine/editor/scene.h>
 #include <engine/editor/scene_object.h>
@@ -27,18 +17,12 @@
 #include <engine/utilities/entt_modified.h>
 #include <engine/game/components.h>
 
-//#ifndef ASSIMP_LOAD_FLAGS
-//#define ASSIMP_LOAD_FLAGS (aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices)
-//#endif
 #include <engine/ui/ui_manager.h>
-//#include <engine/resources/obj_parser.h>
 #include <engine/renderer/vao_loader.h>
-//#include <engine/renderer/shader_program.h>
 #include <engine/renderer/renderer.h>
 #include <engine/core/game_thread.h>
 
 #include <thread>
-//#include <engine/resources/data_storage.h>
 #include <engine/renderer/glfw_context.h>
 #include <engine/ui/imgui_manager.h>
 #include <engine/utilities/utilities.h>
@@ -89,14 +73,9 @@ int main(void)
 	glfw_context->create_framebuffer("shadow_map_array", 2048, 2048, EFramebufferType::ShadowMapArray);
 	FrameBuffer* shadow_maps = glfw_context->get_framebuffer("shadow_map_array");
 
-	//imgui_manager->setup_default_docking_layout();
-
-	//InputManager input_manager(glfw_context->get_window());
-
 	///////////
 	// Making scene and adding test scene_objects
 	std::shared_ptr<Scene> scene = std::make_shared<Scene>();
-	//scene->load("./assets/scenes/scene.scn", true);
 	std::shared_ptr<UIManager> ui_mananger  = std::make_shared<UIManager>();
 	ui_mananger->set_scene(scene);
 
@@ -112,18 +91,11 @@ int main(void)
 	ShaderProgram shader_load;
 	shader_load.load("./assets/shaders/test_shader.shdr");
 	shader_load.save("./assets/shaders/test_shader2.shdr");
-	//std::shared_ptr<MeshDataGenStorage> storage = std::make_shared<MeshDataGenStorage>(2);
 	std::shared_ptr<EngineContext> engine_context = std::make_shared<EngineContext>(scene/*storage*/);
 	scene->load(DEFAULT_PATH);
-	//RenderThread render_thread(engine_context, *shader_program, glfw_context);
 	GameThread game_thread(engine_context, scene);
-	//EngineThread engine_thread(engine_context, imgui_manager, ui_mananger);
-
 	bool game_playing = false;
 
-
-	//std::thread enginer_thread(&EngineThread::execute, &engine_thread);
-	//std::thread renderer_thread(&RenderThread::execute, &render_thread);
 	std::thread gamer_thread(&GameThread::execute, &game_thread);
 
 	HighResolutionTimer timer;
@@ -146,11 +118,6 @@ int main(void)
 	double render_thread_time = 0;
 	double ui_manager_time = 0;
 	int framies = 0;
-
-	//AssetManager asset_manager;
-	//MeshDataJob job("./assets/obj/triobjmonkey.obj", ERequestType::LoadFromFile);
-	////AssetJob asset_job = std::move(job);
-	//asset_manager.add_asset_job(std::move(job));
 
 	uint64_t wait_time = 1;
 
@@ -183,7 +150,7 @@ int main(void)
 				InputManager::instance().unlock_mouse();
 			}
 		});
-#endif // GAME_BUILD
+#endif
 
 	while (engine_context->run())
 	{
@@ -797,128 +764,7 @@ int main(void)
 
 	}
 
-	//if (enginer_thread.joinable()) enginer_thread.join();
-	//if (renderer_thread.joinable()) renderer_thread.join();
 	if (gamer_thread.joinable()) gamer_thread.join();
-
-	//for (size_t i = 0; i < threads.size(); i++)
-	//{
-	//	if (threads[i].get()->joinable())
-	//	{
-	//		threads[i].get()->join();
-	//	}
-	//}
-	/// No more opengl or imgui
-
-	//RenderContext glfw_context;
-	//engine_context.
-	
-	while (false && !glfwWindowShouldClose(window))
-	{
-		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		//glClearColor(0.1f, 0.3f, 0.2f, 1.0f);
-
-
-
-		//////////////////////// systems start here for now
-
-		//if (game_playing)
-		//{
-		//	auto& registry = scene.get()->get_registry();
-
-		//	for (auto [entity, name, worldpos] : registry.view<EntityComponent, TransformDynamicComponent>().each())
-		//	{
-		//		worldpos.position.x += 0.0005f;
-		//	}
-
-		//	for (auto [entity, renderable, world_position] : registry.view<RenderableComponent, TransformDynamicComponent>().each())
-		//	{
-		//		renderer.temp_render(mesh, world_position);
-		//	}
-		//}
-		//else
-		//{
-		//	auto scene_objects = scene.get()->get_scene_objects();
-		//	for (size_t i = 0; i < scene_objects.size(); i++)
-		//	{
-		//		if (RenderableComponent* renderable; scene_objects[i].get()->get_component(renderable))
-		//		{
-		//			if (TransformDynamicComponent* world_pos; scene_objects[i].get()->get_component(world_pos))
-		//			{
-		//				renderer.temp_render(mesh, *world_pos);
-		//			}
-		//		}
-		//	}
-		//}
-
-
-		//for (auto [entity, name] : registry.view<EntityComponent>().each())
-		//{
-		//	std::cout << (name.name.c_str()) << std::endl;
-		//}
-
-		/////////////////////// systems end here for now
-
-
-
-		///* Render here */
-		//Enginecontext
-#pragma region Render
-		//Render stuff here
-		
-
-		//Render stuff end here
-#pragma endregion
-
-#pragma region ImGui
-		//// ImGUI draw
-		//ImGui_ImplOpenGL3_NewFrame();
-		//ImGui_ImplGlfw_NewFrame();
-		//ImGui::NewFrame();
-
-		//ImGui::SetNextWindowSize(ImVec2(500, 400));
-		//ui_mananger.draw_object_hierarchy();
-		//ui_mananger.draw_object_properties();
-
-		////ImGui::Begin("UI Manager Window");
-		////bool focused = ImGui::IsWindowFocused();
-		////ImGui::Text("Focused: %s", focused ? "Yes" : "No");
-		////ImGui::End();
-
-		//if (demo)
-		//	ImGui::ShowDemoWindow(&demo);
-		//if (test >= 9.999999)
-		//	demo = true;
-		//ImGui::Render();
-		//ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData()); // this needs the context ready
-
-		//// obviously this needs the context ready too
-		//if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-		//{
-		//	// Capture the current GL context
-		//	GLFWwindow* contextBackup = glfwGetCurrentContext();
-
-		//	// Update and Render additional Platform Windows
-		//	ImGui::UpdatePlatformWindows();
-		//	ImGui::RenderPlatformWindowsDefault();
-
-		//	// restore current GL context.
-		//	glfwMakeContextCurrent(contextBackup);
-		//}
-
-		// ImGUI stop draw
-#pragma endregion
-		
-		
-
-		///* Swap front and back buffers */
-		//glfwSwapBuffers(window);
-
-		///* Poll for and process events */
-		//glfwPollEvents();
-
-
-	}
 
 	/* Cleanup */
 	window = glfwGetCurrentContext(); // I might need this, shouldn't hurt. ... well now I certainly dont need it though?? what??

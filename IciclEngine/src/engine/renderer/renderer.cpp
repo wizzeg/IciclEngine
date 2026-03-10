@@ -206,8 +206,6 @@ void Renderer::deffered_render(const RenderContext& a_render_context, const Deff
 		////////////////////////////////////////////////////////////////////////////////
 		// lighting pass
 
-
-
 		current_gl_program = lighting_program;
 		glUseProgram(current_gl_program);
 #ifdef GAME_BUILD

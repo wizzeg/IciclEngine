@@ -12,7 +12,6 @@
 #include <latch>
 #include <condition_variable>
 #include <engine/editor/scene.h>
-#include <engine/resources/data_storage.h>
 
 #include <imgui-docking/imgui.h>
 #include <imgui-docking/imgui_impl_glfw.h>
