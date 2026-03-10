@@ -6,7 +6,7 @@ using entt ([see skypjack](https://github.com/skypjack/entt)), imgui-docking, op
 This engine is primarily using data oriented design, with some use of object oriented programming where it makes more sense (or will not impact game performance). Everything that is reasonbly simple to make multi-threaded is multi-threaded.
 
 How to run:
-Install Visual Studio 22, and ensure you have at least C++, but preferably C++ 23 or higher. Also ensure you have windows 10, but it might work on windows 11 too (I pray).
+Install Visual Studio 22, and ensure you have at least C++20, but preferably C++ 23 or higher. Also ensure you have windows 10, but it might work on windows 11 too (I pray).
 (Projects -> properties -> Configure properties -> general -> C++ language standards)
 
 Download code.
@@ -15,7 +15,7 @@ open .sln, go into Project -> properties -> Configure Properties -> Debugging ->
 
 Take the imgui.ini in the contents of "MOVE THESE" and move it into the same folder as the .sln.
 
-Then take all of the contents in "MOVE THESE" and go into the x64 folder that lives in the same folder as the .sln file. And paste them into both the Release and Debug folder (this should give you a prepared layout for imgui).
+Then take all of the contents in "MOVE THESE" and go into the x64 folder that lives in the same folder as the .sln file. And paste them into both the x64 -> Release and Debug folder (this should give you a prepared layout for imgui).
 Then you may also copy the assets folder from the .sln file folder, into the x64 -> Release and Debug folders.
 
 Run the .sln.
