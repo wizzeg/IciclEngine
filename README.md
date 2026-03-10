@@ -43,9 +43,6 @@ That is:
 
 #define DEFAULT_PATH "./assets/scenes/mainmenu.scn"
 
-
-Note, Assimp .dlls should not be necessary.
-
 How to use engine:
 
 You must manually save scenes, right click on a scene object in the scene hierarchy to get up an extra menu, for things like pre-fabs and duplicate etc.
