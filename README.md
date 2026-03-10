@@ -101,7 +101,6 @@ To spawn entities, use an ecb. First create a system for which you set enabled =
 then in a spawning/destroyer/modifier system, use 
 
 	auto ecb = ctx.get_ecb("name);
-	ecb->execute_queue();
 	
 The ecb is NOT thread safe.
 
@@ -116,9 +115,10 @@ To use the ecb you can do as following.
               
 You can also use 
 
-	ecb->add_component<Component>(entity)
-	ecb->add_component(entity, Component{})
-	ecb->orphan(entity)
-	ecb->remove_component<Component>(entity)
-	ecb->set_parent(parent, child)
-	ecb->orphan(entity)
+	ecb->add_component<Component>(entity);
+	ecb->add_component(entity, Component{});
+	ecb->orphan(entity);
+	ecb->remove_component<Component>(entity);
+	ecb->set_parent(parent, child);
+	ecb->orphan(entity);
+	ecb->execute_queue();
