@@ -60,6 +60,7 @@ To add Systems, add them in systems.h or elsewhere, then in system_entires use R
 To make systems.
 
 Use 
+
 	WithRead<Components...>{}, 
 	WithWrite<Components...>{}, 
 	WithOut<Components...>{} 
