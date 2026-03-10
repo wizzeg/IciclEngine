@@ -1,4 +1,4 @@
-Note! You can play around with the engine with the Demo Game in releases!
+Note! You can play around with the engine with the Demo Game in releases! In the Editor version (check other releases), you can create scenes with existing components and systems.
 
 C++ 20 is required, there is a macro for print incase you use C++23+
 using entt ([see skypjack](https://github.com/skypjack/entt)), imgui-docking, opengl through glad, glfw, and glm.
