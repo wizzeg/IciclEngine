@@ -99,6 +99,7 @@ To spawn entities, use an ecb. First create a system for which you set enabled =
 	ctx.create_ecb("name);
 	
 then in a spawning/destroyer/modifier system, use 
+
 	ctx.get_ecb("name);
 	
 The ecb is NOT thread safe.
