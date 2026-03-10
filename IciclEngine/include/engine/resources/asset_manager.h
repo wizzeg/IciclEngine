@@ -3,7 +3,6 @@
 #include <string>
 #include <engine/renderer/render_info.h>
 #include <engine/game/components.h>
-#include <engine/resources/obj_parser.h>
 #include <mutex>
 #include <thread>
 #include <functional>

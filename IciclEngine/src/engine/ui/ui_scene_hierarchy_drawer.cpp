@@ -44,7 +44,6 @@ void UISceneHierarchyDrawer::draw_hierarchy_node(std::weak_ptr<SceneObject> a_sc
 		}
 
 		if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
-			// problem is here... this suddenly happens to all the scene objects in the parent... I don't know actually
 			selected_scene_object = a_scene_object;
 			ImGui::OpenPopup("SceneObjectContextMenu");
 		}

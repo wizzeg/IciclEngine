@@ -5,7 +5,6 @@
 #include <glfw/glfw3.h>
 #include <string>
 #include <typeindex>
-#include <engine/resources/uniform_registry.h>
 #include <engine/resources/data_structs.h>
 #include <engine/utilities/macros.h>
 #include <string>

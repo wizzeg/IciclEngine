@@ -3372,7 +3372,7 @@ bool ObjectSpawnerSystem::execute(SystemsContext& ctx)
 								glm::vec3(0), glm::vec3(0), 1.f, 1.f, glm::mat3(0.f), 0.8f, 0.5f, true, 7, 0, false, 0, 1000 })
 							.with_component<BoundingBoxComponent>(BoundingBoxComponent{ glm::vec3(0.0f) , glm::vec3(1.0f), false, 7, 10 })
 							.with_component<GravityStrengthComponent>(GravityStrengthComponent{ 9.82f })
-							.with_component<ObjectDeletionComponent>(ObjectDeletionComponent{0.f, 10.f})
+							.with_component<ObjectDeletionComponent>(ObjectDeletionComponent{0.f, 20.f})
 							.assemble(), "new_entity");
 						--spwn.spawn_count;
 					}

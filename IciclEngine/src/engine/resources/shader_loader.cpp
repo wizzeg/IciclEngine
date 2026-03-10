@@ -3,7 +3,6 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <engine/utilities/hashed_string_64.h>
-#include <engine/resources/uniform_registry.h>
 #include <engine/resources/data_structs.h>
 #include <engine/editor/field_serialization_registry.h>
 

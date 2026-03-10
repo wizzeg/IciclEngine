@@ -232,12 +232,6 @@ void UIManager::draw_object_hierarchy()
 
 void UIManager::draw_object_properties()
 {
-	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	// BUG, if I double click on this window it breaks (but now I can't reproduce it again...)
-	// 
-	//if (auto scene_object = ui_hiearchy_drawer.prev_selected_scene_object.lock())
-	//{
-		//ImGui::SetNextWindowSize(ImVec2(500, 400));
 	should_draw_object_properties = !UISceneHierarchyDrawer::selected_scene_object.expired();
 	if (should_draw_object_properties)
 	{
@@ -282,10 +276,6 @@ void UIManager::draw_object_properties()
 			{
 				UIObjectPropertyDrawer::draw_object_properties(selected);
 			}
-			//if (auto shared_scene = scene.lock()) // This case is now fine. no problems
-			//{
-			//	shared_scene->destroy_entity(selected->get_entity());
-			//}
 		}
 		else
 		{
@@ -294,33 +284,8 @@ void UIManager::draw_object_properties()
 		ImGui::End();
 	}
 	if (!should_draw_object_properties) UISceneHierarchyDrawer::selected_scene_object.reset();
-	// POP ID missing when removing component.
-
-	//}
-	//ui_hiearchy_drawer.prev_selected_scene_object.reset();
-
 }
 
-void UIManager::draw_selected_icon(glm::mat4 a_view, glm::mat4 a_proj)
-{
-	//if (auto selected = UISceneHierarchyDrawer::selected_scene_object.lock())
-	//{
-	//	if (auto world_pos = selected->try_get_component<TransformDynamicComponent>())
-	//	{
-	//		glm::vec4 clip_pos = a_proj * a_view * glm::vec4(world_pos->get_component().position, 1.0f);
-	//		glm::vec2 screen_pos((clip_pos.x / clip_pos.w + 1.0f) * 0.5f * 10.f,
-	//			(1.0f - clip_pos.y / clip_pos.w) * 0.5f * 10.f);
-
-	//		ImGui::Begin("ViewportOverlay", nullptr,
-	//			ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs |
-	//			ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus);
-	//		ImGui::SetCursorScreenPos(ImVec2(screen_pos.x - 5, screen_pos.y - 5));  // Center 10x10 icon
-	//		ImGui::Image((ImTextureID)1, ImVec2(10.f, 10.f));
-	//		ImGui::End();
-	//	}
-
-	//}
-}
 
 void UIManager::set_scene(std::weak_ptr<Scene> a_scene)
 {
@@ -358,8 +323,6 @@ void UIManager::render_play_stop(EngineContext* a_engine_context)
 	}
 
 	ImGui::SameLine();
-
-	// Stop button - UNIQUE ID "Stop##MenuBar"  
 	if (ImGui::Button("Stop##StopBtn", ImVec2(45, 18))) {
 		playback.isPlaying = false;
 		playback.isPaused = false;

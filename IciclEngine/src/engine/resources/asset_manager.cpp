@@ -41,7 +41,7 @@ void AssetJobThread::process_load_mesh_job(MeshDataJob& a_job)
 
 		if (load_new_mesh)
 		{
-			auto new_mesh = std::make_shared<MeshData>(ObjParser::load_mesh_from_filepath(a_job.path_hashed.string));
+			auto new_mesh = std::make_shared<MeshData>(ModelLoader::load_obj_mesh_from_file(a_job.path_hashed.string));
 			new_mesh->modified_time = a_job.job_time;
 			if (new_mesh->ram_load_status == ELoadStatus::FailedLoadNoSpace)
 			{
@@ -849,170 +849,40 @@ std::vector<RenderRequest> AssetManager::retrieve_render_requests(std::vector<Pr
 	hashed_string_64 invalid_hash;
 	bool use_extra_sort = true;
 
-	//if (a_request.size() * std::log(a_request.size())
-	//	< (renderreqret_gen_storage.texuture_datas.size()* 8 + renderreqret_gen_storage.mesh_datas.size()*17 + a_request.size() * 11))
-	if (true)
-	{
-		std::sort(a_pre_reqs.begin(), a_pre_reqs.end(), []
-		(const PreRenderRequest& request_a, const PreRenderRequest& request_b)
-			{
-				return request_a.mesh_hash < request_b.mesh_hash;
-			});
-		std::lock_guard<std::mutex> mesh_guard(asset_storage.runtime_mesh_mutex);
-		auto& meshes = asset_storage.runtime_meshes;
-		size_t mesh_index = 0;
-		size_t mesh_start_index = 0;
-		bool mesh_found = false;
-		for (auto& request : a_pre_reqs)
+	std::sort(a_pre_reqs.begin(), a_pre_reqs.end(), []
+	(const PreRenderRequest& request_a, const PreRenderRequest& request_b)
 		{
-			mesh_found = false;
-			if (request.mesh_hash == invalid_hash.hash)
+			return request_a.mesh_hash < request_b.mesh_hash;
+		});
+	std::lock_guard<std::mutex> mesh_guard(asset_storage.runtime_mesh_mutex);
+	auto& meshes = asset_storage.runtime_meshes;
+	size_t mesh_index = 0;
+	size_t mesh_start_index = 0;
+	bool mesh_found = false;
+	for (auto& request : a_pre_reqs)
+	{
+		mesh_found = false;
+		if (request.mesh_hash == invalid_hash.hash)
+		{
+			continue;
+		}
+		for (; mesh_index < meshes.size(); mesh_index++)
+		{
+			auto& mesh = meshes[mesh_index];
+			if (request.mesh_hash == mesh.hash)
 			{
-				continue;
-			}
-			for (; mesh_index < meshes.size(); mesh_index++)
-			{
-				auto& mesh = meshes[mesh_index];
-				if (request.mesh_hash == mesh.hash)
-				{
-					render_requests.emplace_back
-					(request.model_matrix, request.mesh_hash, request.tex_hash, mesh.vao, mesh.num_indices, 0, 0);
-					mesh_start_index = mesh_index;
-					mesh_found = true;
-					break;
-				}
-			}
-			if (!mesh_found)
-			{
-				mesh_index = mesh_start_index;
+				render_requests.emplace_back
+				(request.model_matrix, request.mesh_hash, request.tex_hash, mesh.vao, mesh.num_indices, 0, 0);
+				mesh_start_index = mesh_index;
+				mesh_found = true;
+				break;
 			}
 		}
-
-		//std::sort(render_requests.begin(), render_requests.end(), []
-		//(const RenderRequest& request_a, const RenderRequest& request_b)
-		//	{
-		//		return request_a.tex_hash < request_b.tex_hash;
-		//	});
-
-		//size_t tex_index = 0;
-		//size_t tex_start_index = 0;
-		//bool tex_found = false;
-		//for (auto& request : render_requests)
-		//{
-		//	tex_found = false;
-		//	if (request.tex_hash == invalid_hash)
-		//	{
-		//		request.material_id = 0;
-		//		continue;
-		//	}
-		//	for (; tex_index < tex_datas.size(); tex_index++)
-		//	{
-		//		auto& data = tex_datas[tex_index];
-		//		if (request.tex_hash == data.hash)
-		//		{
-		//			request.material_id = data.texture_id;
-		//			tex_start_index = tex_index;
-		//			tex_found = true;
-		//			break;
-		//		}
-
-		//	}
-		//	if (!tex_found)
-		//	{
-		//		tex_index = tex_start_index;
-		//	}
-		//}
-		//PRINTLN("used extra sort");
+		if (!mesh_found)
+		{
+			mesh_index = mesh_start_index;
+		}
 	}
-	//else
-	//{
-	//	std::sort(a_request.begin(), a_request.end(), []
-	//	(const PreRenderRequest& request_a, const PreRenderRequest& request_b)
-	//		{
-	//			if (request_a.mesh_hash == request_b.mesh_hash)
-	//				return request_a.tex_hash < request_b.tex_hash;
-	//			return request_a.mesh_hash < request_b.mesh_hash;
-
-	//		});
-	//	std::lock_guard<std::mutex> mesh_guard(asset_storage.runtime_mesh_mutex);
-	//	auto& meshes = asset_storage.runtime_meshes;
-
-	//	std::lock_guard<std::mutex> mesh_guard(renderreqret_gen_storage.mesh_mutex);
-	//	std::lock_guard<std::mutex> tex_guard(renderreqret_gen_storage.texture_mutex);
-	//	auto& tex_datas = renderreqret_gen_storage.texuture_datas;
-	//	auto& mesh_datas = renderreqret_gen_storage.mesh_datas;
-	//	size_t mesh_index = 0;
-	//	size_t mesh_start_index = 0;
-	//	bool mesh_found = false;
-	//	size_t tex_index = 0;
-	//	size_t tex_start_index = 0;
-	//	GLuint tex_id = 0;
-	//	GLuint vao = 0;
-	//	GLsizei size = 0;
-	//	bool tex_found = false;
-	//	uint64_t prev_mesh_hash = invalid_hash.hash;
-	//	bool requested_mesh = false;
-	//	bool requested_tex = false;
-	//	for (auto& request : a_request)
-	//	{
-	//		tex_id = 0;
-	//		vao = 0;
-	//		size = 0;
-	//		mesh_found = false;
-	//		if (request.mesh_hash == invalid_hash.hash)
-	//			continue;
-	//		if (prev_mesh_hash != request.mesh_hash)
-	//		{
-	//			tex_index = 0;
-	//			tex_start_index = 0;
-	//		}
-
-	//		for (; mesh_index < mesh_datas.size(); mesh_index++) // should check mesh/tex if it's loaded, if not, add it as load job.
-	//		{
-	//			MeshData& mesh_data = mesh_datas[mesh_index];
-	//			if (request.mesh_hash == mesh_data.hash)
-	//			{
-	//				vao = mesh_data.VAO;
-	//				size = mesh_data.num_indicies;
-
-	//				mesh_start_index = mesh_index;
-	//				prev_mesh_hash = mesh_data.hash;
-	//				mesh_found = true;
-	//				tex_index = 0;
-	//				tex_found = false;
-	//				if (request.tex_hash != invalid_hash.hash)
-	//				{
-	//					for (; tex_index < tex_datas.size(); tex_index++)
-	//					{
-	//						TextureData& tex_data = tex_datas[tex_index];
-	//						if (request.tex_hash == tex_data.hash)
-	//						{
-	//							tex_id = tex_data.texture_id;
-
-	//							tex_start_index = tex_index;
-	//							tex_found = true;
-	//							break;
-	//						}
-	//					}
-	//				}
-	//				if (!tex_found)
-	//					tex_index = tex_start_index;
-
-	//				break;
-	//			}
-	//		}
-	//		if (!mesh_found)
-	//		{
-	//			mesh_index = mesh_start_index;
-	//		}
-
-	//		else
-	//		{
-	//			render_requests.emplace_back
-	//			(request.model_matrix, request.mesh_hash, request.tex_hash, vao, size, 0, tex_id);
-	//		}
-	//	}
-	//}
 
 	// sort for texture/material first, and then by mesh.. but later I need to sort by shader -> material -> mesh.
 	std::sort(render_requests.begin(), render_requests.end(), []

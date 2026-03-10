@@ -4709,7 +4709,7 @@
                         {
                             "name": "spawns_at_time: ",
                             "type": "spawns_at_time",
-                            "value": 5
+                            "value": 12
                         },
                         {
                             "name": "spawn_interval: ",
@@ -4737,13 +4737,13 @@
         },
         {
             "enabled": true,
-            "name": "SmoothFollowSystem",
+            "name": "HeightMapLoadSystem",
             "order": 1,
             "physics": false
         },
         {
             "enabled": true,
-            "name": "HeightMapLoadSystem",
+            "name": "SmoothFollowSystem",
             "order": 1,
             "physics": false
         },
@@ -4799,6 +4799,12 @@
             "enabled": true,
             "name": "CollectionSystem",
             "order": 22,
+            "physics": false
+        },
+        {
+            "enabled": true,
+            "name": "ObjectDeleterSystem",
+            "order": 28,
             "physics": false
         },
         {

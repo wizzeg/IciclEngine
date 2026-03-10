@@ -718,24 +718,11 @@ int main(void)
 			ImGui::Image(texture, image_size, ImVec2(0, 1), ImVec2(1, 0));
 			ImGui::End();
 
-			//ImGui::SetNextWindowSize(ImVec2(1280, 960));
-
-			bool demo = true;
-			//ImGui::ShowDemoWindow(&demo);
 			ui_mananger->draw_systems();
 			ui_mananger->draw_object_hierarchy();
 			ui_mananger->draw_object_properties();
-			//ui_mananger->draw_selected_icon(engine_context->editor_camera.get_view_matrix(),
-			//	engine_context->editor_camera.get_proj_matrix());
-
-			//ui_mananger->RenderContentBrowser();
 			ui_mananger->render_play_stop(engine_context.get());
 			ui_mananger->draw_menubar();
-			//ui_mananger->RenderTopMenuBar();
-			//ui_mananger->RenderToolbar();
-
-			//input_manager.update_input();
-			
 
 			
 #endif // GAME_BUILD
@@ -767,7 +754,7 @@ int main(void)
 	if (gamer_thread.joinable()) gamer_thread.join();
 
 	/* Cleanup */
-	window = glfwGetCurrentContext(); // I might need this, shouldn't hurt. ... well now I certainly dont need it though?? what??
+	window = glfwGetCurrentContext(); // I might need this, shouldn't hurt. ... well now I certainly dont need it though?? what is this talking about??
 	glfwMakeContextCurrent(window);
 	glfwDestroyWindow(window);
 	imgui_manager->destroy();

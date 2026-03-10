@@ -11,7 +11,6 @@
 // #include <glm/gtx/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <engine/renderer/render_info.h>
-#include <engine/resources/obj_parser.h>
 #include <engine/utilities/entt_modified.h>
 #include <engine/resources/data_structs.h>
 
