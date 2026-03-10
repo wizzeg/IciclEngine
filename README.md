@@ -94,7 +94,14 @@ If you wish to read from a SystemObjectStorage, you may use a ReadLock, for whic
 	
 -> when they are copied into the lambda the ReadLock will automatically unlock when the last thread is finished with the reading (as the ReadLock goes out of scope).
 
-To spawn entities, use an ecb. First create a system for which you set enabled = false after running. In the system, ensure you do ctx.create_ecb("name);, then in a spawning/destroyer/modifier system, use ctx.get_ecb("name);. The ecb is NOT thread safe.
+To spawn entities, use an ecb. First create a system for which you set enabled = false after running. In the system, ensure you do 
+
+	ctx.create_ecb("name);
+	
+then in a spawning/destroyer/modifier system, use 
+	ctx.get_ecb("name);
+	
+The ecb is NOT thread safe.
 
 To use the ecb you can do as following.
 
@@ -108,7 +115,7 @@ To use the ecb you can do as following.
 You can also use 
 
 	ecb->add_component<Component>(entity)
-	add_component(entity, Component{})
+	ecb->add_component(entity, Component{})
 	ecb->orphan(entity)
 	ecb->remove_component<Component>(entity)
 	ecb->set_parent(parent, child)
