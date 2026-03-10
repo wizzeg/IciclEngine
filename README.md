@@ -1,4 +1,4 @@
-This is a general game engine capable of creating simple games!
+This is a general game engine capable of creating simple games! This may be a nice introduction to ECS if you want to learn how to use ECS and Data Oriented Programming.
 
 Note! You can play around with the engine with the Demo Game in releases! In the Editor version (check other releases), you can create scenes with existing components and systems.
 
