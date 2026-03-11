@@ -19,7 +19,7 @@ bool MoveSystem::execute(SystemsContext& ctx)
 {
 	
 	time += ctx.get_delta_time();
-	float current_time = time;
+	float current_time = (float)time;
 
 	return ctx.enqueue_parallel_each(
 		WithRead<SpawnPositionComponent, RenderComponent>{},
@@ -277,15 +277,15 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 				asleep = rb->asleep;
 			}
 			CellCoordinates min_cell = {
-				static_cast<int>(divide_int(aabb_min.x, cell_size)),
-				static_cast<int>(divide_int(aabb_min.y, cell_size)),
-				static_cast<int>(divide_int(aabb_min.z, cell_size))
+				static_cast<int>(divide_int(aabb_min.x, (size_t)cell_size)),
+				static_cast<int>(divide_int(aabb_min.y, (size_t)cell_size)),
+				static_cast<int>(divide_int(aabb_min.z, (size_t)cell_size))
 			};
 
 			CellCoordinates max_cell = {
-				static_cast<int>(divide_int(aabb_max.x, cell_size)),
-				static_cast<int>(divide_int(aabb_max.y, cell_size)),
-				static_cast<int>(divide_int(aabb_max.z, cell_size))
+				static_cast<int>(divide_int(aabb_max.x, (size_t)cell_size)),
+				static_cast<int>(divide_int(aabb_max.y, (size_t)cell_size)),
+				static_cast<int>(divide_int(aabb_max.z, (size_t)cell_size))
 			};
 			if ((max_cell.x - min_cell.x) * (max_cell.y - min_cell.y) * (max_cell.z - min_cell.z) > max_cells)
 			{
@@ -1021,7 +1021,7 @@ bool PhysicsSystem::execute(SystemsContext& ctx)
 	ctx.entt_sync();
 	timer.stop();
 	timer_OBB += timer.get_time_us();
-	float delta = ctx.get_delta_time();
+	float delta = (float)ctx.get_delta_time();
 
 	// iterate through attractors, create formula for attractor, and then make each object do the thing
 
@@ -3373,6 +3373,10 @@ bool ObjectSpawnerSystem::execute(SystemsContext& ctx)
 							.with_component<BoundingBoxComponent>(BoundingBoxComponent{ glm::vec3(0.0f) , glm::vec3(1.0f), false, 7, 10 })
 							.with_component<GravityStrengthComponent>(GravityStrengthComponent{ 9.82f })
 							.with_component<ObjectDeletionComponent>(ObjectDeletionComponent{0.f, 20.f})
+							//.with_child(new_entity()
+							//	.with_component<TransformDynamicComponent>(glm::vec3(0.f, 1.f, 0.f))
+							//	.with_component<RenderComponent>(hashed_string_64("./assets/obj/cube.obj"), hashed_string_64("./assets/shaders/plain3.mat"), true, true, true)
+							//	.assemble(), "new_child")
 							.assemble(), "new_entity");
 						--spwn.spawn_count;
 					}

@@ -8,7 +8,7 @@ void InputManager::update_input()
     if (mouse_locked)
     {
         ImGui::SetMouseCursor(ImGuiMouseCursor_None);
-        input_buffer->mouse_delta = ImGui::GetMousePos() - ImVec2(locked_x, locked_y);
+        input_buffer->mouse_delta = ImGui::GetMousePos() - ImVec2((float)locked_x, (float)locked_y);
         SetCursorPos((int)locked_x, (int)locked_y);
     }
     else
@@ -152,8 +152,8 @@ void InputManager::lock_mouse(float x, float y)
 {
     std::lock_guard mouse_lock(mouse_mutex);
     mouse_locked = true;
-    locked_x = x;
-    locked_y = y;
+    locked_x = (int)x;
+    locked_y = (int)y;
 }
 
 void InputManager::unlock_mouse()

@@ -288,8 +288,8 @@ struct CollisionResult
 {
 	entt::entity self_entity;
 	entt::entity other_entity;
-	uint32_t self_access_order;
-	uint32_t other_access_order;
+	size_t self_access_order;
+	size_t other_access_order;
 	uint16_t other_tag;
 	glm::vec3 other_positoin;
 };
