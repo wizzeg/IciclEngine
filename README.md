@@ -1,4 +1,6 @@
-Note! You can play around with the engine with the Demo Game in releases!
+This is a general game engine capable of creating simple games! This may be a nice introduction to ECS if you want to learn how to use ECS and Data Oriented Programming.
+
+Note! You can play around with the engine with the Demo Game in releases! In the Editor version (check other releases), you can create scenes with existing components and systems.
 
 C++ 20 is required, there is a macro for print incase you use C++23+
 using entt ([see skypjack](https://github.com/skypjack/entt)), imgui-docking, opengl through glad, glfw, and glm.
@@ -43,9 +45,6 @@ That is:
 
 #define DEFAULT_PATH "./assets/scenes/mainmenu.scn"
 
-
-Note, Assimp .dlls should not be necessary.
-
 How to use engine:
 
 You must manually save scenes, right click on a scene object in the scene hierarchy to get up an extra menu, for things like pre-fabs and duplicate etc.
@@ -57,3 +56,70 @@ To move the editor camera, hover the editor camera buffer, and hold right click.
 To add Components, add them in components.h or elsewhere, but components_data.h must include that directory (if you place them elsewhere you'll have to figure it out). Then go into component_entries and REGISTER_COMPONENT, follow the examples to figure out how to do it.
 
 To add Systems, add them in systems.h or elsewhere, then in system_entires use REGISTER_SYSTEM macro.
+
+To make systems.
+
+Use 
+
+	WithRead<Components...>{}, 
+	WithWrite<Components...>{}, 
+	WithOut<Components...>{},
+	WithRef<Components...>{} 
+	
+What you will itterate over are entities with the components in WithRead and WithWrite, but without entities with components in WithOut. WithRef is to signify that you will use ctx.try_get<Component>(entity) to the dependency checking (so that there's no read/write collision).
+
+In your arguments for the lambda, use the following format (const entt::entity entity, const ReadComponent& read_component, const WriteComponent& write_component).
+
+For entt iteration you have the following.
+
+	ctx.each -> simple immediate iteration of the requested entities.
+	
+	ctx.enqueue_each -> placing the .each iteration in a seperate thread.
+	
+	ctx.enqueue_parallel_each -> launches parallel threads with chunk_size number of entities.
+
+	ctx.enqueue_parallel_data_each ->supply a vector of num_threads number of vectors,
+	all initialized, and supply num_threads and if you wish to record iteration order. 
+
+When sorting for recorded iteration order, sort by > rather than, as the order appears to be reversed when using entt::handle instead of entt::view for iteration (and recording in parallel_data_each).
+
+To use SystemStorage, use e.g.
+
+	ctx.get_systemstorage().get_object<ObjectType>("object_name"), 
+
+with option to use a size_t if you have multiple entires with same name and type.
+
+If you wish to read from a SystemObjectStorage, you may use a ReadLock, for which you copy into each lambda in a ctx.enqueue_. Create it like this.
+
+	std::shared_ptr<ReadLock<ObjectType>> shared_read_lock = std::make_shared<ReadLock<ObjectType>>(strg_obj_ptr); 
+	
+-> when they are copied into the lambda the ReadLock will automatically unlock when the last thread is finished with the reading (as the ReadLock goes out of scope).
+
+To spawn entities, use an ecb. First create a system for which you set enabled = false after running. In the system, ensure you do 
+
+	ctx.create_ecb("name);
+	
+then in a spawning/destroyer/modifier system, use 
+
+	auto ecb = ctx.get_ecb("name);
+	
+The ecb is NOT thread safe.
+
+To use the ecb you can do as following. You may use new_entity() to create in parallel, and only after add them to the ecb single-threaded with ecb->create_entity(paralleled_entity).
+
+		ecb->create_entity(new_entity()
+		.with_component<TransformDynamicComponent>(transform)
+		.with_child(new_entity()
+			.with_component<TransformDynamicComponent>(trans)
+			.assemble(), "new_child")
+		.assemble(), "new_entity");
+              
+You can also use 
+
+	ecb->add_component<Component>(entity);
+	ecb->add_component(entity, Component{});
+	ecb->orphan(entity);
+	ecb->remove_component<Component>(entity);
+	ecb->set_parent(parent, child);
+	ecb->orphan(entity);
+	ecb->execute_queue();
