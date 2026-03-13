@@ -81,7 +81,7 @@ For entt iteration you have the following.
 	ctx.enqueue_parallel_data_each ->supply a vector of num_threads number of vectors,
 	all initialized, and supply num_threads and if you wish to record iteration order. 
 
-When sorting for recorded iteration order, sort by > rather than, as the order appears to be reversed when using entt::handle instead of entt::view for iteration (and recording in parallel_data_each).
+When sorting for recorded iteration order, sort by > rather than < (less than), as the order appears to be reversed when using entt::handle instead of entt::view for iteration (and recording in parallel_data_each).
 
 To use SystemStorage, use e.g.
 
