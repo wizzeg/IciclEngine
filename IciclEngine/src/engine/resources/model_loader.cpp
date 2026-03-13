@@ -228,8 +228,8 @@ void ModelLoader::load_texture_from_file(TextureData& a_texture_data)
     else if (temp_num_comps == 4) a_texture_data.contents->color_format = GL_RGBA;
     else
     {
-        std::println("Failed to load texture");
-        std::println("loaded texture at {}", a_texture_data.texture_id);
+        PRINTLN("Failed to load texture");
+        PRINTLN("loaded texture at {}", a_texture_data.texture_id);
         a_texture_data.texture_ram_status = ELoadStatus::FailedLoadBadModel;
         stbi_image_free(raw_ptr);
         return;
