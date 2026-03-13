@@ -117,7 +117,7 @@ To use the ecb you can do as following. You may use new_entity() to create in pa
 You can also use 
 
 	ecb->add_component<Component>(entity);
-	ecb->add_component(entity, Component{});
+	ecb->add_component(entity, Component{values...});
 	ecb->orphan(entity);
 	ecb->remove_component<Component>(entity);
 	ecb->set_parent(parent, child);
